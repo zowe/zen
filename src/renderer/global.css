@@ -1,0 +1,138 @@
+/*
+ * @NOTE: Prepend a `~` to css file paths that are in your node_modules
+ *        See https://github.com/webpack-contrib/sass-loader#imports
+ */
+body {
+  height: 100vh;
+  width: 100vw;
+  background-color: #eeeeee;
+  margin: 0;
+  color: #4D4B45
+}
+
+button {
+  background-color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  appearance: none;
+  font-size: 1.3rem;
+  box-shadow: 0px 8px 28px -6px rgba(24, 39, 75, 0.12),
+    0px 18px 88px -4px rgba(24, 39, 75, 0.14);
+  transition: transform ease-in 0.1s;
+  cursor: pointer;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+li {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+  height: fit-content;
+  width: fit-content;
+  margin: 10px;
+}
+
+a:hover {
+  opacity: 1;
+  text-decoration: none;
+}
+
+#zen-root-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+}
+
+.home-container {
+  display: flex;
+  justify-content: space-evenly;
+  padding-top: 100px;
+}
+
+.wizard-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 80px);
+  padding-top: 16px;
+  background-color: #fafafa;
+}
+
+.overlay {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  background: #222;
+  z-index: 2;
+  opacity: 0.4;
+}
+
+.overlay__inner {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+.overlay__content {
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.spinner {
+  width: 75px;
+  height: 75px;
+  display: inline-block;
+  border-width: 2px;
+  border-color: rgba(255, 255, 255, 0.05);
+  border-top-color: #fff;
+  animation: spin 1s infinite linear;
+  border-radius: 100%;
+  border-style: solid;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.stepper-container {
+  flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.stepper {
+  padding: 6px 24px 18px;
+  border-bottom: 1px solid #E0E0E0;
+}
+
+.action-card {
+  display: flex; 
+  flex-direction: row;
+  height: 100px;
+}
+
+.progress-card {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 8px 16px !important;
+}
+
+.progress-card:last-child {
+  padding-bottom: 8px !important;
+}
