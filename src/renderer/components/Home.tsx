@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { Box, Card, CardContent, CardMedia, Typography } from '@mui/material';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
 import { setConnectionArgs } from './stages/connection/connectionSlice';
-import { setZoweCLIVersion } from './wizard/wizardSlice';
+import { setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch } from '../hooks';
 
 import installationImg from '../assets/installation.png'

@@ -18,7 +18,7 @@ import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/connection/connectionSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectNextStepEnabled } from '../wizard/wizardSlice';
+import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
 
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button

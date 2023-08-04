@@ -11,7 +11,7 @@
 import { useEffect } from "react";
 import ContainerCard from '../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 
 const Configuration = () => {
 
