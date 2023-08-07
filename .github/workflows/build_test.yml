@@ -8,7 +8,7 @@ on:
 
 jobs:
   
-  build-test:
+  build-ubuntu:
     runs-on: ubuntu-latest
     steps: 
       - name: '[Prep 1] Checkout'
@@ -17,3 +17,36 @@ jobs:
       - name: '[prep 2] Install'
         run: |
           npm install
+                 
+      - name: '[prep 3] Package'
+        run: |
+          npm run make  
+          
+          
+  build-window:
+    runs-on: windows-latest
+    steps: 
+      - name: '[Prep 1] Checkout'
+        uses: actions/checkout@v3
+        
+      - name: '[prep 2] Install'
+        run: |
+          npm install
+                 
+      - name: '[prep 3] Package'
+        run: |
+          npm run make  
+          
+  build-macos:
+    runs-on: macos-latest
+    steps: 
+      - name: '[Prep 1] Checkout'
+        uses: actions/checkout@v3
+        
+      - name: '[prep 2] Install'
+        run: |
+          npm install
+                 
+      - name: '[prep 3] Package'
+        run: |
+          npm run make  
