@@ -10,7 +10,6 @@ jobs:
   
   build-test:
     runs-on: ubuntu-latest
-    needs: check-permission
     steps: 
       - name: '[Prep 1] Checkout'
         uses: actions/checkout@v3
