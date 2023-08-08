@@ -1,5 +1,7 @@
 {
   "name": "zowe-enterprise-necessity",
+  "author": "Zowe",
+  "description": "An example Electron app",
   "productName": "zowe-enterprise-necessity",
   "version": "1.0.0",
   "description": "Zowe Enterprise Necessity",
