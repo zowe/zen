@@ -1,4 +1,4 @@
-name: Build and Test Workflow
+name: Build zen
 on:
   push:
     branches:
@@ -11,16 +11,24 @@ jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
     steps: 
-      - name: '[Prep 1] Checkout'
+      - name: '[Prep 1] Setup Node'
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      
+      - name: '[Prep 2] Checkout'
         uses: actions/checkout@v3
         
-      - name: '[prep 2] Install'
+      - name: '[prep 3] Install'
         run: |
           npm install
                  
-      - name: '[prep 3] Package'
+      - name: '[prep 4] Package'
         run: |
           npm run make  
+          
+      - name: '[prep 5] Publish'
+        uses: zowe-actions/zlux-builds/zen/publish@users/jstruga/add-zen-publish
           
           
   build-window:
