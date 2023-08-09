@@ -39,6 +39,34 @@ jobs:
   build-window:
     runs-on: windows-latest
     steps: 
+    
+      - name: '[Prep 2] Setup jFrog CLI'
+        uses: jfrog/setup-jfrog-cli@v2
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_TOKEN }}
+          
+      - name: '[Prep 1] Checkout'
+        uses: actions/checkout@v3
+        
+      - name: '[prep 2] Install'
+        run: |
+          npm install
+                 
+      - name: '[prep 3] Package'
+        run: |
+          npm run make  
+      - name: '[prep 6] Publish'
+        uses: zowe-actions/zlux-builds/zen/publish@users/jstruga/add-zen-publish
+          
+  build-macos:
+    runs-on: macos-latest
+    steps: 
+    
+      - name: '[Prep 2] Setup jFrog CLI'
+        uses: jfrog/setup-jfrog-cli@v2
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_TOKEN }}
+          
       - name: '[Prep 1] Checkout'
         uses: actions/checkout@v3
         
@@ -50,16 +78,5 @@ jobs:
         run: |
           npm run make  
           
-  build-macos:
-    runs-on: macos-latest
-    steps: 
-      - name: '[Prep 1] Checkout'
-        uses: actions/checkout@v3
-        
-      - name: '[prep 2] Install'
-        run: |
-          npm install
-                 
-      - name: '[prep 3] Package'
-        run: |
-          npm run make  
+      - name: '[prep 6] Publish'
+        uses: zowe-actions/zlux-builds/zen/publish@users/jstruga/add-zen-publish
