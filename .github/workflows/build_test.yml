@@ -34,6 +34,8 @@ jobs:
           
       - name: '[prep 6] Publish'
         uses: zowe-actions/zlux-builds/zen/publish@users/jstruga/add-zen-publish
+        with: 
+          os: ubuntu
           
           
   build-window:
@@ -57,6 +59,8 @@ jobs:
           npm run make  
       - name: '[prep 6] Publish'
         uses: zowe-actions/zlux-builds/zen/publish@users/jstruga/add-zen-publish
+        with: 
+          os: windows
           
   build-macos:
     runs-on: macos-latest
@@ -80,3 +84,5 @@ jobs:
           
       - name: '[prep 6] Publish'
         uses: zowe-actions/zlux-builds/zen/publish@users/jstruga/add-zen-publish
+        with: 
+          os: macos
