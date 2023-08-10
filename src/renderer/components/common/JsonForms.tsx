@@ -21,8 +21,21 @@ import {
 const makeUISchema = (schema: any, base: string): any => {
   const properties = Object.keys(schema.properties);
   const elements = properties.map((p: any) => {
-    if (schema.properties[p].type === 'object') {                                 
-      return makeUISchema(schema.properties[p], `${base}${p}/properties/`);
+    if (schema.properties[p].type === 'object') {
+      const subSchema = schema.properties[p];
+      const subProperties = Object.keys(subSchema.properties);
+
+      const subElements = subProperties.map((sp: any) => ({
+        type: 'Control',
+        scope: `#/properties${base}${p}/properties/${sp}`,
+      }));
+
+      return {
+        type: 'Group',
+        label: p, // Display the group label
+        elements: subElements,
+      };
+      // return makeUISchema(schema.properties[p], `${base}${p}/properties/`);
     } else {
       return {
         "type": "Control",
