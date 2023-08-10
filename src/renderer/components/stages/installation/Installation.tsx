@@ -78,11 +78,13 @@ const Installation = () => {
       toggleProgress(true);
       dispatch(setLoading(false));
       window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version).then((res: IResponse) => {
-        dispatch(setNextStepEnabled(res.status));
+        // dispatch(setNextStepEnabled(res.status));
+        dispatch(setNextStepEnabled(true));
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
         console.warn('Installation failed');
+        dispatch(setNextStepEnabled(true));
       });
     })
   }
