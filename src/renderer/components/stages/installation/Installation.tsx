@@ -27,10 +27,8 @@ const Installation = () => {
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  // const setupSchema = schema.properties.zowe.properties.setup.properties.dataset;
-  const setupSchema = schema.properties.zowe.properties.setup.properties.security;
-  // const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.dataset);
-  const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.security);
+  const setupSchema = schema.properties.zowe.properties.setup.properties.dataset;
+  const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.dataset);
   const [showProgress, toggleProgress] = useState(false);
   const [installationProgress, setInstallationProgress] = useState({
     uploadYaml: false,
@@ -67,8 +65,7 @@ const Installation = () => {
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
     Promise.all([
-      // window.electron.ipcRenderer.setConfigByKey('zowe.setup.dataset', setupYaml),
-      window.electron.ipcRenderer.setConfigByKey('zowe.setup.security', setupYaml),
+      window.electron.ipcRenderer.setConfigByKey('zowe.setup.dataset', setupYaml),
       window.electron.ipcRenderer.setConfigByKey('zowe.runtimeDirectory', `${installationDir}/runtime`),
       window.electron.ipcRenderer.setConfigByKey('zowe.logDirectory', `${installationDir}/logs`),
       window.electron.ipcRenderer.setConfigByKey('zowe.workspaceDirectory', `${installationDir}/workspace`),

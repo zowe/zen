@@ -15,7 +15,6 @@ import {
   materialCells,
 } from '@jsonforms/material-renderers';
 
-
 // REVIEW: Flatten the schema UI or find out how to keep structure
 
 const makeUISchema = (schema: any, base: string): any => {
@@ -32,7 +31,7 @@ const makeUISchema = (schema: any, base: string): any => {
 
       return {
         type: 'Group',
-        label: p, // Display the group label
+        label: p,
         elements: subElements,
       };
       // return makeUISchema(schema.properties[p], `${base}${p}/properties/`);
