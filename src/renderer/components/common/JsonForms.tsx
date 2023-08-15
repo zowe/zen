@@ -70,13 +70,22 @@ const customTheme = createTheme({
           fontSize: '5px',
           marginTop: '15px',
           marginBottom: '-20px',
+          paddingLeft: '16px',
+        },
+      },
+    },
+    MuiCardContent: {
+      styleOverrides: {
+        root: {
+          paddingLeft: '20px',
         },
       },
     },
     MuiContainer: {
       styleOverrides: {
         root: {
-          width: '30%',
+          width: '100%',
+          maxWidth: '100%'
         },
       },
     },
