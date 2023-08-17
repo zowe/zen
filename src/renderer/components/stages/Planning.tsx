@@ -146,7 +146,6 @@ const Planning = () => {
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       if (res.status) {
         dispatch(setYaml(res.details.config));
-        console.log("---------------GET CONFIG");
         const schema = res.details.schema;
         // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
         schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
@@ -167,7 +166,6 @@ const Planning = () => {
           return res.status
         }).then((yamlStatus: boolean) => {
           window.electron.ipcRenderer.getZoweSchema().then((res: IResponse) => {
-            console.log("---------------GET ZOWE SCHEMA");
             const schema = res.details;
             // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
             schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;

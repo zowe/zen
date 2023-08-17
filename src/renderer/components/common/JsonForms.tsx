@@ -16,6 +16,17 @@ import {
 } from '@jsonforms/material-renderers';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+const customStyles = `
+  .custom-dropdown-list {
+    background-color: yellow;
+    position: absolute;
+    color: red;
+    top: 100%;
+    width: 100%;
+    z-index: 1000;
+  }
+`;
+
 const customTheme = createTheme({
   components: {
     MuiInputBase: {
@@ -85,7 +96,7 @@ const customTheme = createTheme({
       styleOverrides: {
         root: {
           width: '100%',
-          maxWidth: '100%'
+          maxWidth: '100%',
         },
       },
     },
@@ -124,7 +135,7 @@ const makeUISchema = (schema: any, base: string): any => {
         label: `\n${p}:`,
         elements: [
           {
-            type: 'VerticalLayout', // Use HorizontalLayout for controls within the group
+            type: 'VerticalLayout',
             elements: groupedControls,
           },
         ],
