@@ -32,12 +32,11 @@ const customTheme = createTheme({
     MuiInputBase: {
       styleOverrides: {
         root: {
-          display: 'inline-flex', // Display the input field inline
-          alignItems: 'center',   // Align items vertically in the input container
+          display: 'inline-flex',
+          alignItems: 'center',
         },
         fullWidth: {
           width: '70%',
-          // width: '50%', // Set your desired custom width here
         },
       },
     },
