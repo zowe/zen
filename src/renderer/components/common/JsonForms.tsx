@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { JsonForms } from '@jsonforms/react';
 import {
   materialRenderers,
@@ -45,8 +45,16 @@ const customTheme = createTheme({
         root: {
           boxShadow: 'none',
           borderRadius: 0,
-        },
+        }
       },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          paddingLeft: 0,
+          fontWeight: 'normal',
+        }
+      }
     },
     MuiPaper: {
       styleOverrides: {
@@ -78,7 +86,7 @@ const customTheme = createTheme({
         root: {
           fontFamily: 'Courier New, monospace',
           fontSize: '5px',
-          marginTop: '15px',
+          marginTop: '10px',
           marginBottom: '-20px',
           paddingLeft: '16px',
         },
@@ -104,16 +112,30 @@ const customTheme = createTheme({
 
 // REVIEW: Flatten the schema UI or find out how to keep structure
 
-const makeUISchema = (schema: any, base: string): any => {
+const makeUISchema = (schema: any, base: string, formData: any): any => {
+  console.log("---------CALLING MAKEUISCHEMA");
   const properties = Object.keys(schema.properties);
-  const elements = properties.map((p: any) => {
-    if (schema.properties[p].type === 'object') {
-      const subSchema = schema.properties[p];
+
+  const elements = properties.map((prop: any) => {
+    if (schema.properties[prop].type === 'object') {
+
+      if(formData && formData.type && ((formData.type != 'PKCS12' && prop == 'pkcs12') || (formData.type == 'PKCS12' && prop == 'keyring'))) {
+        return {
+          type: 'Group',
+          label: `\n${prop}`,
+          rule: {
+            effect: "HIDE",
+            condition: {}
+          },
+        };
+      }
+
+      const subSchema = schema.properties[prop];
       const subProperties = Object.keys(subSchema.properties);
 
-      const subElements = subProperties.map((sp: any) => ({
+      const subElements = subProperties.map((subProp: any) => ({
         type: 'Control',
-        scope: `#/properties${base}${p}/properties/${sp}`,
+        scope: `#/properties${base}${prop}/properties/${subProp}`,
       }));
 
       const groupedControls = [];
@@ -128,10 +150,9 @@ const makeUISchema = (schema: any, base: string): any => {
           row = [];
         }
       }
-
       return {
         type: 'Group',
-        label: `\n${p}:`,
+        label: `\n${prop}`,
         elements: [
           {
             type: 'VerticalLayout',
@@ -142,7 +163,7 @@ const makeUISchema = (schema: any, base: string): any => {
     } else {
       return {
         "type": "Control",
-        "scope": `#/properties${base}${p}`
+        "scope": `#/properties${base}${prop}`
       }
     }
   });
@@ -152,23 +173,44 @@ const makeUISchema = (schema: any, base: string): any => {
   };
 }
 
+
 export default function JsonForm(props: any) {
-  const {schema, initialdata, onChange} = props;
-  // const [data, setData] = useState(initialdata);
+  const {schema, initialData, onChange} = props;
+  const [formData, setFormData] = useState(initialData);
+  const [isHandlingFormChange, setIsHandlingFormChange] = useState(false);
+
+  useEffect(() => {
+    if (formData && formData.type) {
+      console.log('Type has changed:', formData.type);
+    }
+  }, [formData?.type]);
+
+  const handleFormChange = (event: any) => {
+    if (isHandlingFormChange) {
+      return;
+    }
+    const updatedData = event.data;
+    if(updatedData && updatedData.type != 'PKCS12' && updatedData.pkcs12) {
+      delete updatedData.pkcs12;
+    }
+
+    setIsHandlingFormChange(true);
+    setFormData(updatedData);
+    setIsHandlingFormChange(false);
+
+    console.log('Form data has changed:', updatedData);
+  };
+
   return (
     <ThemeProvider theme={customTheme}>
     <JsonForms
       schema={schema}
-      uischema={makeUISchema(schema, '/')}
-      data={initialdata}
+      uischema={makeUISchema(schema, '/', formData)}
+      data={formData}
       renderers={materialRenderers}
       cells={materialCells}
       config={{showUnfocusedDescription: true}}
-      onChange={({ data, errors }) => {
-        // console.log(data);
-        // setData(data);
-        onChange(data);
-      }}
+      onChange={handleFormChange}
     />
     </ThemeProvider>
   );

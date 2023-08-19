@@ -37,8 +37,8 @@ const Certificates = () => {
 
   return (
     <ContainerCard title="Certificates" description="Configure certificates"> 
-      <Box sx={{ width: '60vw' }} ref={inputRef} onClick={handleInputFocus}> 
-        <JsonForm schema={setupSchema} initialdata={setupYaml} onChange={editParam} />
+      <Box sx={{ width: '60vw' }}>
+        <JsonForm schema={setupSchema} initialData={setupYaml} onChange={editParam} />
       </Box> 
     </ContainerCard>
   );

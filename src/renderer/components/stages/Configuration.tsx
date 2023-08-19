@@ -37,13 +37,11 @@ const Configuration = () => {
   }
 
   return (
-    // <Container sx={{display: "flex", flexDirection: "row"}}>
-      <ContainerCard title="Configuration" description="Configure Zowe initilaization and components"> 
-        <Box sx={{ width: '60vw' }} ref={inputRef} onClick={handleInputFocus}> 
-          <JsonForm schema={setupSchema} initialdata={setupYaml} onChange={editParam} />
-        </Box>
-      </ContainerCard>
-    // </Container>
+    <ContainerCard title="Configuration" description="Configure Zowe initilaization and components"> 
+      <Box sx={{ width: '60vw' }}>
+        <JsonForm schema={setupSchema} initialData={setupYaml} onChange={editParam} />
+      </Box>
+    </ContainerCard>
   );
 };
 

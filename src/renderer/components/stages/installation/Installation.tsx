@@ -117,8 +117,8 @@ const Installation = () => {
 
 Then we will install MVS data sets, please provide HLQ below`}
       </Typography>
-      <Box sx={{ width: '60vw' }} ref={inputRef} onClick={handleInputFocus}> 
-        <JsonForm schema={setupSchema} initialdata={setupYaml} onChange={editHLQ}/>
+      <Box sx={{ width: '60vw' }}>
+        <JsonForm schema={setupSchema} initialData={setupYaml} onChange={editHLQ}/>
       </Box>  
       {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Install MVS datasets</Button>
