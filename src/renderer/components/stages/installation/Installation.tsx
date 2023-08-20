@@ -18,7 +18,6 @@ import { selectConnectionArgs } from '../connection/connectionSlice';
 import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
 import ProgressCard from '../../common/ProgressCard'
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const Installation = () => {
 

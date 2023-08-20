@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { JsonForms } from '@jsonforms/react';
 import {materialRenderers, materialCells} from '@jsonforms/material-renderers';
 import { createTheme, ThemeProvider } from '@mui/material/styles';

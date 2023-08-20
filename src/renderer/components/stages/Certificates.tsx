@@ -8,9 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { useEffect, useState, useRef} from "react";
+import { useState} from "react";
 import ContainerCard from '../common/ContainerCard';
-import { Box, Button, FormControl, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import JsonForm from '../common/JsonForms';
@@ -24,12 +24,10 @@ const Certificates = () => {
   const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.certificate);
 
   const handleFormChange = (data: any) => {
-
     const updatedData = data;
     if(updatedData && updatedData.type != 'PKCS12' && updatedData.pkcs12) {
       delete updatedData.pkcs12;
     }
-
     setSetupYaml(updatedData);
   };
 
