@@ -21,8 +21,8 @@ import { useAppSelector } from '../../hooks';
 
 const stages = [
   {id: 0, label: 'Connection', component: <Connection/>, nextButton: 'Continue'},
-  {id: 1, label: 'Planning', component: <Planning/>, nextButton: 'Continue to components installation'}, // Describe prereqs, address requirements
-  {id: 2, label: 'Installation', component: <Installation/>, nextButton: 'Continue to system configuration'}, // Get download location, fill in zowe.setup.dataset
+  {id: 1, label: 'Planning', component: <Planning/>, nextButton: 'Continue to components installation'},
+  {id: 2, label: 'Installation', component: <Installation/>, nextButton: 'Continue to system configuration'},
   {id: 3, label: 'Configuration', component: <Configuration/>, nextButton: 'Continue to certificates setup'},
   {id: 4, label: 'Certificates', component: <Certificates/>, nextButton: 'Continue to instance setup'},
   {id: 6, label: 'Initialization', component: <Initialization/>, nextButton: <div style={{display: 'flex', alignItems: 'center'}}><img style={{width: '18px', height: '18px', paddingRight: '12px'}} src={spock}/>Live long and prosper</div>},

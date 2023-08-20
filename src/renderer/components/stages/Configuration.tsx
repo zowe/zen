@@ -12,9 +12,8 @@ import { useEffect, useRef, useState } from "react";
 import { Box, Button, FormControl, Typography } from '@mui/material';
 import ContainerCard from '../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import JsonForm from '../common/JsonForms';
-import { Container } from "@mui/material";
 
 const Configuration = () => {
 

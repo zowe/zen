@@ -17,7 +17,7 @@ import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
 import ContainerCard from '../common/ContainerCard';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import { setYaml, setSchema, setNextStepEnabled, setLoading } from '../wizard/wizardSlice';
+import { setYaml, setSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs, setConnectionArgs } from './connection/connectionSlice';
 import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from './installation/installationSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';

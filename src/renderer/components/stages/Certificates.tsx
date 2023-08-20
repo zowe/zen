@@ -12,7 +12,7 @@ import { useEffect, useState, useRef} from "react";
 import ContainerCard from '../common/ContainerCard';
 import { Box, Button, FormControl, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import JsonForm from '../common/JsonForms';
 
 const Certificates = () => {
