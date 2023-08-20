@@ -23,22 +23,20 @@ const Certificates = () => {
   const setupSchema = schema.properties.zowe.properties.setup.properties.certificate;
   const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.certificate);
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const handleFormChange = (data: any) => {
 
-  const handleInputFocus = () => {
-    if (inputRef.current) {
-      inputRef.current.scrollIntoView({behavior: 'smooth'});
+    const updatedData = data;
+    if(updatedData && updatedData.type != 'PKCS12' && updatedData.pkcs12) {
+      delete updatedData.pkcs12;
     }
-  }
 
-  const editParam = () => {
-
-  }
+    setSetupYaml(updatedData);
+  };
 
   return (
     <ContainerCard title="Certificates" description="Configure certificates"> 
       <Box sx={{ width: '60vw' }}>
-        <JsonForm schema={setupSchema} initialData={setupYaml} onChange={editParam} />
+        <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml} />
       </Box> 
     </ContainerCard>
   );

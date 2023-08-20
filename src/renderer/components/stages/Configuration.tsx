@@ -24,22 +24,14 @@ const Configuration = () => {
   const setupSchema = schema.properties.zowe.properties.setup.properties.security;
   const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.security);
 
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleInputFocus = () => {
-    if (inputRef.current) {
-      inputRef.current.scrollIntoView({behavior: 'smooth'});
-    }
-  }
-
-  const editParam = () => {
-
-  }
+  const handleFormChange = (data: any) => {
+    setSetupYaml(data);
+  };
 
   return (
     <ContainerCard title="Configuration" description="Configure Zowe initilaization and components"> 
       <Box sx={{ width: '60vw' }}>
-        <JsonForm schema={setupSchema} initialData={setupYaml} onChange={editParam} />
+        <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
       </Box>
     </ContainerCard>
   );

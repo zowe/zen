@@ -10,22 +10,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { JsonForms } from '@jsonforms/react';
-import {
-  materialRenderers,
-  materialCells,
-} from '@jsonforms/material-renderers';
+import {materialRenderers, materialCells} from '@jsonforms/material-renderers';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-
-const customStyles = `
-  .custom-dropdown-list {
-    background-color: yellow;
-    position: absolute;
-    color: red;
-    top: 100%;
-    width: 100%;
-    z-index: 1000;
-  }
-`;
 
 const customTheme = createTheme({
   components: {
@@ -96,6 +82,7 @@ const customTheme = createTheme({
       styleOverrides: {
         root: {
           paddingLeft: '20px',
+          paddingBottom: '0px',
         },
       },
     },
@@ -107,13 +94,21 @@ const customTheme = createTheme({
         },
       },
     },
+    MuiAutocomplete: {
+      styleOverrides: {
+        listbox: {
+          background: 'white',
+          marginLeft: '15px',
+          paddingLeft: '5px'
+        }
+      }
+    }
   },
 });
 
 // REVIEW: Flatten the schema UI or find out how to keep structure
 
 const makeUISchema = (schema: any, base: string, formData: any): any => {
-  console.log("---------CALLING MAKEUISCHEMA");
   const properties = Object.keys(schema.properties);
 
   const elements = properties.map((prop: any) => {
@@ -175,31 +170,7 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
 
 
 export default function JsonForm(props: any) {
-  const {schema, initialData, onChange} = props;
-  const [formData, setFormData] = useState(initialData);
-  const [isHandlingFormChange, setIsHandlingFormChange] = useState(false);
-
-  useEffect(() => {
-    if (formData && formData.type) {
-      console.log('Type has changed:', formData.type);
-    }
-  }, [formData?.type]);
-
-  const handleFormChange = (event: any) => {
-    if (isHandlingFormChange) {
-      return;
-    }
-    const updatedData = event.data;
-    if(updatedData && updatedData.type != 'PKCS12' && updatedData.pkcs12) {
-      delete updatedData.pkcs12;
-    }
-
-    setIsHandlingFormChange(true);
-    setFormData(updatedData);
-    setIsHandlingFormChange(false);
-
-    console.log('Form data has changed:', updatedData);
-  };
+  const {schema, onChange, formData} = props;
 
   return (
     <ThemeProvider theme={customTheme}>
@@ -210,7 +181,7 @@ export default function JsonForm(props: any) {
       renderers={materialRenderers}
       cells={materialCells}
       config={{showUnfocusedDescription: true}}
-      onChange={handleFormChange}
+      onChange={({ data, errors }) => { onChange(data) }}
     />
     </ThemeProvider>
   );
