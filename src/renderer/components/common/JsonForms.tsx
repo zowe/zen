@@ -106,8 +106,6 @@ const customTheme = createTheme({
   },
 });
 
-// REVIEW: Flatten the schema UI or find out how to keep structure
-
 const makeUISchema = (schema: any, base: string, formData: any): any => {
   const properties = Object.keys(schema.properties);
 
