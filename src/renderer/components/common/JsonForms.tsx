@@ -72,7 +72,7 @@ const customTheme = createTheme({
         root: {
           fontFamily: 'Courier New, monospace',
           fontSize: '5px',
-          marginTop: '10px',
+          marginTop: '5px',
           marginBottom: '-20px',
           paddingLeft: '16px',
         },
@@ -100,6 +100,13 @@ const customTheme = createTheme({
           background: 'white',
           marginLeft: '15px',
           paddingLeft: '5px'
+        }
+      }
+    },
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          marginBottom: '10px',
         }
       }
     }
