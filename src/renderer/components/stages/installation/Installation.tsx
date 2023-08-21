@@ -79,7 +79,6 @@ const Installation = () => {
       dispatch(setLoading(false));
       window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
-        dispatch(setNextStepEnabled(true));
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
