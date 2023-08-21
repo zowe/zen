@@ -34,6 +34,9 @@ contextBridge.exposeInMainWorld('electron', {
     checkZoweCLI() {
       return ipcRenderer.invoke("check-zowe-cli");
     },
+    uploadPax(){
+      return ipcRenderer.invoke('upload-pax')
+    },
     findPreviousInstallations() {
       return ipcRenderer.invoke("get-installation-history");
     },

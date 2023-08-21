@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import MenuBuilder from './menu';
 import { HomeActions } from "../actions/HomeActions";
 import { ConnectionActions } from "../actions/ConnectionActions";
@@ -51,6 +51,12 @@ const createWindow = (): void => {
   ipcMain.handle('check-zowe-cli', async (event) => {
     const res: any = await HomeActions.checkZoweCLI();
     return res;
+  });
+
+  ipcMain.handle('upload-pax', async (event) => {
+    return await dialog.showOpenDialog({ properties: ['openFile'], filters: [
+      { name: 'pax', extensions: ['pax'] },
+    ] });
   });
 
   ipcMain.handle('get-installation-history', (event) => {
