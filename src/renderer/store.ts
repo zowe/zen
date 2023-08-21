@@ -10,7 +10,7 @@
 
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import connectionReducer from './components/stages/connection/connectionSlice';
-import wizardReducer from './components/wizard/wizardSlice';
+import wizardReducer from './components/configuration-wizard/wizardSlice';
 import installationReducer from './components/stages/installation/installationSlice';
 
 export const store = configureStore({

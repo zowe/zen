@@ -25,7 +25,7 @@ import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
 import { setConnectionArgs, setConnectionStatus, selectConnectionArgs, selectConnectionStatus } from './connectionSlice';
-import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../wizard/wizardSlice';
+import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { Container } from "@mui/material";
 
 const Connection = () => {

@@ -15,7 +15,7 @@ import { store } from './store'
 import { Provider } from 'react-redux'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from "./components/Home";
-import Wizard from './components/wizard/Wizard';
+import Wizard from './components/configuration-wizard/Wizard';
 import Header from './components/Header';
 import theme from './theme';
 import { ThemeProvider } from '@mui/material/styles';
