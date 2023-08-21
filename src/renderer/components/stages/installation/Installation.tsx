@@ -12,7 +12,7 @@ import React, {useEffect, useRef, useState} from "react";
 import { Box, Button, FormControl, Typography } from '@mui/material';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
-import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../wizard/wizardSlice';
+import { selectYaml, setYaml, setSchema, selectSchema, setNextStepEnabled, setLoading } from '../../wizard/wizardSlice';
 import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import JsonForm from '../../common/JsonForms';
@@ -30,6 +30,7 @@ const Installation = () => {
   const setupSchema = schema.properties.zowe.properties.setup.properties.dataset;
   const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.dataset);
   const [showProgress, toggleProgress] = useState(false);
+  const [paxPath, setPaxPath] = useState("No pax file selected.");
   const [installationProgress, setInstallationProgress] = useState({
     uploadYaml: false,
     download: false,
@@ -110,10 +111,22 @@ const Installation = () => {
 
   return (
     <ContainerCard title="Installation" description="Provide installation details"> 
-        <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
+        <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
         {`Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}
 
 Then we will install MVS data sets, please provide HLQ below`}
+      </Typography>
+      <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+        window.electron.ipcRenderer.uploadPax().then((res: any) => {
+          if(res.filePaths && res.filePaths[0] != undefined){
+            setPaxPath(res.filePaths[0]);
+          } else {
+            setPaxPath("No pax file selected.");
+          }
+        });
+      }}>Upload PAX</Button>
+      <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
+        {`${paxPath}`}
       </Typography>
       <Box sx={{ padding: '24px 0'}} ref={inputRef} onClick={handleInputFocus}> 
         <JsonForm schema={setupSchema} initialdata={setupYaml} onChange={editHLQ}/>
