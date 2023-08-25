@@ -1,0 +1,93 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
+import React, {useEffect, useRef, useState} from "react";
+import { Box, Button, FormControl, FormControlLabel, FormLabel, Link, Radio, RadioGroup, Typography } from '@mui/material';
+import ContainerCard from '../../common/ContainerCard';
+import { useAppSelector, useAppDispatch } from '../../../hooks';
+import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
+import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
+import { selectConnectionArgs } from '../connection/connectionSlice';
+import JsonForm from '../../common/JsonForms';
+import { IResponse } from '../../../../types/interfaces';
+import ProgressCard from '../../common/ProgressCard'
+
+const InstallationType = () => {
+
+  // TODO: Display granular details of installation - downloading - unpacking - running zwe command
+
+  const dispatch = useAppDispatch();
+//   const schema = useAppSelector(selectSchema);
+//   const yaml = useAppSelector(selectYaml);
+  const connectionArgs = useAppSelector(selectConnectionArgs);
+//   const setupSchema = schema.properties.zowe.properties.setup.properties.dataset;
+//   const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.dataset);
+  const [installValue, setInstallValue] = useState("download");
+  const [paxPath, setPaxPath] = useState("");
+
+  const installationArgs = useAppSelector(selectInstallationArgs);
+  const version = useAppSelector(selectZoweVersion);
+  let timer: any;
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if((installValue === "upload" && paxPath == "") || installValue === "smpe"){
+        dispatch(setNextStepEnabled(false));
+    } else {
+        dispatch(setNextStepEnabled(true));
+    }
+    
+  }, [installValue, paxPath]);
+
+
+  return (
+    <ContainerCard title="Installation Type" description="Please select the desired install method"> 
+        <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
+        {`Please select an option`}
+      </Typography>
+      <FormControl>
+        <RadioGroup
+            aria-labelledby="demo-radio-buttons-group-label"
+            defaultValue="download"
+            name="radio-buttons-group"
+            onChange={(e) => setInstallValue(e.target.value)}
+        >
+            <FormControlLabel value="download" control={<Radio />} label="Download Zowe convenience build PAX from internet" />
+            <FormControlLabel value="upload" control={<Radio />} label="Upload Zowe PAX for offline install" />
+            <FormControlLabel value="smpe" control={<Radio />} label="SMP/E" />
+        </RadioGroup>
+    </FormControl>
+    {installValue === "smpe" && <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
+        {`SMP/E installation is currently unsupported by Zen. Please complete the SMP/E installation steps for Zowe manually, then return to the Zen application after install is complete.`}
+    </Typography>}
+    {installValue === "download" && <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
+        {`Zen will download the latest Zowe convenience build in PAX archive format from `}<Link href="zowe.org">{'https://zowe.org'}</Link>
+    </Typography>}
+    {installValue === "upload" &&   <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
+        {`Select a local Zowe PAX file (offline installation).`}
+      </Typography>}
+    {installValue === "upload" && <><Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+        window.electron.ipcRenderer.uploadPax().then((res: any) => {
+          if(res.filePaths && res.filePaths[0] != undefined){
+            setPaxPath(res.filePaths[0]);
+          } else {
+            setPaxPath("");
+          }
+        });
+      }}>Upload PAX</Button>
+      <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
+        {`${paxPath === "" ? "No pax file selected." : paxPath}`}
+      </Typography></>}
+    </ContainerCard>
+  );
+};
+
+export default InstallationType;
