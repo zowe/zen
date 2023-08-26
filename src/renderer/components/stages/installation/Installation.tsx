@@ -18,6 +18,7 @@ import { selectConnectionArgs } from '../connection/connectionSlice';
 import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
 import ProgressCard from '../../common/ProgressCard'
+import { setConfiguration, getConfiguration } from '../../../../schemas/setAndGetConfig'
 
 const Installation = () => {
 
@@ -28,7 +29,7 @@ const Installation = () => {
   const yaml = useAppSelector(selectYaml);
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const setupSchema = schema.properties.zowe.properties.setup.properties.dataset;
-  const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.dataset);
+  let [setupYaml, setSetupYaml] = useState(setupSchema);
   const [showProgress, toggleProgress] = useState(false);
   const [installationProgress, setInstallationProgress] = useState({
     uploadYaml: false,
@@ -47,6 +48,12 @@ const Installation = () => {
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
   }, []);
+
+  const section = 'dataset';
+  let initConfig = getConfiguration(section);
+  if(Object.keys(initConfig).length != 0) {
+   [setupYaml, setSetupYaml] = useState(initConfig);
+  }
 
   useEffect(() => {
     timer = setInterval(() => {
@@ -78,11 +85,13 @@ const Installation = () => {
       toggleProgress(true);
       dispatch(setLoading(false));
       window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version).then((res: IResponse) => {
-        dispatch(setNextStepEnabled(res.status));
+        // dispatch(setNextStepEnabled(res.status));
+        dispatch(setNextStepEnabled(true));
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
         console.warn('Installation failed');
+        dispatch(setNextStepEnabled(true));
       });
     })
   }
@@ -100,6 +109,11 @@ const Installation = () => {
     } else {
       setSetupYaml(data);
     }
+    let section = 'dataset';
+    let subSection = '';
+    let property = '';
+    setConfiguration(section, data);
+    getConfiguration(section);
   }
 
   const handleInputFocus = () => {

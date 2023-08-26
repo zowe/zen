@@ -121,7 +121,6 @@ const serverSchema = {
 }
 
 const Planning = () => {
-
   const dispatch = useAppDispatch();
 
   const connectionArgs = useAppSelector(selectConnectionArgs);
@@ -273,11 +272,11 @@ const Planning = () => {
       }
       setValidationDetails(details);
       dispatch(setLoading(false));
-      if (!details.error) {
+      // if (!details.error) {
         setLocationsValidated(true);
         setStep(2);
         setOpacity(0);
-      }
+      // }
     })
   }
 
