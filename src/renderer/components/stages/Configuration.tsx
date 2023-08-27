@@ -8,12 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Box } from '@mui/material';
 import ContainerCard from '../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import JsonForm from '../common/JsonForms';
+import { setConfiguration, getConfiguration } from '../../../schema/setAndGetConfig'
 
 const Configuration = () => {
 
@@ -22,9 +23,29 @@ const Configuration = () => {
   const yaml = useAppSelector(selectYaml);
   const setupSchema = schema.properties.zowe.properties.setup.properties.security;
   const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.security);
+  const [init, setInit] = useState(false);
+
+  const section = 'security';
+  const initConfig: any = getConfiguration(section);
+
+  useEffect(() => {
+    dispatch(setNextStepEnabled(false));
+    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
+      setSetupYaml(initConfig);
+    }
+    setInit(true);
+  }, []);
 
   const handleFormChange = (data: any) => {
-    setSetupYaml(data);
+    
+    const newData = init ? (initConfig ? initConfig : data) : (data ? data : initConfig);
+    setInit(false);
+
+    if (newData) {
+      setConfiguration(section, newData);
+      dispatch(setNextStepEnabled(true));
+      setSetupYaml(newData);
+    }
   };
 
   return (

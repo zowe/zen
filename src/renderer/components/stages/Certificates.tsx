@@ -8,12 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { useState} from "react";
+import { useState, useEffect} from "react";
 import ContainerCard from '../common/ContainerCard';
 import { Box } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import JsonForm from '../common/JsonForms';
+import { setConfiguration, getConfiguration } from '../../../schema/setAndGetConfig';
 
 const Certificates = () => {
 
@@ -22,19 +23,38 @@ const Certificates = () => {
   const yaml = useAppSelector(selectYaml);
   const setupSchema = schema.properties.zowe.properties.setup.properties.certificate;
   const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.certificate);
+  const [init, setInit] = useState(false);
+
+  const section = 'certificate';
+  const initConfig: any = getConfiguration(section);
+
+  useEffect(() => {
+    dispatch(setNextStepEnabled(false));
+    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
+      setSetupYaml(initConfig);
+    }
+    setInit(true);
+  }, []);
 
   const handleFormChange = (data: any) => {
-    const updatedData = data;
-    if(updatedData && updatedData.type != 'PKCS12' && updatedData.pkcs12) {
-      delete updatedData.pkcs12;
+
+    const newData = init ? (initConfig? initConfig: data) : (data ? data : initConfig);
+    setInit(false);
+
+    if(newData) {
+      if(newData && newData.type != 'PKCS12' && newData.pkcs12) {
+        delete newData.pkcs12;
+      }
+      setConfiguration(section, newData);
+      dispatch(setNextStepEnabled(true));
+      setSetupYaml(newData);
     }
-    setSetupYaml(updatedData);
   };
 
   return (
     <ContainerCard title="Certificates" description="Configure certificates"> 
       <Box sx={{ width: '60vw' }}>
-        <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml} />
+        <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
       </Box> 
     </ContainerCard>
   );
