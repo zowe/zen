@@ -115,33 +115,21 @@ const customTheme = createTheme({
 
 const makeUISchema = (schema: any, base: string, formData: any): any => {
   const properties = Object.keys(schema.properties);
-  let ifProp: string, ifPropValue: string, thenProp: string, elseProp: string
-
-  if(schema.if) {
-    ifProp = Object.keys(schema.if.properties)[0];
-    ifPropValue = schema.if.properties[ifProp].const.toLowerCase();
-    thenProp = schema.then.required[0].toLowerCase();
-    elseProp = schema.else.required[0].toLowerCase();
-  }
 
   const elements = properties.map((prop: any) => {
     if (schema.properties[prop].type === 'object') {
+
       if(schema.if) {
-
-        // Handling the conditions for the "if", "else" and "then" in the schema
-        if(formData && Object.keys(formData).includes(ifProp)) {
-          const formDataPropValue = formData[ifProp].toLowerCase();
-
-          if( (formDataPropValue == ifPropValue && prop == elseProp) || (formDataPropValue != ifPropValue && prop == thenProp) ) {
-            return {
-              type: 'Group',
-              label: `\n${prop}`,
-              rule: {
-                effect: "HIDE",
-                condition: {}
-              },
-            };
-          }
+        const hideProperty = conditionalSchema(schema, formData, prop);
+        if(hideProperty) {
+          return {
+            type: 'Group',
+            label: `\n${prop}`,
+            rule: {
+              effect: "HIDE",
+              condition: {}
+            },
+          };
         }
       }
 
@@ -191,6 +179,21 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
   };
 }
 
+// To handle the "if", "else", and "then" in the schema
+const conditionalSchema = (schema: any, formData: any, prop: any): boolean=> {
+  const ifProp = Object.keys(schema.if.properties)[0];
+  const ifPropValue = schema.if.properties[ifProp].const.toLowerCase();
+  const thenProp = schema.then.required[0].toLowerCase();
+  const elseProp = schema.else.required[0].toLowerCase();
+
+  if(formData && formData[ifProp]) {
+    const formDataPropValue = formData[ifProp].toLowerCase();
+    if( (formDataPropValue == ifPropValue && prop == elseProp) || (formDataPropValue != ifPropValue && prop == thenProp) ) {
+      return true;
+    }
+  }
+  return false;
+}
 
 export default function JsonForm(props: any) {
   const {schema, onChange, formData} = props;
