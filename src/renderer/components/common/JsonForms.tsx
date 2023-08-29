@@ -10,7 +10,8 @@
 
 import React, { useState } from 'react';
 import { JsonForms } from '@jsonforms/react';
-import {materialRenderers, materialCells} from '@jsonforms/material-renderers';
+import { materialRenderers, materialCells } from '@jsonforms/material-renderers';
+import { Typography } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import jsonFormTheme from '../../jsonFormsTheme';
 
@@ -19,6 +20,10 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
 
   const elements = properties.map((prop: any) => {
     if (schema.properties[prop].type === 'object') {
+
+      if(schema.properties[prop].if) {
+        console.log("We have if else");
+      }
 
       if(formData && formData.type && ((formData.type != 'PKCS12' && prop == 'pkcs12') || (formData.type == 'PKCS12' && prop == 'keyring'))) {
         return {
@@ -33,6 +38,7 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
 
       const subSchema = schema.properties[prop];
       const subProperties = Object.keys(subSchema.properties);
+      const schemaDescription = subSchema.description;
 
       const subElements = subProperties.map((subProp: any) => ({
         type: 'Control',
@@ -51,9 +57,10 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
           row = [];
         }
       }
+      const labelContent = getLabelContent(prop, schemaDescription);
       return {
         type: 'Group',
-        label: `\n${prop}`,
+        label: `${prop}`,
         elements: [
           {
             type: 'VerticalLayout',
@@ -74,6 +81,21 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
   };
 }
 
+const getLabelContent = (prop: string, propDescription: string) => {
+  const style = (<Typography variant="subtitle1">
+    <strong>{prop}</strong>
+    {propDescription && (
+      <>
+        <br />
+        <Typography variant="body2" component="span">
+          {propDescription}
+        </Typography>
+      </>
+    )}
+  </Typography>)
+
+  return style;
+}
 
 export default function JsonForm(props: any) {
   const {schema, onChange, formData} = props;
