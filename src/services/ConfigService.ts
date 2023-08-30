@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { flatten, unflatten } from 'flat';
 
 export const setConfiguration = (section: string, data: any) => {

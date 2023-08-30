@@ -14,7 +14,7 @@ import ContainerCard from '../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import JsonForm from '../common/JsonForms';
-import { setConfiguration, getConfiguration } from '../../../schema/setAndGetConfig'
+import { setConfiguration, getConfiguration } from '../../../services/ConfigService'
 
 const Configuration = () => {
 

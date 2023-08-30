@@ -18,7 +18,7 @@ import { selectConnectionArgs } from '../connection/connectionSlice';
 import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
 import ProgressCard from '../../common/ProgressCard'
-import { setConfiguration, getConfiguration } from '../../../../schema/setAndGetConfig'
+import { setConfiguration, getConfiguration } from '../../../../services/ConfigService'
 
 const Installation = () => {
 
