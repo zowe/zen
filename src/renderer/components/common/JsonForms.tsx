@@ -15,12 +15,6 @@ import { Typography } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import jsonFormTheme from '../../jsonFormsTheme';
 
-const CustomLabelRenderer = ({ schemaDescription }: { schemaDescription: string }) => (
-  <Typography variant="body1" style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>
-    {schemaDescription}
-  </Typography>
-)
-
 const makeUISchema = (schema: any, base: string, formData: any): any => {
   const properties = Object.keys(schema.properties);
 

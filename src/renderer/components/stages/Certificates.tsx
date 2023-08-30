@@ -42,9 +42,6 @@ const Certificates = () => {
     setInit(false);
 
     if(newData) {
-      if(newData && newData.type != 'PKCS12' && newData.pkcs12) {
-        delete newData.pkcs12;
-      }
       setConfiguration(section, newData);
       dispatch(setNextStepEnabled(true));
       setSetupYaml(newData);

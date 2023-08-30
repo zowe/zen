@@ -96,7 +96,24 @@ const jsonFormTheme = createTheme({
           marginBottom: '10px',
         }
       }
-    }
+    },
+    MuiDialog: {
+      styleOverrides: {
+        root: {
+          display: 'flex',
+          justifyContent: 'center',
+        },
+        container: {
+          background: 'whiteSmoke',
+          height: '50%',
+          width: '30%',
+          marginTop: '10%',
+          border: '2px solid grey',
+          borderRadius: '20px'
+        }
+      }
+    },
+
   },
 });
 
