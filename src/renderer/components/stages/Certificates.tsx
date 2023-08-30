@@ -25,9 +25,6 @@ const Certificates = () => {
 
   const handleFormChange = (data: any) => {
     const updatedData = data;
-    if(updatedData && updatedData.type != 'PKCS12' && updatedData.pkcs12) {
-      delete updatedData.pkcs12;
-    }
     setSetupYaml(updatedData);
   };
 
