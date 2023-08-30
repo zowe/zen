@@ -2,7 +2,7 @@ name: Release zen draft
 on:
   workflow_run:
     workflows: ["Build zen"]
-    branches: [main]
+    branches: [v2.x/staging]
     types:
       - completed
   workflow_dispatch:
@@ -38,8 +38,8 @@ jobs:
         if: ${{ inputs.RUN_ID == '' }}
         env:
           GH_TOKEN: ${{ github.token }}
-        # download default by filtering for the latest successful build output by the main branch
-        run: gh run download $(gh run list -w "Build zen" --json databaseId,headBranch,conclusion -q 'map(select(.headBranch == "main")) | map(select(.conclusion == "success")) | .[0].databaseId')
+        # download default by filtering for the latest successful build output by the v2.x/staging branch
+        run: gh run download $(gh run list -w "Build zen" --json databaseId,headBranch,conclusion -q 'map(select(.headBranch == "v2.x/staging")) | map(select(.conclusion == "success")) | .[0].databaseId')
       - name: '[Download] Input'
         if: ${{ inputs.RUN_ID }}
         env:
