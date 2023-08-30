@@ -15,6 +15,12 @@ import { Typography } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import jsonFormTheme from '../../jsonFormsTheme';
 
+const CustomLabelRenderer = ({ schemaDescription }: { schemaDescription: string }) => (
+  <Typography variant="body1" style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>
+    {schemaDescription}
+  </Typography>
+)
+
 const makeUISchema = (schema: any, base: string, formData: any): any => {
   const properties = Object.keys(schema.properties);
 
@@ -31,7 +37,7 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
           label: `\n${prop}`,
           rule: {
             effect: "HIDE",
-            condition: {}
+            condition: true
           },
         };
       }
@@ -47,6 +53,7 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
 
       const groupedControls = [];
       let row = [];
+
       for (let i = 0; i < subElements.length; i++) {
         row.push(subElements[i]);
         if (row.length === 2 || (row.length === 1 && i === subElements.length - 1)) {
@@ -57,7 +64,7 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
           row = [];
         }
       }
-      const labelContent = getLabelContent(prop, schemaDescription);
+
       return {
         type: 'Group',
         label: `${prop}`,
@@ -79,22 +86,6 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
     "type": "VerticalLayout",
     "elements": elements
   };
-}
-
-const getLabelContent = (prop: string, propDescription: string) => {
-  const style = (<Typography variant="subtitle1">
-    <strong>{prop}</strong>
-    {propDescription && (
-      <>
-        <br />
-        <Typography variant="body2" component="span">
-          {propDescription}
-        </Typography>
-      </>
-    )}
-  </Typography>)
-
-  return style;
 }
 
 export default function JsonForm(props: any) {
