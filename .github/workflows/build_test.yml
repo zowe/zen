@@ -2,7 +2,8 @@ name: Build zen
 on:
   push:
     branches:
-      - main
+      - v2.x/main
+      - v2.x/staging
   
   pull_request:
     types: [opened, reopened, synchronize]
@@ -35,7 +36,7 @@ jobs:
         run: |
           npm run make  
       - name: '[prep 6] Publish'
-        uses: zowe-actions/zlux-builds/zen/publish@users/jstruga/add-zen-publish
+        uses: zowe-actions/zlux-builds/zen/publish@v2.x/main
         with: 
           os: ubuntu
           
@@ -60,7 +61,7 @@ jobs:
         run: |
           npm run make  
       - name: '[prep 6] Publish'
-        uses: zowe-actions/zlux-builds/zen/publish@users/jstruga/add-zen-publish
+        uses: zowe-actions/zlux-builds/zen/publish@v2.x/main
         with: 
           os: windows
           
@@ -84,6 +85,6 @@ jobs:
         run: |
           npm run make  
       - name: '[prep 6] Publish'
-        uses: zowe-actions/zlux-builds/zen/publish@users/jstruga/add-zen-publish
+        uses: zowe-actions/zlux-builds/zen/publish@v2.x/main
         with: 
           os: macos
