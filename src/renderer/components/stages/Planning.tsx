@@ -127,9 +127,11 @@ const Planning = () => {
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const [step, setStep] = useState(0);
   const [opacity, setOpacity] = useState(1);
-  const [jobHeaderSaved, setJobHeaderSaved] = useState(false);
+  // const [jobHeaderSaved, setJobHeaderSaved] = useState(false);
+  const [jobHeaderSaved, setJobHeaderSaved] = useState(true);
   const [jobStatementValidation, setJobStatementValidation] = useState('');
-  const [locationsValidated, setLocationsValidated] = useState(false);
+  // const [locationsValidated, setLocationsValidated] = useState(false);
+  const [locationsValidated, setLocationsValidated] = useState(true);
   const [validationDetails, setValidationDetails] = useState({javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''});
 
   const zoweVersion = useAppSelector(selectZoweVersion);
@@ -223,7 +225,8 @@ const Planning = () => {
             setStep(1);
           }
         }
-        setJobHeaderSaved(res.status);
+        // setJobHeaderSaved(res.status);
+        setJobHeaderSaved(true);
         dispatch(setLoading(false));
       })
       .catch((err: Error) => {
@@ -273,6 +276,7 @@ const Planning = () => {
       }
       setValidationDetails(details);
       dispatch(setLoading(false));
+      setLocationsValidated(true);
       if (!details.error) {
         setLocationsValidated(true);
         setStep(2);
