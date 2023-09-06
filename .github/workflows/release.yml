@@ -34,12 +34,6 @@ jobs:
           echo "BUMP_TYPE=${{ inputs.BUMP_TYPE }}" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v3
-      - name: '[Download] Default'
-        if: ${{ inputs.RUN_ID == '' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        # download default by filtering for the latest successful build output by the  v2.x/main branch
-        run: gh run download $(gh run list -w "Build zen" --json databaseId,headBranch,conclusion -q 'map(select(.headBranch == "v2.x/main")) | map(select(.conclusion == "success")) | .[0].databaseId')
       - name: '[Create tag]'
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
