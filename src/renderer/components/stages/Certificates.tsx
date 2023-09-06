@@ -12,6 +12,8 @@ import { useEffect } from "react";
 import ContainerCard from '../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { Box } from '@mui/material';
+import MonacoEditorComponent from "../common/MonacoEditor";
 
 const Certificates = () => {
 
@@ -19,9 +21,20 @@ const Certificates = () => {
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
 
+  const requireConfig = {
+    url: 'node_modules/monaco-editor/min/vs/loader.js',
+    paths: {
+      url: 'node_modules/monaco-editor/min/vs',
+    }
+  };
+  
   return (
-    <ContainerCard title="Certificates" description="Configure certificates"> 
-      
+    
+    <ContainerCard title="Certificates" description="Configure certificates">
+      <Box sx={{ width: '60vw' }}>
+        <MonacoEditorComponent/>
+        
+      </Box> 
     </ContainerCard>
   );
 };
