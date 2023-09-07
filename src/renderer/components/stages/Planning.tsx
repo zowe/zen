@@ -127,16 +127,19 @@ const Planning = () => {
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const [step, setStep] = useState(0);
   const [opacity, setOpacity] = useState(1);
-  const [jobHeaderSaved, setJobHeaderSaved] = useState(false);
+  // const [jobHeaderSaved, setJobHeaderSaved] = useState(false);
+  const [jobHeaderSaved, setJobHeaderSaved] = useState(true);
   const [jobStatementValidation, setJobStatementValidation] = useState('');
-  const [locationsValidated, setLocationsValidated] = useState(false);
+  // const [locationsValidated, setLocationsValidated] = useState(false);
+  const [locationsValidated, setLocationsValidated] = useState(true);
   const [validationDetails, setValidationDetails] = useState({javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''});
 
   const zoweVersion = useAppSelector(selectZoweVersion);
   const installationArgs: any = useAppSelector(selectInstallationArgs);
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    // dispatch(setNextStepEnabled(false));
+    dispatch(setNextStepEnabled(true));
     // FIXME: Add a popup warning in case failed to get config files
     // FIXME: Save yaml and schema on disk to not to pull it each time?
     // REVIEW: Replace JobStatement text area with set of text fields?

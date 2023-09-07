@@ -45,7 +45,8 @@ const Installation = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    // dispatch(setNextStepEnabled(false));
+    dispatch(setNextStepEnabled(true));
   }, []);
 
   useEffect(() => {
