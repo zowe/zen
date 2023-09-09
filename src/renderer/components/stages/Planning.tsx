@@ -320,7 +320,7 @@ Please customize job statement below to match your system requirements.
           />
         </FormControl>
         <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type={step === 0 ? "submit" : "button"} variant="text" onClick={e => saveJobHeader(e)}>Save and validate</Button>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type={step === 0 ? "submit" : "button"} variant="text" onClick={(e: any) => saveJobHeader(e)}>Save and validate</Button>
           {jobHeaderSaved ? 
             <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : jobStatementValidation ? <Typography sx={{color: "red"}}>{jobStatementValidation}</Typography> : null}
         </FormControl>
@@ -367,7 +367,7 @@ Please customize job statement below to match your system requirements.
             />
           </FormControl>
           <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type={step === 1 ? "submit" : "button"} variant="text" onClick={e => validateLocations(e)}>Validate locations</Button>
+            <Button sx={{boxShadow: 'none', mr: '12px'}} type={step === 1 ? "submit" : "button"} variant="text" onClick={(e: any) => validateLocations(e)}>Validate locations</Button>
             {locationsValidated ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : validationDetails.error ? <Typography sx={{color: "red"}}>{validationDetails.error}</Typography> : null}
           </FormControl>
         </Box>
