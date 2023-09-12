@@ -90,7 +90,7 @@ const Configuration = () => {
     const isValid = validate(jsonData);
     setIsSchemaValid(isValid);
     
-    if(isSchemaValid && jsonData) {
+    if(isValid && isSchemaValid && jsonData) {
       setConfiguration(section, jsonData);
       dispatch(setNextStepEnabled(true));
       setSetupYaml(jsonData);
