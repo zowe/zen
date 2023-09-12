@@ -16,8 +16,9 @@ import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-w
 import JsonForm from '../common/JsonForms';
 import { setConfiguration, getConfiguration } from '../../../services/ConfigService';
 import MonacoEditorComponent from "../common/MonacoEditor";
-import { dump } from 'js-yaml';
+import { dump, load } from 'js-yaml';
 import Ajv from "ajv";
+import { setUISchema } from "@jsonforms/core";
 
 const Configuration = () => {
 
@@ -29,6 +30,7 @@ const Configuration = () => {
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState('');
+  const [isSchemaValid, setIsSchemaValid] = useState(true);
 
   const section = 'security';
   const initConfig: any = getConfiguration(section);
@@ -47,6 +49,16 @@ const Configuration = () => {
     setInit(true);
   }, []);
 
+  useEffect(() => {
+    setEditorContent(dump(setupYaml));
+  }, [setupYaml])
+
+  useEffect(() => {
+    if(editorVisible && !isSchemaValid) {
+      dispatch(setNextStepEnabled(false));
+    }
+  }, [isSchemaValid, editorVisible])
+
   const handleFormChange = (data: any) => {
     
     const newData = init ? (initConfig ? initConfig : data) : (data ? data : initConfig);
@@ -59,11 +71,30 @@ const Configuration = () => {
     }
   };
 
-  const handleEditorContentChange = (newCode: any) => {
-    console.log("Hey there: ", newCode);
+  const handleEditorContentChange = (newCode: any, isError: boolean) => {
+
+    if(isError) {
+      dispatch(setNextStepEnabled(false));
+      return;
+    }
+
     const validate = ajv.compile(setupSchema);
-    const isValid = validate(newCode);
-    console.log("Is valid Yaml: ", isValid);
+    let jsonData;
+
+    try {
+      jsonData = load(newCode);
+    } catch (error) {
+      console.error('Error parsing YAML:', error);
+    }
+
+    const isValid = validate(jsonData);
+    setIsSchemaValid(isValid);
+    
+    if(isSchemaValid && jsonData) {
+      setConfiguration(section, jsonData);
+      dispatch(setNextStepEnabled(true));
+      setSetupYaml(jsonData);
+    }
   };
 
   return (
@@ -72,7 +103,7 @@ const Configuration = () => {
         {editorVisible ? "Hide Editor" : "Show Editor"}
       </Button>
       <Box sx={{ width: '70vw', paddingTop: '10px', paddingBottom: '20px'}}>
-        {editorVisible && <MonacoEditorComponent initialContent={editorContent} onContentChange={handleEditorContentChange}/>}
+        {editorVisible && <MonacoEditorComponent initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid}/>}
       </Box> 
       <Box sx={{ width: '60vw' }}>
         {!editorVisible && <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>}
