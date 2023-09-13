@@ -9,16 +9,15 @@
  */
 
 import { useState, useEffect } from "react";
-import { Box, Button } from '@mui/material';
-import ContainerCard from '../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import JsonForm from '../common/JsonForms';
-import { setConfiguration, getConfiguration } from '../../../services/ConfigService';
-import MonacoEditorComponent from "../common/MonacoEditor";
+import { Box, Button } from '@mui/material';
 import { dump, load } from 'js-yaml';
+import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { setConfiguration, getConfiguration } from '../../../services/ConfigService';
 import Ajv from "ajv";
-import { setUISchema } from "@jsonforms/core";
+import MonacoEditorComponent from "../common/MonacoEditor";
+import ContainerCard from '../common/ContainerCard';
+import JsonForm from '../common/JsonForms';
 
 const Configuration = () => {
 
@@ -36,14 +35,11 @@ const Configuration = () => {
   const initConfig: any = getConfiguration(section);
   const ajv = new Ajv();
 
-  const toggleEditorVisibility = () => {
-    setEditorVisible(!editorVisible);
-  };
-
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
+      //To serialize a JavaScript object into a YAML-formatted string
       setEditorContent(dump(initConfig));
     }
     setInit(true);
@@ -51,16 +47,19 @@ const Configuration = () => {
 
   useEffect(() => {
     setEditorContent(dump(setupYaml));
-  }, [setupYaml])
+  }, [setupYaml]);
 
   useEffect(() => {
     if(editorVisible && !isSchemaValid) {
       dispatch(setNextStepEnabled(false));
     }
-  }, [isSchemaValid, editorVisible])
+  }, [isSchemaValid, editorVisible]);
+
+  const toggleEditorVisibility = () => {
+    setEditorVisible(!editorVisible);
+  };
 
   const handleFormChange = (data: any) => {
-    
     const newData = init ? (initConfig ? initConfig : data) : (data ? data : initConfig);
     setInit(false);
 
@@ -72,7 +71,6 @@ const Configuration = () => {
   };
 
   const handleEditorContentChange = (newCode: any, isError: boolean) => {
-
     if(isError) {
       dispatch(setNextStepEnabled(false));
       return;
@@ -82,15 +80,17 @@ const Configuration = () => {
     let jsonData;
 
     try {
+      // To parse the yaml and convert it to the javascript object
       jsonData = load(newCode);
     } catch (error) {
       console.error('Error parsing YAML:', error);
     }
 
+    // To validate the javascript object against the schema
     const isValid = validate(jsonData);
     setIsSchemaValid(isValid);
     
-    if(isValid && isSchemaValid && jsonData) {
+    if(isSchemaValid && jsonData) {
       setConfiguration(section, jsonData);
       dispatch(setNextStepEnabled(true));
       setSetupYaml(jsonData);

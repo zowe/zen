@@ -21,19 +21,17 @@ const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid} 
 
     editorRef.current.onDidChangeModelContent(() => {
       const code = editorRef.current.getValue();
-      console.log(code);
+      
       try {
-        // To check if the yaml is valid
+        // To parse the yaml and check if it is valid
         const parsedYAML = load(code);
-        setIsError(false);
-        setErrorMsg('');
+        setError(false, '');
         onContentChange(code, false);
       } catch(error) {
-        setIsError(true);
-        let errorDesc = error.reason ? error.reason : " ";
-        setErrorMsg(errorDesc);
+        let errorDesc = error.message ? error.message : "Invalid Yaml";
+        let errorMsg = error.reason ? error.reason : errorDesc;
+        setError(true, errorMsg);
         onContentChange(code, true);
-        console.log('Error:', errorMsg);
       }
       
     });
@@ -43,6 +41,11 @@ const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid} 
     };
 
   }, []);
+
+  const setError = (isError: boolean, errorMessage: string) => {
+    setIsError(isError);
+    setErrorMsg(errorMessage);
+  }
 
   return (
     <div style={{ height: '300px', paddingBottom: '50px' }}>

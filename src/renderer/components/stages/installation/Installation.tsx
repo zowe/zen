@@ -9,16 +9,20 @@
  */
 
 import React, {useEffect, useRef, useState} from "react";
-import { Box, Button, FormControl, Typography } from '@mui/material';
-import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
+import { dump, load } from 'js-yaml';
+import { Box, Button, FormControl, Typography } from '@mui/material';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
 import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
-import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
-import ProgressCard from '../../common/ProgressCard'
-import { setConfiguration, getConfiguration } from '../../../../services/ConfigService'
+import { setConfiguration, getConfiguration } from '../../../../services/ConfigService';
+import ProgressCard from '../../common/ProgressCard';
+import ContainerCard from '../../common/ContainerCard';
+import Ajv from "ajv";
+import MonacoEditorComponent from "../../common/MonacoEditor";
+import JsonForm from '../../common/JsonForms';
+
 
 const Installation = () => {
 
@@ -32,6 +36,9 @@ const Installation = () => {
   const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.dataset);
   const [showProgress, toggleProgress] = useState(false);
   const [init, setInit] = useState(false);
+  const [editorVisible, setEditorVisible] = useState(false);
+  const [editorContent, setEditorContent] = useState('');
+  const [isSchemaValid, setIsSchemaValid] = useState(true);
   const [installationProgress, setInstallationProgress] = useState({
     uploadYaml: false,
     download: false,
@@ -46,15 +53,29 @@ const Installation = () => {
 
   const section = 'dataset';
   const initConfig = getConfiguration(section);
+  const ajv = new Ajv();
+  ajv.addKeyword("$anchor");
 
   useEffect(() => {
     // dispatch(setNextStepEnabled(false));
     dispatch(setNextStepEnabled(true));
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
+      //To serialize a JavaScript object into a YAML-formatted string
+      setEditorContent(dump(initConfig));
     }
     setInit(true);
   }, []);
+
+  useEffect(() => {
+    setEditorContent(dump(setupYaml));
+  }, [setupYaml]);
+
+  useEffect(() => {
+    if(editorVisible && !isSchemaValid) {
+      dispatch(setNextStepEnabled(false));
+    }
+  }, [isSchemaValid, editorVisible]);
 
   useEffect(() => {
     timer = setInterval(() => {
@@ -65,6 +86,10 @@ const Installation = () => {
     const nextPosition = document.getElementById('installation-progress');
     nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress]);
+
+  const toggleEditorVisibility = () => {
+    setEditorVisible(!editorVisible);
+  };
 
   const process = (event: any) => {
     event.preventDefault();
@@ -116,13 +141,46 @@ const Installation = () => {
     }
   }
 
+  const handleEditorContentChange = (newCode: any, isError: boolean) => {
+    if(isError) {
+      dispatch(setNextStepEnabled(false));
+      return;
+    }
+
+    const validate = ajv.compile(setupSchema);
+    let jsonData;
+
+    try {
+      // To parse the yaml and convert it to the javascript object
+      jsonData = load(newCode);
+    } catch (error) {
+      console.error('Error parsing YAML:', error);
+    }
+
+    // To validate the javascript object against the schema
+    const isValid = validate(jsonData);
+    setIsSchemaValid(isValid);
+    
+    if(isSchemaValid && jsonData) {
+      setConfiguration(section, jsonData);
+      dispatch(setNextStepEnabled(true));
+      setSetupYaml(jsonData);
+    }
+  };
+
   return (
     <ContainerCard title="Installation" description="Provide installation details"> 
       <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
         {`Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
       </Typography>
+      <Button onClick={toggleEditorVisibility}>
+        {editorVisible ? "Hide Editor" : "Show Editor"}
+      </Button>
+      <Box sx={{ width: '70vw', paddingTop: '10px', paddingBottom: '20px'}}>
+        {editorVisible && <MonacoEditorComponent initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid}/>}
+      </Box> 
       <Box sx={{ width: '60vw' }}>
-        <JsonForm schema={setupSchema} onChange={editHLQ} formData={setupYaml}/>
+        {!editorVisible && <JsonForm schema={setupSchema} onChange={editHLQ} formData={setupYaml}/> }
       </Box>  
       {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={(e: any) => process(e)}>Install MVS datasets</Button>

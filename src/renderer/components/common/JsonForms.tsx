@@ -10,8 +10,8 @@
 
 import React, { useState } from 'react';
 import { JsonForms } from '@jsonforms/react';
-import {materialRenderers, materialCells} from '@jsonforms/material-renderers';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { materialRenderers, materialCells } from '@jsonforms/material-renderers';
+import { ThemeProvider } from '@mui/material/styles';
 import jsonFormTheme from '../../jsonFormsTheme';
 
 const makeUISchema = (schema: any, base: string, formData: any): any => {
