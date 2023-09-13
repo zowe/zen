@@ -94,8 +94,10 @@ const InstallationType = () => {
         window.electron.ipcRenderer.uploadPax().then((res: any) => {
           if(res.filePaths && res.filePaths[0] != undefined){
             setPaxPath(res.filePaths[0]);
+            dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: res.filePaths[0]}));
           } else {
             setPaxPath("");
+            dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: ''}));
           }
         });
       }}>Upload PAX</Button>
