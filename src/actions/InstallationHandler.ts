@@ -21,7 +21,7 @@ class Installation {
 
   public async runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string}, 
+    installationArgs: {installationDir: string, installationType: string},
     version: string
   ): Promise<IResponse> {
 
@@ -35,9 +35,12 @@ class Installation {
       const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
       ProgressStore.set('installation.uploadYaml', uploadYaml.status);
 
-      console.log("downloading...", version);
-      const download = await this.downloadPax(version);
-      ProgressStore.set('installation.download', download.status);
+      let download;
+      if(installationArgs.installationType === "download"){
+        console.log("downloading...", version);
+        download = await this.downloadPax(version);
+        ProgressStore.set('installation.download', download.status);
+      }
 
       console.log("uploading...");
       const upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);
@@ -51,7 +54,7 @@ class Installation {
       const install = await this.install(connectionArgs, installationArgs.installationDir);
       ProgressStore.set('installation.install', install.status);
 
-      return {status: download.status && uploadYaml.status && upload.status && unpax.status && install.status, details: ''};
+      return {status: (installationArgs.installationType === "download" && download.status) && uploadYaml.status && upload.status && unpax.status && install.status, details: ''};
     } catch (error) {
       return {status: false, details: error.message};
     }
