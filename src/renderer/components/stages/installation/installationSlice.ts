@@ -17,6 +17,7 @@ interface InstallationState {
     installationDir: string;
     installationType?: string;
     downloadDir: string;
+    userUploadedPaxPath?: string;
     smpeDir?: string;
     javaHome: string;
     nodeHome: string;
@@ -30,6 +31,7 @@ const initialState: InstallationState = {
   installationArgs: {
     installationDir: '',
     installationType: 'download',
+    userUploadedPaxPath: '',
     smpeDir: '',
     downloadDir: '',
     javaHome: '',

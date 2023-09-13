@@ -21,7 +21,7 @@ class Installation {
 
   public async runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string, installationType: string},
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
     version: string
   ): Promise<IResponse> {
 
@@ -43,7 +43,13 @@ class Installation {
       }
 
       console.log("uploading...");
-      const upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);
+      let upload;
+      if(installationArgs.installationType === "upload"){
+        //upload the PAX the user selected in the "Install Type" stage to the installation dir (from the planning stage)
+        upload = await new FileTransfer().upload(connectionArgs, installationArgs.userUploadedPaxPath, path.join(installationArgs.installationDir, "zowe.pax"), DataType.BINARY)
+      } else if (installationArgs.installationType === "download"){
+        upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);
+      }
       ProgressStore.set('installation.upload', upload.status);
 
       console.log("unpaxing...");
