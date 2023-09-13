@@ -46,7 +46,7 @@ const InstallationType = () => {
         dispatch(setNextStepEnabled(true));
     }
     
-  }, [installValue, paxPath]);
+  }, [installValue, paxPath, installationArgs]);
 
 
   return (
