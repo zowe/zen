@@ -8,22 +8,207 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { useEffect } from "react";
-import ContainerCard from '../common/ContainerCard';
-import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import React, { useState } from 'react';
+import { JsonForms } from '@jsonforms/react';
+import {materialRenderers, materialCells} from '@jsonforms/material-renderers';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-const Certificates = () => {
+const customTheme = createTheme({
+  components: {
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          display: 'inline-flex',
+          alignItems: 'center',
+        },
+        fullWidth: {
+          width: '70%',
+        },
+      },
+    },
+    MuiGrid: {
+      styleOverrides: {
+        root: {
+          boxShadow: 'none',
+          borderRadius: 0,
+        }
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          paddingLeft: 0,
+          fontWeight: 'normal',
+        }
+      }
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          boxShadow: 'none',
+          borderRadius: 0,
+          marginLeft: '-20px',
+          background: 'none',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          boxShadow: 'none',
+          borderRadius: 0,
+        },
+      },
+    },
+    MuiFormHelperText: {
+      styleOverrides: {
+        root: {
+          verticalAlign: 'middle'
+        },
+      },
+    },
+    MuiCardHeader: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'Courier New, monospace',
+          fontSize: '5px',
+          marginTop: '5px',
+          marginBottom: '-20px',
+          paddingLeft: '16px',
+        },
+      },
+    },
+    MuiCardContent: {
+      styleOverrides: {
+        root: {
+          paddingLeft: '20px',
+          paddingBottom: '0px',
+        },
+      },
+    },
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          width: '100%',
+          maxWidth: '100%',
+        },
+      },
+    },
+    MuiAutocomplete: {
+      styleOverrides: {
+        listbox: {
+          background: 'white',
+          marginLeft: '15px',
+          paddingLeft: '5px'
+        }
+      }
+    },
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          marginBottom: '10px',
+        }
+      }
+    }
+  },
+});
 
-  const dispatch = useAppDispatch();
-  const schema = useAppSelector(selectSchema);
-  const yaml = useAppSelector(selectYaml);
+const makeUISchema = (schema: any, base: string, formData: any): any => {
+  const properties = Object.keys(schema.properties);
+
+  const elements = properties.map((prop: any) => {
+    if (schema.properties[prop].type === 'object') {
+
+      if(schema.if) {
+        const hideProperty = conditionalSchema(schema, formData, prop);
+        if(hideProperty) {
+          return {
+            type: 'Group',
+            label: `\n${prop}`,
+            rule: {
+              effect: "HIDE",
+              condition: {}
+            },
+          };
+        }
+      }
+
+      const subSchema = schema.properties[prop];
+      const subProperties = Object.keys(subSchema.properties);
+
+      const subElements = subProperties.map((subProp: any) => ({
+        type: 'Control',
+        scope: `#/properties${base}${prop}/properties/${subProp}`,
+      }));
+
+      const groupedControls = [];
+      let row = [];
+
+      for (let i = 0; i < subElements.length; i++) {
+        row.push(subElements[i]);
+
+        if (row.length === 2 || (row.length === 1 && i === subElements.length - 1)) {
+          groupedControls.push({
+            type: 'HorizontalLayout',
+            elements: row,
+          });
+          row = [];
+        }
+      }
+
+      return {
+        type: 'Group',
+        label: `\n${prop}`,
+        elements: [
+          {
+            type: 'VerticalLayout',
+            elements: groupedControls,
+          },
+        ],
+      };
+    } else {
+      return {
+        "type": "Control",
+        "scope": `#/properties${base}${prop}`
+      }
+    }
+  });
+  return { 
+    "type": "VerticalLayout",
+    "elements": elements
+  };
+}
+
+// To handle the "if", "else", and "then" in the schema
+const conditionalSchema = (schema: any, formData: any, prop: any): boolean=> {
+  const ifProp = Object.keys(schema.if.properties)[0];
+  const ifPropValue = schema.if.properties[ifProp].const.toLowerCase();
+  const thenProp = schema.then.required[0].toLowerCase();
+  const elseProp = schema.else.required[0].toLowerCase();
+
+  if(formData && formData[ifProp]) {
+    const formDataPropValue = formData[ifProp].toLowerCase();
+    if( (formDataPropValue == ifPropValue && prop == elseProp) || (formDataPropValue != ifPropValue && prop == thenProp) ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export default function JsonForm(props: any) {
+  const {schema, onChange, formData} = props;
 
   return (
-    <ContainerCard title="Certificates" description="Configure certificates"> 
-      
-    </ContainerCard>
+    <ThemeProvider theme={customTheme}>
+    <JsonForms
+      schema={schema}
+      uischema={makeUISchema(schema, '/', formData)}
+      data={formData}
+      renderers={materialRenderers}
+      cells={materialCells}
+      config={{showUnfocusedDescription: true}}
+      onChange={({ data, errors }) => { onChange(data) }}
+    />
+    </ThemeProvider>
   );
-};
-
-export default Certificates;
+}
