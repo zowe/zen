@@ -17,7 +17,8 @@ import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
-import ProgressCard from '../../common/ProgressCard'
+import ProgressCard from '../../common/ProgressCard';
+import { setConfiguration, getConfiguration } from '../../../../services/configService';
 
 const Installation = () => {
 
@@ -30,6 +31,7 @@ const Installation = () => {
   const setupSchema = schema.properties.zowe.properties.setup.properties.dataset;
   const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.dataset);
   const [showProgress, toggleProgress] = useState(false);
+  const [init, setInit] = useState(false);
   const [installationProgress, setInstallationProgress] = useState({
     uploadYaml: false,
     download: false,
@@ -42,10 +44,15 @@ const Installation = () => {
   const version = useAppSelector(selectZoweVersion);
   let timer: any;
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const section = 'dataset';
+  const initConfig = getConfiguration(section);
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
+    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
+      setSetupYaml(initConfig);
+    }
+    setInit(true);
   }, []);
 
   useEffect(() => {
@@ -88,17 +95,22 @@ const Installation = () => {
   }
 
   const editHLQ = (data: any) => {
-    if (data && setupYaml && setupYaml.prefix !== data.prefix) {
-      const newPrefix = data.prefix ? data.prefix : '';
+    const updatedData = init ? (initConfig? initConfig: data) : (data ? data : initConfig);
+    setInit(false);
+
+    if (updatedData && setupYaml && setupYaml.prefix !== updatedData.prefix) {
+      const newPrefix = updatedData.prefix ? updatedData.prefix : '';
       const newData = Object.keys(setupYaml).reduce((acc, k) => {
         if (typeof(setupYaml[k]) === 'string' && setupYaml[k].startsWith(`${setupYaml.prefix}.`)) {
           return {...acc, [k]: setupYaml[k].replace(setupYaml.prefix, newPrefix), prefix: newPrefix}
         }
         return {...acc, [k]: setupYaml[k]}
       }, {});
+      setConfiguration(section, newData);
       setSetupYaml(newData);
     } else {
-      setSetupYaml(data);
+      setConfiguration(section, updatedData);
+      setSetupYaml(updatedData);
     }
   }
 
