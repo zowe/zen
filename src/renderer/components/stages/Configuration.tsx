@@ -34,6 +34,7 @@ const Configuration = () => {
   const section = 'security';
   const initConfig: any = getConfiguration(section);
   const ajv = new Ajv();
+  const validate = ajv.compile(setupSchema);
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
@@ -64,7 +65,12 @@ const Configuration = () => {
     setInit(false);
 
     if (newData) {
+      let isFormDataValid;
+
+      //Check if the form input fields are valid
+
       setConfiguration(section, newData);
+      // Find some way to check if the form is valid or not?
       dispatch(setNextStepEnabled(true));
       setSetupYaml(newData);
     }
@@ -76,7 +82,6 @@ const Configuration = () => {
       return;
     }
 
-    const validate = ajv.compile(setupSchema);
     let jsonData;
 
     try {
@@ -90,7 +95,7 @@ const Configuration = () => {
     const isValid = validate(jsonData);
     setIsSchemaValid(isValid);
     
-    if(isSchemaValid && jsonData) {
+    if(isValid && jsonData) {
       setConfiguration(section, jsonData);
       dispatch(setNextStepEnabled(true));
       setSetupYaml(jsonData);

@@ -18,6 +18,8 @@ import Ajv from "ajv";
 import MonacoEditorComponent from "../common/MonacoEditor";
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 
 const Certificates = () => {
 
@@ -30,10 +32,13 @@ const Certificates = () => {
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState('');
   const [isSchemaValid, setIsSchemaValid] = useState(true);
+  const [isFormDataValid, setIsFormDataValid] = useState(true);
+  const [formDataError, setFormDataError] = useState('');
 
   const section = 'certificate';
   const initConfig: any = getConfiguration(section);
   const ajv = new Ajv();
+  const validate = ajv.compile(setupSchema);
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
@@ -54,6 +59,12 @@ const Certificates = () => {
       dispatch(setNextStepEnabled(false));
     }
   }, [isSchemaValid, editorVisible]);
+
+  useEffect(() => {
+    if(!editorVisible && !isFormDataValid) {
+      dispatch(setNextStepEnabled(false));
+    }
+  }, [isFormDataValid, editorVisible]);
 
   const toggleEditorVisibility = () => {
     setEditorVisible(!editorVisible);
@@ -81,10 +92,14 @@ const Certificates = () => {
           }
         }
       }
-    
+
+      // Validate form data against the schema
+      const isValid = validate(newData);
+      
       setConfiguration(section, newData);
       dispatch(setNextStepEnabled(true));
       setSetupYaml(newData);
+      
     }
   };
 
@@ -94,7 +109,6 @@ const Certificates = () => {
       return;
     }
 
-    const validate = ajv.compile(setupSchema);
     let jsonData;
 
     try {
@@ -124,6 +138,11 @@ const Certificates = () => {
         {editorVisible && <MonacoEditorComponent initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid}/>}
       </Box> 
       <Box sx={{ width: '60vw' }}>
+        {!editorVisible && !isFormDataValid && (<div id="error-msg" 
+          style={{ color: 'red', fontFamily: 'Arial, sans-serif', fontSize: 'small' , paddingBottom: '5px' }}>
+          <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: '5px' }} />
+          {formDataError}
+        </div>)}
         {!editorVisible && <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>}
       </Box> 
     </ContainerCard>
