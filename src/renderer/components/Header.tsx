@@ -30,24 +30,24 @@ export const alertEmitter = new EventEmitter();
 export default function Header() {
   const [alertData, setAlertData] = useState<AlertData>({
     show: false,
-    duration: 5000,  // Default 5 seconds
+    duration: 0,  // Default: doesn't go away unless dismissed
     message: 'Success!',
     severity: 'success', 
   });
   let timer: any;
 
   const showAlert = (message: string, severity?: AlertColor, duration?: number) => {
-    const severityOrDefault = severity || 'success';  // Default to 'success' if not provided
-    const durationOrDefault = duration || 5000;  // Default to 5000 milliseconds if not provided
   
-    setAlertData({ show: true, message, severity: severityOrDefault, duration: durationOrDefault });
+    setAlertData({ show: true, message, severity, duration });
 
-    if (timer) { // Clear existing timer if any
-      clearTimeout(timer);
+    if (duration) {
+      if (timer) { // Clear existing timer if any
+        clearTimeout(timer);
+      }
+      timer = setTimeout(() => { // Set new timer
+        setAlertData({ ...alertData, show: false });
+      }, duration);
     }
-    timer = setTimeout(() => { // Set new timer
-      setAlertData({ ...alertData, show: false });
-    }, duration);
   };
 
   const hideAlert = () => {

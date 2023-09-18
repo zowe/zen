@@ -219,7 +219,7 @@ const Planning = () => {
         if (!res.status) {
           setJobStatementValidation(res.details);
           console.warn('Failed to verify job statement');
-          alertEmitter.emit('showAlert', 'Failed to verify job statement', 'error', 40000);
+          alertEmitter.emit('showAlert', 'Failed to verify job statement', 'error');
         } else {
           if (step < 1) {
             setOpacity(0);
@@ -233,7 +233,7 @@ const Planning = () => {
       .catch((err: Error) => {
         console.warn(err);
         setJobStatementValidation(err.message);
-        alertEmitter.emit('showAlert', err.message, 'error', 40000);
+        alertEmitter.emit('showAlert', err.message, 'error');
         dispatch(setLoading(false));
       });    
   }
@@ -243,7 +243,7 @@ const Planning = () => {
     setValidationDetails({...validationDetails, error: ''});
     if (!installationArgs.javaHome || !installationArgs.nodeHome || !installationArgs.installationDir) {
       console.warn('Please fill in all values');
-      alertEmitter.emit('showAlert', 'Please fill in all values', 'error', 4000);
+      alertEmitter.emit('showAlert', 'Please fill in all values', 'error');
       //showAlert('Please fill in all values', 'success', 5000);
       return;
     }
@@ -285,7 +285,7 @@ const Planning = () => {
         setStep(2);
         setOpacity(0);
       } else {
-        alertEmitter.emit('showAlert', details.error, 'error', 40000);
+        alertEmitter.emit('showAlert', details.error, 'error');
       }
     })
   }

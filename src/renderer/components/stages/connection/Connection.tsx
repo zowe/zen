@@ -169,7 +169,7 @@ const FTPConnectionForm = () => {
         <Button sx={{boxShadow: 'none'}} type="submit" variant="text" onClick={() => processForm()}>Validate credentials</Button>
         <div style={{opacity: formProcessed ? '1' : '0', minWidth: '32px', paddingLeft: '12px'}}>
           {useAppSelector(selectConnectionStatus) ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> 
-          : validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error', 40000)}
+          : validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error')}
         </div>
       </Container>
     </Box>
