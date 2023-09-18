@@ -17,6 +17,15 @@ export type JobOutput = {
   [key: string]: string;
 };
 
+export interface IIpcConnectionArgsSecureOptions {
+  enableTrace: boolean;
+  rejectUnauthorized: boolean;
+  //per node doc, if secureContext missing, this object will be used to create instead
+  //the content below is from the object meant to be passed to secureContext.
+  maxVersion: string;
+  minVersion: string;
+}
+
 export interface IIpcConnectionArgs {
   host: string; 
   port?: number; 
@@ -24,6 +33,8 @@ export interface IIpcConnectionArgs {
   user: string; 
   password: string;
   jobStatement: string;
+  secure: boolean;
+  secureOptions: IIpcConnectionArgsSecureOptions;
 }
 
 // TODO: Add some structure to res.details to highlight proper input field
