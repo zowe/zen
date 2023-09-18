@@ -64,7 +64,7 @@ class Installation {
       const install = await this.install(connectionArgs, installationArgs.installationDir);
       ProgressStore.set('installation.install', install.status);
 
-      return {status: (installationArgs.installationType === "download" && download.status) && uploadYaml.status && upload.status && unpax.status && install.status, details: ''};
+      return {status: download.status && uploadYaml.status && upload.status && unpax.status && install.status, details: ''};
     } catch (error) {
       return {status: false, details: error.message};
     }
