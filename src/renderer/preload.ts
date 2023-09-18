@@ -55,7 +55,7 @@ contextBridge.exposeInMainWorld('electron', {
     checkSpace(connectionArgs: IIpcConnectionArgs, location: string) {
       return ipcRenderer.invoke("check-space", connectionArgs, location);
     },
-    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string}, version: string) {
+    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string) {
       return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version);
     },
     getInstallationProgress() {
