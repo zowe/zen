@@ -66,19 +66,6 @@ export class PlanningActions {
     });
   }
 
-
-
-  // public static async getExampleZowe() {
-  //   try {
-  //     const exampleZowe = await fetch('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/example-zowe.yaml');
-  //     const exampleZoweText = await exampleZowe.text();
-  //     ConfigurationStore.setConfig(parse(exampleZoweText));
-  //     return {status: true, details: parse(exampleZoweText)};
-  //   } catch (error) {
-  //     return {status: false, details: {error}};
-  //   }
-  // }
-
   public static getZoweSchema(): Promise<{status: boolean, details: any}> {
     return new Promise((resolve, reject) => {
       https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/schemas/zowe-yaml-schema.json', (res) => {
@@ -90,9 +77,9 @@ export class PlanningActions {
 
         res.on('end', () => {
           try {
-            const parsedData = parse(data);
-            ConfigurationStore.setSchema(parsedData);
-            resolve({status: true, details: JSON.parse(data)});
+            const parsedData = JSON.parse(data);
+            ConfigurationStore.setSchema(parse(parsedData));
+            resolve({status: true, details: parsedData});
           } catch (error) {
             reject({status: false, details: {error}});
           }
@@ -102,19 +89,6 @@ export class PlanningActions {
       });
     });
   }
-
-  // public static async getZoweSchema() {
-  //   try {
-  //     const zoweYamlSchema = await fetch('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/schemas/zowe-yaml-schema.json');
-  //     const zoweYamlSchemaText = await zoweYamlSchema.text();
-  //     // const serverCommonSchema = await fetch('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/schemas/server-common.json');
-  //     // const zoweServerCommonSchema = await serverCommonSchema.text();
-  //     ConfigurationStore.setSchema(parse(zoweYamlSchemaText));
-  //     return {status: true, details: JSON.parse(zoweYamlSchemaText)};
-  //   } catch (error) {
-  //     return {status: false, details: {error}};
-  //   }
-  // }
 
   public static async getConfig() {
     const details = ConfigurationStore.getAll();
@@ -126,14 +100,27 @@ export class PlanningActions {
   }
 
   public static async getZoweVersion() {
-    // TODO: Save Zowe version to the configuration store, then if version in github will be different - refresh schema and example.yaml
-    try {
-      const zoweYamlSchema = await fetch('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/manifest.json.template');
-      const zoweYamlSchemaText = await zoweYamlSchema.text();
-      return {status: true, details: JSON.parse(zoweYamlSchemaText).version};
-    } catch (error) {
-      return {status: false, details: {error}};
-    }
+    return new Promise<{ status: boolean, details: any }>((resolve, reject) => {
+      https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/manifest.json.template', (res) => {
+        let data = '';
+  
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+  
+        res.on('end', () => {
+          try {
+            const parsedData = JSON.parse(data);
+            resolve({ status: true, details: parsedData.version });
+          } catch (error) {
+            reject({ status: false, details: { error } });
+          }
+        });
+  
+      }).on('error', (error) => {
+        reject({ status: false, details: { error } });
+      });
+    });
   }
 
 public static async setConfigByKey(key: string, value: any) {
