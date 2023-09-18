@@ -40,14 +40,18 @@ class Installation {
         console.log("downloading...", version);
         download = await this.downloadPax(version);
         ProgressStore.set('installation.download', download.status);
+      } else {
+        ProgressStore.set('installation.download', true);
       }
 
       console.log("uploading...");
       let upload;
       if(installationArgs.installationType === "upload"){
         //upload the PAX the user selected in the "Install Type" stage to the installation dir (from the planning stage)
+        console.log('Uploading user selected pax')
         upload = await new FileTransfer().upload(connectionArgs, installationArgs.userUploadedPaxPath, path.join(installationArgs.installationDir, "zowe.pax"), DataType.BINARY)
       } else if (installationArgs.installationType === "download"){
+        console.log('Uploading pax downloaded from jfrog')
         upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);
       }
       ProgressStore.set('installation.upload', upload.status);
@@ -128,6 +132,7 @@ export class FTPInstallation extends Installation {
   async uploadPax(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
     const tempPath = path.join(app.getPath("temp"), "zowe.pax");
     const filePath = path.join(installDir, "zowe.pax");
+    console.log(`Uploading ${tempPath} to ${filePath}`)
     const result = await new FileTransfer().upload(connectionArgs, tempPath, filePath, DataType.BINARY);
     const fs = require('fs');
     try {
