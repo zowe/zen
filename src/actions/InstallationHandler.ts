@@ -41,6 +41,7 @@ class Installation {
         download = await this.downloadPax(version);
         ProgressStore.set('installation.download', download.status);
       } else {
+        download = {status: true}
         ProgressStore.set('installation.download', true);
       }
 
