@@ -27,6 +27,7 @@ import { IResponse } from '../../../../types/interfaces';
 import { setConnectionArgs, setConnectionStatus, selectConnectionArgs, selectConnectionStatus } from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { Container } from "@mui/material";
+import { alertEmitter } from "../../Header";
 
 const Connection = () => {
 
@@ -94,6 +95,7 @@ const FTPConnectionForm = () => {
   const [validationDetails, setValidationDetails] = React.useState('');
   
   const processForm = () => {
+    alertEmitter.emit('hideAlert');
     dispatch(setLoading(true));
     window.electron.ipcRenderer
       .connectionButtonOnClick(connectionArgs)
@@ -167,9 +169,7 @@ const FTPConnectionForm = () => {
         <Button sx={{boxShadow: 'none'}} type="submit" variant="text" onClick={() => processForm()}>Validate credentials</Button>
         <div style={{opacity: formProcessed ? '1' : '0', minWidth: '32px', paddingLeft: '12px'}}>
           {useAppSelector(selectConnectionStatus) ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> 
-          : <div style={{display: 'flex', alignItems: 'center'}}><CancelOutlinedIcon color="error" sx={{ fontSize: 32, pr: '12px' }}/>
-              <div style={{color: 'red', maxWidth: '300px'}}>{validationDetails}</div>
-            </div>}
+          : validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error', 40000)}
         </div>
       </Container>
     </Box>

@@ -9,6 +9,7 @@
  */
 
 import {IIpcConnectionArgs} from "../types/interfaces";
+import Header from "../renderer/components/Header"
 const zos = require('zos-node-accessor');
 
 export async function connectFTPServer(config: IIpcConnectionArgs): Promise<any> {

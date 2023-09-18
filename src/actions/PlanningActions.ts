@@ -15,6 +15,7 @@ import { CheckSpace } from "../services/CheckSpace";
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ConfigurationStore } from "../storage/ConfigurationStore";
 import { parse } from 'yaml';
+import * as https from 'https';
 import { checkDirExists, makeDir } from '../services/utils'
 
 export class PlanningActions {
@@ -41,29 +42,79 @@ export class PlanningActions {
     return await new CheckSpace().run(connectionArgs, location);
   }
   
-  public static async getExampleZowe() {
-    try {
-      const exampleZowe = await fetch('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/example-zowe.yaml');
-      const exampleZoweText = await exampleZowe.text();
-      ConfigurationStore.setConfig(parse(exampleZoweText));
-      return {status: true, details: parse(exampleZoweText)};
-    } catch (error) {
-      return {status: false, details: {error}};
-    }
+  public static getExampleZowe(): Promise<{status: boolean, details: any}> {
+    return new Promise((resolve, reject) => {
+      https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/example-zowe.yaml', (res) => {
+        let data = '';
+
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        res.on('end', () => {
+          try {
+            const parsedData = parse(data);
+            ConfigurationStore.setConfig(parsedData);
+            resolve({status: true, details: parsedData});
+          } catch (error) {
+            reject({status: false, details: {error}});
+          }
+        });
+      }).on('error', (error) => {
+        reject({status: false, details: {error}});
+      });
+    });
   }
 
-  public static async getZoweSchema() {
-    try {
-      const zoweYamlSchema = await fetch('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/schemas/zowe-yaml-schema.json');
-      const zoweYamlSchemaText = await zoweYamlSchema.text();
-      // const serverCommonSchema = await fetch('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/schemas/server-common.json');
-      // const zoweServerCommonSchema = await serverCommonSchema.text();
-      ConfigurationStore.setSchema(parse(zoweYamlSchemaText));
-      return {status: true, details: JSON.parse(zoweYamlSchemaText)};
-    } catch (error) {
-      return {status: false, details: {error}};
-    }
+
+
+  // public static async getExampleZowe() {
+  //   try {
+  //     const exampleZowe = await fetch('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/example-zowe.yaml');
+  //     const exampleZoweText = await exampleZowe.text();
+  //     ConfigurationStore.setConfig(parse(exampleZoweText));
+  //     return {status: true, details: parse(exampleZoweText)};
+  //   } catch (error) {
+  //     return {status: false, details: {error}};
+  //   }
+  // }
+
+  public static getZoweSchema(): Promise<{status: boolean, details: any}> {
+    return new Promise((resolve, reject) => {
+      https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/schemas/zowe-yaml-schema.json', (res) => {
+        let data = '';
+
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        res.on('end', () => {
+          try {
+            const parsedData = parse(data);
+            ConfigurationStore.setSchema(parsedData);
+            resolve({status: true, details: JSON.parse(data)});
+          } catch (error) {
+            reject({status: false, details: {error}});
+          }
+        });
+      }).on('error', (error) => {
+        reject({status: false, details: {error}});
+      });
+    });
   }
+
+  // public static async getZoweSchema() {
+  //   try {
+  //     const zoweYamlSchema = await fetch('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/schemas/zowe-yaml-schema.json');
+  //     const zoweYamlSchemaText = await zoweYamlSchema.text();
+  //     // const serverCommonSchema = await fetch('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/schemas/server-common.json');
+  //     // const zoweServerCommonSchema = await serverCommonSchema.text();
+  //     ConfigurationStore.setSchema(parse(zoweYamlSchemaText));
+  //     return {status: true, details: JSON.parse(zoweYamlSchemaText)};
+  //   } catch (error) {
+  //     return {status: false, details: {error}};
+  //   }
+  // }
 
   public static async getConfig() {
     const details = ConfigurationStore.getAll();

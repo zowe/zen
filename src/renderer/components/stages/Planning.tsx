@@ -22,6 +22,8 @@ import { selectConnectionArgs, setConnectionArgs } from './connection/connection
 import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from './installation/installationSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { IResponse } from '../../../types/interfaces';
+import Alert from "@mui/material/Alert";
+import { alertEmitter } from "../Header";
 
 const serverSchema = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
@@ -217,6 +219,7 @@ const Planning = () => {
         if (!res.status) {
           setJobStatementValidation(res.details);
           console.warn('Failed to verify job statement');
+          alertEmitter.emit('showAlert', 'Failed to verify job statement', 'error', 40000);
         } else {
           if (step < 1) {
             setOpacity(0);
@@ -224,11 +227,13 @@ const Planning = () => {
           }
         }
         setJobHeaderSaved(res.status);
+        alertEmitter.emit('hideAlert');
         dispatch(setLoading(false));
       })
       .catch((err: Error) => {
         console.warn(err);
         setJobStatementValidation(err.message);
+        alertEmitter.emit('showAlert', err.message, 'error', 40000);
         dispatch(setLoading(false));
       });    
   }
@@ -238,6 +243,8 @@ const Planning = () => {
     setValidationDetails({...validationDetails, error: ''});
     if (!installationArgs.javaHome || !installationArgs.nodeHome || !installationArgs.installationDir) {
       console.warn('Please fill in all values');
+      alertEmitter.emit('showAlert', 'Please fill in all values', 'error', 4000);
+      //showAlert('Please fill in all values', 'success', 5000);
       return;
     }
     dispatch(setLoading(true));
@@ -319,7 +326,7 @@ Please customize job statement below to match your system requirements.
         <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type={step === 0 ? "submit" : "button"} variant="text" onClick={e => saveJobHeader(e)}>Save and validate</Button>
           {jobHeaderSaved ? 
-            <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : jobStatementValidation ? <Typography sx={{color: "red"}}>{jobStatementValidation}</Typography> : null}
+            <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : null}
         </FormControl>
       </Box>
       {step > 0 
