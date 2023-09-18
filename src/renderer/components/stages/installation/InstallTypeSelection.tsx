@@ -17,7 +17,8 @@ import { selectInstallationArgs, selectZoweVersion, setInstallationArgs } from '
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
-import ProgressCard from '../../common/ProgressCard'
+import ProgressCard from '../../common/ProgressCard';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const InstallationType = () => {
 
@@ -32,6 +33,7 @@ const InstallationType = () => {
   const [installValue, setInstallValue] = useState("download");
   const [paxPath, setPaxPath] = useState("");
   const [smpePath, setSmpePath] = useState("");
+  const [smpePathValidated, setSmpePathValidated] = useState(false);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   const version = useAppSelector(selectZoweVersion);
@@ -81,8 +83,20 @@ const InstallationType = () => {
             variant="standard"
             helperText="Location of Zowe SMPE installation."
             value={installationArgs.smpeDir}
-            onChange={(e) => dispatch(setInstallationArgs({...installationArgs, smpeDir: e.target.value}))}
+            onChange={(e) => {
+                dispatch(setInstallationArgs({...installationArgs, smpeDir: e.target.value}));
+                setSmpePath(e.target.value)
+            }}
         />
+    </FormControl>}
+    {installValue === "smpe" && <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
+        <Button sx={{boxShadow: 'none', mr: '12px'}} type={"submit"} variant="text" onClick={async e => {
+            e.preventDefault();
+            window.electron.ipcRenderer.checkDirExists(connectionArgs, smpePath).then((res: boolean) => {
+                setSmpePathValidated(res);
+            })
+        }}>Validate location</Button>
+        {smpePathValidated ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : <Typography sx={{color: "gray"}}>{'Enter a valid path.'}</Typography> }
     </FormControl>}
     {installValue === "download" && <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
         {`Zen will download the latest Zowe convenience build in PAX archive format from `}<Link href="zowe.org">{'https://zowe.org'}</Link>
@@ -91,6 +105,7 @@ const InstallationType = () => {
         {`Select a local Zowe PAX file (offline installation).`}
       </Typography>}
     {installValue === "upload" && <><Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+        e.preventDefault();
         window.electron.ipcRenderer.uploadPax().then((res: any) => {
           if(res.filePaths && res.filePaths[0] != undefined){
             setPaxPath(res.filePaths[0]);
