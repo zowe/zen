@@ -9,8 +9,7 @@
  */
 
 import Store from 'electron-store';
-
-const store = new Store({cwd: 'zen-configuration-store'});
+const store = new Store({ name: 'zen-configuration-store' });
 
 export class ConfigurationStore {
   static schema: any = {};
