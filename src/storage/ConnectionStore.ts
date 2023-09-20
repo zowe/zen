@@ -73,7 +73,9 @@ const validateWithSchema = (key: string): boolean => {
   return true;
 }
 
-const store = new Store({cwd: 'zen-connection-store', schema: storeSchema});
+const path = require('path'); 
+const storePath = path.resolve(__dirname, 'zen-connection-store'); 
+const store = new Store({ cwd: storePath, schema: storeSchema });
 store.set({...storeDefault, ...store.store});
 
 export class ConnectionStore {
