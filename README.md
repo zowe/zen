@@ -16,3 +16,4 @@ Run `npm run start` to run the application locally
 
 Run `npm run make` to package and make platform-specific distributable
 
+Run 'npm run test' to run unit test using mocha and chai 
