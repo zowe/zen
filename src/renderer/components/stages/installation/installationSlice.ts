@@ -15,7 +15,10 @@ interface InstallationState {
   installationStatus: boolean;
   installationArgs: {
     installationDir: string;
+    installationType?: string;
     downloadDir: string;
+    userUploadedPaxPath?: string;
+    smpeDir?: string;
     javaHome: string;
     nodeHome: string;
     setupConfig: any;
@@ -27,6 +30,9 @@ const initialState: InstallationState = {
   installationStatus: false,
   installationArgs: {
     installationDir: '',
+    installationType: 'download',
+    userUploadedPaxPath: '',
+    smpeDir: '',
     downloadDir: '',
     javaHome: '',
     nodeHome: '',
