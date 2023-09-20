@@ -216,18 +216,18 @@ const Planning = () => {
     window.electron.ipcRenderer.saveJobHeader(connectionArgs.jobStatement)
       .then(() => getENVVars())
       .then((res: IResponse) => {
-        if (!res.status) {
+        if (!res.status) { // Failure case
           setJobStatementValidation(res.details);
           console.warn('Failed to verify job statement');
           alertEmitter.emit('showAlert', 'Failed to verify job statement', 'error');
-        } else {
+        } else { // Success JCL case
+          alertEmitter.emit('hideAlert');
           if (step < 1) {
             setOpacity(0);
             setStep(1);
           }
         }
         setJobHeaderSaved(res.status);
-        alertEmitter.emit('hideAlert');
         dispatch(setLoading(false));
       })
       .catch((err: Error) => {
