@@ -28,8 +28,9 @@ const Installation = () => {
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const setupSchema = schema.properties.zowe.properties.setup.properties.dataset;
-  const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.dataset);
+  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.dataset : "";
+  const initialYaml = yaml ? yaml : "";
+  const [setupYaml, setSetupYaml] = useState(initialYaml.zowe.setup.certificate);
   const [showProgress, toggleProgress] = useState(false);
   const [init, setInit] = useState(false);
   const [installationProgress, setInstallationProgress] = useState({

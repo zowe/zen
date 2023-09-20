@@ -21,8 +21,9 @@ const Configuration = () => {
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
-  const setupSchema = schema.properties.zowe.properties.setup.properties.security;
-  const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.security);
+  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.security : "";
+  const initialYaml = yaml ? yaml : "";
+  const [setupYaml, setSetupYaml] = useState(initialYaml.zowe.setup.certificate);
   const [init, setInit] = useState(false);
   const section = 'certificate';
   const initConfig: any = getConfiguration(section);
