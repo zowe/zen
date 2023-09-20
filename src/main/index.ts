@@ -16,6 +16,7 @@ import { InstallActions } from "../actions/InstallActions";
 import { PlanningActions } from "../actions/PlanningActions";
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ProgressStore } from "../storage/ProgressStore";
+import { checkDirExists } from '../services/utils';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -62,6 +63,12 @@ const createWindow = (): void => {
   ipcMain.handle('get-installation-history', (event) => {
     const res: IResponse = HomeActions.findPreviousInstallations();
     return res;
+  });
+
+  ipcMain.handle('upload-pax', async (event) => {
+    return await dialog.showOpenDialog({ properties: ['openFile'], filters: [
+      { name: 'pax', extensions: ['pax'] },
+    ] });
   });
 
   ipcMain.handle('save-job-header', async (event, jobStatement) => {
@@ -118,6 +125,11 @@ const createWindow = (): void => {
     const res: any = await PlanningActions.checkSpace(connectionArgs, location);
     return res;
   });
+
+  ipcMain.handle('check-dir-exists', async (event, connectionArgs, location) => {
+    const res: any = await checkDirExists(connectionArgs, location);
+    return res;
+  })
 
   ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs, version) => {
     const res = await installActions.runInstallation(connectionArgs, installationArgs, version);
