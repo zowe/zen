@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -19,6 +19,7 @@ import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/connection/connectionSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import EditorDialog from './EditorDialog';
 
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
@@ -28,6 +29,17 @@ export default function HorizontalLinearStepper(props: any) {
   const {stages} = props;
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
+  const [showEditorOption, setShowEditorOptions] = useState(false);
+  const [editorVisible, setEditorVisible] = useState(false);
+
+  useEffect(() => {
+    const activeStage = stages[activeStep].label;
+    if(activeStage == "Installation" || activeStage == "Configuration" || activeStage == "Certificates") {
+      setShowEditorOptions(true);
+    } else {
+      setShowEditorOptions(false);
+    }
+  }, [activeStep]); 
 
   const handleNext = () => {
     if(activeStep + 1 === stages.length) {
@@ -44,6 +56,10 @@ export default function HorizontalLinearStepper(props: any) {
 
   const handleReset = () => {
     setActiveStep(0);
+  };
+
+  const toggleEditor = () => {
+    setEditorVisible(!editorVisible);
   };
 
   return (
@@ -73,7 +89,11 @@ export default function HorizontalLinearStepper(props: any) {
         </React.Fragment>
       ) : (
         <React.Fragment>
-          <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: 'calc(100vh - 200px)'}}>
+          {showEditorOption && <div style={{ textAlign: 'right', marginRight: '20px' }}>
+            <span style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }} onClick={toggleEditor}>Open Editor</span>
+          </div>}
+          <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditor}/>
+          <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: 'calc(100vh - 220px)'}}>
             {stages[activeStep].component}
           </div>
           <Box sx={{ display: 'flex', flexDirection: 'row', p: 2, borderTop: 'solid 1px lightgray' }}>

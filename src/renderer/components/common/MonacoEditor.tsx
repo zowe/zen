@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 
 
-const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid} : any) => {
+const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid, schemaError} : any) => {
 
   let schemaInvalidMessage = 'Invalid Schema';
   const editorRef = useRef(null);
@@ -48,7 +48,7 @@ const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid} 
   }
 
   return (
-    <div style={{ height: '300px', paddingBottom: '50px' }}>
+    <div style={{ height: '400px' }}>
       {isError && (
         <div id="error-msg" 
           style={{ color: 'red', fontFamily: 'Arial, sans-serif', fontSize: 'small', paddingBottom: '1px' }}>
@@ -59,9 +59,9 @@ const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid} 
         <div id="error-msg" 
           style={{ color: 'red', fontFamily: 'Arial, sans-serif', fontSize: 'small' , paddingBottom: '5px' }}>
           <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: '5px' }} />
-          {schemaInvalidMessage}
+          {schemaError}
         </div>)}
-      <div id="monaco-editor-container" style={{ width: '100%', height: '250px' }}></div>
+      <div id="monaco-editor-container" style={{ width: '100%', height: '100%', margin: '0' }}></div>
     </div> 
   );
 };
