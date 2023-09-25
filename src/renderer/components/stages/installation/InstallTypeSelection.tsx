@@ -9,15 +9,16 @@
  */
 
 import React, {useEffect, useRef, useState} from "react";
-import { Box, Button, FormControl, FormControlLabel, FormLabel, Link, Radio, RadioGroup, Typography } from '@mui/material';
+import { Box, Button, FormControl, FormControlLabel, FormLabel, Link, Radio, RadioGroup, TextField, Typography } from '@mui/material';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
+import { selectInstallationArgs, selectZoweVersion, setInstallationArgs } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
-import ProgressCard from '../../common/ProgressCard'
+import ProgressCard from '../../common/ProgressCard';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const InstallationType = () => {
 
@@ -31,6 +32,8 @@ const InstallationType = () => {
 //   const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.dataset);
   const [installValue, setInstallValue] = useState("download");
   const [paxPath, setPaxPath] = useState("");
+  const [smpePath, setSmpePath] = useState("");
+  const [smpePathValidated, setSmpePathValidated] = useState(false);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   const version = useAppSelector(selectZoweVersion);
@@ -39,13 +42,13 @@ const InstallationType = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if((installValue === "upload" && paxPath == "") || installValue === "smpe"){
+    if((installValue === "upload" && paxPath == "") || installValue === "smpe" && installationArgs.smpeDir == ""){
         dispatch(setNextStepEnabled(false));
     } else {
         dispatch(setNextStepEnabled(true));
     }
     
-  }, [installValue, paxPath]);
+  }, [installValue, paxPath, installationArgs]);
 
 
   return (
@@ -58,7 +61,10 @@ const InstallationType = () => {
             aria-labelledby="demo-radio-buttons-group-label"
             defaultValue="download"
             name="radio-buttons-group"
-            onChange={(e) => setInstallValue(e.target.value)}
+            onChange={(e) => {
+                dispatch(setInstallationArgs({...installationArgs, installationType: e.target.value}))
+                setInstallValue(e.target.value)
+            }}
         >
             <FormControlLabel value="download" control={<Radio />} label="Download Zowe convenience build PAX from internet" />
             <FormControlLabel value="upload" control={<Radio />} label="Upload Zowe PAX for offline install" />
@@ -66,8 +72,32 @@ const InstallationType = () => {
         </RadioGroup>
     </FormControl>
     {installValue === "smpe" && <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-        {`SMP/E installation is currently unsupported by Zen. Please complete the SMP/E installation steps for Zowe manually, then return to the Zen application after install is complete.`}
+        {`SMP/E installation must be done outside of ZEN. Return to ZEN and input the location Zowe was installed to before continuing.`}
     </Typography>}
+    {installValue === "smpe" && <FormControl>
+        <TextField 
+            id="smpe-install-path"
+            required
+            style={{marginLeft: 0}}
+            label="SMPE Installation Location"
+            variant="standard"
+            helperText="Location of Zowe SMPE installation."
+            value={installationArgs.smpeDir}
+            onChange={(e) => {
+                dispatch(setInstallationArgs({...installationArgs, smpeDir: e.target.value}));
+                setSmpePath(e.target.value)
+            }}
+        />
+    </FormControl>}
+    {installValue === "smpe" && <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
+        <Button sx={{boxShadow: 'none', mr: '12px'}} type={"submit"} variant="text" onClick={async e => {
+            e.preventDefault();
+            window.electron.ipcRenderer.checkDirExists(connectionArgs, smpePath).then((res: boolean) => {
+                setSmpePathValidated(res);
+            })
+        }}>Validate location</Button>
+        {smpePathValidated ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : <Typography sx={{color: "gray"}}>{'Enter a valid path.'}</Typography> }
+    </FormControl>}
     {installValue === "download" && <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
         {`Zen will download the latest Zowe convenience build in PAX archive format from `}<Link href="zowe.org">{'https://zowe.org'}</Link>
     </Typography>}
@@ -75,11 +105,14 @@ const InstallationType = () => {
         {`Select a local Zowe PAX file (offline installation).`}
       </Typography>}
     {installValue === "upload" && <><Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+        e.preventDefault();
         window.electron.ipcRenderer.uploadPax().then((res: any) => {
           if(res.filePaths && res.filePaths[0] != undefined){
             setPaxPath(res.filePaths[0]);
+            dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: res.filePaths[0]}));
           } else {
             setPaxPath("");
+            dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: ''}));
           }
         });
       }}>Upload PAX</Button>
