@@ -18,6 +18,7 @@ import Ajv from "ajv";
 import MonacoEditorComponent from "../common/MonacoEditor";
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
+import EditorDialog from "../common/EditorDialog";
 
 const Configuration = () => {
 
@@ -60,15 +61,13 @@ const Configuration = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const handleFormChange = (data: any) => {
-    const newData = init ? (initConfig ? initConfig : data) : (data ? data : initConfig);
+  const handleFormChange = (data: any, zoweSchemaUpdate?: boolean) => {
+    let newData = init ? (initConfig ? initConfig : data) : (data ? data : initConfig);
     setInit(false);
 
     if (newData) {
-      let isFormDataValid;
 
-      //Check if the form input fields are valid
-
+      newData = zoweSchemaUpdate ? data.security : newData;
       setConfiguration(section, newData);
       // Find some way to check if the form is valid or not?
       dispatch(setNextStepEnabled(true));
@@ -76,44 +75,19 @@ const Configuration = () => {
     }
   };
 
-  const handleEditorContentChange = (newCode: any, isError: boolean) => {
-    if(isError) {
-      dispatch(setNextStepEnabled(false));
-      return;
-    }
-
-    let jsonData;
-
-    try {
-      // To parse the yaml and convert it to the javascript object
-      jsonData = load(newCode);
-    } catch (error) {
-      console.error('Error parsing YAML:', error);
-    }
-
-    // To validate the javascript object against the schema
-    const isValid = validate(jsonData);
-    setIsSchemaValid(isValid);
-    
-    if(isValid && jsonData) {
-      setConfiguration(section, jsonData);
-      dispatch(setNextStepEnabled(true));
-      setSetupYaml(jsonData);
-    }
-  };
-
   return (
-    <ContainerCard title="Configuration" description="Configure Zowe initilaization and components">
-      <Button onClick={toggleEditorVisibility}>
-        {editorVisible ? "Hide Editor" : "Show Editor"}
-      </Button>
-      <Box sx={{ width: '70vw', paddingTop: '10px', paddingBottom: '20px'}}>
-        {editorVisible && <MonacoEditorComponent initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid}/>}
-      </Box> 
+    <div>
+      <div style={{ textAlign: 'right', marginRight: '-200px', marginTop: '5px' }}>
+        <span style={{ color: 'pink', textDecoration: 'underline', cursor: 'pointer' }} onClick={toggleEditorVisibility}>Open Editor</span>
+      </div>
+      <ContainerCard title="Configuration" description="Configure Zowe initilaization and components">
+      <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
       <Box sx={{ width: '60vw' }}>
-        {!editorVisible && <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>}
+        <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
       </Box>
     </ContainerCard>
+    </div>
+    
   );
 };
 

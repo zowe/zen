@@ -88,11 +88,8 @@ export default function HorizontalLinearStepper(props: any) {
           </Box>
         </React.Fragment>
       ) : (
-        <React.Fragment>
-          {showEditorOption && <div style={{ textAlign: 'right', marginRight: '20px' }}>
-            <span style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }} onClick={toggleEditor}>Open Editor</span>
-          </div>}
-          <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditor}/>
+        <React.Fragment>   
+       
           <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: 'calc(100vh - 220px)'}}>
             {stages[activeStep].component}
           </div>

@@ -17,7 +17,7 @@ import { setConfiguration, getConfiguration, setZoweConfig, getZoweConfig } from
 import Ajv from "ajv";
 import MonacoEditorComponent from "../common/MonacoEditor";
 
-const EditorDialog = ({isEditorVisible, toggleEditorVisibility} : any) => {
+const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any) => {
 
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
@@ -77,18 +77,29 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility} : any) => {
     const isValid = validate(jsonData);
     setIsSchemaValid(isValid);
 
-    if(validate.errors && validate.errors) {
+    if(validate.errors) {
       const errPath = validate.errors[0].schemaPath;
       const errMsg = validate.errors[0].message;
       setSchemaError(`Invalid Schema: ${errPath}. ${errMsg} `, );
-    }
-    
-    if(isSchemaValid && jsonData) {
+    } else if(isSchemaValid && jsonData) {
       setZoweConfig(jsonData);
       dispatch(setNextStepEnabled(true));
       setSetupYaml(jsonData);
+      updateConfig(jsonData);
     }
+
   };
+
+  const updateConfig = (data: any) => {
+    const setup = data.zowe.setup;
+    const properties = Object.keys(setup);
+    properties.map(prop => {
+      console.log("Here: ", setup[prop]);
+      setConfiguration(prop, setup[prop]);
+    });
+
+    onChange(setup, true);
+  }
 
   return (
     <div> 
