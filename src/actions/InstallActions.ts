@@ -37,7 +37,7 @@ export class InstallActions {
 
   runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string}, 
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
     version: string): Promise<IResponse> {
     return this.strategy.runInstallation(connectionArgs, installationArgs, version);
   }
