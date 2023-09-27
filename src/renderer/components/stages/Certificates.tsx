@@ -10,18 +10,12 @@
 
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { dump, load } from 'js-yaml';
+import { Box } from '@mui/material';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { setConfiguration, getConfiguration } from '../../../services/ConfigService';
-import Ajv from "ajv";
-import MonacoEditorComponent from "../common/MonacoEditor";
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
-import { createTheme } from '@mui/material/styles';
-import { ThemeProvider } from '@mui/material/styles';
+import EditorDialog from "../common/EditorDialog";
 
 
 const Certificates = () => {
@@ -33,59 +27,29 @@ const Certificates = () => {
   const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.certificate);
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
-  const [editorContent, setEditorContent] = useState('');
-  const [isSchemaValid, setIsSchemaValid] = useState(true);
-  const [schemaError, setSchemaError] = useState('');
-  const [isFormDataValid, setIsFormDataValid] = useState(true);
-  const [formDataError, setFormDataError] = useState('');
 
   const section = 'certificate';
   const initConfig: any = getConfiguration(section);
   
-  const schemaCopy = { ...schema };
-  delete schemaCopy['$schema'];
-  delete schemaCopy['$id'];
-
-  const ajv = new Ajv();
-  ajv.addKeyword("$anchor");
-  const validate = ajv.compile(schemaCopy);
-
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
-      //To serialize a JavaScript object into a YAML-formatted string
-      setEditorContent(dump(initConfig));
     }
     setInit(true);
   }, []);
-
-  useEffect(() => {
-    setEditorContent(dump(setupYaml));
-  }, [setupYaml]);
-
-  useEffect(() => {
-    if(editorVisible && !isSchemaValid) {
-      dispatch(setNextStepEnabled(false));
-    }
-  }, [isSchemaValid, editorVisible]);
-
-  useEffect(() => {
-    if(!editorVisible && !isFormDataValid) {
-      dispatch(setNextStepEnabled(false));
-    }
-  }, [isFormDataValid, editorVisible]);
 
   const toggleEditorVisibility = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const handleFormChange = (data: any) => {
-    const newData = init ? (initConfig? initConfig: data) : (data ? data : initConfig);
+  const handleFormChange = (data: any, zoweSchemaUpdate?: boolean) => {
+    let newData = init ? (initConfig ? initConfig : data) : (data ? data : initConfig);
     setInit(false);
 
-    if(newData) {
-      // Handling the "if", "else" and "then" in the schema
+    if (newData) {
+      newData = zoweSchemaUpdate ? data.certificate : newData;
+
       if(setupSchema.if) {
         const ifProp = Object.keys(setupSchema.if.properties)[0];
         const ifPropValue = setupSchema.if.properties[ifProp].const.toLowerCase();
@@ -103,81 +67,25 @@ const Certificates = () => {
         }
       }
 
-      // Validate form data against the schema
-      const isValid = validate(newData);
       setConfiguration(section, newData);
+      // Find some way to check if the form is valid or not?
       dispatch(setNextStepEnabled(true));
       setSetupYaml(newData);
-      
-    }
-  };
-
-  const handleEditorContentChange = (newCode: any, isError: boolean) => {
-    if(isError) {
-      dispatch(setNextStepEnabled(false));
-      return;
-    }
-
-    let jsonData;
-
-    try {
-      // To parse the yaml and convert it to the javascript object
-      jsonData = load(newCode);
-    } catch (error) {
-      console.error('Error parsing YAML:', error);
-    }
-
-    // To validate the javascript object against the schema
-    const isValid = validate(jsonData);
-    setIsSchemaValid(isValid);
-
-    if(validate.errors && validate.errors) {
-      const errPath = validate.errors[0].schemaPath;
-      const errMsg = validate.errors[0].message;
-      setSchemaError(`Invalid Schema: ${errPath}. ${errMsg} `, );
-    }
-    
-    if(isSchemaValid && jsonData) {
-      setConfiguration(section, jsonData);
-      dispatch(setNextStepEnabled(true));
-      setSetupYaml(jsonData);
     }
   };
 
   return (
-    <ContainerCard title="Certificates" description="Configure certificates"> 
-      <Button onClick={toggleEditorVisibility}>
-        {editorVisible ? "Hide Editor" : "Show Editor"}
-      </Button>
-      {/* <Box sx={{ width: '70vw', paddingTop: '10px', paddingBottom: '20px'}}>
-        {editorVisible && <MonacoEditorComponent initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid}/>}
-      </Box>  */}
-
-      {/* <Dialog 
-        open={editorVisible} 
-        onClose={toggleEditorVisibility} 
-        PaperProps={{
-          style: {
-            width: '100%',
-          },
-        }}>
-        <DialogTitle>Monaco Editor</DialogTitle>
-        <DialogContent sx={{paddingBottom: '0'}}>
-          <MonacoEditorComponent initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid} schemaError={schemaError} />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={toggleEditorVisibility}>Close</Button>
-        </DialogActions>
-      </Dialog> */}
-      <Box sx={{ width: '60vw' }}>
-        {!editorVisible && !isFormDataValid && (<div id="error-msg" 
-          style={{ color: 'red', fontFamily: 'Arial, sans-serif', fontSize: 'small' , paddingBottom: '5px' }}>
-          <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: '5px' }} />
-          {formDataError}
-        </div>)}
-        {!editorVisible && <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>}
-      </Box> 
-    </ContainerCard>
+    <div>
+      <div style={{ position: 'fixed', top: '130px', right: '30px'}}>
+        <span style={{ color: 'pink', textDecoration: 'underline', cursor: 'pointer'  }} onClick={toggleEditorVisibility}>Open Editor</span>
+      </div>
+      <ContainerCard title="Certificates" description="Configure certificates"> 
+        <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
+        <Box sx={{ width: '60vw' }}>
+          <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
+        </Box>
+      </ContainerCard>
+    </div>
   );
 };
 

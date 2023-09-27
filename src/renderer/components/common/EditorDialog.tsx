@@ -47,13 +47,15 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
   }, [isEditorVisible])
 
   useEffect(() => {
-    // TO DO: UPDATE EDITOR CONTENT WHEN FORMS ARE UPDATED
     setEditorVisible(isEditorVisible);
   }, [setupYaml]);
 
   useEffect(() => {
     if(isEditorVisible && !isSchemaValid) {
       dispatch(setNextStepEnabled(false));
+    }
+    if(!isEditorVisible) {
+      dispatch(setNextStepEnabled(true));
     }
   }, [isSchemaValid, isEditorVisible]);
 
