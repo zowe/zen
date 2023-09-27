@@ -10,7 +10,7 @@
 
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { Box } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { setConfiguration, getConfiguration } from '../../../services/ConfigService';
 import ContainerCard from '../common/ContainerCard';
@@ -57,8 +57,8 @@ const Configuration = () => {
 
   return (
     <div>
-      <div style={{ position: 'fixed', top: '130px', right: '30px'}}>
-        <span style={{ color: 'pink', textDecoration: 'underline', cursor: 'pointer' }} onClick={toggleEditorVisibility}>Open Editor</span>
+      <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
+        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
       </div>
       <ContainerCard title="Configuration" description="Configure Zowe initilaization and components">
         <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>

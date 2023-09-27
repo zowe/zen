@@ -19,7 +19,7 @@ export const setConfiguration = (section: string, data: any) => {
   storedZoweConfig = JSON.parse(storedZoweConfig);
   const zoweConfig: any = unflatten(storedZoweConfig)
   
-  if (zoweConfig.zowe && zoweConfig.zowe.setup) {
+  if (zoweConfig && zoweConfig.zowe && zoweConfig.zowe.setup) {
     zoweConfig.zowe.setup[section] = data;
     const flattenedZoweConfig = flatten(zoweConfig);
     localStorage.setItem('zoweConfig', JSON.stringify(flattenedZoweConfig));
@@ -50,7 +50,7 @@ export const setZoweConfig = (data: any) => {
   localStorage.setItem(section+ 'Config', JSON.stringify(flattenedConfig));
 }
 
-// To set the entire zowe configuration
+// To get the entire zowe configuration
 export const getZoweConfig = () => {
   const section = 'zowe';
   let flattenedStoredConfig;

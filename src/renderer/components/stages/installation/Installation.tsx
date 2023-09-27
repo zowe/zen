@@ -123,8 +123,8 @@ const Installation = () => {
 
   return (
     <div>
-      <div style={{ position: 'fixed', top: '130px', right: '30px'}}>
-        <span style={{ color: 'pink', textDecoration: 'underline', cursor: 'pointer' }} onClick={toggleEditorVisibility}>Open Editor</span>
+      <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
+        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
       </div>
       <ContainerCard title="Installation" description="Provide installation details"> 
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>

@@ -93,14 +93,15 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
   };
 
   const updateConfig = (data: any) => {
-    const setup = data.zowe.setup;
-    const properties = Object.keys(setup);
-    properties.map(prop => {
-      console.log("Here: ", setup[prop]);
-      setConfiguration(prop, setup[prop]);
-    });
-
-    onChange(setup, true);
+    if (data && Object.keys(data).length > 0) {
+      const setup = data.zowe.setup;
+      const properties = Object.keys(setup);
+      properties.map(prop => {
+        console.log("Here: ", setup[prop]);
+        setConfiguration(prop, setup[prop]);
+      });
+      onChange(setup, true);
+    }
   }
 
   return (
