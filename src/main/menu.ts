@@ -44,12 +44,6 @@ export default class MenuBuilder {
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
 
-    const selectAllAndCopyMenu = Menu.buildFromTemplate([
-      { role: 'copy' },
-      { type: 'separator' },
-      { role: 'selectAll' },
-    ])
-
     const textModMenu = Menu.buildFromTemplate([
       { role: 'undo' },
       { role: 'redo' },
