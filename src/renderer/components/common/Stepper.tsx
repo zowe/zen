@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -28,10 +28,6 @@ export default function HorizontalLinearStepper(props: any) {
   const {stages} = props;
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
-
-  useEffect(() => {
-    const activeStage = stages[activeStep].label;
-  }, [activeStep]); 
 
   const handleNext = () => {
     if(activeStep + 1 === stages.length) {
@@ -77,7 +73,7 @@ export default function HorizontalLinearStepper(props: any) {
         </React.Fragment>
       ) : (
         <React.Fragment>
-          <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: 'calc(100vh - 220px)'}}>
+          <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: 'calc(100vh - 200px)'}}>
             {stages[activeStep].component}
           </div>
           <Box sx={{ display: 'flex', flexDirection: 'row', p: 2, borderTop: 'solid 1px lightgray' }}>
