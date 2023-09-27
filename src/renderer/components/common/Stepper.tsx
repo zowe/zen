@@ -19,7 +19,6 @@ import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/connection/connectionSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import EditorDialog from './EditorDialog';
 
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
@@ -29,16 +28,9 @@ export default function HorizontalLinearStepper(props: any) {
   const {stages} = props;
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
-  const [showEditorOption, setShowEditorOptions] = useState(false);
-  const [editorVisible, setEditorVisible] = useState(false);
 
   useEffect(() => {
     const activeStage = stages[activeStep].label;
-    if(activeStage == "Installation" || activeStage == "Configuration" || activeStage == "Certificates") {
-      setShowEditorOptions(true);
-    } else {
-      setShowEditorOptions(false);
-    }
   }, [activeStep]); 
 
   const handleNext = () => {
@@ -56,10 +48,6 @@ export default function HorizontalLinearStepper(props: any) {
 
   const handleReset = () => {
     setActiveStep(0);
-  };
-
-  const toggleEditor = () => {
-    setEditorVisible(!editorVisible);
   };
 
   return (
@@ -88,8 +76,7 @@ export default function HorizontalLinearStepper(props: any) {
           </Box>
         </React.Fragment>
       ) : (
-        <React.Fragment>   
-       
+        <React.Fragment>
           <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: 'calc(100vh - 220px)'}}>
             {stages[activeStep].component}
           </div>
