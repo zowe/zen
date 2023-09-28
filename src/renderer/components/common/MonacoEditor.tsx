@@ -7,7 +7,6 @@ import { setConfiguration, getConfiguration, setZoweConfig, getZoweConfig } from
 
 const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid, schemaError} : any) => {
 
-  let schemaInvalidMessage = 'Invalid Schema';
   const editorRef = useRef(null);
   const [isError, setIsError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');

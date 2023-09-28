@@ -42,12 +42,12 @@ const Configuration = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const handleFormChange = (data: any, zoweSchemaUpdate?: boolean) => {
+  const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
     let newData = init ? (initConfig ? initConfig : data) : (data ? data : initConfig);
     setInit(false);
 
     if (newData) {
-      newData = zoweSchemaUpdate ? data.security : newData;
+      newData = isYamlUpdated ? data.security : newData;
       setConfiguration(section, newData);
       // Find some way to check if the form is valid or not?
       dispatch(setNextStepEnabled(true));

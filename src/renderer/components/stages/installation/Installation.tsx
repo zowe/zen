@@ -101,12 +101,12 @@ const Installation = () => {
     })
   }
 
-  const editHLQ = (data: any, zoweSchemaUpdate?: boolean) => {
+  const editHLQ = (data: any, isYamlUpdated?: boolean) => {
 
     let updatedData = init ? (initConfig? initConfig: data) : (data ? data : initConfig);
     setInit(false);
 
-    updatedData = zoweSchemaUpdate ? data.installation : updatedData;
+    updatedData = isYamlUpdated ? data.installation : updatedData;
 
     if (updatedData && setupYaml && setupYaml.prefix !== updatedData.prefix) {
       const newPrefix = updatedData.prefix ? updatedData.prefix : '';

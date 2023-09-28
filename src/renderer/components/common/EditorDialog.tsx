@@ -47,10 +47,6 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
   }, [isEditorVisible])
 
   useEffect(() => {
-    setEditorVisible(isEditorVisible);
-  }, [setupYaml]);
-
-  useEffect(() => {
     if(isEditorVisible && !isSchemaValid) {
       dispatch(setNextStepEnabled(false));
     }
@@ -97,7 +93,6 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
       const setup = data.zowe.setup;
       const properties = Object.keys(setup);
       properties.map(prop => {
-        console.log("Here: ", setup[prop]);
         setConfiguration(prop, setup[prop]);
       });
       onChange(setup, true);
