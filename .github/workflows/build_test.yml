@@ -1,0 +1,90 @@
+name: Build zen
+on:
+  push:
+    branches:
+      - v2.x/main
+      - v2.x/staging
+  
+  pull_request:
+    types: [opened, reopened, synchronize]
+  
+  workflow_dispatch:
+    inputs:
+      BRANCH_NAME:
+        description: 'Specify branch name or PR (e.g. PR-41)'
+        required: false
+
+jobs:
+  
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: '[Prep 1] Setup Node'
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - name: '[Prep 2] Setup jFrog CLI'
+        uses: jfrog/setup-jfrog-cli@v2
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_TOKEN }}
+      - name: '[Prep 3] Checkout'
+        uses: actions/checkout@v3
+      - name: '[prep 4] Install'
+        run: |
+          npm install
+      - name: '[prep 5] Package'
+        run: |
+          npm run make  
+      - name: '[prep 6] Publish'
+        uses: zowe-actions/zlux-builds/zen/publish@v2.x/main
+        with: 
+          os: ubuntu
+          
+          
+  build-window:
+    runs-on: windows-latest
+    steps: 
+      - name: '[Prep 1] Setup Node'
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - name: '[Prep 2] Setup jFrog CLI'
+        uses: jfrog/setup-jfrog-cli@v2
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_TOKEN }}
+      - name: '[Prep 3] Checkout'
+        uses: actions/checkout@v3
+      - name: '[prep 4] Install'
+        run: |
+          npm install      
+      - name: '[prep 5] Package'
+        run: |
+          npm run make  
+      - name: '[prep 6] Publish'
+        uses: zowe-actions/zlux-builds/zen/publish@v2.x/main
+        with: 
+          os: windows
+          
+  build-macos:
+    runs-on: macos-latest
+    steps: 
+      - name: '[Prep 1] Setup jFrog CLI'
+        uses: jfrog/setup-jfrog-cli@v2
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_TOKEN }}
+      - name: '[Prep 2] Setup Node'
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - name: '[Prep 3] Checkout'
+        uses: actions/checkout@v3
+      - name: '[prep 4] Install'
+        run: |
+          npm install     
+      - name: '[prep 5] Package'
+        run: |
+          npm run make  
+      - name: '[prep 6] Publish'
+        uses: zowe-actions/zlux-builds/zen/publish@v2.x/main
+        with: 
+          os: macos
