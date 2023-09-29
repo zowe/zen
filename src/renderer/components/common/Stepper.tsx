@@ -19,6 +19,7 @@ import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/connection/connectionSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { alertEmitter } from '../Header';
 
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
@@ -30,6 +31,7 @@ export default function HorizontalLinearStepper(props: any) {
   const [skipped, setSkipped] = useState(new Set());
 
   const handleNext = () => {
+    alertEmitter.emit('hideAlert');
     if(activeStep + 1 === stages.length) {
       console.log('Start Zowe');
       // window.electron.ipcRenderer.startZowe();
@@ -39,10 +41,12 @@ export default function HorizontalLinearStepper(props: any) {
   };
 
   const handleBack = () => {
+    alertEmitter.emit('hideAlert');
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
   const handleReset = () => {
+    alertEmitter.emit('hideAlert');
     setActiveStep(0);
   };
 
@@ -86,12 +90,16 @@ export default function HorizontalLinearStepper(props: any) {
               Step back
             </Button>
             <Link style={{margin: 0}} to="/">
-              <Button variant="text" sx={{ mr: 1 }}>
+              <Button // TODO: Not implemented
+                variant="text" sx={{ mr: 1 }}
+                onClick={() => alertEmitter.emit('hideAlert')}>
                 Save and close
               </Button>
             </Link>
             <Link style={{margin: 0}} to="/">
-              <Button variant="text" sx={{ mr: 1 }}>
+              <Button 
+                variant="text" sx={{ mr: 1 }} 
+                onClick={() => alertEmitter.emit('hideAlert')}>
                 Discard
               </Button>
             </Link>
