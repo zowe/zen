@@ -15,6 +15,10 @@ import { ThemeProvider } from '@mui/material/styles';
 import jsonFormTheme from '../../jsonFormsTheme';
 
 const makeUISchema = (schema: any, base: string, formData: any): any => {
+  if(!schema || !formData) {
+    return "";
+  }
+
   const properties = Object.keys(schema.properties);
 
   const elements = properties.map((prop: any) => {
