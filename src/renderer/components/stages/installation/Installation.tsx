@@ -81,16 +81,20 @@ const Installation = () => {
       window.electron.ipcRenderer.setConfigByKey('node.home', nodeHome),
       window.electron.ipcRenderer.setConfigByKey('zowe.externalDomains', [connectionArgs.host])
     ]).then(() => {
-      setYaml(window.electron.ipcRenderer.getConfig());
-      toggleProgress(true);
-      dispatch(setLoading(false));
-      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version).then((res: IResponse) => {
-        dispatch(setNextStepEnabled(res.status));
-        clearInterval(timer);
-      }).catch(() => {
-        clearInterval(timer);
-        console.warn('Installation failed');
-      });
+      if(installationType === 'smpe'){
+        dispatch(setNextStepEnabled(true))
+      } else {
+        setYaml(window.electron.ipcRenderer.getConfig());
+        toggleProgress(true);
+        dispatch(setLoading(false));
+        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version).then((res: IResponse) => {
+          dispatch(setNextStepEnabled(res.status));
+          clearInterval(timer);
+        }).catch(() => {
+          clearInterval(timer);
+          console.warn('Installation failed');
+        });
+      }
     })
   }
 
@@ -122,9 +126,9 @@ const Installation = () => {
       <Box sx={{ width: '60vw' }}>
         <JsonForm schema={setupSchema} onChange={editHLQ} formData={setupYaml}/>
       </Box>  
-      {(!showProgress && installationArgs.installationType !== 'smpe') ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Install MVS datasets</Button>
-        </FormControl> : null}
+      {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'Install MVS datasets'}</Button>
+        </FormControl> : null}1
       <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="installation-progress">
       {!showProgress ? null :
         <React.Fragment>
