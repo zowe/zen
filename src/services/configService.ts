@@ -18,7 +18,7 @@ export const setConfiguration = (section: string, data: any) => {
   // Parse the stored configuration from JSON
   storedZoweConfig = JSON.parse(storedZoweConfig);
   const zoweConfig: any = unflatten(storedZoweConfig)
-
+  
   if (zoweConfig && zoweConfig.zowe && zoweConfig.zowe.setup) {
     zoweConfig.zowe.setup[section] = data;
     const flattenedZoweConfig = flatten(zoweConfig);
