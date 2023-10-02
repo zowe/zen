@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { SyntheticEvent, useEffect } from "react";
+import React, { SyntheticEvent, useEffect, useState } from "react";
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -171,7 +171,7 @@ const FTPConnectionForm = () => {
         <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>  
           <FormControlLabel
             control={<Checkbox  
-              onChange={(e) => { dispatch(setSecure(!!e.target.value)) }} 
+              onChange={(e) => { dispatch(setSecure(e.target.checked)) }} 
             />}
             label="Use FTP over TLS"
             labelPlacement="start"
