@@ -83,6 +83,7 @@ const Installation = () => {
     ]).then(() => {
       if(installationType === 'smpe'){
         dispatch(setNextStepEnabled(true))
+        dispatch(setLoading(false));
       } else {
         setYaml(window.electron.ipcRenderer.getConfig());
         toggleProgress(true);
