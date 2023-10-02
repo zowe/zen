@@ -79,9 +79,9 @@ const InstallationType = () => {
             id="smpe-install-path"
             required
             style={{marginLeft: 0}}
-            label="SMPE Installation Location"
+            label="Runtime Directory"
             variant="standard"
-            helperText="Location of Zowe SMPE installation."
+            helperText="Absolute path of the Zowe 'runtime' directory from SMPE installation process."
             value={installationArgs.smpeDir}
             onChange={(e) => {
                 dispatch(setInstallationArgs({...installationArgs, smpeDir: e.target.value}));
