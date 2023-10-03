@@ -18,12 +18,13 @@ export async function submitJcl(config: IIpcConnectionArgs, jcl: string, returnD
     let client
     try {
       client = await connectFTPServer(config);
+      console.log('About to submit jcl=',jcl);
       const jobId = await client.submitJCL(jcl);
       console.log(`jobId: ${jobId}`);
       jobOutput = await waitForjobToFinish(client, jobId, returnDDs)
 
       client.close();
-
+      console.log(`job result=`,jobOutput);
       resolve(jobOutput);
 
     } catch (err) {
