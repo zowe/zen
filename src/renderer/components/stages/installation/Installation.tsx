@@ -17,7 +17,8 @@ import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
-import ProgressCard from '../../common/ProgressCard'
+import ProgressCard from '../../common/ProgressCard';
+import { setConfiguration, getConfiguration } from '../../../../services/configService';
 
 const Installation = () => {
 
@@ -27,9 +28,10 @@ const Installation = () => {
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const setupSchema = schema.properties.zowe.properties.setup.properties.dataset;
-  const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.dataset);
+  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
   const [showProgress, toggleProgress] = useState(false);
+  const [init, setInit] = useState(false);
   const [installationProgress, setInstallationProgress] = useState({
     uploadYaml: false,
     download: false,
@@ -42,10 +44,15 @@ const Installation = () => {
   const version = useAppSelector(selectZoweVersion);
   let timer: any;
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const section = 'dataset';
+  const initConfig = getConfiguration(section);
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
+    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
+      setSetupYaml(initConfig);
+    }
+    setInit(true);
   }, []);
 
   useEffect(() => {
@@ -88,35 +95,32 @@ const Installation = () => {
   }
 
   const editHLQ = (data: any) => {
-    if (setupYaml.prefix !== data.prefix) {
-      const newPrefix = data.prefix ? data.prefix : '';
+    const updatedData = init ? (initConfig? initConfig: data) : (data ? data : initConfig);
+    setInit(false);
+
+    if (updatedData && setupYaml && setupYaml.prefix !== updatedData.prefix) {
+      const newPrefix = updatedData.prefix ? updatedData.prefix : '';
       const newData = Object.keys(setupYaml).reduce((acc, k) => {
         if (typeof(setupYaml[k]) === 'string' && setupYaml[k].startsWith(`${setupYaml.prefix}.`)) {
           return {...acc, [k]: setupYaml[k].replace(setupYaml.prefix, newPrefix), prefix: newPrefix}
         }
         return {...acc, [k]: setupYaml[k]}
       }, {});
+      setConfiguration(section, newData);
       setSetupYaml(newData);
     } else {
-      setSetupYaml(data);
-    }
-  }
-
-  const handleInputFocus = () => {
-    if (inputRef.current) {
-      inputRef.current.scrollIntoView({behavior: 'smooth'});
+      setConfiguration(section, updatedData);
+      setSetupYaml(updatedData);
     }
   }
 
   return (
     <ContainerCard title="Installation" description="Provide installation details"> 
-        <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-        {`Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}
-
-Then we will install MVS data sets, please provide HLQ below`}
+      <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
+        {`Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
       </Typography>
-      <Box sx={{ padding: '24px 0'}} ref={inputRef} onClick={handleInputFocus}> 
-        <JsonForm schema={setupSchema} initialdata={setupYaml} onChange={editHLQ}/>
+      <Box sx={{ width: '60vw' }}>
+        <JsonForm schema={setupSchema} onChange={editHLQ} formData={setupYaml}/>
       </Box>  
       {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Install MVS datasets</Button>

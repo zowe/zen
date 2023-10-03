@@ -21,7 +21,7 @@ class Installation {
 
   public async runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string}, 
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
     version: string
   ): Promise<IResponse> {
 
@@ -35,12 +35,26 @@ class Installation {
       const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
       ProgressStore.set('installation.uploadYaml', uploadYaml.status);
 
-      console.log("downloading...", version);
-      const download = await this.downloadPax(version);
-      ProgressStore.set('installation.download', download.status);
+      let download;
+      if(installationArgs.installationType === "download"){
+        console.log("downloading...", version);
+        download = await this.downloadPax(version);
+        ProgressStore.set('installation.download', download.status);
+      } else {
+        download = {status: true}
+        ProgressStore.set('installation.download', true);
+      }
 
       console.log("uploading...");
-      const upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);
+      let upload;
+      if(installationArgs.installationType === "upload"){
+        //upload the PAX the user selected in the "Install Type" stage to the installation dir (from the planning stage)
+        console.log('Uploading user selected pax')
+        upload = await new FileTransfer().upload(connectionArgs, installationArgs.userUploadedPaxPath, path.join(installationArgs.installationDir, "zowe.pax"), DataType.BINARY)
+      } else if (installationArgs.installationType === "download"){
+        console.log('Uploading pax downloaded from jfrog')
+        upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);
+      }
       ProgressStore.set('installation.upload', upload.status);
 
       console.log("unpaxing...");
@@ -119,6 +133,7 @@ export class FTPInstallation extends Installation {
   async uploadPax(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
     const tempPath = path.join(app.getPath("temp"), "zowe.pax");
     const filePath = path.join(installDir, "zowe.pax");
+    console.log(`Uploading ${tempPath} to ${filePath}`)
     const result = await new FileTransfer().upload(connectionArgs, tempPath, filePath, DataType.BINARY);
     const fs = require('fs');
     try {

@@ -1,0 +1,51 @@
+name: Release zen draft
+on:
+  workflow_run:
+    workflows: ["Build zen"]
+    branches: [v2.x/main]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      BUMP_TYPE:
+        description: 'When version bumping, set patch, minor, or major. Need this xor RELEASE_TAG.'
+        required: false
+      RELEASE_TAG:
+        description: 'Disable bumping by specifying a semver pattern (without v). Need this xor BUMP_TYPE'
+        required: false
+      RUN_ID:
+        description: 'Specify run id of asset to associate with release.'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: '[Setup] default env'
+        if: ${{ inputs.BUMP_TYPE == '' && inputs.RELEASE_TAG == '' }}
+        run: |
+          echo "BUMP_TYPE=minor" >> $GITHUB_ENV
+      - name: '[Setup] input env'
+        if: ${{ inputs.BUMP_TYPE }}
+        run: |
+          echo "BUMP_TYPE=${{ inputs.BUMP_TYPE }}" >> $GITHUB_ENV
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: '[Create tag]'
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ github.token }}
+          default_bump: ${{ env.BUMP_TYPE }}
+          custom_tag: ${{ inputs.RELEASE_NUMBER }}
+      - name: '[Create release]'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          draft: true
+          prerelease: false
+          token: ${{ github.token }}

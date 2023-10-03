@@ -34,6 +34,9 @@ contextBridge.exposeInMainWorld('electron', {
     checkZoweCLI() {
       return ipcRenderer.invoke("check-zowe-cli");
     },
+    uploadPax(){
+      return ipcRenderer.invoke('upload-pax')
+    },
     findPreviousInstallations() {
       return ipcRenderer.invoke("get-installation-history");
     },
@@ -52,7 +55,10 @@ contextBridge.exposeInMainWorld('electron', {
     checkSpace(connectionArgs: IIpcConnectionArgs, location: string) {
       return ipcRenderer.invoke("check-space", connectionArgs, location);
     },
-    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string}, version: string) {
+    checkDirExists(connectionArgs: IIpcConnectionArgs, location: string) {
+      return ipcRenderer.invoke("check-dir-exists", connectionArgs, location);
+    },
+    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string) {
       return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version);
     },
     getInstallationProgress() {

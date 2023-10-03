@@ -22,6 +22,8 @@ import { selectConnectionArgs, setConnectionArgs } from './connection/connection
 import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from './installation/installationSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { IResponse } from '../../../types/interfaces';
+import Alert from "@mui/material/Alert";
+import { alertEmitter } from "../Header";
 
 const serverSchema = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
@@ -149,6 +151,7 @@ const Planning = () => {
         const schema = res.details.schema;
         // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
         schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
+        schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
         dispatch(setSchema(schema));
         let installationDir = '', javaHome, nodeHome;
         if (res.details.config?.zowe?.runtimeDirectory && res.details.config?.zowe?.workspaceDirectory) {
@@ -169,6 +172,7 @@ const Planning = () => {
             const schema = res.details;
             // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
             schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
+            schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
             dispatch(setSchema(schema));
           }); 
         }); 
@@ -214,10 +218,12 @@ const Planning = () => {
     window.electron.ipcRenderer.saveJobHeader(connectionArgs.jobStatement)
       .then(() => getENVVars())
       .then((res: IResponse) => {
-        if (!res.status) {
+        if (!res.status) { // Failure case
           setJobStatementValidation(res.details);
           console.warn('Failed to verify job statement');
-        } else {
+          alertEmitter.emit('showAlert', 'Failed to verify job statement', 'error');
+        } else { // Success JCL case
+          alertEmitter.emit('hideAlert');
           if (step < 1) {
             setOpacity(0);
             setStep(1);
@@ -229,6 +235,7 @@ const Planning = () => {
       .catch((err: Error) => {
         console.warn(err);
         setJobStatementValidation(err.message);
+        alertEmitter.emit('showAlert', err.message, 'error');
         dispatch(setLoading(false));
       });    
   }
@@ -238,6 +245,8 @@ const Planning = () => {
     setValidationDetails({...validationDetails, error: ''});
     if (!installationArgs.javaHome || !installationArgs.nodeHome || !installationArgs.installationDir) {
       console.warn('Please fill in all values');
+      alertEmitter.emit('showAlert', 'Please fill in all values', 'error');
+      //showAlert('Please fill in all values', 'success', 5000);
       return;
     }
     dispatch(setLoading(true));
@@ -277,6 +286,8 @@ const Planning = () => {
         setLocationsValidated(true);
         setStep(2);
         setOpacity(0);
+      } else {
+        alertEmitter.emit('showAlert', details.error, 'error');
       }
     })
   }
@@ -319,7 +330,7 @@ Please customize job statement below to match your system requirements.
         <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type={step === 0 ? "submit" : "button"} variant="text" onClick={e => saveJobHeader(e)}>Save and validate</Button>
           {jobHeaderSaved ? 
-            <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : jobStatementValidation ? <Typography sx={{color: "red"}}>{jobStatementValidation}</Typography> : null}
+            <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : null}
         </FormControl>
       </Box>
       {step > 0 
@@ -365,7 +376,7 @@ Please customize job statement below to match your system requirements.
           </FormControl>
           <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
             <Button sx={{boxShadow: 'none', mr: '12px'}} type={step === 1 ? "submit" : "button"} variant="text" onClick={e => validateLocations(e)}>Validate locations</Button>
-            {locationsValidated ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : validationDetails.error ? <Typography sx={{color: "red"}}>{validationDetails.error}</Typography> : null}
+            {locationsValidated ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : validationDetails.error ? null: null}
           </FormControl>
         </Box>
         : <div/> }
