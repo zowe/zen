@@ -92,7 +92,6 @@ export class PlanningActions {
 
   public static async getConfig() {
     const details = ConfigurationStore.getAll();
-    console.log('getConfig details:', JSON.stringify(details, null, 2))
     if (details.config && details.schema) {
       return {status: true, details};
     } else {
