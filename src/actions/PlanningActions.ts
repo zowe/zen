@@ -78,7 +78,7 @@ export class PlanningActions {
         res.on('end', () => {
           try {
             const parsedData = JSON.parse(data);
-            ConfigurationStore.setSchema(parse(parsedData));
+            ConfigurationStore.setSchema(parsedData);
             resolve({status: true, details: parsedData});
           } catch (error) {
             reject({status: false, details: {error}});
