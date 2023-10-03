@@ -78,7 +78,7 @@ export class PlanningActions {
         res.on('end', () => {
           try {
             const parsedData = JSON.parse(data);
-            ConfigurationStore.setSchema(parse(parsedData));
+            ConfigurationStore.setSchema(parsedData);
             resolve({status: true, details: parsedData});
           } catch (error) {
             reject({status: false, details: {error}});
@@ -92,6 +92,7 @@ export class PlanningActions {
 
   public static async getConfig() {
     const details = ConfigurationStore.getAll();
+    console.log('getConfig details:', JSON.stringify(details, null, 2))
     if (details.config && details.schema) {
       return {status: true, details};
     } else {
