@@ -102,6 +102,10 @@ const Installation = () => {
 
   const editHLQ = (data: any, isYamlUpdated?: boolean) => {
 
+    if(init && Object.keys(initConfig) && Object.keys(initConfig).length == 0) {
+      return;
+    }
+
     let updatedData = init ? (initConfig? initConfig: data) : (data ? data : initConfig);
     setInit(false);
 
