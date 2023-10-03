@@ -32,6 +32,26 @@ const storeSchema = {
       },
       "jobStatement": {
         "type": "string"
+      },
+      "secure": {
+        "type": "boolean"
+      },
+      "secureOptions": {
+        "type": "object",
+        "properties": {
+          "enableTrace": {
+            "type": "boolean",
+          },
+          "rejectUnauthorized": {
+            "type": "boolean"
+          },
+          "minVersion": {
+            "type": "string"
+          },
+          "maxVersion": {
+            "type": "string"
+          }
+        }
       }
     },
   },
@@ -53,6 +73,13 @@ const storeDefault = {
     "host": "",
     "port": "21",
     "user": "",
+    "secure": false,
+    "secureOptions": {
+      "enableTrace": false,
+      "rejectUnauthorized": true,
+      "maxVersion": "TLSv1.3",
+      "minVersion": "TLSv1.1"
+    },    
     "jobStatement": `//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,
 //         MSGLEVEL=(1,1),MSGCLASS=A`
   },
@@ -86,7 +113,7 @@ export class ConnectionStore {
     return store.store;
   }
 
-  public static set(key: string, value: string): boolean {
+  public static set(key: string, value: any): boolean {
     if (validateWithSchema(key)) {
       store.set(key, value);
       return true;
