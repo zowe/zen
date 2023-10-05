@@ -11,8 +11,8 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
-	"pretest": "npm run package",
-    "test": "playwright test"
+	"preplaytest": "npm run package",
+    "playtest": "playwright test"
   },
   "keywords": [],
   "license": "EPL 2.0",
