@@ -124,6 +124,21 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
     reader.readAsText(file);
   };
 
+  const handleFileExport = () => {
+    const content = editorContent;
+    const blob = new Blob([content], { type: 'text/plain' });
+
+    // Create a temporary anchor element
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+
+    // Set the default file name for the downloaded file
+    a.download = 'zowe.yaml';
+
+    // Programmatically trigger a click event on the anchor element to initiate the download
+    a.click();
+};
+
   return (
     <div> 
       <Dialog 
@@ -141,7 +156,7 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
         <DialogActions>
           <Button onClick={triggerFileInputClick}>Import</Button>
           <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload}/>
-          <Button onClick={toggleEditorVisibility}>Export</Button>
+          <Button onClick={handleFileExport}>Export</Button>
           <Button onClick={toggleEditorVisibility}>Close</Button>
         </DialogActions>
       </Dialog> 
