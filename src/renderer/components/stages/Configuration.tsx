@@ -9,12 +9,13 @@
  */
 
 import { useState, useEffect } from "react";
-import { Box } from '@mui/material';
-import ContainerCard from '../common/ContainerCard';
+import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { setConfiguration, getConfiguration } from '../../../services/ConfigService';
+import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
-import { setConfiguration, getConfiguration } from '../../../services/configService';
+import EditorDialog from "../common/EditorDialog";
 
 const Configuration = () => {
 
@@ -22,10 +23,11 @@ const Configuration = () => {
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.security : "";
-  const initialYaml = yaml ? yaml : "";
-  const [setupYaml, setSetupYaml] = useState(initialYaml.zowe.setup.certificate);
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.security);
   const [init, setInit] = useState(false);
-  const section = 'certificate';
+  const [editorVisible, setEditorVisible] = useState(false);
+
+  const section = 'security';
   const initConfig: any = getConfiguration(section);
   
   useEffect(() => {
@@ -36,23 +38,35 @@ const Configuration = () => {
     setInit(true);
   }, []);
 
-  const handleFormChange = (data: any) => {
-    const newData = init ? (initConfig? initConfig: data) : (data ? data : initConfig);
+  const toggleEditorVisibility = () => {
+    setEditorVisible(!editorVisible);
+  };
+
+  const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
+    let newData = init ? (initConfig ? initConfig : data) : (data ? data : initConfig);
     setInit(false);
 
-    if(newData) {
+    if (newData) {
+      newData = isYamlUpdated ? data.security : newData;
       setConfiguration(section, newData);
+      // Find some way to check if the form is valid or not?
       dispatch(setNextStepEnabled(true));
       setSetupYaml(newData);
     }
   };
 
   return (
-    <ContainerCard title="Configuration" description="Configure Zowe initilaization and components"> 
-      <Box sx={{ width: '60vw' }}>
-        <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
-      </Box>
-    </ContainerCard>
+    <div>
+      <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
+        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
+      </div>
+      <ContainerCard title="Configuration" description="Configure Zowe initilaization and components">
+        <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
+        <Box sx={{ width: '60vw' }}>
+          <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
+        </Box>
+      </ContainerCard>
+    </div>
   );
 };
 

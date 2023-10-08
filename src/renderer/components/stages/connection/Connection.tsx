@@ -44,7 +44,8 @@ const Connection = () => {
   };
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    // dispatch(setNextStepEnabled(false));
+    dispatch(setNextStepEnabled(true));
   }, []);
 
   return (

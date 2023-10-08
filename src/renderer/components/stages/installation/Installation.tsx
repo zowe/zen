@@ -10,15 +10,16 @@
 
 import React, {useEffect, useRef, useState} from "react";
 import { Box, Button, FormControl, Typography } from '@mui/material';
-import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
 import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
-import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
+import { setConfiguration, getConfiguration } from '../../../../services/ConfigService';
 import ProgressCard from '../../common/ProgressCard';
-import { setConfiguration, getConfiguration } from '../../../../services/configService';
+import ContainerCard from '../../common/ContainerCard';
+import JsonForm from '../../common/JsonForms';
+import EditorDialog from "../../common/EditorDialog";
 
 const Installation = () => {
 
@@ -28,10 +29,11 @@ const Installation = () => {
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
+  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.dataset : "";
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.dataset);
   const [showProgress, toggleProgress] = useState(false);
   const [init, setInit] = useState(false);
+  const [editorVisible, setEditorVisible] = useState(false);
   const [installationProgress, setInstallationProgress] = useState({
     uploadYaml: false,
     download: false,
@@ -48,7 +50,8 @@ const Installation = () => {
   const initConfig = getConfiguration(section);
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    // dispatch(setNextStepEnabled(false));
+    dispatch(setNextStepEnabled(true));
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
@@ -64,6 +67,10 @@ const Installation = () => {
     const nextPosition = document.getElementById('installation-progress');
     nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress]);
+
+  const toggleEditorVisibility = () => {
+    setEditorVisible(!editorVisible);
+  };
 
   const process = (event: any) => {
     event.preventDefault();
@@ -94,10 +101,11 @@ const Installation = () => {
     })
   }
 
-  const editHLQ = (data: any) => {
-    const updatedData = init ? (initConfig? initConfig: data) : (data ? data : initConfig);
+  const editHLQ = (data: any, isYamlUpdated?: boolean) => {
+    let updatedData = init ? (initConfig? initConfig: data) : (data ? data : initConfig);
     setInit(false);
 
+    updatedData = isYamlUpdated ? data.dataset : updatedData;
     if (updatedData && setupYaml && setupYaml.prefix !== updatedData.prefix) {
       const newPrefix = updatedData.prefix ? updatedData.prefix : '';
       const newData = Object.keys(setupYaml).reduce((acc, k) => {
@@ -106,37 +114,41 @@ const Installation = () => {
         }
         return {...acc, [k]: setupYaml[k]}
       }, {});
-      setConfiguration(section, newData);
-      setSetupYaml(newData);
-    } else {
-      setConfiguration(section, updatedData);
-      setSetupYaml(updatedData);
     }
+    setConfiguration(section, updatedData);
+    setSetupYaml(updatedData);
   }
 
   return (
-    <ContainerCard title="Installation" description="Provide installation details"> 
-      <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
-        {`Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
-      </Typography>
-      <Box sx={{ width: '60vw' }}>
-        <JsonForm schema={setupSchema} onChange={editHLQ} formData={setupYaml}/>
-      </Box>  
-      {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
+    <div>
+      <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
+        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
+      </div>
+      <ContainerCard title="Installation" description="Provide installation details"> 
+        <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={editHLQ}/>
+        <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
+          {`Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
+        </Typography>
+        <Box sx={{ width: '60vw' }}>
+          <JsonForm schema={setupSchema} onChange={editHLQ} formData={setupYaml}/>
+        </Box>  
+        {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Install MVS datasets</Button>
         </FormControl> : null}
-      <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="installation-progress">
-      {!showProgress ? null :
-        <React.Fragment>
-          <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={installationProgress.uploadYaml}/>
-          <ProgressCard label="Download convenience build pax locally" id="download-progress-card" status={installationProgress.download}/>
-          <ProgressCard label={`Upload to pax file to ${installationArgs.installationDir}`} id="upload-progress-card" status={installationProgress.upload}/>
-          <ProgressCard label="Unpax installation files" id="unpax-progress-card" status={installationProgress.unpax}/>
-          <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={installationProgress.install}/>
-        </React.Fragment>
-      }
-      </Box> 
-    </ContainerCard>
+        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="installation-progress">
+        {!showProgress ? null :
+          <React.Fragment>
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={installationProgress.uploadYaml}/>
+            <ProgressCard label="Download convenience build pax locally" id="download-progress-card" status={installationProgress.download}/>
+            <ProgressCard label={`Upload to pax file to ${installationArgs.installationDir}`} id="upload-progress-card" status={installationProgress.upload}/>
+            <ProgressCard label="Unpax installation files" id="unpax-progress-card" status={installationProgress.unpax}/>
+            <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={installationProgress.install}/>
+          </React.Fragment>
+        }
+        </Box> 
+      </ContainerCard>
+    </div>
+    
   );
 };
 

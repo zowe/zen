@@ -138,7 +138,8 @@ const Planning = () => {
   const installationArgs: any = useAppSelector(selectInstallationArgs);
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    // dispatch(setNextStepEnabled(false));
+    dispatch(setNextStepEnabled(true));
     // FIXME: Add a popup warning in case failed to get config files
     // FIXME: Save yaml and schema on disk to not to pull it each time?
     // REVIEW: Replace JobStatement text area with set of text fields?
@@ -181,7 +182,8 @@ const Planning = () => {
   }, []);  
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
+    // dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
+    dispatch(setNextStepEnabled(true));
   }, [jobHeaderSaved, locationsValidated]);
 
   useEffect(() => {
