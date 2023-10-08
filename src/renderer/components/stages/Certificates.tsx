@@ -66,7 +66,7 @@ const Certificates = () => {
         }
       }
 
-      setConfiguration(section, newData);
+      setConfiguration(section, newData, true);
       // Find some way to check if the form is valid or not?
       dispatch(setNextStepEnabled(true));
       setSetupYaml(newData);

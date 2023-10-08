@@ -115,7 +115,7 @@ const Installation = () => {
         return {...acc, [k]: setupYaml[k]}
       }, {});
     }
-    setConfiguration(section, updatedData);
+    setConfiguration(section, updatedData, true);
     setSetupYaml(updatedData);
   }
 

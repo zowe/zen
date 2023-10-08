@@ -10,6 +10,7 @@ const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid, 
   const editorRef = useRef(null);
   const [isError, setIsError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [editorContent, setEditorContent] = useState(initialContent);
 
   useEffect(() => {
     console.log("---Monaco Use Effect");
@@ -43,6 +44,11 @@ const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid, 
     };
 
   }, []);
+
+  useEffect(() => {
+    editorRef.current.setValue(initialContent);
+  }, [initialContent])
+
 
   const setError = (isError: boolean, errorMessage: string) => {
     setIsError(isError);
