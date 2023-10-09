@@ -20,10 +20,10 @@ export class ConfigurationStore {
     const schema = store.get('schema') as any;
     let schemaPart: any = schema.properties;
     for (const key of keys) {
-        if (!schemaPart.hasOwnProperty(key)) {
+        if (!Object.prototype.hasOwnProperty.call(schemaPart, key))  {
             return false;
         }
-        schemaPart = schemaPart[key].properties;        
+        schemaPart = schemaPart[key].properties;
     }
     return true;
   }

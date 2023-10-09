@@ -10,14 +10,16 @@
 
 import { ConnectionStore } from "../storage/ConnectionStore";
 import { IResponse } from '../types/interfaces';
+import * as util from 'node:util';
+import { execFile as execFileCallback } from 'node:child_process';
+const execFile = util.promisify(execFileCallback);
 
 export class HomeActions {
 
   public static async checkZoweCLI(): Promise<IResponse> {
     const version = await ConnectionStore.get('zowe-cli-version');
     if (!version) {
-      const util = require('node:util');
-      const execFile = util.promisify(require('node:child_process').execFile);
+      const execFile = util.promisify(execFileCallback);
       // TODO: Verify not just Zowe CLI version, but get list of profiles available with host names
       //        and check ssh commands are operational to verify it set up correctly.
       try {

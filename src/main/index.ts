@@ -24,12 +24,12 @@ declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 const connectionActions = new ConnectionActions();
 const installActions = new InstallActions();
 
-// REVIEW: electron-squirrel-startup, review the necessity of it, package will have an operation viloation as it is 7 years old. 
+// REVIEW: electron-squirrel-startup, review the necessity of it, package will have an operation viloation as it is 7 years old.
 // if (require('electron-squirrel-startup')) { // ?
 //   app.quit();
 // }
 // TODO: Add icon support (public/assets/icon-zen.png)
-// REVIEW: Make proper logger  
+// REVIEW: Make proper logger
 // TODO: Add inline help for inputs, components, etc
 // TODO: Make separate component for validation button - button / icon / error details
 // REVIEW: services/FileTransfer.ts SubmitJcl.ts CheckHLQ.ts
@@ -46,7 +46,7 @@ const createWindow = (): void => {
   });
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
-  // FIXME: Add dev mode switch 
+  // FIXME: Add dev mode switch
   // mainWindow.webContents.openDevTools();
 
   ipcMain.handle('check-zowe-cli', async (event) => {
@@ -137,15 +137,15 @@ const createWindow = (): void => {
 
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
-  
+
 };
 
 app.on('ready', createWindow);
 
-app.on('window-all-closed', async () => { 
-  app.quit(); 
+app.on('window-all-closed', async () => {
+  app.quit();
 });
 
 app.on('activate', () => {
-
+    // Intentionally left empty
 });

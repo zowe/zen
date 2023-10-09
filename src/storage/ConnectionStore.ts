@@ -79,7 +79,7 @@ const storeDefault = {
       "rejectUnauthorized": true,
       "maxVersion": "TLSv1.3",
       "minVersion": "TLSv1.1"
-    },    
+    },
     "jobStatement": `//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,
 //         MSGLEVEL=(1,1),MSGCLASS=A`
   },
@@ -92,7 +92,7 @@ const validateWithSchema = (key: string): boolean => {
   const keys = key.split('.');
   let schemaPart: any = storeSchema;
   for (const key of keys) {
-      if (!schemaPart.hasOwnProperty(key)) {
+      if (!Object.prototype.hasOwnProperty.call(schemaPart, key))  {
           return false;
       }
       schemaPart = schemaPart[key].properties;

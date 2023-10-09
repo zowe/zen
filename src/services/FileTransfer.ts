@@ -11,9 +11,9 @@
 import {IncomingMessage} from "http";
 import {connectFTPServer} from "./utils";
 import {IIpcConnectionArgs} from "../types/interfaces";
+import * as fs from 'fs';
+import * as https from 'https';
 
-const fs = require('fs');
-const https = require('https');
 
 export enum DataType {
   ASCII = 'ascii',
@@ -35,7 +35,7 @@ export class FileTransfer {
       https.get(file, function (response: IncomingMessage) {
         response.pipe(saveFile);
         response.on('end', function () {
-          resolve({status: true, details: ''}); 
+          resolve({status: true, details: ''});
         })
       })
     })

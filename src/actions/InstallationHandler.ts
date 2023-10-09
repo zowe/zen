@@ -16,11 +16,11 @@ import { stringify } from 'yaml';
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ConfigurationStore } from "../storage/ConfigurationStore";
 import { ProgressStore } from "../storage/ProgressStore";
-
+import * as fs from 'fs';
 class Installation {
 
   public async runInstallation (
-    connectionArgs: IIpcConnectionArgs, 
+    connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
     version: string
   ): Promise<IResponse> {
@@ -29,7 +29,7 @@ class Installation {
     if (!savingResult.status) {
       return savingResult;
     }
-    
+
     try {
       console.log("uploading yaml...");
       const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
@@ -58,7 +58,7 @@ class Installation {
       ProgressStore.set('installation.upload', upload.status);
 
       console.log("unpaxing...");
-      const unpax = await this.unpax(connectionArgs, installationArgs.installationDir); 
+      const unpax = await this.unpax(connectionArgs, installationArgs.installationDir);
       ProgressStore.set('installation.unpax', unpax.status);
 
       console.log("installing...");
@@ -73,13 +73,12 @@ class Installation {
 
   async generateYamlFile() {
     const zoweYaml: any = ConfigurationStore.getConfig();
-    const fs = require('fs');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
     await fs.writeFile(filePath, stringify(zoweYaml), (err: any) => {
       if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           return {status: false, details: err.message};
-      } 
+      }
     });
     return {status: true, details: ''};
   }
@@ -92,7 +91,7 @@ class Installation {
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
-  
+
   async downloadPax(version: string): Promise<IResponse> {
     throw new Error('Method not implemented.');
   }
@@ -120,7 +119,7 @@ export class FTPInstallation extends Installation {
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
-  
+
   async downloadPax(version: string): Promise<IResponse> {
     // REVIEW, we can download directly on MF using curl --insecure --output "output-dir/zowe.pax" paxURL
     //         easier but could fail on real system?
@@ -135,7 +134,6 @@ export class FTPInstallation extends Installation {
     const filePath = path.join(installDir, "zowe.pax");
     console.log(`Uploading ${tempPath} to ${filePath}`)
     const result = await new FileTransfer().upload(connectionArgs, tempPath, filePath, DataType.BINARY);
-    const fs = require('fs');
     try {
       fs.unlink(tempPath, () => {
         console.log("Deleted zowe.pax successfully.");
