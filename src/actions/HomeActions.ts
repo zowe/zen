@@ -12,7 +12,6 @@ import { ConnectionStore } from "../storage/ConnectionStore";
 import { IResponse } from '../types/interfaces';
 import * as util from 'node:util';
 import { execFile as execFileCallback } from 'node:child_process';
-const execFile = util.promisify(execFileCallback);
 
 export class HomeActions {
 
