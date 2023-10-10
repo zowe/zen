@@ -45,7 +45,7 @@ export const getConfiguration = (section: string,) => {
 // To set the entire zowe configuration
 export const setZoweConfig = (data: any) => {
   const section = 'zowe';
-  if(!data) {
+  if(!data && data !== "") {
     return;
   }
   const flattenedConfig = flatten(data);

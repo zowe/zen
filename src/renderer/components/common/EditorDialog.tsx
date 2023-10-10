@@ -13,7 +13,7 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { dump, load } from 'js-yaml';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { setConfiguration, getConfiguration, setZoweConfig, getZoweConfig } from '../../../services/ConfigService';
+import { setConfiguration, setZoweConfig, getZoweConfig } from '../../../services/ConfigService';
 import Ajv from "ajv";
 import MonacoEditorComponent from "../common/MonacoEditor";
 
@@ -62,6 +62,11 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
       return;
     }
 
+    if(newCode && (newCode == "\n" || newCode == "")) {
+      setZoweConfig("");
+      return;
+    }
+
     let jsonData;
 
     try {
@@ -82,6 +87,8 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
       const errMsg = validate.errors[0].message;
       console.log("Schema error:---------------- ", errMsg);
       setSchemaError(`Invalid Schema: ${errPath}. ${errMsg} `, );
+      jsonData = jsonData ? jsonData : "";
+      setZoweConfig(jsonData);
     } else if(isSchemaValid && jsonData) {
       setZoweConfig(jsonData);
       dispatch(setNextStepEnabled(true));
