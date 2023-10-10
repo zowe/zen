@@ -55,7 +55,7 @@ const serverSchema = {
       "$anchor": "zoweDatasetMember",
       "type": "string",
       "description": "A 1-8-char all caps dataset member name",
-      "pattern": "^([A-Z\$\#\@]){1}([A-Z0-9\$\#\@]){0,7}$",
+      "pattern": "^([A-Z$#@]){1}([A-Z0-9$#@]){0,7}$",
       "minLength": 1,
       "maxLength": 8
     },
@@ -142,7 +142,7 @@ const Planning = () => {
     // FIXME: Add a popup warning in case failed to get config files
     // FIXME: Save yaml and schema on disk to not to pull it each time?
     // REVIEW: Replace JobStatement text area with set of text fields?
-  
+
     window.electron.ipcRenderer.getZoweVersion().then((res: IResponse) => dispatch(setZoweVersion(res.status ? res.details : '' )));
 
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
@@ -153,7 +153,7 @@ const Planning = () => {
         schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
         schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
         dispatch(setSchema(schema));
-        let installationDir = '', javaHome, nodeHome;
+        let installationDir = '';
         if (res.details.config?.zowe?.runtimeDirectory && res.details.config?.zowe?.workspaceDirectory) {
           const getParentDir = (path: string): string => path.split('/').filter((i: string, ind: number) => i || !ind).slice(0, -1).join('/');
           const runtimeParent = getParentDir(res.details.config.zowe.runtimeDirectory);
@@ -174,11 +174,11 @@ const Planning = () => {
             schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
             schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
             dispatch(setSchema(schema));
-          }); 
-        }); 
+          });
+        });
       }
     })
-  }, []);  
+  }, []);
 
   useEffect(() => {
     dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
@@ -237,7 +237,7 @@ const Planning = () => {
         setJobStatementValidation(err.message);
         alertEmitter.emit('showAlert', err.message, 'error');
         dispatch(setLoading(false));
-      });    
+      });
   }
 
   const validateLocations = (e: any) => {
@@ -273,7 +273,7 @@ const Planning = () => {
         const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
         details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
         // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
-        if (parseInt(details.spaceAvailableMb, 10) < 1300) { 
+        if (parseInt(details.spaceAvailableMb, 10) < 1300) {
           details.error = details.error + `Not enough space, you need at least 1300MB; `;
         }
       } catch (error) {
@@ -295,22 +295,22 @@ const Planning = () => {
   return (
     <ContainerCard title="Before you start" description="Prerequisites, requirements and roles needed to install">
       <Box sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto', opacity: step === 0 ? 1 : opacity}}>
-        <Typography sx={{ mb: 2 }} color="text.secondary"> 
+        <Typography sx={{ mb: 2 }} color="text.secondary">
           {/* TODO: Allow to choose Zowe version here by click here, support for other instalation types? */}
           {zoweVersion ? `About to install latest Zowe version: ${zoweVersion} from the convenience build` : ''}
         </Typography>
-        <Typography id="position-0" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">     
-        {/* <Describe permissions that may be needed in detail>  */}  
-        {`The basic role for the installation is the system programmer ( OMVS / z/OS ) 
-At some stages, you may need additional permissions: 
+        <Typography id="position-0" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">
+        {/* <Describe permissions that may be needed in detail>  */}
+        {`The basic role for the installation is the system programmer ( OMVS / z/OS )
+At some stages, you may need additional permissions:
     - Security administrator role will be required for configuring proper permissions in z/OS and z/OSMF and to generate certificates for Zowe.
     - Network administrator help may be needed to define a set of ports that can be used by Zowe.`}
         </Typography>
         <Typography sx={{ mb: 1 }} color="text.secondary">
           <Link href="https://docs.zowe.org/stable/user-guide/install-zos" rel="noreferrer" target="_blank">High-level installation overview on Zowe Docs</Link>
         </Typography>
-        <Typography sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">    
-        {`We will be running installation and configuration commands on the mainframe by submitting jobs through the FTP connection. 
+        <Typography sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">
+        {`We will be running installation and configuration commands on the mainframe by submitting jobs through the FTP connection.
 Please customize job statement below to match your system requirements.
   `}
         </Typography>
@@ -329,17 +329,17 @@ Please customize job statement below to match your system requirements.
         </FormControl>
         <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type={step === 0 ? "submit" : "button"} variant="text" onClick={e => saveJobHeader(e)}>Save and validate</Button>
-          {jobHeaderSaved ? 
+          {jobHeaderSaved ?
             <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : null}
         </FormControl>
       </Box>
-      {step > 0 
+      {step > 0
         ? <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0', opacity: step === 1 ? 1 : opacity}}>
-          <Typography id="position-1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
+          <Typography id="position-1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">
             {`Now let's define general USS locations`}
           </Typography>
           <FormControl>
-            <TextField 
+            <TextField
               id="installation-input"
               required
               style={{marginLeft: 0}}
@@ -351,7 +351,7 @@ Please customize job statement below to match your system requirements.
             />
           </FormControl>
           <FormControl>
-            <TextField 
+            <TextField
               id="java-home-input"
               required
               style={{marginLeft: 0}}
@@ -363,7 +363,7 @@ Please customize job statement below to match your system requirements.
             />
           </FormControl>
           <FormControl>
-            <TextField 
+            <TextField
               id="node-home-input"
               required
               style={{marginLeft: 0}}
@@ -380,9 +380,9 @@ Please customize job statement below to match your system requirements.
           </FormControl>
         </Box>
         : <div/> }
-      {step > 1 
+      {step > 1
         ? <Box sx={{height: step === 2 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0', opacity: step === 2 ? 1 : opacity}}>
-          <Typography id="position-2" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
+          <Typography id="position-2" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">
             {`Found Java version: ${validationDetails.javaVersion}, Node version: ${validationDetails.nodeVersion}, Space available: ${validationDetails.spaceAvailableMb}MB
 
 All set, ready to proceed.
