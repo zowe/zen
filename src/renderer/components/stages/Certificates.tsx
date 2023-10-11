@@ -16,6 +16,7 @@ import { setConfiguration, getConfiguration } from '../../../services/ConfigServ
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
+import Ajv from "ajv";
 
 const Certificates = () => {
 
@@ -26,9 +27,23 @@ const Certificates = () => {
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.certificate);
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const section = 'certificate';
   const initConfig: any = getConfiguration(section);
+
+  const ajv = new Ajv();
+  ajv.addKeyword("$anchor");
+  let certificateSchema;
+  let validate: any;
+  if(schema) {
+    certificateSchema = schema.properties.zowe.properties.setup.properties.certificate;
+  }
+
+  if(certificateSchema) {
+    validate = ajv.compile(certificateSchema);
+  }
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
@@ -66,10 +81,22 @@ const Certificates = () => {
         }
       }
 
-      setConfiguration(section, newData, true);
-      // Find some way to check if the form is valid or not?
-      dispatch(setNextStepEnabled(true));
-      setSetupYaml(newData);
+      if(validate) {
+        validate(newData);
+        if(validate.errors) {
+          const errPath = validate.errors[0].schemaPath;
+          const errMsg = validate.errors[0].message;
+          setIsFormValid(false);
+          setFormError(errPath+' '+errMsg);
+          dispatch(setNextStepEnabled(true));
+        } else {
+          setIsFormValid(true);
+          setFormError('');
+          setConfiguration(section, newData, true);
+          setSetupYaml(newData);
+          dispatch(setNextStepEnabled(true));
+        }
+      }
     }
   };
 
@@ -81,6 +108,7 @@ const Certificates = () => {
       <ContainerCard title="Certificates" description="Configure certificates"> 
         <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Box sx={{ width: '60vw' }}>
+          {!isFormValid && <div style={{color: 'red', fontSize: 'small'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>
       </ContainerCard>

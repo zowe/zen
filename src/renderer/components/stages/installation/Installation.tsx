@@ -20,6 +20,7 @@ import ProgressCard from '../../common/ProgressCard';
 import ContainerCard from '../../common/ContainerCard';
 import JsonForm from '../../common/JsonForms';
 import EditorDialog from "../../common/EditorDialog";
+import Ajv from "ajv";
 
 const Installation = () => {
 
@@ -34,6 +35,8 @@ const Installation = () => {
   const [showProgress, toggleProgress] = useState(false);
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [formError, setFormError] = useState('');
   const [installationProgress, setInstallationProgress] = useState({
     uploadYaml: false,
     download: false,
@@ -49,6 +52,18 @@ const Installation = () => {
   const section = 'dataset';
   const initConfig = getConfiguration(section);
 
+  const ajv = new Ajv();
+  ajv.addKeyword("$anchor");
+  let datasetSchema;
+  let validate: any;
+  if(schema) {
+    datasetSchema = schema.properties.zowe.properties.setup.properties.dataset;
+  }
+
+  if(datasetSchema) {
+    validate = ajv.compile(datasetSchema);
+  }
+  
   useEffect(() => {
     // dispatch(setNextStepEnabled(false));
     dispatch(setNextStepEnabled(true));
@@ -115,8 +130,23 @@ const Installation = () => {
         return {...acc, [k]: setupYaml[k]}
       }, {});
     }
-    setConfiguration(section, updatedData, true);
-    setSetupYaml(updatedData);
+
+    if(validate) {
+      validate(updatedData);
+      if(validate.errors) {
+        const errPath = validate.errors[0].schemaPath;
+        const errMsg = validate.errors[0].message;
+        setIsFormValid(false);
+        setFormError(errPath+' '+errMsg);
+        dispatch(setNextStepEnabled(true));
+      } else {
+        setIsFormValid(true);
+        setFormError('');
+        setConfiguration(section, updatedData, true);
+        setSetupYaml(updatedData);
+        dispatch(setNextStepEnabled(true));
+      }
+    }
   }
 
   return (
@@ -130,6 +160,7 @@ const Installation = () => {
           {`Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
         </Typography>
         <Box sx={{ width: '60vw' }}>
+          {!isFormValid && <div style={{color: 'red', fontSize: 'small'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={editHLQ} formData={setupYaml}/>
         </Box>  
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>

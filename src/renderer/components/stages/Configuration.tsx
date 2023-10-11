@@ -16,6 +16,7 @@ import { setConfiguration, getConfiguration } from '../../../services/ConfigServ
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
+import Ajv from "ajv";
 
 const Configuration = () => {
 
@@ -26,10 +27,23 @@ const Configuration = () => {
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.security);
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const section = 'security';
   const initConfig: any = getConfiguration(section);
   
+  const ajv = new Ajv();
+  let securitySchema;
+  let validate: any;
+  if(schema) {
+    securitySchema = schema.properties.zowe.properties.setup.properties.security;
+  }
+
+  if(securitySchema) {
+    validate = ajv.compile(securitySchema);
+  }
+
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
@@ -48,10 +62,24 @@ const Configuration = () => {
 
     if (newData) {
       newData = isYamlUpdated ? data.security : newData;
-      setConfiguration(section, newData, true);
-      // Find some way to check if the form is valid or not?
-      dispatch(setNextStepEnabled(true));
-      setSetupYaml(newData);
+
+      if(validate) {
+        validate(newData);
+        if(validate.errors) {
+          const errPath = validate.errors[0].schemaPath;
+          const errMsg = validate.errors[0].message;
+          setIsFormValid(false);
+          setFormError(errPath+' '+errMsg);
+          dispatch(setNextStepEnabled(true));
+        } else {
+          setIsFormValid(true);
+          setFormError('');
+          dispatch(setNextStepEnabled(true));
+          setConfiguration(section, newData, true);
+          setSetupYaml(newData);
+        }
+      }
+
     }
   };
 
@@ -63,6 +91,7 @@ const Configuration = () => {
       <ContainerCard title="Configuration" description="Configure Zowe initilaization and components">
         <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Box sx={{ width: '60vw' }}>
+          {!isFormValid && <div style={{color: 'red', fontSize: 'small'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>
       </ContainerCard>
