@@ -12,7 +12,6 @@ const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid, 
   const [editorContent, setEditorContent] = useState(initialContent);
 
   useEffect(() => {
-    console.log("---Monaco Use Effect");
     editorRef.current = monaco.editor.create(document.getElementById('monaco-editor-container'), {
       language: 'html', 
       theme: 'light',
@@ -20,12 +19,10 @@ const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid, 
     });
 
     editorRef.current.onDidChangeModelContent(() => {
-      console.log("modal content change");
       const code = editorRef.current.getValue();
 
       try {
         // To parse the yaml and check if it is valid
-        console.log("PARSING THE YAML HERE ------------------------");
         const parsedYAML = load(code);
         setError(false, '');
         onContentChange(code, false);

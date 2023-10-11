@@ -65,8 +65,7 @@ const Installation = () => {
   }
   
   useEffect(() => {
-    // dispatch(setNextStepEnabled(false));
-    dispatch(setNextStepEnabled(true));
+    dispatch(setNextStepEnabled(false));
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }

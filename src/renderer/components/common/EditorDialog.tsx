@@ -44,14 +44,7 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
     }
   }, [isEditorVisible])
 
-  // useEffect(() => {
-  //   if(isEditorVisible && !isSchemaValid) {
-  //     dispatch(setNextStepEnabled(false));
-  //   }
-  // }, [isSchemaValid, isEditorVisible]);
-
   const handleEditorContentChange = (newCode: any, isError: boolean) => {
-    console.log("HANDLING EDITOR CONTENT CHANGE---");
     if(isError) {
       dispatch(setNextStepEnabled(false));
       return;
@@ -66,7 +59,6 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
 
     try {
       // To parse the yaml and convert it to the javascript object
-      console.log("Parsing Yaml------");
       jsonData = load(newCode);
     } catch (error) {
       console.error('Error parsing YAML:', error);
@@ -75,12 +67,10 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
     // To validate the javascript object against the schema
     const isValid = validate(jsonData);
     setIsSchemaValid(isValid);
-    console.log("Schema error:---------------- ", isValid);
 
     if(validate.errors) {
       const errPath = validate.errors[0].schemaPath;
       const errMsg = validate.errors[0].message;
-      console.log("Schema error:---------------- ", errMsg);
       setSchemaError(`Invalid Schema: ${errPath}. ${errMsg} `, );
       jsonData = jsonData ? jsonData : "";
       setZoweConfig(jsonData);
@@ -115,7 +105,6 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
     reader.onload = (e) => {
       try {
         const uploadedCode = e.target.result as string;
-        console.log('Uploaded Code:', uploadedCode);
         setEditorContent(uploadedCode);
         handleEditorContentChange(uploadedCode, false);
       } catch (error) {
