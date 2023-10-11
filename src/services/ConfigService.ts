@@ -29,7 +29,7 @@ export const setConfiguration = (section: string, data: any, setZconfig?: boolea
 }
 
 // To get the subsection of the configuration
-export const getConfiguration = (section: string,) => {
+export const getConfiguration = (section: string) => {
   let flattenedStoredConfig;
   let config;
   const storedConfig = localStorage.getItem(section+ 'Config');
