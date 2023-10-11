@@ -155,13 +155,14 @@ const Planning = () => {
         dispatch(setSchema(schema));
         let installationDir = '';
         if (res.details.config?.zowe?.runtimeDirectory && res.details.config?.zowe?.workspaceDirectory) {
-          const getParentDir = (path: string): string => path.split('/').filter((i: string, ind: number) => i || !ind).slice(0, -1).join('/');
-          const runtimeParent = getParentDir(res.details.config.zowe.runtimeDirectory);
-          const workspaceParent = getParentDir(res.details.config.zowe.workspaceDirectory);
-          if (runtimeParent === workspaceParent) installationDir = runtimeParent;
+            const getParentDir = (path: string): string => path.split('/').filter((i: string, ind: number) => i || !ind).slice(0, -1).join('/');
+            const runtimeParent = getParentDir(res.details.config.zowe.runtimeDirectory);
+            const workspaceParent = getParentDir(res.details.config.zowe.workspaceDirectory);
+            if (runtimeParent === workspaceParent) installationDir = runtimeParent;
         }
-        javaHome = (res.details.config?.java?.home) ? res.details.config.java.home : '';
-        nodeHome = (res.details.config?.node?.home) ? res.details.config.node.home : '';
+
+        const javaHome = (res.details.config?.java?.home) ? res.details.config.java.home : '';
+        const nodeHome = (res.details.config?.node?.home) ? res.details.config.node.home : '';
         dispatch(setInstallationArgs({...installationArgs, installationDir, javaHome, nodeHome}));
       } else {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {

@@ -14,7 +14,7 @@ import {IIpcConnectionArgs, IJobResults, JobOutput} from "../types/interfaces";
 export function submitJcl(config: IIpcConnectionArgs, jcl: string, returnDDs: string[]): Promise<IJobResults> {
   return new Promise((resolve, reject) => {
     let jobOutput: IJobResults;
-    let client;
+    let client: any;
 
     async function submitAndResolve() {
       try {
