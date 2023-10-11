@@ -10,11 +10,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { dump, load } from 'js-yaml';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { setConfiguration, setZoweConfig, getZoweConfig } from '../../../services/ConfigService';
-import Ajv from "ajv";
+import Ajv2019 from "ajv/dist/2019"
 import MonacoEditorComponent from "../common/MonacoEditor";
 
 const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any) => {
@@ -29,13 +29,11 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
   const [schemaError, setSchemaError] = useState('');
   const fileInputRef = useRef(null);
 
-  const schemaCopy = { ...schema };
-  delete schemaCopy['$schema'];
-  delete schemaCopy['$id'];
-
-  const ajv = new Ajv();
+  const ajv = new Ajv2019()
   ajv.addKeyword("$anchor");
-  const validate = ajv.compile(schemaCopy);
+  const draft7MetaSchema = require("ajv/dist/refs/json-schema-draft-07.json")
+  ajv.addMetaSchema(draft7MetaSchema)
+  const validate = ajv.compile(schema);
 
   const initZoweConfig = getZoweConfig();
 
@@ -46,14 +44,11 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
     }
   }, [isEditorVisible])
 
-  useEffect(() => {
-    if(isEditorVisible && !isSchemaValid) {
-      dispatch(setNextStepEnabled(false));
-    }
-    if(!isEditorVisible) {
-      dispatch(setNextStepEnabled(true));
-    }
-  }, [isSchemaValid, isEditorVisible]);
+  // useEffect(() => {
+  //   if(isEditorVisible && !isSchemaValid) {
+  //     dispatch(setNextStepEnabled(false));
+  //   }
+  // }, [isSchemaValid, isEditorVisible]);
 
   const handleEditorContentChange = (newCode: any, isError: boolean) => {
     console.log("HANDLING EDITOR CONTENT CHANGE---");

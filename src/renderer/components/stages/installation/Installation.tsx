@@ -117,7 +117,8 @@ const Installation = () => {
   }
 
   const editHLQ = (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = init ? (initConfig? initConfig: data) : (data ? data : initConfig);
+    let updatedData = init ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    
     setInit(false);
 
     updatedData = isYamlUpdated ? data.dataset : updatedData;
@@ -136,17 +137,19 @@ const Installation = () => {
       if(validate.errors) {
         const errPath = validate.errors[0].schemaPath;
         const errMsg = validate.errors[0].message;
-        setIsFormValid(false);
-        setFormError(errPath+' '+errMsg);
-        dispatch(setNextStepEnabled(true));
+        setStageConfig(false, errPath+' '+errMsg, updatedData, false);
       } else {
-        setIsFormValid(true);
-        setFormError('');
         setConfiguration(section, updatedData, true);
-        setSetupYaml(updatedData);
-        dispatch(setNextStepEnabled(true));
+        setStageConfig(true, '', updatedData, true);
       }
     }
+  }
+
+  const setStageConfig = (isValid: boolean, errorMsg: string, data: any, proceed: boolean) => {
+    setIsFormValid(isValid);
+    setFormError(errorMsg);
+    setSetupYaml(data);
+    dispatch(setNextStepEnabled(proceed));
   }
 
   return (

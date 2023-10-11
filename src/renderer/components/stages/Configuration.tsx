@@ -68,20 +68,21 @@ const Configuration = () => {
         if(validate.errors) {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
-          setIsFormValid(false);
-          setFormError(errPath+' '+errMsg);
-          dispatch(setNextStepEnabled(true));
+          setStageConfig(false, errPath+' '+errMsg, newData, false);
         } else {
-          setIsFormValid(true);
-          setFormError('');
-          dispatch(setNextStepEnabled(true));
           setConfiguration(section, newData, true);
-          setSetupYaml(newData);
+          setStageConfig(true, '', newData, true);
         }
       }
-
     }
   };
+
+  const setStageConfig = (isValid: boolean, errorMsg: string, data: any, proceed: boolean) => {
+    setIsFormValid(isValid);
+    setFormError(errorMsg);
+    setSetupYaml(data);
+    dispatch(setNextStepEnabled(proceed));
+  }
 
   return (
     <div>
