@@ -9,7 +9,6 @@ const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid, 
   const editorRef = useRef(null);
   const [isError, setIsError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [editorContent, setEditorContent] = useState(initialContent);
 
   useEffect(() => {
     monaco.languages.register({ id: 'yaml' });

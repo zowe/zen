@@ -57,7 +57,7 @@ const Security = () => {
   };
 
   const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    let newData = init ? (initConfig ? initConfig : data) : (data ? data : initConfig);
+    let newData = init ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
     setInit(false);
 
     if (newData) {

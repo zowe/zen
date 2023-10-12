@@ -69,7 +69,7 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
     const isValid = validate(jsonData);
     setIsSchemaValid(isValid);
 
-    if(validate.errors) {
+    if(validate.errors && jsonData) {
       const errPath = validate.errors[0].schemaPath;
       const errMsg = validate.errors[0].message;
       setSchemaError(`Invalid Schema: ${errPath}. ${errMsg} `, );
