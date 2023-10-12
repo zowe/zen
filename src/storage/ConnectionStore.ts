@@ -92,7 +92,7 @@ const validateWithSchema = (key: string): boolean => {
   const keys = key.split('.');
   let schemaPart: any = storeSchema;
   for (const key of keys) {
-      if (!schemaPart.hasOwnProperty(key)) {
+      if (!Object.prototype.hasOwnProperty.call(schemaPart, key)) {
           return false;
       }
       schemaPart = schemaPart[key].properties;
