@@ -62,6 +62,7 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
       jsonData = load(newCode);
     } catch (error) {
       console.error('Error parsing YAML:', error);
+      jsonData = newCode;
     }
 
     // To validate the javascript object against the schema

@@ -18,7 +18,7 @@ import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 
-const Configuration = () => {
+const Security = () => {
 
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
@@ -89,7 +89,7 @@ const Configuration = () => {
       <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
         <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
       </div>
-      <ContainerCard title="Configuration" description="Configure Zowe initilaization and components">
+      <ContainerCard title="Security" description="Configure Zowe Security">
         <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small'}}>{formError}</div>}
@@ -100,4 +100,4 @@ const Configuration = () => {
   );
 };
 
-export default Configuration;
+export default Security;
