@@ -65,7 +65,8 @@ const Installation = () => {
   }
   
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    // dispatch(setNextStepEnabled(false));
+    dispatch(setNextStepEnabled(true));
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
@@ -162,7 +163,7 @@ const Installation = () => {
           {`Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
         </Typography>
         <Box sx={{ width: '60vw' }}>
-          {!isFormValid && <div style={{color: 'red', fontSize: 'small'}}>{formError}</div>}
+          {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={editHLQ} formData={setupYaml}/>
         </Box>  
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>

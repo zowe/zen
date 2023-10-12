@@ -92,7 +92,7 @@ const Security = () => {
       <ContainerCard title="Security" description="Configure Zowe Security">
         <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Box sx={{ width: '60vw' }}>
-          {!isFormValid && <div style={{color: 'red', fontSize: 'small'}}>{formError}</div>}
+          {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>
       </ContainerCard>
