@@ -138,7 +138,7 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
         onClose={toggleEditorVisibility} 
         PaperProps={{
           style: {
-            width: '100%',
+            width: '100vw',
           },
         }}>
         <DialogTitle>zowe.yaml</DialogTitle>
