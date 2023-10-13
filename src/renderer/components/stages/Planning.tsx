@@ -152,6 +152,7 @@ const Planning = () => {
         // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
         schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
         schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
+        schema.$id = serverSchema.$id;
         dispatch(setSchema(schema));
         let installationDir = '', javaHome, nodeHome;
         if (res.details.config?.zowe?.runtimeDirectory && res.details.config?.zowe?.workspaceDirectory) {
@@ -173,6 +174,7 @@ const Planning = () => {
             // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
             schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
             schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
+            schema.$id = serverSchema.$id;
             dispatch(setSchema(schema));
           }); 
         }); 

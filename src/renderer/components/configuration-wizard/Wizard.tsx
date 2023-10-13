@@ -12,7 +12,7 @@ import HorizontalLinearStepper from '../common/Stepper';
 import Connection from "../stages/connection/Connection";
 import Planning from "../stages/Planning";
 import Installation from "../stages/installation/Installation";
-import Configuration from "../stages/Configuration";
+import Security from "../stages/Security";
 import Certificates from "../stages/Certificates";
 import Initialization from "../stages/Initialization";
 import spock from '../../assets/spock.svg'
@@ -24,8 +24,8 @@ const stages = [
   {id: 0, label: 'Connection', component: <Connection/>, nextButton: 'Continue'},
   {id: 1, label: 'Planning', component: <Planning/>, nextButton: 'Continue to installation options'},
   {id: 2, label: 'Installation Type', component: <InstallationType/>, nextButton: 'Continue to components installation'},
-  {id: 3, label: 'Installation', component: <Installation/>, nextButton: 'Continue to system configuration'},
-  {id: 4, label: 'Configuration', component: <Configuration/>, nextButton: 'Continue to certificates setup'},
+  {id: 3, label: 'Installation', component: <Installation/>, nextButton: 'Continue to zowe Security'},
+  {id: 4, label: 'Security', component: <Security/>, nextButton: 'Continue to certificates setup'},
   {id: 5, label: 'Certificates', component: <Certificates/>, nextButton: 'Continue to instance setup'},
   {id: 6, label: 'Initialization', component: <Initialization/>, nextButton: <div style={{display: 'flex', alignItems: 'center'}}><img style={{width: '18px', height: '18px', paddingRight: '12px'}} src={spock}/>Live long and prosper</div>},
 ]

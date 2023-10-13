@@ -18,31 +18,30 @@ import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 
-const Certificates = () => {
+const Security = () => {
 
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
-  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.certificate);
+  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.security : "";
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.security);
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
 
-  const section = 'certificate';
+  const section = 'security';
   const initConfig: any = getConfiguration(section);
-
+  
   const ajv = new Ajv();
-  ajv.addKeyword("$anchor");
-  let certificateSchema;
+  let securitySchema;
   let validate: any;
   if(schema) {
-    certificateSchema = schema.properties.zowe.properties.setup.properties.certificate;
+    securitySchema = schema.properties.zowe.properties.setup.properties.security;
   }
 
-  if(certificateSchema) {
-    validate = ajv.compile(certificateSchema);
+  if(securitySchema) {
+    validate = ajv.compile(securitySchema);
   }
 
   useEffect(() => {
@@ -56,30 +55,13 @@ const Certificates = () => {
   const toggleEditorVisibility = () => {
     setEditorVisible(!editorVisible);
   };
-  
+
   const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
     let newData = init ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
     setInit(false);
 
     if (newData) {
-      newData = isYamlUpdated ? data.certificate : newData;
-
-      if(setupSchema.if) {
-        const ifProp = Object.keys(setupSchema.if.properties)[0];
-        const ifPropValue = setupSchema.if.properties[ifProp].const.toLowerCase();
-        const thenProp = setupSchema.then.required[0].toLowerCase();
-        const elseProp = setupSchema.else.required[0].toLowerCase();
-
-        if(newData && newData[ifProp]) {
-          const newDataPropValue = newData[ifProp].toLowerCase();
-          if( newDataPropValue == ifPropValue && newData[elseProp] ) {
-            delete newData[elseProp];
-          }
-          if(newDataPropValue != ifPropValue && newData[thenProp]) {
-            delete newData[thenProp];
-          }
-        }
-      }
+      newData = isYamlUpdated ? data.security : newData;
 
       if(validate) {
         validate(newData);
@@ -100,14 +82,14 @@ const Certificates = () => {
     setFormError(errorMsg);
     setSetupYaml(data);
     dispatch(setNextStepEnabled(proceed));
-  } 
+  }
 
   return (
     <div>
       <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
         <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
       </div>
-      <ContainerCard title="Certificates" description="Configure Zowe Certificates"> 
+      <ContainerCard title="Security" description="Configure Zowe Security">
         <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
@@ -118,4 +100,4 @@ const Certificates = () => {
   );
 };
 
-export default Certificates;
+export default Security;
