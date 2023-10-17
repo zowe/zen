@@ -9,7 +9,6 @@
  */
 
 import { flatten, unflatten } from 'flat';
-
 // To set the subsection of the configuration
 export const setConfiguration = (section: string, data: any, setZconfig?: boolean) => {
   if(!data) {
