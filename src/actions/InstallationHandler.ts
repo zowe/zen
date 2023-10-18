@@ -16,6 +16,7 @@ import { stringify } from 'yaml';
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ConfigurationStore } from "../storage/ConfigurationStore";
 import { ProgressStore } from "../storage/ProgressStore";
+import * as fs from 'fs';
 
 class Installation {
 
@@ -73,7 +74,6 @@ class Installation {
 
   async generateYamlFile() {
     const zoweYaml: any = ConfigurationStore.getConfig();
-    const fs = require('fs');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
     await fs.writeFile(filePath, stringify(zoweYaml), (err: any) => {
       if (err) {
@@ -135,7 +135,6 @@ export class FTPInstallation extends Installation {
     const filePath = path.join(installDir, "zowe.pax");
     console.log(`Uploading ${tempPath} to ${filePath}`)
     const result = await new FileTransfer().upload(connectionArgs, tempPath, filePath, DataType.BINARY);
-    const fs = require('fs');
     try {
       fs.unlink(tempPath, () => {
         console.log("Deleted zowe.pax successfully.");

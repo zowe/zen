@@ -1,3 +1,13 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
 import React, { useEffect, useRef, useState } from 'react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { load } from 'js-yaml';
@@ -39,8 +49,8 @@ const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid, 
         setError(false, '');
         onContentChange(code, false);
       } catch(error) {
-        let errorDesc = error.message ? error.message : "Invalid Yaml";
-        let errorMsg = error.reason ? error.reason : errorDesc;
+        const errorDesc = error.message ? error.message : "Invalid Yaml";
+        const errorMsg = error.reason ? error.reason : errorDesc;
         setError(true, errorMsg);
         onContentChange(code, true);
       }

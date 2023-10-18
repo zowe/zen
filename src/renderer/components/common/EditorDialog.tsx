@@ -16,6 +16,7 @@ import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-w
 import { setConfiguration, setZoweConfig, getZoweConfig } from '../../../services/ConfigService';
 import Ajv2019 from "ajv/dist/2019"
 import MonacoEditorComponent from "../common/MonacoEditor";
+import draft7MetaSchema from "ajv/dist/refs/json-schema-draft-07.json";
 
 const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any) => {
 
@@ -31,7 +32,6 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
 
   const ajv = new Ajv2019()
   ajv.addKeyword("$anchor");
-  const draft7MetaSchema = require("ajv/dist/refs/json-schema-draft-07.json")
   ajv.addMetaSchema(draft7MetaSchema)
   const validate = ajv.compile(schema);
 
