@@ -118,7 +118,7 @@ const InstallationType = () => {
           {`Zen will download the latest Zowe convenience build in PAX archive format from `}
           <Link href="zowe.org">{'https://zowe.org'}</Link>
         </Typography>
-        <Button onClick={showLicenseAgreement}>License Agreement</Button>
+        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small'}} onClick={showLicenseAgreement}>License Agreement</Button>
         {showLicense && <LicenseDialog isAgreementVisible={true} licenseAgreement={licenseAgreement}/>}
       </div>}
     {installValue === "upload" &&   <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
