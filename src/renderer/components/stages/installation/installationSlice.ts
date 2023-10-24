@@ -15,6 +15,9 @@ interface InstallationState {
   installationStatus: boolean;
   installationArgs: {
     installationDir: string;
+    workspaceDir: string;
+    logDir: string,
+    extentionDir: string,
     installationType?: string;
     downloadDir: string;
     userUploadedPaxPath?: string;
@@ -22,6 +25,13 @@ interface InstallationState {
     javaHome: string;
     nodeHome: string;
     setupConfig: any;
+    jobName: string;
+    jobPrefix: string;
+    rbacProfile: string;
+    cookieId: string;
+    zosmfHost: string,
+    zosmfPort: string,
+    zosmfApplId: string
   };
   zoweVersion: string;
 }
@@ -30,6 +40,9 @@ const initialState: InstallationState = {
   installationStatus: false,
   installationArgs: {
     installationDir: '',
+    workspaceDir: '',
+    logDir:'',
+    extentionDir:'',
     installationType: 'download',
     userUploadedPaxPath: '',
     smpeDir: '',
@@ -37,6 +50,13 @@ const initialState: InstallationState = {
     javaHome: '',
     nodeHome: '',
     setupConfig: {},
+    jobName: '',
+    jobPrefix: '',
+    rbacProfile: '',
+    cookieId: '',
+    zosmfHost: '',
+    zosmfPort: '',
+    zosmfApplId: ''
   },
   zoweVersion: '',
 };
