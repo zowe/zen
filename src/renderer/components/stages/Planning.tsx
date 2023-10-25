@@ -138,7 +138,8 @@ const Planning = () => {
   const installationArgs: any = useAppSelector(selectInstallationArgs);
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    // dispatch(setNextStepEnabled(false));
+    dispatch(setNextStepEnabled(true));
     // FIXME: Add a popup warning in case failed to get config files
     // FIXME: Save yaml and schema on disk to not to pull it each time?
     // REVIEW: Replace JobStatement text area with set of text fields?
@@ -183,7 +184,8 @@ const Planning = () => {
   }, []);  
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
+    // dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
+    dispatch(setNextStepEnabled(true));
   }, [jobHeaderSaved, locationsValidated]);
 
   useEffect(() => {
@@ -341,7 +343,7 @@ Please customize job statement below to match your system requirements.
             {`Now let's define general USS locations`}
           </Typography>
           <FormControl>
-            <TextField 
+            <TextField
               id="installation-input"
               required
               style={{marginLeft: 0}}
@@ -353,7 +355,127 @@ Please customize job statement below to match your system requirements.
             />
           </FormControl>
           <FormControl>
-            <TextField 
+            <TextField
+              id="workspace-input"
+              required
+              style={{marginLeft: 0}}
+              label="Workspace Directory"
+              variant="standard"
+              helperText="Location for Zowe workspace dir"
+              value={installationArgs.workspaceDir}
+              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, workspaceDir: e.target.value}))}
+            />
+          </FormControl>
+          <FormControl>
+            <TextField
+              id="log-input"
+              required
+              style={{marginLeft: 0}}
+              label="Log Directory"
+              variant="standard"
+              helperText="Location for Zowe Log dir"
+              value={installationArgs.logDir}
+              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, logDir: e.target.value}))}
+            />
+          </FormControl>
+          <FormControl>
+            <TextField
+              id="extention-input"
+              required
+              style={{marginLeft: 0}}
+              label="Extention Directory"
+              variant="standard"
+              helperText="Location for Zowe extention dir"
+              value={installationArgs.extentionDir}
+              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, extentionDir: e.target.value}))}
+            />
+          </FormControl>
+          <FormControl>
+            <TextField
+              id="job-name-input"
+              required
+              style={{marginLeft: 0}}
+              label="Job Name"
+              variant="standard"
+              helperText="Job name of Zowe primary ZWESLSTC started task."
+              value={installationArgs.jobName}
+              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, jobName: e.target.value}))}
+            />
+          </FormControl>
+          <FormControl>
+            <TextField
+              id="job-prefix-input"
+              required
+              style={{marginLeft: 0}}
+              label="Job Prefix"
+              variant="standard"
+              helperText="A short prefix to customize address spaces created by Zowe job."
+              value={installationArgs.jobPrefix}
+              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, jobPrefix: e.target.value}))}
+            />
+          </FormControl>
+          <FormControl>
+            <TextField
+              id="rbac-input"
+              required
+              style={{marginLeft: 0}}
+              label="Rbac Profile Identifier"
+              variant="standard"
+              helperText="An ID used for determining resource names used in RBAC authorization checks"
+              value={installationArgs.rbacProfile}
+              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}))}
+            />
+          </FormControl>
+          <FormControl>
+            <TextField
+              id="cookie-input"
+              required
+              style={{marginLeft: 0}}
+              label="Cookie Identifier"
+              variant="standard"
+              helperText="An ID that can be used by servers that distinguish their cookies from unrelated Zowe installs"
+              value={installationArgs.cookieId}
+              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}))}
+            />
+          </FormControl>
+          <FormControl>
+            <TextField
+              id="zosmf-host"
+              required
+              style={{marginLeft: 0}}
+              label="Zosmf Host"
+              variant="standard"
+              helperText="Host or domain name of your z/OSMF instance."
+              value={installationArgs.zosmfHost}
+              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfHost: e.target.value}))}
+            />
+          </FormControl>
+          <FormControl>
+            <TextField
+              id="zosmf-port"
+              required
+              style={{marginLeft: 0}}
+              label="Zosmf Port"
+              variant="standard"
+              helperText="Port number of your z/OSMF instance."
+              value={installationArgs.zosmfPort}
+              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfPort: e.target.value}))}
+            />
+          </FormControl>
+          <FormControl>
+            <TextField
+              id="zosmf-appl-id"
+              required
+              style={{marginLeft: 0}}
+              label="Zosmf Application Id"
+              variant="standard"
+              helperText="Appl ID of your z/OSMF instance."
+              value={installationArgs.zosmfApplId}
+              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfApplId: e.target.value}))}
+            />
+          </FormControl>
+          <FormControl>
+            <TextField
               id="java-home-input"
               required
               style={{marginLeft: 0}}
@@ -365,7 +487,7 @@ Please customize job statement below to match your system requirements.
             />
           </FormControl>
           <FormControl>
-            <TextField 
+            <TextField
               id="node-home-input"
               required
               style={{marginLeft: 0}}
