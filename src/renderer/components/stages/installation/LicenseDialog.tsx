@@ -23,19 +23,19 @@ const [licenseText, setLicenseText] = useState('');
         PaperProps={{
             style: {
             width: '100vw',
+            borderRadius: '15px'
             },
         }}>
-       <DialogTitle sx={{color: '#0678c6'}}>End User Liscense Agreement for Zowe</DialogTitle>
-        <DialogContent sx={{paddingBottom: '0'}}>
+       <DialogTitle sx={{color: '#0678c6', fontSize: 'medium'}}>End User Liscense Agreement for Zowe</DialogTitle>
+        <DialogContent sx={{paddingBottom: '0', fontSize: '15px'}}>
           <p>{licenseHeader}</p>
           <p>{licenseContent}</p>
-          <b>{licenseMainConetnt}</b>
+          <b >{licenseMainConetnt}</b>
           <p>{licenseLinkText}<a href={licenseLink} target="_blank">{licenseLink}</a></p>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => { licenseAgreement(1)} }>Agree</Button>
           <Button onClick={() => { licenseAgreement(0)} }>Disagree</Button>
-          <Button onClick={() => { licenseAgreement(-1)} }>Close</Button>
         </DialogActions>
       </Dialog> 
     </div>
