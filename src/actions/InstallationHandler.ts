@@ -158,6 +158,16 @@ export class FTPInstallation extends Installation {
     return {status: result.rc === 0, details: result.jobOutput}
   }
 
+  async initCertificates(connectionArgs: IIpcConnectionArgs, installDir: string){
+    const savingResult = await this.generateYamlFile();
+    if (!savingResult.status) {
+      return savingResult;
+    }
+    const script = `cd ${installDir}/runtime/bin;\n./zwe init certificates -c ${installDir}/zowe.yaml`;
+    const result = await new Script().run(connectionArgs, script);
+    return {status: result.rc === 0, details: result.jobOutput}
+  }
+
   async checkInstallData(args: Array<any>) {
     // FIXME: Refine installation data validation
   }
