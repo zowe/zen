@@ -163,6 +163,11 @@ export class FTPInstallation extends Installation {
     if (!savingResult.status) {
       return savingResult;
     }
+    console.log("uploading yaml...");
+    const uploadYaml = await this.uploadYaml(connectionArgs, installDir);
+    if(!uploadYaml.status){
+      return uploadYaml;
+    }
     const script = `cd ${installDir}/runtime/bin;\n./zwe init certificates -c ${installDir}/zowe.yaml`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
