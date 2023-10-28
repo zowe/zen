@@ -28,6 +28,28 @@ export const setConfiguration = (section: string, data: any, setZconfig?: boolea
   }
 }
 
+export const setTopLevelZConfig = (section: string, data: any) => {
+  if(!data) {
+    return;
+  }
+
+  let storedZoweConfig = localStorage.getItem('zoweConfig');
+    if (!storedZoweConfig) {
+      return;
+    }
+
+    // Parse the stored configuration from JSON
+    storedZoweConfig = JSON.parse(storedZoweConfig);
+    const zoweConfig: any = unflatten(storedZoweConfig)
+
+    if (zoweConfig && zoweConfig.zowe && zoweConfig.zowe) {
+      zoweConfig.zowe[section] = data;
+      const flattenedZoweConfig = flatten(zoweConfig);
+      localStorage.setItem('zoweConfig', JSON.stringify(flattenedZoweConfig));
+    }
+
+}
+
 // To get the subsection of the configuration
 export const getConfiguration = (section: string) => {
   let flattenedStoredConfig;
