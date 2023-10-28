@@ -9,10 +9,10 @@
  */
 
 import { useState, useEffect } from "react";
-import { Box, Button, FormControl } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
+import { setConfiguration, getConfiguration, getZoweConfig, setTopLevelZConfig } from '../../../services/ConfigService';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -24,9 +24,9 @@ const Certificates = () => {
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
-  const verifyCertsSchema: any = schema ? {"type": "object", "properties": {"verifyCertificates": schema.properties.zowe.properties.verifyCertificates}} : "";
+  const verifyCertsSchema = schema ? {"type": "object", "properties": {"verifyCertificates": schema.properties.zowe.properties.verifyCertificates}} : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.certificate);
-  const [verifyCertsYaml, setVerifyCertsYaml] = useState(yaml?.zowe.verifyCertificates);
+  const [verifyCertsYaml, setVerifyCertsYaml] = useState({'verifyCertificates': yaml?.zowe.verifyCertificates});
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -34,21 +34,16 @@ const Certificates = () => {
 
   const section = 'certificate';
   const initConfig: any = getConfiguration(section);
+  const verifyCertsConfig: any = (getZoweConfig() as any).zowe.verifyCertificates;
 
-  const verCertsConfig: any = (getZoweConfig() as any).zowe.verifyCertificates;
-
-
-  // console.log('verifyCertsSchema: ', JSON.stringify(verifyCertsSchema));
+  console.log('verifyCertsSchema: ', JSON.stringify(verifyCertsSchema));
   console.log('verifyCertsYaml:', JSON.stringify(verifyCertsYaml));
-  console.log('setup Yaml:', JSON.stringify(setupYaml))
-  console.log('verCertsConfig: ', JSON.stringify(verCertsConfig));
-  // console.log('initConfig:', JSON.stringify(initConfig));
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
   let certificateSchema;
   let validate: any;
-  let verifyCertsValidate: any;
+  let validateVerifyCertSchema: any;
   if(schema) {
     certificateSchema = schema.properties.zowe.properties.setup.properties.certificate;
   }
@@ -57,15 +52,14 @@ const Certificates = () => {
     validate = ajv.compile(certificateSchema);
   }
 
-  if(schema && schema.properties.zowe.properties.verifyCertificates != undefined) verifyCertsValidate = ajv.compile(schema.properties.zowe.properties.verifyCertificates);
+  if(verifyCertsSchema) {
+    validateVerifyCertSchema = ajv.compile(verifyCertsSchema);
+  }
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
-    }
-    if(verCertsConfig.length != 0) {
-      setVerifyCertsYaml(verCertsConfig);
     }
     setInit(true);
   }, []);
@@ -112,53 +106,35 @@ const Certificates = () => {
     }
   };
 
+  const handleVerifyCertsChange = (e: any) => {
+    console.log('verifyCertificates JsonForm onChange (handleVerifyCertsChange()) called: ', JSON.stringify(e))
+    if(e.verifyCertificates && e.verifyCertificates != verifyCertsYaml.verifyCertificates){
+      if(validateVerifyCertSchema){
+        validateVerifyCertSchema(e);
+        if(validateVerifyCertSchema.errors) {
+          console.log('handleVerifyCertsChange validation error')
+          // const errPath = validateVerifyCertSchema.errors[0].schemaPath;
+          // const errMsg = validateVerifyCertSchema.errors[0].message;
+          // setStageConfig(false, errPath+' '+errMsg, e, false);
+        } else {
+          console.log('handleVerifyCertsChange validation success')
+          setTopLevelZConfig('verifyCertificates', e.verifyCertificates);
+          setVerifyCertsYaml({'verifyCertificates': e.verifyCertificates});
+          setIsFormValid(true);
+          // setVerifyCertsYaml({'verifyCertificates': e.verifyCertificates});
+          // dispatch(setNextStepEnabled(true));
+          // setStageConfig(true, '', newData, true);
+        }
+      }
+    }
+  }
+
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any, proceed: boolean) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
     dispatch(setNextStepEnabled(proceed));
   } 
-
-  const handleVerCertsChange = (data: any, isYamlUpdated?: boolean) => {
-    let newData = init ? (Object.keys(verCertsConfig).length > 0 ? verCertsConfig: data) : (data ? data : verCertsConfig);
-    setInit(false);
-
-    if (newData) {
-      newData = isYamlUpdated ? data.certificate : newData;
-
-      if(verifyCertsSchema.if) {
-        const ifProp = Object.keys(verifyCertsSchema.if.properties)[0];
-        const ifPropValue = verifyCertsSchema.if.properties[ifProp].const.toLowerCase();
-        const thenProp = verifyCertsSchema.then.required[0].toLowerCase();
-        const elseProp = verifyCertsSchema.else.required[0].toLowerCase();
-
-        if(newData && newData[ifProp]) {
-          const newDataPropValue = newData[ifProp].toLowerCase();
-          if( newDataPropValue == ifPropValue && newData[elseProp] ) {
-            delete newData[elseProp];
-          }
-          if(newDataPropValue != ifPropValue && newData[thenProp]) {
-            delete newData[thenProp];
-          }
-        }
-      }
-
-      if(verifyCertsValidate) {
-        verifyCertsValidate(newData);
-        if(validate.errors) {
-          const errPath = validate.errors[0].schemaPath;
-          const errMsg = validate.errors[0].message;
-          // setStageConfig(false, errPath+' '+errMsg, newData, false);
-        } else {
-          console.log('verifyCertsValidate no errors, newData:', newData);
-          setConfiguration('verifyCertificates', newData, true);
-          setVerifyCertsYaml(newData);
-          dispatch(setNextStepEnabled(true));
-          // setStageConfig(true, '', newData, true);
-        }
-      }
-    }
-  };
 
   return (
     <div>
@@ -170,11 +146,8 @@ const Certificates = () => {
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
-          <JsonForm schema={verifyCertsSchema} onChange={handleVerCertsChange} formData={verifyCertsYaml}/>
+          <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/>
         </Box>
-        <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {}}>Run 'zwe init certificates'</Button>
-        </FormControl>
       </ContainerCard>
     </div>
   );
