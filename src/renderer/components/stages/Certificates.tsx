@@ -17,12 +17,17 @@ import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
+import { selectInstallationArgs } from "./installation/installationSlice";
+import { selectConnectionArgs } from "./connection/connectionSlice";
+import { IResponse } from "src/types/interfaces";
 
 const Certificates = () => {
 
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
+  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const installationArgs = useAppSelector(selectInstallationArgs);
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
   const verifyCertsSchema = schema ? {"type": "object", "properties": {"verifyCertificates": schema.properties.zowe.properties.verifyCertificates}} : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.certificate);
@@ -144,6 +149,15 @@ const Certificates = () => {
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
           <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+            window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+              dispatch(setNextStepEnabled(true));
+              // clearInterval(timer);
+            }).catch(() => {
+              // clearInterval(timer);
+              console.warn('Installation failed');
+            });
+          }}>Run 'zwe init certificates'</Button>
         </Box>
       </ContainerCard>
     </div>
