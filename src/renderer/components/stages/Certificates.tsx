@@ -82,7 +82,7 @@ const Certificates = () => {
         setCertificateProgress(res);
       })
     }, 3000);
-    const nextPosition = document.getElementById('installation-progress');
+    const nextPosition = document.getElementById('certificate-progress');
     nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress]);
 
