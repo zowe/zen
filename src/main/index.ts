@@ -140,6 +140,11 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('get-certificate-progress', async (event) => {
+    const res = ProgressStore.getAll()['certificate'];
+    return res;
+  });
+
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
   

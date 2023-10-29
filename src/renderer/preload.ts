@@ -67,6 +67,9 @@ contextBridge.exposeInMainWorld('electron', {
     getInstallationProgress() {
       return ipcRenderer.invoke("get-installation-progress");
     },
+    getCertificate() {
+      return ipcRenderer.invoke("get-certificate-progress");
+    },
     on(channel: string, func: any) {
       // REVIEW: Used to have channel validation with ipcRenderer.send, do we need something similar for ipcRenderer.invoke?
       const validChannels = ['install-mvs'];

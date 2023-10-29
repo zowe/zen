@@ -19,6 +19,11 @@ const storeDefault = {
     "upload": false,
     "unpax": false,
     "install": false
+  },
+  "certificate": {
+    "writeYaml": false,
+    "uploadYaml": false,
+    "zweInitCertificate": false,
   }
 };
 
