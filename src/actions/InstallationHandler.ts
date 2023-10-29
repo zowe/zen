@@ -160,12 +160,11 @@ export class FTPInstallation extends Installation {
     return {status: result.rc === 0, details: result.jobOutput}
   }
 
-  async initCertificates(connectionArgs: IIpcConnectionArgs, installDir: string){
+  async initCertificates(connectionArgs: IIpcConnectionArgs, installDir: string, zoweConfig: any){
     console.log('writing current yaml to disk');
-    const zoweYaml: any = getZoweConfig();
     const fs = require('fs');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-    await fs.writeFile(filePath, dump(zoweYaml), (err: any) => {
+    await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
       if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           return {status: false, details: err.message};
