@@ -78,7 +78,7 @@ const Certificates = () => {
 
   useEffect(() => {
     timer = setInterval(() => {
-      window.electron.ipcRenderer.getcertificateProgress().then((res: any) => {
+      window.electron.ipcRenderer.getCertificateProgress().then((res: any) => {
         setCertificateProgress(res);
       })
     }, 3000);
