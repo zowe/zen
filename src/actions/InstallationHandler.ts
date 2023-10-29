@@ -16,6 +16,8 @@ import { stringify } from 'yaml';
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ConfigurationStore } from "../storage/ConfigurationStore";
 import { ProgressStore } from "../storage/ProgressStore";
+import { getZoweConfig } from 'src/services/ConfigService';
+import { dump } from 'js-yaml';
 
 class Installation {
 
@@ -159,10 +161,16 @@ export class FTPInstallation extends Installation {
   }
 
   async initCertificates(connectionArgs: IIpcConnectionArgs, installDir: string){
-    const savingResult = await this.generateYamlFile();
-    if (!savingResult.status) {
-      return savingResult;
-    }
+    console.log('writing current yaml to disk');
+    const zoweYaml: any = getZoweConfig();
+    const fs = require('fs');
+    const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
+    await fs.writeFile(filePath, dump(zoweYaml), (err: any) => {
+      if (err) {
+          console.warn("Can't save configuration to zowe.yaml");
+          return {status: false, details: err.message};
+      } 
+    });
     console.log("uploading yaml...");
     const uploadYaml = await this.uploadYaml(connectionArgs, installDir);
     if(!uploadYaml.status){
