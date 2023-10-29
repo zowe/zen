@@ -19,7 +19,7 @@ import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
 import { selectConnectionArgs } from "./connection/connectionSlice";
-import { IResponse } from "src/types/interfaces";
+import { IResponse } from "../../../../src/types/interfaces";
 
 const Certificates = () => {
 
