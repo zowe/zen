@@ -41,8 +41,8 @@ const Certificates = () => {
   const initConfig: any = getConfiguration(section);
   const verifyCertsConfig: any = (getZoweConfig() as any).zowe.verifyCertificates;
 
-  console.log('verifyCertsSchema: ', JSON.stringify(verifyCertsSchema));
-  console.log('verifyCertsYaml:', JSON.stringify(verifyCertsYaml));
+  // console.log('verifyCertsSchema: ', JSON.stringify(verifyCertsSchema));
+  // console.log('verifyCertsYaml:', JSON.stringify(verifyCertsYaml));
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -150,6 +150,7 @@ const Certificates = () => {
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
           <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+            e.preventDefault();
             window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
               dispatch(setNextStepEnabled(true));
               // clearInterval(timer);
