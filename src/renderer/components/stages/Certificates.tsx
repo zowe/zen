@@ -20,6 +20,8 @@ import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { IResponse } from "../../../../src/types/interfaces";
+import React from "react";
+import ProgressCard from "../common/ProgressCard";
 
 const Certificates = () => {
 
@@ -34,15 +36,20 @@ const Certificates = () => {
   const [verifyCertsYaml, setVerifyCertsYaml] = useState({'verifyCertificates': yaml?.zowe.verifyCertificates});
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
+  const [showProgress, setShowProgress] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
 
   const section = 'certificate';
   const initConfig: any = getConfiguration(section);
-  const verifyCertsConfig: any = (getZoweConfig() as any).zowe.verifyCertificates;
 
-  // console.log('verifyCertsSchema: ', JSON.stringify(verifyCertsSchema));
-  // console.log('verifyCertsYaml:', JSON.stringify(verifyCertsYaml));
+  const verifyCertsConfig: any = (getZoweConfig() as any).zowe.verifyCertificates;
+  const [certificateProgress, setCertificateProgress] = useState({
+    writeYaml: false,
+    uploadYaml: false,
+    zweInitCertificate: false,
+  });
+  let timer: any;
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -68,6 +75,16 @@ const Certificates = () => {
     }
     setInit(true);
   }, []);
+
+  useEffect(() => {
+    timer = setInterval(() => {
+      window.electron.ipcRenderer.getcertificateProgress().then((res: any) => {
+        setCertificateProgress(res);
+      })
+    }, 3000);
+    const nextPosition = document.getElementById('installation-progress');
+    nextPosition.scrollIntoView({behavior: 'smooth'});
+  }, [showProgress]);
 
   const toggleEditorVisibility = () => {
     setEditorVisible(!editorVisible);
@@ -151,14 +168,24 @@ const Certificates = () => {
           <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
             e.preventDefault();
+            setShowProgress(true);
             window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
               dispatch(setNextStepEnabled(true));
-              // clearInterval(timer);
+              clearInterval(timer);
             }).catch(() => {
-              // clearInterval(timer);
+              clearInterval(timer);
               console.warn('zwe init certificates failed');
             });
           }}>Run 'zwe init certificates'</Button>
+        </Box>
+        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="certificate-progress">
+        {!showProgress ? null :
+          <React.Fragment>
+            <ProgressCard label="Write configuration file to local disk" id="download-progress-card" status={certificateProgress.writeYaml}/>
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={certificateProgress.uploadYaml}/>
+            <ProgressCard label="Run certificate initialization script (zwe init certifiate)" id="install-progress-card" status={certificateProgress.zweInitCertificate}/>
+          </React.Fragment>
+        }
         </Box>
       </ContainerCard>
     </div>
