@@ -107,23 +107,20 @@ const Certificates = () => {
   };
 
   const handleVerifyCertsChange = (e: any) => {
-    console.log('verifyCertificates JsonForm onChange (handleVerifyCertsChange()) called: ', JSON.stringify(e))
     if(e.verifyCertificates && e.verifyCertificates != verifyCertsYaml.verifyCertificates){
       if(validateVerifyCertSchema){
         validateVerifyCertSchema(e);
         if(validateVerifyCertSchema.errors) {
-          console.log('handleVerifyCertsChange validation error')
-          // const errPath = validateVerifyCertSchema.errors[0].schemaPath;
-          // const errMsg = validateVerifyCertSchema.errors[0].message;
-          // setStageConfig(false, errPath+' '+errMsg, e, false);
+          const errPath = validateVerifyCertSchema.errors[0].schemaPath;
+          const errMsg = validateVerifyCertSchema.errors[0].message;
+          setIsFormValid(false);
+          setFormError(errPath+' '+errMsg);
+          dispatch(setNextStepEnabled(false));
         } else {
-          console.log('handleVerifyCertsChange validation success')
           setTopLevelZConfig('verifyCertificates', e.verifyCertificates);
           setVerifyCertsYaml({'verifyCertificates': e.verifyCertificates});
           setIsFormValid(true);
-          // setVerifyCertsYaml({'verifyCertificates': e.verifyCertificates});
-          // dispatch(setNextStepEnabled(true));
-          // setStageConfig(true, '', newData, true);
+          dispatch(setNextStepEnabled(true));
         }
       }
     }
