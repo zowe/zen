@@ -156,7 +156,7 @@ const Certificates = () => {
               // clearInterval(timer);
             }).catch(() => {
               // clearInterval(timer);
-              console.warn('Installation failed');
+              console.warn('zwe init certificates failed');
             });
           }}>Run 'zwe init certificates'</Button>
         </Box>
