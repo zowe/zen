@@ -11,7 +11,7 @@
 import {IIpcConnectionArgs} from "../types/interfaces";
 import Header from "../renderer/components/Header"
 import { AlertColor } from "@mui/material/Alert";
-const zos = require('zos-node-accessor');
+import zos from 'zos-node-accessor';
 
 export async function connectFTPServer(config: IIpcConnectionArgs): Promise<any> {
 

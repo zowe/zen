@@ -152,5 +152,5 @@ app.on('window-all-closed', async () => {
 });
 
 app.on('activate', () => {
-
+    // Intentionally left empty
 });

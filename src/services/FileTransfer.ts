@@ -12,8 +12,8 @@ import {IncomingMessage} from "http";
 import {connectFTPServer} from "./utils";
 import {IIpcConnectionArgs} from "../types/interfaces";
 
-const fs = require('fs');
-const https = require('https');
+import * as fs from 'fs';
+import * as https from 'https';
 
 export enum DataType {
   ASCII = 'ascii',

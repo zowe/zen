@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-const { contextBridge, ipcRenderer } = require('electron');
+import { contextBridge, ipcRenderer } from 'electron';
 import { IIpcConnectionArgs } from '../types/interfaces';
 
 contextBridge.exposeInMainWorld('electron', {
