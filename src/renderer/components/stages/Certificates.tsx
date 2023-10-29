@@ -151,7 +151,7 @@ const Certificates = () => {
           <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
             e.preventDefault();
-            window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+            window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
               dispatch(setNextStepEnabled(true));
               // clearInterval(timer);
             }).catch(() => {
