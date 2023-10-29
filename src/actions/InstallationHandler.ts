@@ -16,7 +16,7 @@ import { stringify } from 'yaml';
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ConfigurationStore } from "../storage/ConfigurationStore";
 import { ProgressStore } from "../storage/ProgressStore";
-import { getZoweConfig } from 'src/services/ConfigService';
+import { getZoweConfig } from '../services/ConfigService';
 import { dump } from 'js-yaml';
 
 class Installation {
