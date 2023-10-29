@@ -61,8 +61,8 @@ contextBridge.exposeInMainWorld('electron', {
     installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string) {
       return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version);
     },
-    initCertsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}) {
-      return ipcRenderer.invoke("zwe-init-certificates", connectionArgs, installationArgs);
+    initCertsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
+      return ipcRenderer.invoke("zwe-init-certificates", connectionArgs, installationArgs, zoweConfig);
     },
     getInstallationProgress() {
       return ipcRenderer.invoke("get-installation-progress");
