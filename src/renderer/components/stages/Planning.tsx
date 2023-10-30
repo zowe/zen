@@ -275,7 +275,7 @@ const Planning = () => {
         const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
         details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
         // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
-        if (parseInt(details.spaceAvailableMb, 10) < 20) { 
+        if (parseInt(details.spaceAvailableMb, 10) < 1300) { 
           details.error = details.error + `Not enough space, you need at least 1300MB; `;
         }
       } catch (error) {
