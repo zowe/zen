@@ -551,7 +551,7 @@ Please customize job statement below to match your system requirements.
             </div>
           )}
           <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type={step === 1 ? "submit" : "button"} variant="text" onClick={e => validateLocations(e)}>Validate locations</Button>
+            <Button sx={{boxShadow: 'none', mr: '12px', marginLeft: '50%'}} type={step === 1 ? "submit" : "button"} variant="text" onClick={e => validateLocations(e)}>Validate locations</Button>
             {locationsValidated ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : validationDetails.error ? null: null}
           </FormControl>
         </Box>
