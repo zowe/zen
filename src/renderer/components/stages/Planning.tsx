@@ -351,7 +351,7 @@ Please customize job statement below to match your system requirements.
                 id="installation-input"
                 required
                 style={{marginLeft: 0}}
-                label="Installation location"
+                label="Installation location (Runtime Directory)"
                 variant="standard"
                 value={installationArgs.installationDir}
                 onChange={(e) => dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}))}
