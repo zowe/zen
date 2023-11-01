@@ -1,10 +1,9 @@
 {
   "name": "zowe-enterprise-necessity",
   "author": "Zowe",
-  "description": "An example Electron app",
+  "description": "Zowe Enterprise Necessity",
   "productName": "zowe-enterprise-necessity",
   "version": "1.0.0",
-  "description": "Zowe Enterprise Necessity",
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start --enable-logging",
@@ -18,7 +17,7 @@
   "devDependencies": {
     "@electron-forge/cli": "^6.0.5",
     "@electron-forge/maker-deb": "^6.0.5",
-	"@electron-forge/maker-dmg": "^6.0.5",
+    "@electron-forge/maker-dmg": "^6.0.5",
     "@electron-forge/maker-rpm": "^6.0.5",
     "@electron-forge/maker-squirrel": "^6.0.5",
     "@electron-forge/maker-zip": "^6.0.5",
@@ -62,7 +61,9 @@
     "electron-store": "^8.1.0",
     "flat": "^5.0.2",
     "js-yaml": "^4.1.0",
-    "monaco-editor": "^0.41.0",
+    "monaco-editor": "^0.44.0",
+    "monaco-editor-webpack-plugin": "^7.1.0",
+    "monaco-yaml": "^5.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.5",

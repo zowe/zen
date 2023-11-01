@@ -9,6 +9,7 @@
  */
 
 import type IForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const ForkTsCheckerWebpackPlugin: typeof IForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
@@ -17,4 +18,17 @@ export const plugins = [
   new ForkTsCheckerWebpackPlugin({
     logger: 'webpack-infrastructure',
   }),
+  new MonacoWebpackPlugin({
+    languages: ['yaml'],
+    customLanguages: [
+      {
+        label: 'yaml',
+        entry: 'monaco-yaml',
+        worker: {
+          id: 'monaco-yaml/yamlWorker',
+          entry: 'monaco-yaml/yaml.worker'
+        }
+      }
+    ]
+  })
 ];
