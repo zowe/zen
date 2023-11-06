@@ -139,7 +139,7 @@ const InitApfAuth = () => {
       <ContainerCard title="APF Authorize Load Libraries" description="Run the `zwe init apfauth` command to APF authorize load libraries."> 
         <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={editHLQ}/>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
-          {`Ready to submit the 'zwe init apfauth' command and APF authorize the Zowe load libraries.\n`}
+          {`Please review the following dataset setup configuration values before pressing run.\n`}
         </Typography>
         <Box sx={{ width: '60vw' }}>
             <TextField
