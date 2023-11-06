@@ -136,7 +136,7 @@ const InitApfAuth = () => {
       <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
         <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
       </div>
-      <ContainerCard title="zwe init apfauth" description="Run the zwe command to initialize apf authorizations."> 
+      <ContainerCard title="APF Authorize Load Libraries" description="Run the `zwe init apfauth` command to APF authorize load libraries."> 
         <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={editHLQ}/>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
           {`Ready to submit the 'zwe init apfauth' command and APF authorize the Zowe load libraries.\n`}
