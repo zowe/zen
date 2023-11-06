@@ -19,6 +19,11 @@ const storeDefault = {
     "upload": false,
     "unpax": false,
     "install": false
+  },
+  "apfAuth":{
+    "writeYaml": false,
+    "uploadYaml": false,
+    "success": false
   }
 };
 

@@ -61,6 +61,12 @@ contextBridge.exposeInMainWorld('electron', {
     installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string) {
       return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version);
     },
+    apfAuthButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
+      return ipcRenderer.invoke("init-apf", connectionArgs, installationArgs, zoweConfig);
+    },
+    getApfAuthProgress(){
+      return ipcRenderer.invoke("get-apf-auth-progress");
+    },
     getInstallationProgress() {
       return ipcRenderer.invoke("get-installation-progress");
     },

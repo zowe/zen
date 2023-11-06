@@ -41,4 +41,10 @@ export class InstallActions {
     version: string): Promise<IResponse> {
     return this.strategy.runInstallation(connectionArgs, installationArgs, version);
   }
+
+  apfAuth(connectionArgs: IIpcConnectionArgs,
+    installationArgs: {installationDir: string}, zoweConfig: any): Promise<IResponse> {
+    return this.strategy.apfAuth(connectionArgs, installationArgs, zoweConfig);
+  }
+
 }
