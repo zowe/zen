@@ -62,7 +62,7 @@ const InitApfAuth = () => {
   }
   
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    // dispatch(setNextStepEnabled(false));
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
