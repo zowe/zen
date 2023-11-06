@@ -22,18 +22,7 @@ const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid, 
 
   useEffect(() => {
     monaco.languages.register({ id: 'yaml' });
-    monaco.languages.setMonarchTokensProvider('yaml', {
-      tokenizer: {
-        root: [
-          //Defining syntax highlighting rules here
-          [/^(\s*)([a-zA-Z_][\w]*)/, ['white', 'key']],// Unquoted keys
-          [/\b(true|false)\b/, 'keyword'], // Boolaean values
-          [/"[^"\\]*"/, 'string'], // Values enclosed in double quotes
-          [/'[^'\\]*'/, 'string'], // Values enclosed in single quotes
-          [/#.*$/, 'comment'], // Comments
-        ],
-      },
-    });
+
     editorRef.current = monaco.editor.create(document.getElementById('monaco-editor-container'), {
       language: 'yaml', 
       theme: 'light',
