@@ -14,36 +14,49 @@ import { load } from 'js-yaml';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 
-const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid, schemaError} : any) => {
+const MonacoEditorComponent = ({contentType, initialContent, onContentChange, isSchemaValid, schemaError} : any) => {
 
   const editorRef = useRef(null);
   const [isError, setIsError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  let readOnly = true;
+  let lang: string;
+
   useEffect(() => {
-    monaco.languages.register({ id: 'yaml' });
+    if(contentType == 'yaml') {
+      monaco.languages.register({ id: 'yaml' });
+      readOnly = false;
+      lang = 'yaml';
+    } else if(contentType == 'output') {
+      lang = 'plaintext';
+    } else if(contentType == 'jcl') {
+      lang = 'jcl';
+    }
 
     editorRef.current = monaco.editor.create(document.getElementById('monaco-editor-container'), {
-      language: 'yaml', 
+      language: lang, 
       theme: 'light',
       value: initialContent,
+      readOnly: readOnly
     });
 
     editorRef.current.onDidChangeModelContent(() => {
       const code = editorRef.current.getValue();
 
-      try {
-        // To parse the yaml and check if it is valid
-        const parsedYAML = load(code);
-        setError(false, '');
-        onContentChange(code, false);
-      } catch(error) {
-        const errorDesc = error.message ? error.message : "Invalid Yaml";
-        const errorMsg = error.reason ? error.reason : errorDesc;
-        setError(true, errorMsg);
-        onContentChange(code, true);
+      if(contentType == 'yaml') {
+        try {
+          // To parse the yaml and check if it is valid
+          const parsedYAML = load(code);
+          setError(false, '');
+          onContentChange(code, false);
+        } catch(error) {
+          let errorDesc = error.message ? error.message : "Invalid Yaml";
+          let errorMsg = error.reason ? error.reason : errorDesc;
+          setError(true, errorMsg);
+          onContentChange(code, true);
+        }
       }
-
     });
 
     return () => {
