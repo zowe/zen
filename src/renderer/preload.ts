@@ -67,7 +67,7 @@ contextBridge.exposeInMainWorld('electron', {
     getInstallationProgress() {
       return ipcRenderer.invoke("get-installation-progress");
     },
-    getCertificate() {
+    getCertificateProgress() {
       return ipcRenderer.invoke("get-certificate-progress");
     },
     on(channel: string, func: any) {
