@@ -42,7 +42,8 @@ const Installation = () => {
     download: false,
     upload: false,
     unpax: false,
-    install: false
+    install: false,
+    initMVS: false
   });
 
   const installationArgs = useAppSelector(selectInstallationArgs);
@@ -176,6 +177,7 @@ const Installation = () => {
             <ProgressCard label={`Upload to pax file to ${installationArgs.installationDir}`} id="upload-progress-card" status={installationProgress.upload}/>
             <ProgressCard label="Unpax installation files" id="unpax-progress-card" status={installationProgress.unpax}/>
             <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={installationProgress.install}/>
+            <ProgressCard label="Run MVS dataset initialization script (zwe init mvs)" id="install-progress-card" status={installationProgress.initMVS}/>
           </React.Fragment>
         }
         </Box> 
