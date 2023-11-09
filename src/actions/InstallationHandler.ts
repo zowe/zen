@@ -62,11 +62,21 @@ class Installation {
       const unpax = await this.unpax(connectionArgs, installationArgs.installationDir); 
       ProgressStore.set('installation.unpax', unpax.status);
 
-      console.log("installing...");
-      const install = await this.install(connectionArgs, installationArgs.installationDir);
-      ProgressStore.set('installation.install', install.status);
+      let installation;
+      if(installationArgs.installationType !== "smpe"){
+        console.log("installing...");
+        const install = await this.install(connectionArgs, installationArgs.installationDir);
+        ProgressStore.set('installation.install', install.status);
+      } else {
+        installation = {status: true}
+        ProgressStore.set('installation.install', true);
+      }
 
-      return {status: download.status && uploadYaml.status && upload.status && unpax.status && install.status, details: ''};
+      console.log("running zwe init mvs...");
+      const initMvs = await this.initMVS(connectionArgs, installationArgs.installationDir);
+      ProgressStore.set('installation.initMVS', initMvs.status);
+
+      return {status: download.status && uploadYaml.status && upload.status && unpax.status && installation.status && initMvs.status, details: ''};
     } catch (error) {
       return {status: false, details: error.message};
     }
@@ -106,6 +116,10 @@ class Installation {
   }
 
   async install(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
+    throw new Error('Method not implemented.');
+  }
+
+  async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
     throw new Error('Method not implemented.');
   }
 }
@@ -153,6 +167,12 @@ export class FTPInstallation extends Installation {
 
   async install(connectionArgs: IIpcConnectionArgs, installDir: string) {
     const script = `cd ${installDir}/runtime/bin;\n./zwe install -c ${installDir}/zowe.yaml`;
+    const result = await new Script().run(connectionArgs, script);
+    return {status: result.rc === 0, details: result.jobOutput}
+  }
+
+  async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string) {
+    const script = `cd ${installDir}/runtime/bin;\n./zwe init mvs -c ${installDir}/zowe.yaml`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
