@@ -28,7 +28,7 @@ const test_jcl = `
 //SYSOUT  DD  SYSOUT=A
 `;
 
-const test_op = "TEST OUTPUT";
+const test_op = "WARNING: 'Some Warning'\nERROR: 'Some Error'\nINFO: 'Some Info'\nABEND: 'Some abend error' ";
 
 const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onChange} : any) => {
 
