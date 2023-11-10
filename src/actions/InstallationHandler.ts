@@ -72,9 +72,15 @@ class Installation {
         ProgressStore.set('installation.install', true);
       }
 
-      console.log("running zwe init mvs...");
-      const initMvs = await this.initMVS(connectionArgs, installationArgs.installationDir);
-      ProgressStore.set('installation.initMVS', initMvs.status);
+      let initMvs;
+      if(installation.status){
+        console.log("running zwe init mvs...");
+         initMvs = await this.initMVS(connectionArgs, installationArgs.installationDir);
+        ProgressStore.set('installation.initMVS', initMvs.status);
+      } else {
+        initMvs = {status: true}
+        ProgressStore.set('installation.install', true);
+      }
 
       return {status: download.status && uploadYaml.status && upload.status && unpax.status && installation.status && initMvs.status, details: ''};
     } catch (error) {
