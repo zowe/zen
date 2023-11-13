@@ -14,15 +14,8 @@ import { load } from 'js-yaml';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import '../../Highlighters/jcl';
-
-const customTokenStyles = [
-  { token: 'info-token', foreground: '#0000FF' },
-  { token: 'warn-token', foreground: '#FFA500' },
-  { token: 'error-token', foreground: '#FF0000' },
-  { token: 'severe-token', foreground: '#FF0000' },
-  { token: 'abort-token', foreground: '#800000' },
-  { token: 'abend-token', foreground: '#800000' },
-];
+import { OUTPUT_HILITE, OUTPUT_THEME } from '../../Highlighters/jclOutput';
+import { JCL_HILITE, JCL_LIGHT } from '../../Highlighters/jcl';
 
 const MonacoEditorComponent = ({contentType, initialContent, onContentChange, isSchemaValid, schemaError} : any) => {
 
@@ -42,38 +35,15 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
     } else if(contentType == 'output') {
       lang = 'plaintext';
       monaco.languages.register({ id: 'plaintext' });
-      monaco.languages.setMonarchTokensProvider('plaintext', {
-        tokenizer: {
-          root: [
-            [/\bINFO\b/, 'info-token'],
-            [/\bWARN(?:ING)?\b/, 'warn-token'],
-            [/\bERROR\b/, 'error-token'],
-            [/\bSEVERE\b/, 'severe-token'],
-            [/\bABORT\b/, 'abort-token'],
-            [/\bABEND\b/, 'abend-token'],
-            [/.*/, 'text'],
-          ],
-        }
-      });
-      monaco.editor.defineTheme('custom-theme', {
-        base: 'vs',
-        inherit: false,
-        colors: {
-          'info-token': '#0000FF',
-          'warn-token': '#FFA500',
-          'error-token': '#FF0000',
-          'severe-token': '#FF0000',
-          'abort-token': '#800000',
-          'abend-token': '#800000',
-        },
-        rules: customTokenStyles,
-      });
-
+      monaco.languages.setMonarchTokensProvider('plaintext', OUTPUT_HILITE);
+      monaco.editor.defineTheme('custom-theme', OUTPUT_THEME);
       theme = 'custom-theme';
     } else if(contentType == 'jcl') {
       lang = 'jcl';
       monaco.languages.register({ id: 'jcl' });
-      // monaco.languages.setMonarchTokensProvider('jcl', JCL_HILITE);
+      monaco.languages.setMonarchTokensProvider('jcl', JCL_HILITE);
+      monaco.editor.defineTheme('jcl-theme', JCL_LIGHT);
+      theme = 'jcl-theme';
     }
 
     editorRef.current = monaco.editor.create(document.getElementById('monaco-editor-container'), {
