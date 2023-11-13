@@ -13,7 +13,6 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { load } from 'js-yaml';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
-import '../../Highlighters/jcl';
 import { OUTPUT_HILITE, OUTPUT_THEME } from '../../Highlighters/jclOutput';
 import { JCL_HILITE, JCL_LIGHT } from '../../Highlighters/jcl';
 
@@ -25,7 +24,7 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
 
   let readOnly = true;
   let lang: string;
-  let theme: string = 'light';
+  let theme = 'light';
 
   useEffect(() => {
     if(contentType == 'yaml') {
@@ -59,12 +58,12 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
       if(contentType == 'yaml') {
         try {
           // To parse the yaml and check if it is valid
-          const parsedYAML = load(code);
+          load(code);
           setError(false, '');
           onContentChange(code, false);
         } catch(error) {
-          let errorDesc = error.message ? error.message : "Invalid Yaml";
-          let errorMsg = error.reason ? error.reason : errorDesc;
+          const errorDesc = error.message ? error.message : "Invalid Yaml";
+          const errorMsg = error.reason ? error.reason : errorDesc;
           setError(true, errorMsg);
           onContentChange(code, true);
         }
