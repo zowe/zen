@@ -73,7 +73,7 @@ export const JCL_HILITE: JclHilite = {
 
     ],
     name: [ 
-      { regex: /[A-Z|@|#|$|\.|0-9]{0,16}/, action: { token: 'jcl-default', next: '@invalidName', log: jclDebug && '[$S0] <default> -> invalidName \'$0\'' } }, //Name must be between {0, 16} characters
+      { regex: /[A-Z|@|#|$.|0-9]{0,16}/, action: { token: 'jcl-default', next: '@invalidName', log: jclDebug && '[$S0] <default> -> invalidName \'$0\'' } }, //Name must be between {0, 16} characters
       { regex: /, *$/, action: { token: 'jcl-delimiter', next: '@operands2', log: jclDebug && '[$S0] <delimiter> -> operands2 \'$0\'' } }, //Checks for end of line with a ','
       { regex: / *\n| *$/, action: { token: 'jcl-default', next: '@popall', log: jclDebug && '[$S0] <default> -> popall \'$0\'' } }, //Checks for end of line without a ','
       { regex: /,( +)[0-9]+$/, action: { token: 'jcl-delimiter', next: '@operands2', log: jclDebug && '[$S0] <delimiter> -> operands2 \'$0\'' } }, //Checks for ',' + linenumber + linebreak (continuation of statement)
@@ -103,7 +103,7 @@ export const JCL_HILITE: JclHilite = {
       {regex: new RegExp(JCL_KEYWORDS + " +"), action: { token: 'jcl-operator', next: '@operands', log: jclDebug && '[$S0] <operator> -> operands \'$0\'' }},
       {regex: new RegExp(JCL_KEYWORDS_SPECIAL + " *$"), action: { token: 'jcl-operator', next: '@popall', log: jclDebug && '[$S0] <operator> -> popall \'$0\'' }},
       {regex: new RegExp(JCL_KEYWORDS_SPECIAL + " +"), action: { token: 'jcl-operator', next: '@comments', log: jclDebug && '[$S0] <operator> -> comments \'$0\'' }},
-      {regex: /[^\s\\a-z(,|&|=|\^)]+/, action: { token: 'jcl-default', next: '@operands', log: jclDebug && '[$S0] <default> -> operands \'$0\'' }}, //Matches the rest
+      {regex: /[^\s\\a-z(,|&|=^)]+/, action: { token: 'jcl-default', next: '@operands', log: jclDebug && '[$S0] <default> -> operands \'$0\'' } }, //Matches the rest
     ],
     if: [
       {regex: /, *$/, action: { token: 'jcl-delimiter', next: '@operands2', log: jclDebug && '[$S0] <delimiter> -> operands2 \'$0\'' }}, //Checks for end of line with a ','
