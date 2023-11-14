@@ -29,10 +29,15 @@ const Security = () => {
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
+  const [contentType, setContentType] = useState('');
 
   const section = 'security';
   const initConfig: any = getConfiguration(section);
   
+  const TYPE_YAML = "yaml";
+  const TYPE_JCL = "jcl";
+  const TYPE_OUTPUT = "output";
+
   const ajv = new Ajv();
   let securitySchema;
   let validate: any;
@@ -52,7 +57,8 @@ const Security = () => {
     setInit(true);
   }, []);
 
-  const toggleEditorVisibility = () => {
+  const toggleEditorVisibility = (type: any) => {
+    setContentType(type);
     setEditorVisible(!editorVisible);
   };
 
@@ -87,10 +93,13 @@ const Security = () => {
   return (
     <div>
       <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
-        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
+        {/* <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button> */}
+        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small', marginRight: '3px'}} onClick={() => toggleEditorVisibility(TYPE_YAML)}>Open Editor</Button>
+        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small', marginRight: '3px'}} onClick={() => toggleEditorVisibility(TYPE_JCL)}>Open JCL</Button>
+        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>Open Output</Button>
       </div>
       <ContainerCard title="Security" description="Configure Zowe Security">
-        <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
+        <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
