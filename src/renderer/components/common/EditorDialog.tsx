@@ -18,7 +18,19 @@ import Ajv2019 from "ajv/dist/2019"
 import MonacoEditorComponent from "../common/MonacoEditor";
 import draft7MetaSchema from "ajv/dist/refs/json-schema-draft-07.json";
 
-const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any) => {
+const test_jcl = `
+//MYJOB   JOB (ACCT), 'My Job Description',
+//         CLASS=A,MSGCLASS=X,NOTIFY=&SYSUID
+//* This is a comment
+//STEP1   EXEC PGM=MYCOBOL
+//INPUT   DD  DSN=your_input_dataset,DISP=SHR
+//OUTPUT  DD  DSN=your_output_dataset,DISP=(,CATLG,DELETE)
+//SYSOUT  DD  SYSOUT=A
+`;
+
+const test_op = "WARNING: 'Some Warning'\nERROR: 'Some Error'\nINFO: 'Some Info'\nABEND: 'Some abend error' ";
+
+const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onChange} : any) => {
 
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
@@ -29,22 +41,33 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
   const [isSchemaValid, setIsSchemaValid] = useState(true);
   const [schemaError, setSchemaError] = useState('');
   const fileInputRef = useRef(null);
+  let initZoweConfig: any;
 
-  const ajv = new Ajv2019()
-  ajv.addKeyword("$anchor");
-  ajv.addMetaSchema(draft7MetaSchema)
-  const validate = ajv.compile(schema);
-
-  const initZoweConfig = getZoweConfig();
+  if(contentType == 'yaml') {
+    initZoweConfig = getZoweConfig();
+  }
 
   useEffect(() => {
     setEditorVisible(isEditorVisible);
     if(isEditorVisible) {
-      setEditorContent(dump(initZoweConfig));
+       if(contentType == 'yaml') {
+        setEditorContent(dump(initZoweConfig));
+      }
+      if(contentType == 'jcl') {
+        setEditorContent(test_jcl);
+      }
+      if(contentType == 'output') {
+        setEditorContent(test_op);
+      }
     }
   }, [isEditorVisible])
 
   const handleEditorContentChange = (newCode: any, isError: boolean) => {
+
+    if(contentType !== 'yaml') {
+      return;
+    }
+
     if(isError) {
       dispatch(setNextStepEnabled(false));
       return;
@@ -64,6 +87,11 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
       console.error('Error parsing YAML:', error);
       jsonData = newCode;
     }
+
+    const ajv = new Ajv2019()
+    ajv.addKeyword("$anchor");
+    ajv.addMetaSchema(draft7MetaSchema)
+    const validate = ajv.compile(schema);
 
     // To validate the javascript object against the schema
     const isValid = validate(jsonData);
@@ -141,9 +169,9 @@ const EditorDialog = ({isEditorVisible, toggleEditorVisibility, onChange} : any)
             width: '100vw',
           },
         }}>
-        <DialogTitle>zowe.yaml</DialogTitle>
+        <DialogTitle>Editor</DialogTitle>
         <DialogContent sx={{paddingBottom: '0'}}>
-          <MonacoEditorComponent initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid} schemaError={schemaError} />
+          <MonacoEditorComponent contentType={contentType} initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid} schemaError={schemaError} />
         </DialogContent>
         <DialogActions>
           <Button onClick={triggerFileInputClick}>Import</Button>
