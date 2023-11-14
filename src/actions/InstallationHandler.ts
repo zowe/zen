@@ -78,8 +78,8 @@ class Installation {
          initMvs = await this.initMVS(connectionArgs, installationArgs.installationDir);
         ProgressStore.set('installation.initMVS', initMvs.status);
       } else {
-        initMvs = {status: true}
-        ProgressStore.set('installation.install', true);
+        initMvs = {status: false}
+        ProgressStore.set('installation.initMVS', false);
       }
 
       return {status: download.status && uploadYaml.status && upload.status && unpax.status && installation.status && initMvs.status, details: ''};
