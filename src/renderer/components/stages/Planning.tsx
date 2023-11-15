@@ -357,7 +357,7 @@ Please customize job statement below to match your system requirements.
                 value={installationArgs.installationDir}
                 onChange={(e) => dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}))}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe source files</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe source files. Required space: {`${requiredSpace}MB`}</p>
             </div>
           </FormControl>
           <FormControl>
