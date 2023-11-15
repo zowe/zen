@@ -138,6 +138,7 @@ const Planning = () => {
 
   const zoweVersion = useAppSelector(selectZoweVersion);
   const installationArgs: any = useAppSelector(selectInstallationArgs);
+  const [requiredSpace, setRequiredSpace] = useState(1300); //in megabytes
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
@@ -278,8 +279,8 @@ const Planning = () => {
         const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
         details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
         // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
-        if (parseInt(details.spaceAvailableMb, 10) < 1300) { 
-          details.error = details.error + `Not enough space, you need at least 1300MB; `;
+        if (parseInt(details.spaceAvailableMb, 10) < requiredSpace) { 
+          details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
         }
       } catch (error) {
         details.error = details.error + `Can't check space available; `;
@@ -302,7 +303,7 @@ const Planning = () => {
       <Box sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto', opacity: step === 0 ? 1 : opacity}}>
         <Typography sx={{ mb: 2 }} color="text.secondary"> 
           {/* TODO: Allow to choose Zowe version here by click here, support for other instalation types? */}
-          {zoweVersion ? `About to install latest Zowe version: ${zoweVersion} from the convenience build` : ''}
+          {zoweVersion ? `About to install latest Zowe version: ${zoweVersion} from the convenience build. Required space: ${requiredSpace}MB` : ''}
         </Typography>
         <Typography id="position-0" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">     
         {/* <Describe permissions that may be needed in detail>  */}  
