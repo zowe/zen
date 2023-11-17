@@ -34,14 +34,14 @@ const cards: Array<ICard> = [
   {
     id: "install", 
     name: "New Zowe Installation", 
-    description: "It will help you to download, install and configure Zowe on your z/OS", 
+    description: "It will help you download, install, and configure Zowe on z/OS", 
     link: "/wizard",
     media: installationImg,
   }, 
   {
     id: "configure", 
-    name: "Zowe Installtion Dry Run", 
-    description: "It will guide you through installtion steps without running the installation", 
+    name: "Zowe Installation Dry Run", 
+    description: "It will guide you through the installation steps without running the installation", 
     link: "/",
     media: installationDryImg,
   }
@@ -88,7 +88,11 @@ const Home = () => {
     window.electron.ipcRenderer.findPreviousInstallations().then((res: IResponse) => {
       const connectionStore = res.details;
       if (connectionStore["connection-type"] === 'ftp') {
-        const connectionArgs: IIpcConnectionArgs = {...connectionStore["ftp-details"], password: '', connectionType: 'ftp'}; 
+        console.log(JSON.stringify(connectionStore['ftp-details'],null,2));
+        const connectionArgs: IIpcConnectionArgs = {
+          ...connectionStore["ftp-details"],
+          password: '',
+          connectionType: 'ftp'}; 
         dispatch(setConnectionArgs(connectionArgs));
       } else {
         // TODO: Add support for other types

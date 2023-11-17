@@ -9,11 +9,14 @@
  */
 
 import {IIpcConnectionArgs} from "../types/interfaces";
-const zos = require('zos-node-accessor');
+import Header from "../renderer/components/Header"
+import { AlertColor } from "@mui/material/Alert";
+import zos from 'zos-node-accessor';
 
 export async function connectFTPServer(config: IIpcConnectionArgs): Promise<any> {
 
   const client = new zos();
+  //Config Doc: https://github.com/IBM/zos-node-accessor/blob/3e32cc8b8cbd74c6bc3c29c268338e23f173bebc/README.md?plain=1#L89
   await client.connect(config);
   if (!client.connected) {
     console.error('Failed to connect to', config.host);

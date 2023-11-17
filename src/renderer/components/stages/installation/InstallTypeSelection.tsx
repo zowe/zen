@@ -19,6 +19,7 @@ import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
 import ProgressCard from '../../common/ProgressCard';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import LicenseDialog from "./LicenseDialog";
 
 const InstallationType = () => {
 
@@ -34,6 +35,8 @@ const InstallationType = () => {
   const [paxPath, setPaxPath] = useState("");
   const [smpePath, setSmpePath] = useState("");
   const [smpePathValidated, setSmpePathValidated] = useState(false);
+  const [showLicense, setShowLicense] = useState(false);
+  const [agreeLicense, setAgreeLicense] = useState(false);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   const version = useAppSelector(selectZoweVersion);
@@ -42,14 +45,25 @@ const InstallationType = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if((installValue === "upload" && paxPath == "") || installValue === "smpe" && installationArgs.smpeDir == ""){
+    if((installValue === "download" && agreeLicense == false) || (installValue === "upload" && paxPath == "") || installValue === "smpe" && installationArgs.smpeDir == ""){
         dispatch(setNextStepEnabled(false));
     } else {
         dispatch(setNextStepEnabled(true));
     }
     
-  }, [installValue, paxPath, installationArgs]);
+  }, [installValue, paxPath, installationArgs, agreeLicense]);
 
+  const showLicenseAgreement = () => {
+    setShowLicense(true);
+  }
+
+  const licenseAgreement = (agree: any) => {
+    setAgreeLicense(false);
+    if(agree == 1) {
+      setAgreeLicense(true);
+    }
+    setShowLicense(false);
+  }
 
   return (
     <ContainerCard title="Installation Type" description="Please select the desired install method"> 
@@ -98,9 +112,15 @@ const InstallationType = () => {
         }}>Validate location</Button>
         {smpePathValidated ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : <Typography sx={{color: "gray"}}>{'Enter a valid path.'}</Typography> }
     </FormControl>}
-    {installValue === "download" && <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-        {`Zen will download the latest Zowe convenience build in PAX archive format from `}<Link href="zowe.org">{'https://zowe.org'}</Link>
-    </Typography>}
+    {installValue === "download" &&
+      <div>
+        <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
+          {`Zen will download the latest Zowe convenience build in PAX archive format from `}
+          <Link href="zowe.org">{'https://zowe.org'}</Link>
+        </Typography>
+        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small'}} onClick={showLicenseAgreement}>License Agreement</Button>
+        {showLicense && <LicenseDialog isAgreementVisible={true} licenseAgreement={licenseAgreement}/>}
+      </div>}
     {installValue === "upload" &&   <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
         {`Select a local Zowe PAX file (offline installation).`}
       </Typography>}
