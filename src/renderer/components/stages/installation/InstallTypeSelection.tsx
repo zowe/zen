@@ -59,7 +59,7 @@ const InstallationType = () => {
 
   const licenseAgreement = (agree: any) => {
     setAgreeLicense(false);
-    if(agree) {
+    if(agree == 1) {
       setAgreeLicense(true);
     }
     setShowLicense(false);

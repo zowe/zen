@@ -52,6 +52,8 @@ const Installation = () => {
   const section = 'dataset';
   const initConfig = getConfiguration(section);
 
+  const TYPE_YAML = "yaml";
+
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
   let datasetSchema;
@@ -157,7 +159,7 @@ const Installation = () => {
         <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
       </div>
       <ContainerCard title="Installation" description="Provide installation details"> 
-        <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={editHLQ}/>
+        <EditorDialog contentType={TYPE_YAML} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={editHLQ}/>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
           {`Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
         </Typography>

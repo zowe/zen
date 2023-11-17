@@ -8,12 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { useState, useEffect, useRef } from "react";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { licenseHeader, licenseContent, licenseMainConetnt, licenseLinkText, licenseLink} from './License';
 
 const LicenseDialog = ({isAgreementVisible, licenseAgreement}: any) => {
-const [licenseText, setLicenseText] = useState('');
 
   return (
     <div> 

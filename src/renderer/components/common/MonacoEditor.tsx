@@ -13,48 +13,61 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { load } from 'js-yaml';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import { OUTPUT_HILITE, OUTPUT_THEME } from '../../Highlighters/jclOutput';
+import { JCL_HILITE, JCL_LIGHT } from '../../Highlighters/jcl';
 
-const MonacoEditorComponent = ({initialContent, onContentChange, isSchemaValid, schemaError} : any) => {
+const MonacoEditorComponent = ({contentType, initialContent, onContentChange, isSchemaValid, schemaError} : any) => {
 
   const editorRef = useRef(null);
   const [isError, setIsError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  let readOnly = true;
+  let lang: string;
+  let theme = 'light';
+
   useEffect(() => {
-    monaco.languages.register({ id: 'yaml' });
-    monaco.languages.setMonarchTokensProvider('yaml', {
-      tokenizer: {
-        root: [
-          //Defining syntax highlighting rules here
-          [/^(\s*)([a-zA-Z_][\w]*)/, ['white', 'key']],// Unquoted keys
-          [/\b(true|false)\b/, 'keyword'], // Boolaean values
-          [/"[^"\\]*"/, 'string'], // Values enclosed in double quotes
-          [/'[^'\\]*'/, 'string'], // Values enclosed in single quotes
-          [/#.*$/, 'comment'], // Comments
-        ],
-      },
-    });
+    if(contentType == 'yaml') {
+      readOnly = false;
+      lang = 'yaml';
+      monaco.languages.register({ id: 'yaml' });
+    } else if(contentType == 'output') {
+      lang = 'plaintext';
+      monaco.languages.register({ id: 'plaintext' });
+      monaco.languages.setMonarchTokensProvider('plaintext', OUTPUT_HILITE);
+      monaco.editor.defineTheme('custom-theme', OUTPUT_THEME);
+      theme = 'custom-theme';
+    } else if(contentType == 'jcl') {
+      lang = 'jcl';
+      monaco.languages.register({ id: 'jcl' });
+      monaco.languages.setMonarchTokensProvider('jcl', JCL_HILITE);
+      monaco.editor.defineTheme('jcl-theme', JCL_LIGHT);
+      theme = 'jcl-theme';
+    }
+
     editorRef.current = monaco.editor.create(document.getElementById('monaco-editor-container'), {
-      language: 'yaml', 
-      theme: 'light',
+      language: lang, 
+      theme: theme,
       value: initialContent,
+      readOnly: readOnly
     });
 
     editorRef.current.onDidChangeModelContent(() => {
       const code = editorRef.current.getValue();
 
-      try {
-        // To parse the yaml and check if it is valid
-        const parsedYAML = load(code);
-        setError(false, '');
-        onContentChange(code, false);
-      } catch(error) {
-        const errorDesc = error.message ? error.message : "Invalid Yaml";
-        const errorMsg = error.reason ? error.reason : errorDesc;
-        setError(true, errorMsg);
-        onContentChange(code, true);
+      if(contentType == 'yaml') {
+        try {
+          // To parse the yaml and check if it is valid
+          load(code);
+          setError(false, '');
+          onContentChange(code, false);
+        } catch(error) {
+          const errorDesc = error.message ? error.message : "Invalid Yaml";
+          const errorMsg = error.reason ? error.reason : errorDesc;
+          setError(true, errorMsg);
+          onContentChange(code, true);
+        }
       }
-
     });
 
     return () => {

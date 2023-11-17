@@ -50,6 +50,7 @@ const Certificates = () => {
     zweInitCertificate: false,
   });
   let timer: any;
+  const TYPE_YAML = "yaml";
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -161,7 +162,7 @@ const Certificates = () => {
         <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
       </div>
       <ContainerCard title="Certificates" description="Configure Zowe Certificates"> 
-        <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
+        <EditorDialog contentType={TYPE_YAML} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
