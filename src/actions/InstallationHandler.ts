@@ -82,8 +82,8 @@ class Installation {
       let installation;
       if(installationArgs.installationType !== "smpe"){
         console.log("installing...");
-        const install = await this.install(connectionArgs, installationArgs.installationDir);
-        ProgressStore.set('installation.install', install.status);
+        installation = await this.install(connectionArgs, installationArgs.installationDir);
+        ProgressStore.set('installation.install', installation.status);
       } else {
         //If the user has opted to perform an SMPE installation, they must run 'zwe install' manually and therefore we set this to true
         installation = {status: true, details: ''}

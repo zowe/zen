@@ -21,6 +21,7 @@ import ContainerCard from '../../common/ContainerCard';
 import JsonForm from '../../common/JsonForms';
 import EditorDialog from "../../common/EditorDialog";
 import Ajv from "ajv";
+import { alertEmitter } from "../../Header";
 
 const Installation = () => {
 
@@ -109,6 +110,9 @@ const Installation = () => {
       toggleProgress(true);
       dispatch(setLoading(false));
       window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version).then((res: IResponse) => {
+        if(!res.status){ //errors during runInstallation()
+          alertEmitter.emit('showAlert', res.details, 'error');
+        }
         dispatch(setNextStepEnabled(res.status));
         clearInterval(timer);
       }).catch(() => {
