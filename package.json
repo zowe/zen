@@ -30,7 +30,6 @@
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",
-    "appdmg": "0.6.6",
     "css-loader": "^6.7.3",
     "electron": "22.0.0",
     "eslint": "^8.34.0",
@@ -70,5 +69,8 @@
     "react-router-dom": "^6.8.1",
     "yaml": "^2.2.1",
     "zos-node-accessor": "^1.0.14"
+  },
+  "optionalDependencies": {
+    "appdmg": "0.6.6"
   }
 }
