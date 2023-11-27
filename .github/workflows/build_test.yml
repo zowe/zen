@@ -75,12 +75,13 @@ jobs:
       - name: '[Prep 2] Setup Node'
         uses: actions/setup-node@v2
         with:
-          node-version: 18
+          node-version: 18.16
       - name: '[Prep 3] Checkout'
         uses: actions/checkout@v3
       - name: '[prep 4] Install'
         run: |
-          npm install     
+          rm -rf node_modules
+          npm ci
       - name: '[prep 5] Package'
         run: |
           npm run make  
