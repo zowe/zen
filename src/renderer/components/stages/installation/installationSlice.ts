@@ -55,8 +55,8 @@ const initialState: InstallationState = {
     rbacProfile: '1',
     cookieId: '1',
     zosmfHost: '',
-    zosmfPort: '',
-    zosmfApplId: ''
+    zosmfPort: '443',
+    zosmfApplId: 'IZUDFLT'
   },
   zoweVersion: '',
 };

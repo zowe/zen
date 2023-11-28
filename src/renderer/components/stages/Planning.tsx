@@ -134,7 +134,7 @@ const Planning = () => {
   const [jobStatementValidation, setJobStatementValidation] = useState('');
   const [locationsValidated, setLocationsValidated] = useState(false);
   const [validationDetails, setValidationDetails] = useState({javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''});
-  const [showZosmfAttributes, setShowZosmfAttributes] = useState(false);
+  const [showZosmfAttributes, setShowZosmfAttributes] = useState(true);
 
   const zoweVersion = useAppSelector(selectZoweVersion);
   const installationArgs: any = useAppSelector(selectInstallationArgs);
@@ -511,7 +511,7 @@ Please customize job statement below to match your system requirements.
                       style={{marginLeft: 0}}
                       label="Zosmf Host"
                       variant="standard"
-                      value={installationArgs.zosmfHost}
+                      value={connectionArgs.host}
                       onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfHost: e.target.value}))}
                     />
                     <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Host or domain name of your z/OSMF instance.</p>
