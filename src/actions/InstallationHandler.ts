@@ -36,14 +36,23 @@ class Installation {
       const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
       ProgressStore.set('installation.uploadYaml', uploadYaml.status);
 
+      if(!uploadYaml.status){
+        return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
+      }
+
       let download;
       if(installationArgs.installationType === "download"){
         console.log("downloading...", version);
         download = await this.downloadPax(version);
         ProgressStore.set('installation.download', download.status);
       } else {
-        download = {status: true}
+        //if the user has selected an SMPE or opted to upload their own pax, we simply set this status to true as no download is required
+        download = {status: true, details: ''}
         ProgressStore.set('installation.download', true);
+      }
+
+      if(!download.status){
+        return {status: false, details: `Error downloading pax: ${download.details}`};
       }
 
       console.log("uploading...");
@@ -58,15 +67,48 @@ class Installation {
       }
       ProgressStore.set('installation.upload', upload.status);
 
+      if(!upload.status){
+        return {status: false, details: `Error uploading pax: ${upload.details}`};
+      }
+
       console.log("unpaxing...");
       const unpax = await this.unpax(connectionArgs, installationArgs.installationDir); 
       ProgressStore.set('installation.unpax', unpax.status);
 
-      console.log("installing...");
-      const install = await this.install(connectionArgs, installationArgs.installationDir);
-      ProgressStore.set('installation.install', install.status);
+      if(!unpax.status){
+        return {status: false, details: `Error unpaxing Zowe archive: ${unpax.details}`};
+      }
 
-      return {status: download.status && uploadYaml.status && upload.status && unpax.status && install.status, details: ''};
+      let installation;
+      if(installationArgs.installationType !== "smpe"){
+        console.log("installing...");
+        installation = await this.install(connectionArgs, installationArgs.installationDir);
+        ProgressStore.set('installation.install', installation.status);
+      } else {
+        //If the user has opted to perform an SMPE installation, they must run 'zwe install' manually and therefore we set this to true
+        installation = {status: true, details: ''}
+        ProgressStore.set('installation.install', true);
+      }
+
+      if(!installation.status){
+        return {status: false, details: `Error running zwe install: ${installation.details}`};
+      }
+
+      let initMvs;
+      if(installation.status){
+        console.log("running zwe init mvs...");
+         initMvs = await this.initMVS(connectionArgs, installationArgs.installationDir);
+        ProgressStore.set('installation.initMVS', initMvs.status);
+      } else {
+        initMvs = {status: false, details: `zwe install step failed, unable to run zwe init mvs.`}
+        ProgressStore.set('installation.initMVS', false);
+      }
+
+      if(!initMvs.status){
+        return {status: false, details: `Error running zwe init mvs: ${initMvs.details}`};
+      }      
+
+      return {status: download.status && uploadYaml.status && upload.status && unpax.status && installation.status && initMvs.status, details: 'Zowe install successful.'};
     } catch (error) {
       return {status: false, details: error.message};
     }
@@ -132,6 +174,10 @@ class Installation {
   async install(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
     throw new Error('Method not implemented.');
   }
+
+  async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
+    throw new Error('Method not implemented.');
+  }
 }
 
 export class FTPInstallation extends Installation {
@@ -177,6 +223,12 @@ export class FTPInstallation extends Installation {
 
   async install(connectionArgs: IIpcConnectionArgs, installDir: string) {
     const script = `cd ${installDir}/runtime/bin;\n./zwe install -c ${installDir}/zowe.yaml`;
+    const result = await new Script().run(connectionArgs, script);
+    return {status: result.rc === 0, details: result.jobOutput}
+  }
+
+  async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string) {
+    const script = `cd ${installDir}/runtime/bin;\n./zwe init mvs -c ${installDir}/zowe.yaml`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
