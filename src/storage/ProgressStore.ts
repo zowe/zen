@@ -18,7 +18,8 @@ const storeDefault = {
     "download": false,
     "upload": false,
     "unpax": false,
-    "install": false
+    "install": false,
+    "initMVS": false
   }
 };
 
