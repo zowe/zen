@@ -20,6 +20,11 @@ const storeDefault = {
     "unpax": false,
     "install": false,
     "initMVS": false
+  },
+  "initSecurity": {
+    "writeYaml": false,
+    "uploadYaml": false,
+    "success": false
   }
 };
 
