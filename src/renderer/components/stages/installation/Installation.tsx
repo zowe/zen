@@ -22,6 +22,9 @@ import JsonForm from '../../common/JsonForms';
 import EditorDialog from "../../common/EditorDialog";
 import Ajv from "ajv";
 import { alertEmitter } from "../../Header";
+import Security from "../Security";
+import Certificates from "../Certificates";
+import HorizontalLinearStepper from "../../common/Stepper";
 
 const Installation = () => {
 
@@ -160,7 +163,7 @@ const Installation = () => {
 
   return (
     <div>
-      <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
+      <div style={{ position: 'fixed', top: '190px', right: '30px'}}>
         <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
       </div>
       <ContainerCard title="Installation" description="Provide installation details"> 
