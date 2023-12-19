@@ -12,10 +12,6 @@ import React, {useEffect} from "react";
 import Button from '@mui/material/Button';
 import ProgressCard from '../common/ProgressCard';
 import ContainerCard from '../common/ContainerCard';
-import Security from "./Security";
-import Certificates from "./Certificates";
-import Installation from "./installation/Installation";
-import HorizontalLinearStepper from "../common/Stepper";
 
 const Initialization = () => {
 
