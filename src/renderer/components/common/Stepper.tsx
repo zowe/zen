@@ -28,21 +28,26 @@ export default function HorizontalLinearStepper(props: any) {
 
   const {stages} = props;
   const [activeStep, setActiveStep] = useState(0);
+  const [activeSubStep, setActiveSubStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
 
   const handleNext = () => {
     alertEmitter.emit('hideAlert');
-    if(activeStep + 1 === stages.length) {
-      console.log('Start Zowe');
-      // window.electron.ipcRenderer.startZowe();
-      return;
+    if(stages[activeStep].subStages && activeSubStep + 1 < stages[activeStep].subStages.length){
+      setActiveSubStep((prevActiveSubStep) => prevActiveSubStep + 1)
+    } else {
+      if(activeStep + 1 === stages.length) {
+        console.log('Start Zowe');
+        // window.electron.ipcRenderer.startZowe();
+        return;
+      }
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
   const handleBack = () => {
     alertEmitter.emit('hideAlert');
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    stages[activeStep].subStages && activeSubStep > 0 ? setActiveSubStep((prevActiveSubStep) => prevActiveSubStep - 1) : setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
   const handleReset = () => {
@@ -58,13 +63,28 @@ export default function HorizontalLinearStepper(props: any) {
           const labelProps = {};
           return (
             <Step key={stage.id} {...stepProps}>
+              <div style={activeStep === index && stages[activeStep].subStages ? {backgroundColor: '#E0E0E0', padding: '5px 5px 20px 5px', marginBottom: '-18px', borderTopRightRadius: '3px', borderTopLeftRadius: '3px'} : {}}>
+                <StepLabel {...labelProps}>
+                    {stage.label}
+                </StepLabel>
+              </div>
+            </Step>
+          );
+        })}
+      </Stepper>
+      {stages[activeStep].subStages &&  <Stepper className="substepper" activeStep={activeSubStep}>
+        {stages[activeStep].subStages.map((stage: any, index: number) => {
+          const stepProps = {};
+          const labelProps = {};
+          return (
+            <Step key={stage.id} {...stepProps}>
                 <StepLabel {...labelProps}>
                     {stage.label}
                 </StepLabel>
             </Step>
           );
         })}
-      </Stepper>
+      </Stepper>}
       {activeStep === stages.length ? (
         <React.Fragment>
           <Typography sx={{ mt: 2, mb: 1, color: 'black' }}>
@@ -77,8 +97,8 @@ export default function HorizontalLinearStepper(props: any) {
         </React.Fragment>
       ) : (
         <React.Fragment>
-          <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: 'calc(100vh - 200px)'}}>
-            {stages[activeStep].component}
+          <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: stages[activeStep].subStages ? 'calc(100vh - 250px)' : 'calc(100vh - 200px)'}}>
+            {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].component : stages[activeStep].component}
           </div>
           <Box sx={{ display: 'flex', flexDirection: 'row', p: 2, borderTop: 'solid 1px lightgray' }}>
             <Button
@@ -109,7 +129,7 @@ export default function HorizontalLinearStepper(props: any) {
               variant="contained" 
               onClick={() => handleNext()}
             >
-              {stages[activeStep].nextButton}
+              {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].nextButton : stages[activeStep].nextButton}
             </Button>
           </Box>
         </React.Fragment>
