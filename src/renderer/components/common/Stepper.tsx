@@ -63,7 +63,7 @@ export default function HorizontalLinearStepper(props: any) {
           const labelProps = {};
           return (
             <Step key={stage.id} {...stepProps}>
-              <div style={activeStep === index && stages[activeStep].subStages ? {backgroundColor: '#E0E0E0', padding: '5px 5px 20px 5px', marginBottom: '-15px', borderTopRightRadius: '3px', borderTopLeftRadius: '3px'} : {}}>
+              <div style={activeStep === index && stages[activeStep].subStages ? {backgroundColor: '#E0E0E0', padding: '5px 5px 20px 5px', marginBottom: '-18px', borderTopRightRadius: '3px', borderTopLeftRadius: '3px'} : {}}>
                 <StepLabel {...labelProps}>
                     {stage.label}
                 </StepLabel>
