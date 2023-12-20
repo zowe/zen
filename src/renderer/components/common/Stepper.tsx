@@ -20,29 +20,67 @@ import { selectConnectionStatus } from '../stages/connection/connectionSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { alertEmitter } from '../Header';
+import EditorDialog from "./EditorDialog";
 
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
 
 export default function HorizontalLinearStepper(props: any) {
 
+  const TYPE_YAML = "yaml";
+  const TYPE_JCL = "jcl";
+  const TYPE_OUTPUT = "output";
+
   const {stages} = props;
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
+  const [nextText, setNextText] = useState("Continue");
+  const [contentType, setContentType] = useState('output');
+  const [editorVisible, setEditorVisible] = useState(false);
+  const [editorContent, setEditorContent] = useState('');
+  const [currStep, setCurrStep] = useState(1);
+
+  const toggleEditorVisibility = (type?: any) => {
+    if (type) {
+      setContentType(type);
+    }
+    setEditorVisible(!editorVisible);
+  };
+
+  const getContinueText = () => {
+    return 'Continue to next step';//'+stages[activeStep+1].label;
+  };
+
+  const getSkipText = () => {
+    return 'Skip step';//+stages[activeStep+1].label;
+  };
+
+  const handleYAML = () => {
+    toggleEditorVisibility(TYPE_YAML);
+  }
+
+  const handlePreview = (test_jcl: any) => {
+    toggleEditorVisibility(TYPE_JCL);    
+    setEditorContent(test_jcl);
+  };
+
+  const handleSubmit = () => {
+     //here:
+    // submit -> open editor with result -> mark skip button as continue button
+    stages[activeStep].successful = true;
+    toggleEditorVisibility(TYPE_OUTPUT);
+  };
 
   const handleNext = () => {
     alertEmitter.emit('hideAlert');
-    if(activeStep + 1 === stages.length) {
-      console.log('Start Zowe');
-      // window.electron.ipcRenderer.startZowe();
-      return;
-    }
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setNextText(getContinueText());
   };
 
   const handleBack = () => {
     alertEmitter.emit('hideAlert');
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    setNextText(getContinueText());
   };
 
   const handleReset = () => {
@@ -52,6 +90,7 @@ export default function HorizontalLinearStepper(props: any) {
 
   return (
     <Box className="stepper-container">
+      <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} content={editorContent}/>
       <Stepper className="stepper" activeStep={activeStep}>
         {stages.map((stage: any, index: number) => {
           const stepProps = {};
@@ -87,7 +126,7 @@ export default function HorizontalLinearStepper(props: any) {
               onClick={handleBack}
               sx={{ mr: 4 }}
             >
-              Step back
+              Previous Step
             </Button>
             <Link style={{margin: 0}} to="/">
               <Button // TODO: Not implemented
@@ -100,17 +139,29 @@ export default function HorizontalLinearStepper(props: any) {
               <Button 
                 variant="text" sx={{ mr: 1 }} 
                 onClick={() => alertEmitter.emit('hideAlert')}>
-                Discard
+                Discard Setup
               </Button>
             </Link>
             <Box sx={{ flex: '1 1 auto' }} />
+            {stages[activeStep].hasYaml &&
+              <Button variant="contained" onClick={() => handleYAML()}>View YAML</Button>
+            }
+            {stages[activeStep].hasJCL &&
+              <Button disabled={!useAppSelector(selectNextStepEnabled)} variant="contained" onClick={() => handlePreview({})}>Preview Job</Button>
+            }
+            {stages[activeStep].hasOutput &&
+              <Button variant="contained" onClick={() => handlePreview({})}>Submit Job</Button>
+            }
             <Button 
-              disabled={!useAppSelector(selectNextStepEnabled)} 
+              disabled={!useAppSelector(selectNextStepEnabled) && !stages[activeStep].isSkippable} 
               variant="contained" 
               onClick={() => handleNext()}
             >
-              {stages[activeStep].nextButton}
+              {nextText}
             </Button>
+            {stages[activeStep].isSkippable &&
+              <Button variant="contained" onClick={() => handleNext()}>Skip Step</Button>
+            }
           </Box>
         </React.Fragment>
       )}
