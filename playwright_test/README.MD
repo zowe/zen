@@ -16,3 +16,7 @@ ZOWE_ROOT_DIR=/path/to/zowe \
   ZOSMF_PORT=10443 \
   npm run playtest
 ```
+
+To run individial test, specify the name of the test file ex:
+
+``` npm run playtest testConnectionTab.spec.ts ```

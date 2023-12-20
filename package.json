@@ -11,7 +11,7 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
-	"preplaytest": "npm run package",
+    "preplaytest": "npm run package",
     "playtest": "playwright test"
   },
   "keywords": [],
