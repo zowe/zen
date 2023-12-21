@@ -114,6 +114,30 @@ class Installation {
     }
   }
 
+  public async initSecurity(connectionArgs: IIpcConnectionArgs,
+    installationArgs: {installationDir: string}, zoweConfig: any): Promise<any>{
+      console.log('writing current yaml to disk');
+      const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
+      await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
+        if (err) {
+            console.warn("Can't save configuration to zowe.yaml");
+            return ProgressStore.set('initSecurity.writeYaml', false);
+        }
+      });
+      ProgressStore.set('initSecurity.writeYaml', true);
+      console.log("uploading yaml...");
+      const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
+      if(!uploadYaml.status){
+        return ProgressStore.set('initSecurity.uploadYaml', false);
+
+      }
+      ProgressStore.set('initSecurity.uploadYaml', uploadYaml.status);
+      const script = `cd ${installationArgs.installationDir}/runtime/bin;\n./zwe init security -c ${installationArgs.installationDir}/zowe.yaml`;
+      const result = await new Script().run(connectionArgs, script);
+      ProgressStore.set('initSecurity.success', result.rc === 0);
+      return {status: result.rc === 0, details: result.jobOutput}
+  }
+
   async generateYamlFile() {
     const zoweYaml: any = ConfigurationStore.getConfig();
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
