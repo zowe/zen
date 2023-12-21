@@ -88,6 +88,8 @@ export default function HorizontalLinearStepper(props: any) {
     setActiveStep(0);
   };
 
+  const isNextStepEnabled = useAppSelector(selectNextStepEnabled);
+
   return (
     <Box className="stepper-container">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} content={editorContent}/>
@@ -124,8 +126,7 @@ export default function HorizontalLinearStepper(props: any) {
               variant="outlined"
               disabled={activeStep === 0}
               onClick={handleBack}
-              sx={{ mr: 4 }}
-            >
+              sx={{ mr: 4 }}>
               Previous Step
             </Button>
             <Link style={{margin: 0}} to="/">
@@ -147,13 +148,13 @@ export default function HorizontalLinearStepper(props: any) {
               <Button variant="contained" onClick={() => handleYAML()}>View YAML</Button>
             }
             {stages[activeStep].hasJCL &&
-              <Button disabled={!useAppSelector(selectNextStepEnabled)} variant="contained" onClick={() => handlePreview({})}>Preview Job</Button>
+              <Button disabled={!isNextStepEnabled} variant="contained" onClick={() => handlePreview({})}>Preview Job</Button>
             }
             {stages[activeStep].hasOutput &&
               <Button variant="contained" onClick={() => handlePreview({})}>Submit Job</Button>
             }
             <Button 
-              disabled={!useAppSelector(selectNextStepEnabled) && !stages[activeStep].isSkippable} 
+              disabled={!isNextStepEnabled && !stages[activeStep].isSkippable}
               variant="contained" 
               onClick={() => handleNext()}
             >
