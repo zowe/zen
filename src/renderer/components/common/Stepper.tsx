@@ -121,47 +121,52 @@ export default function HorizontalLinearStepper(props: any) {
           <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: 'calc(100vh - 200px)'}}>
             {stages[activeStep].component}
           </div>
-          <Box sx={{ display: 'flex', flexDirection: 'row', p: 2, borderTop: 'solid 1px lightgray' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'row', p: 1, borderTop: 'solid 1px lightgray' }}>
+            <Box sx={{ flex: '1 1 auto' }} >
+              {stages[activeStep].hasYaml &&
+                <Button variant="text" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handleYAML()}>View YAML</Button>
+              }
+              {stages[activeStep].hasJCL &&
+                <Button disabled={!isNextStepEnabled} variant="text" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handlePreview({})}>Preview Job</Button>
+              }
+              {stages[activeStep].hasOutput &&
+                <Button variant="text" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handlePreview({})}>Submit Job</Button>
+              }
+            </Box>
             <Button
               variant="outlined"
               disabled={activeStep === 0}
               onClick={handleBack}
-              sx={{ mr: 4 }}>
+              sx={{ textTransform: 'none', mr: 1 }}>
               Previous Step
             </Button>
             <Link style={{margin: 0}} to="/">
               <Button // TODO: Not implemented
-                variant="text" sx={{ mr: 1 }}
+                variant="outlined"
+                sx={{ textTransform: 'none', mr: 1 }}
                 onClick={() => alertEmitter.emit('hideAlert')}>
                 Save and close
               </Button>
             </Link>
             <Link style={{margin: 0}} to="/">
               <Button 
-                variant="text" sx={{ mr: 1 }} 
+                variant="outlined"
+                sx={{ textTransform: 'none', mr: 1 }}
                 onClick={() => alertEmitter.emit('hideAlert')}>
                 Discard Setup
               </Button>
             </Link>
-            <Box sx={{ flex: '1 1 auto' }} />
-            {stages[activeStep].hasYaml &&
-              <Button variant="contained" onClick={() => handleYAML()}>View YAML</Button>
-            }
-            {stages[activeStep].hasJCL &&
-              <Button disabled={!isNextStepEnabled} variant="contained" onClick={() => handlePreview({})}>Preview Job</Button>
-            }
-            {stages[activeStep].hasOutput &&
-              <Button variant="contained" onClick={() => handlePreview({})}>Submit Job</Button>
-            }
+
             <Button 
               disabled={!isNextStepEnabled && !stages[activeStep].isSkippable}
               variant="contained" 
+              sx={{ textTransform: 'none', mr: 1 }}
               onClick={() => handleNext()}
             >
               {nextText}
             </Button>
             {stages[activeStep].isSkippable &&
-              <Button variant="contained" onClick={() => handleNext()}>Skip Step</Button>
+              <Button variant="contained" sx={{ textTransform: 'none', mr: 1 }} onClick={() => handleNext()}>Skip Step</Button>
             }
           </Box>
         </React.Fragment>
