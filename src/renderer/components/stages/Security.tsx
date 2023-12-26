@@ -130,7 +130,7 @@ const Security = () => {
 
   return (
     <div>
-      <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
+      <div style={{ position: 'fixed', top: '190px', right: '30px'}}>
         {/* <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button> */}
         <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small', marginRight: '3px'}} onClick={() => toggleEditorVisibility(TYPE_YAML)}>Open Editor</Button>
         <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small', marginRight: '3px'}} onClick={() => toggleEditorVisibility(TYPE_JCL)}>Open JCL</Button>

@@ -106,7 +106,7 @@ const Certificates = () => {
 
   return (
     <div>
-      <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
+      <div style={{ position: 'fixed', top: '190px', right: '30px'}}>
         <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
       </div>
       <ContainerCard title="Certificates" description="Configure Zowe Certificates"> 
