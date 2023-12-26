@@ -92,14 +92,7 @@ const Security = () => {
 
   return (
     <div>
-      <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
-        {/* <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button> */}
-        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small', marginRight: '3px'}} onClick={() => toggleEditorVisibility(TYPE_YAML)}>Open Editor</Button>
-        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small', marginRight: '3px'}} onClick={() => toggleEditorVisibility(TYPE_JCL)}>Open JCL</Button>
-        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>Open Output</Button>
-      </div>
       <ContainerCard title="Security" description="Configure Zowe Security">
-        <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>

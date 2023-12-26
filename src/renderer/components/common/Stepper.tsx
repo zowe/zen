@@ -21,6 +21,8 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
+import Security from '../stages/Security';
+
 
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
@@ -92,7 +94,7 @@ export default function HorizontalLinearStepper(props: any) {
 
   return (
     <Box className="stepper-container">
-      <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} content={editorContent}/>
+      <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility}/>
       <Stepper className="stepper" activeStep={activeStep}>
         {stages.map((stage: any, index: number) => {
           const stepProps = {};
@@ -124,13 +126,13 @@ export default function HorizontalLinearStepper(props: any) {
           <Box sx={{ display: 'flex', flexDirection: 'row', p: 1, borderTop: 'solid 1px lightgray' }}>
             <Box sx={{ flex: '1 1 auto' }} >
               {stages[activeStep].hasYaml &&
-                <Button variant="text" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handleYAML()}>View YAML</Button>
+                <Button variant="outlined" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handleYAML()}>View YAML</Button>
               }
               {stages[activeStep].hasJCL &&
-                <Button disabled={!isNextStepEnabled} variant="text" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handlePreview({})}>Preview Job</Button>
+                <Button disabled={!isNextStepEnabled} variant="outlined" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handlePreview({})}>Preview Job</Button>
               }
               {stages[activeStep].hasOutput &&
-                <Button variant="text" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handlePreview({})}>Submit Job</Button>
+                <Button variant="outlined" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handlePreview({})}>Submit Job</Button>
               }
             </Box>
             <Button
