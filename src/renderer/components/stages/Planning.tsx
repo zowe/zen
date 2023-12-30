@@ -276,7 +276,6 @@ const Planning = () => {
     Promise.all([
       window.electron.ipcRenderer.checkJava(connectionArgs, installationArgs.javaHome),
       window.electron.ipcRenderer.checkNode(connectionArgs, installationArgs.nodeHome),
-
       //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks.
       //window.electron.ipcRenderer.checkSpace(connectionArgs, installationArgs.installationDir)
     ]).then((res: Array<IResponse>) => {
@@ -295,17 +294,18 @@ const Planning = () => {
         details.error = details.error + `Can't get node version; `;
         console.warn(res[1].details);
       }
-      try {
-        const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
-        details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
-        // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
-        if (parseInt(details.spaceAvailableMb, 10) < requiredSpace) { 
-          details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
-        }
-      } catch (error) {
-        details.error = details.error + `Can't check space available; `;
-        console.warn(res[2].details);
-      }
+      //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks.
+      // try {
+      //   const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
+      //   details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
+      //   // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
+      //   if (parseInt(details.spaceAvailableMb, 10) < requiredSpace) { 
+      //     details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
+      //   }
+      // } catch (error) {
+      //   details.error = details.error + `Can't check space available; `;
+      //   console.warn(res[2].details);
+      // }
       setValidationDetails(details);
       dispatch(setLoading(false));
       if (!details.error) {
@@ -319,26 +319,26 @@ const Planning = () => {
   }
 
   return (
-    <ContainerCard title="Before you start" description="Prerequisites, requirements and roles needed to install">
+    <ContainerCard title="Before you start" description="Prerequisites, requirements and roles needed to install.">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} content={editorContent}/>
       <Box sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto', opacity: step === 0 ? 1 : opacity}}>
         <Typography sx={{ mb: 2 }} color="text.secondary"> 
           {/* TODO: Allow to choose Zowe version here by click here, support for other instalation types? */}
-          {zoweVersion ? `About to install latest Zowe version: ${zoweVersion} from the convenience build. Required space: ${requiredSpace}MB` : ''}
+          {zoweVersion ? `About to install latest Zowe version: ${zoweVersion} from the convenience build. Approximate required space: ${requiredSpace}MB` : ''}
         </Typography>
         <Typography id="position-0" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">     
         {/* <Describe permissions that may be needed in detail>  */}  
         {`The basic role for the installation is the system programmer ( OMVS / z/OS ) 
-At some stages, you may need additional permissions: 
-    - Security administrator role will be required for configuring proper permissions in z/OS and z/OSMF and to generate certificates for Zowe.
-    - Network administrator help may be needed to define a set of ports that can be used by Zowe.`}
+For some stages, you may need additional permissions: 
+    - A security administrator to configure proper permissions in z/OS and z/OSMF and to generate certificates for Zowe.
+    - A network administrator to define a set of ports that can be used by Zowe.`}
         </Typography>
         <Typography sx={{ mb: 1 }} color="text.secondary">
-          <Link href="https://docs.zowe.org/stable/user-guide/install-zos" rel="noreferrer" target="_blank">High-level installation overview on Zowe Docs</Link>
+          <Link href="https://docs.zowe.org/stable/user-guide/install-zos" rel="noreferrer" target="_blank">Here is the most up to date, high-level installation overview for Zowe</Link>
         </Typography>
         <Typography sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">    
-        {`We will be running installation and configuration commands on the mainframe by submitting jobs through the FTP connection. 
-Please customize job statement below to match your system requirements.
+        {`Zen will run installation (zwe install) and initialization (zwe init) commands on the mainframe by submitting jobs through the FTP connection. 
+Please customize the job statement below to match your system requirements.
   `}
         </Typography>
         <FormControl>
@@ -354,8 +354,8 @@ Please customize job statement below to match your system requirements.
             variant="standard"
           />
         </FormControl>
-        <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type={step === 0 ? "submit" : "button"} variant="text" onClick={e => saveJobHeader(e)}>Save and validate</Button>
+        <FormControl sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+          <Button sx={{boxShadow: 'none', justifyContent: 'center'}} type={step === 0 ? "submit" : "button"} variant="text" onClick={e => saveJobHeader(e)}>Save and validate</Button>
           {jobHeaderSaved ? 
             <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : null}
         </FormControl>
@@ -363,7 +363,7 @@ Please customize job statement below to match your system requirements.
       {step > 0 
         ? <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0', opacity: step === 1 ? 1 : opacity}}>
           <Typography id="position-1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-            {`Now let's define general USS locations`}
+            {`Now let's define some properties like z/OS Unix locations, identifiers, and z/OSMF details (optional).`}
           </Typography>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <div style={{ flex: 1 }}>
@@ -373,12 +373,12 @@ Please customize job statement below to match your system requirements.
                 id="installation-input"
                 required
                 style={{marginLeft: 0}}
-                label="Installation location (Runtime Directory)"
+                label="Run-time Directory (or installation location)"
                 variant="standard"
                 value={installationArgs.installationDir}
                 onChange={(e) => dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}))}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe source files. Required space: {`${requiredSpace}MB`}</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Readable z/OS Unix location for Zowe source files. Approximate space: {`${requiredSpace}MB`}</p>
             </div>
           </FormControl>
           <FormControl>
@@ -392,7 +392,7 @@ Please customize job statement below to match your system requirements.
                 value={installationArgs.workspaceDir}
                 onChange={(e) => dispatch(setInstallationArgs({...installationArgs, workspaceDir: e.target.value}))}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe workspace dir</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Read and writeable z/OS Unix location for the Zowe workspace.</p>
             </div>
           </FormControl>
           <FormControl>
@@ -406,7 +406,7 @@ Please customize job statement below to match your system requirements.
                 value={installationArgs.logDir}
                 onChange={(e) => dispatch(setInstallationArgs({...installationArgs, logDir: e.target.value}))}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe Log dir</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Read and writeable z/OS Unix location for Zowe's logs.</p>
             </div>
           </FormControl>
           <FormControl>
@@ -420,7 +420,7 @@ Please customize job statement below to match your system requirements.
                 value={installationArgs.extentionDir}
                 onChange={(e) => dispatch(setInstallationArgs({...installationArgs, extentionDir: e.target.value}))}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe extention dir</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Read and writeable z/OS Unix location to contain Zowe's extensions.</p>
             </div>
           </FormControl>
           <FormControl>
@@ -434,7 +434,7 @@ Please customize job statement below to match your system requirements.
                 value={installationArgs.rbacProfile}
                 onChange={(e) => dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}))}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>An ID used for determining resource names used in RBAC authorization checks</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>ID used for determining resource names as used in RBAC authorization checks.</p>
             </div>
           </FormControl>
           </div>
@@ -450,7 +450,7 @@ Please customize job statement below to match your system requirements.
                 value={installationArgs.jobName}
                 onChange={(e) => dispatch(setInstallationArgs({...installationArgs, jobName: e.target.value}))}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Job name of Zowe primary ZWESLSTC started task.</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Job name of the Zowe primary ZWESLSTC started task.</p>
             </div>
           </FormControl>
           <FormControl>
@@ -464,7 +464,7 @@ Please customize job statement below to match your system requirements.
                 value={installationArgs.jobPrefix}
                 onChange={(e) => dispatch(setInstallationArgs({...installationArgs, jobPrefix: e.target.value}))}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>A short prefix to customize address spaces created by Zowe job.</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Short prefix to identify/customize address spaces created by the Zowe job.</p>
             </div>
           </FormControl>
           <FormControl>
@@ -478,7 +478,7 @@ Please customize job statement below to match your system requirements.
                 value={installationArgs.cookieId}
                 onChange={(e) => dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}))}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>An ID that can be used by servers that distinguish their cookies from unrelated Zowe installs</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>ID that can be used by the servers to distinguish their cookies from unrelated Zowe installs.</p>
             </div>
           </FormControl>
           <FormControl>
@@ -492,7 +492,7 @@ Please customize job statement below to match your system requirements.
                 value={installationArgs.javaHome}
                 onChange={(e) => dispatch(setInstallationArgs({...installationArgs, javaHome: e.target.value}))}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location of Java in USS</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>z/OS Unix location of Java.</p>
             </div>
           </FormControl>
           <FormControl>
@@ -501,12 +501,12 @@ Please customize job statement below to match your system requirements.
                 id="node-home-input"
                 required
                 style={{marginLeft: 0}}
-                label="Node JS location"
+                label="Node.js location"
                 variant="standard"
                 value={installationArgs.nodeHome}
                 onChange={(e) => dispatch(setInstallationArgs({...installationArgs, nodeHome: e.target.value}))}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe workspace dir</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>z/OS Unix location of Node.js.</p>
             </div>
           </FormControl>
           </div>
@@ -518,7 +518,7 @@ Please customize job statement below to match your system requirements.
                 onChange={(e) => setShowZosmfAttributes(e.target.checked)}
               />
             }
-            label="Set Zosmf Attributes"
+            label="Set z/OSMF Attributes"
           />
 
           {showZosmfAttributes && (
@@ -530,12 +530,12 @@ Please customize job statement below to match your system requirements.
                       id="zosmf-host"
                       required
                       style={{marginLeft: 0}}
-                      label="Zosmf Host"
+                      label="z/OSMF Host"
                       variant="standard"
                       value={connectionArgs.host}
                       onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfHost: e.target.value}))}
                     />
-                    <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Host or domain name of your z/OSMF instance.</p>
+                    <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Host (or domain name) of your z/OSMF instance.</p>
                   </div>
                 </FormControl>
                 <FormControl>
@@ -544,7 +544,7 @@ Please customize job statement below to match your system requirements.
                       id="zosmf-port"
                       required
                       style={{marginLeft: 0}}
-                      label="Zosmf Port"
+                      label="z/OSMF Port"
                       variant="standard"
                       value={installationArgs.zosmfPort}
                       onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfPort: e.target.value}))}
@@ -560,32 +560,31 @@ Please customize job statement below to match your system requirements.
                       id="zosmf-appl-id"
                       required
                       style={{marginLeft: 0}}
-                      label="Zosmf Application Id"
+                      label="z/OSMF Application Id"
                       variant="standard"
                       value={installationArgs.zosmfApplId}
                       onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfApplId: e.target.value}))}
                     />
-                    <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Port number of your z/OSMF instance.</p>
+                    <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Application ID of your z/OSMF instance.</p>
 
                   </div>
                 </FormControl>
               </div>
             </div>
           )}
-          <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-            <Button sx={{boxShadow: 'none', mr: '12px', marginLeft: '50%'}} type={step === 1 ? "submit" : "button"} variant="text" onClick={e => validateLocations(e)}>Validate locations</Button>
+          <FormControl sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <Button sx={{boxShadow: 'none'}} type={step === 1 ? "submit" : "button"} variant="text" onClick={e => validateLocations(e)}>Validate locations</Button>
             {locationsValidated ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : validationDetails.error ? null: null}
           </FormControl>
         </Box>
         : <div/> }
+      {/* <Add a checklist of components / settings user want to use, filter further steps accordingly */}
       {step > 1 
         ? <Box sx={{height: step === 2 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0', opacity: step === 2 ? 1 : opacity}}>
           <Typography id="position-2" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
           {`Found Java version: ${validationDetails.javaVersion}, Node version: ${validationDetails.nodeVersion}
 
-All set, ready to proceed.
-
-<Add a checklist of components / settings user want to use, filter further steps accordingly`
+All set, ready to proceed.`
 }
           </Typography>
         </Box>
