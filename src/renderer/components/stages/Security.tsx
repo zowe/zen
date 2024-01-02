@@ -12,11 +12,16 @@ import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { setConfiguration, getConfiguration } from '../../../services/ConfigService';
+import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
+import { selectInstallationArgs } from "./installation/installationSlice";
+import { selectConnectionArgs } from "./connection/connectionSlice";
+import { IResponse } from "../../../types/interfaces";
+import ProgressCard from "../common/ProgressCard";
+import React from "react";
 
 const Security = () => {
 
@@ -30,6 +35,16 @@ const Security = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
+  const [initProgress, setInitProgress] = useState({
+    writeYaml: false,
+    uploadYaml: false,
+    success: false,
+  });
+  const [showProgress, toggleProgress] = useState(false);
+  let timer: any;
+
+  const installationArgs = useAppSelector(selectInstallationArgs);
+  const connectionArgs = useAppSelector(selectConnectionArgs);
 
   const section = 'security';
   const initConfig: any = getConfiguration(section);
@@ -48,6 +63,16 @@ const Security = () => {
   if(securitySchema) {
     validate = ajv.compile(securitySchema);
   }
+
+  useEffect(() => {
+    timer = setInterval(() => {
+      window.electron.ipcRenderer.getInitSecurityProgress().then((res: any) => {
+        setInitProgress(res);
+      })
+    }, 3000);
+    const nextPosition = document.getElementById('init-progress');
+    nextPosition.scrollIntoView({behavior: 'smooth'});
+  }, [showProgress]);
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
@@ -90,12 +115,35 @@ const Security = () => {
     dispatch(setNextStepEnabled(proceed));
   }
 
+  const process = (event: any) => {
+    event.preventDefault();
+    toggleProgress(true);
+    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
+        dispatch(setNextStepEnabled(res.status));
+        clearInterval(timer);
+      }).catch(() => {
+        clearInterval(timer);
+        console.warn('zwe init security failed');
+      });
+    
+  }
+
   return (
     <div>
       <ContainerCard title="Security" description="Configure Zowe Security">
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Security Config</Button>
+          <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="init-progress">
+          {!showProgress ? null :
+          <React.Fragment>
+            <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={initProgress.writeYaml}/>
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={initProgress.uploadYaml}/>
+            <ProgressCard label={`Run zwe init security`} id="success-progress-card" status={initProgress.success}/>
+          </React.Fragment>
+        }
+        </Box>
         </Box>
       </ContainerCard>
     </div>

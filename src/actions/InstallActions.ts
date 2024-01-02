@@ -41,4 +41,9 @@ export class InstallActions {
     version: string): Promise<IResponse> {
     return this.strategy.runInstallation(connectionArgs, installationArgs, version);
   }
+
+  initSecurity(connectionArgs: IIpcConnectionArgs,
+    installationArgs: {installationDir: string}, zoweConfig: any): Promise<IResponse> {
+    return this.strategy.initSecurity(connectionArgs, installationArgs, zoweConfig);
+  }
 }

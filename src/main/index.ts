@@ -135,6 +135,19 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('init-security', async (event, connectionArgs, installationArgs, zoweConfig) => {
+    const res = await installActions.initSecurity(connectionArgs, installationArgs, zoweConfig);
+    return res;
+  });
+
+
+  ipcMain.handle('get-init-security-progress', async (event) => {
+    const res = ProgressStore.getAll()['initSecurity'];
+    return res;
+  });
+
+
+
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
   
