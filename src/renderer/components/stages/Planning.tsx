@@ -276,9 +276,7 @@ const Planning = () => {
     Promise.all([
       window.electron.ipcRenderer.checkJava(connectionArgs, installationArgs.javaHome),
       window.electron.ipcRenderer.checkNode(connectionArgs, installationArgs.nodeHome),
-
       //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks.
-      //window.electron.ipcRenderer.checkSpace(connectionArgs, installationArgs.installationDir)
     ]).then((res: Array<IResponse>) => {
       const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
       setEditorContent(res.map(item=>item.details).join('\n'));
@@ -295,17 +293,7 @@ const Planning = () => {
         details.error = details.error + `Can't get node version; `;
         console.warn(res[1].details);
       }
-      try {
-        const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
-        details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
-        // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
-        if (parseInt(details.spaceAvailableMb, 10) < requiredSpace) { 
-          details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
-        }
-      } catch (error) {
-        details.error = details.error + `Can't check space available; `;
-        console.warn(res[2].details);
-      }
+
       setValidationDetails(details);
       dispatch(setLoading(false));
       if (!details.error) {
