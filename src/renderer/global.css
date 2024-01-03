@@ -7,7 +7,8 @@ body {
   width: 100vw;
   background-color: #eeeeee;
   margin: 0;
-  color: #4D4B45
+  color: #4D4B45;
+  font-family: "Roboto","Helvetica","Arial",sans-serif;
 }
 
 button {

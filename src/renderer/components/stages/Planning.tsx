@@ -299,13 +299,14 @@ const Planning = () => {
   }
 
   return (
+    <React.Fragment><span id="position-0"></span>
     <ContainerCard title="Before you start" description="Prerequisites, requirements and roles needed to install">
       <Box sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto', opacity: step === 0 ? 1 : opacity}}>
         <Typography sx={{ mb: 2 }} color="text.secondary"> 
           {/* TODO: Allow to choose Zowe version here by click here, support for other instalation types? */}
           {zoweVersion ? `About to install latest Zowe version: ${zoweVersion} from the convenience build. Required space: ${requiredSpace}MB` : ''}
         </Typography>
-        <Typography id="position-0" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">     
+        <Typography sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">     
         {/* <Describe permissions that may be needed in detail>  */}  
         {`The basic role for the installation is the system programmer ( OMVS / z/OS ) 
 At some stages, you may need additional permissions: 
@@ -455,7 +456,7 @@ Please customize job statement below to match your system requirements.
                 label="Cookie Identifier"
                 variant="standard"
                 value={installationArgs.cookieId}
-                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}))}
+                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, cookieId: e.target.value}))}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>An ID that can be used by servers that distinguish their cookies from unrelated Zowe installs</p>
             </div>
@@ -570,6 +571,7 @@ All set, ready to proceed.
         </Box>
         : <div/> }
     </ContainerCard>
+    </React.Fragment>
   );
 };
 
