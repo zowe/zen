@@ -14,15 +14,63 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
+import Check from '@mui/icons-material/Check';
 import Typography from '@mui/material/Typography';
+import { styled } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/connection/connectionSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { alertEmitter } from '../Header';
+import { StepIconProps } from '@mui/material/StepIcon';
 
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
+
+const CustomStepIconRoot = styled('div')<{ ownerState: { active?: boolean, progress?: string } }>(
+  ({ theme, ownerState }) => ({
+    color: theme.palette.mode === 'dark' ? theme.palette.grey[700] : '#eaeaf0',
+    display: 'flex',
+    height: 22,
+    alignItems: 'center',
+    ...(ownerState.active && {
+      color: theme.palette.primary.main,
+    }),
+    '& .CustomStepIcon-container': {
+      minWidth: 36,
+      minHeight: 36,
+    },
+    '& .CustomStepIcon-flex-container': {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    '& .CustomStepIcon-completedIcon': {
+      color: theme.palette.primary.main,
+      zIndex: 1,
+      fontSize: 24,
+    },
+    '& .CustomStepIcon-active': {
+      width: 24,
+      height: 24,
+      borderRadius: '50%',
+      backgroundColor: 'currentColor',
+    },
+    '& .CustomStepIcon-active-inner': {
+      zIndex: 2,
+    },
+    '& .CustomStepIcon-progress-bar': {
+      width: '36px',
+      height: '36px',
+      borderRadius: '50%',
+      marginLeft: '-30px',
+      background: `radial-gradient(closest-side, white 79%, transparent 80% 100%), conic-gradient(${theme.palette.primary.main} ${ownerState.progress}%, #c6e3ff 0)`,  
+    },
+    // '& .CustomStepIcon-active-inner::before': {
+    //   content: `"${ownerState.progress}%"`,
+    // },
+  }),
+);
 
 export default function HorizontalLinearStepper(props: any) {
 
@@ -55,6 +103,29 @@ export default function HorizontalLinearStepper(props: any) {
     setActiveStep(0);
   };
 
+  function CustomStepIcon(props: StepIconProps) {
+    const { active, completed, className } = props;
+    const substeps = active && stages[activeStep].subStages?.length;
+    const progress = substeps ? (activeSubStep / stages[activeStep].subStages.length * 100).toFixed(0) : '0';
+
+    return (
+      <CustomStepIconRoot ownerState={{ active, progress }} className={className}>
+        <div className='CustomStepIcon-container CustomStepIcon-flex-container'>
+          {completed ? (
+            <Check className="CustomStepIcon-completedIcon" />
+          ) : (
+            substeps ? 
+            <div className='CustomStepIcon-flex-container'>
+              <div className="CustomStepIcon-active CustomStepIcon-active-inner"/>
+              <div className="CustomStepIcon-progress-bar"/>
+            </div> :
+            <div className="CustomStepIcon-active"/>
+          )}
+        </div>
+      </CustomStepIconRoot>
+    );
+  }
+
   return (
     <Box className="stepper-container">
       <Stepper className="stepper" activeStep={activeStep}>
@@ -63,28 +134,18 @@ export default function HorizontalLinearStepper(props: any) {
           const labelProps = {};
           return (
             <Step key={stage.id} {...stepProps}>
-              <div style={activeStep === index && stages[activeStep].subStages ? {backgroundColor: '#E0E0E0', padding: '5px 5px 20px 5px', marginBottom: '-18px', borderTopRightRadius: '3px', borderTopLeftRadius: '3px'} : {}}>
-                <StepLabel {...labelProps}>
-                    {stage.label}
+                <StepLabel StepIconComponent={CustomStepIcon} {...labelProps}>
+                    {stages[activeStep].subStages&&activeStep === index  ? 
+                      <div>
+                        <p style={{margin: 0}}>{stage.label}</p>
+                        <p style={{margin: 0, fontSize: '13px', fontStyle: 'italic'}}>{stages[activeStep].subStages[activeSubStep].label}</p>
+                      </div> : 
+                      stage.label}
                 </StepLabel>
-              </div>
             </Step>
           );
         })}
       </Stepper>
-      {stages[activeStep].subStages &&  <Stepper className="substepper" activeStep={activeSubStep}>
-        {stages[activeStep].subStages.map((stage: any, index: number) => {
-          const stepProps = {};
-          const labelProps = {};
-          return (
-            <Step key={stage.id} {...stepProps}>
-                <StepLabel {...labelProps}>
-                    {stage.label}
-                </StepLabel>
-            </Step>
-          );
-        })}
-      </Stepper>}
       {activeStep === stages.length ? (
         <React.Fragment>
           <Typography sx={{ mt: 2, mb: 1, color: 'black' }}>
