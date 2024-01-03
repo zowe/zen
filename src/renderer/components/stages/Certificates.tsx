@@ -17,8 +17,11 @@ import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
+import { createTheme } from '@mui/material/styles';
 
 const Certificates = () => {
+
+  const theme = createTheme();
 
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
@@ -29,11 +32,14 @@ const Certificates = () => {
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
+  const [contentType, setContentType] = useState('');
 
   const section = 'certificate';
   const initConfig: any = getConfiguration(section);
 
   const TYPE_YAML = "yaml";
+  const TYPE_JCL = "jcl";
+  const TYPE_OUTPUT = "output";
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -55,7 +61,8 @@ const Certificates = () => {
     setInit(true);
   }, []);
 
-  const toggleEditorVisibility = () => {
+  const toggleEditorVisibility = (type: any) => {
+    setContentType(type);
     setEditorVisible(!editorVisible);
   };
   
@@ -106,7 +113,13 @@ const Certificates = () => {
 
   return (
     <div>
+      <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View Yaml</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>Preview Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>Submit Job</Button>
+      </Box>
       <ContainerCard title="Certificates" description="Configure Zowe Certificates"> 
+        <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>

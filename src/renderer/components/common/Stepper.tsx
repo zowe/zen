@@ -22,6 +22,7 @@ import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
 import Security from '../stages/Security';
+import { useTheme, createTheme } from '@mui/material/styles';
 
 
 // TODO: define props, stages, stage interfaces
@@ -29,6 +30,8 @@ import Security from '../stages/Security';
 
 export default function HorizontalLinearStepper(props: any) {
 
+  const theme = createTheme();
+  
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
   const TYPE_OUTPUT = "output";
@@ -56,15 +59,6 @@ export default function HorizontalLinearStepper(props: any) {
 
   const getSkipText = () => {
     return 'Skip step';//+stages[activeStep+1].label;
-  };
-
-  const handleYAML = () => {
-    toggleEditorVisibility(TYPE_YAML);
-  }
-
-  const handlePreview = (test_jcl: any) => {
-    toggleEditorVisibility(TYPE_JCL);    
-    setEditorContent(test_jcl);
   };
 
   const handleSubmit = () => {
@@ -98,6 +92,11 @@ export default function HorizontalLinearStepper(props: any) {
   const handleReset = () => {
     alertEmitter.emit('hideAlert');
     setActiveStep(0);
+  };
+
+  const handlePreview = (test_jcl: any) => {
+    toggleEditorVisibility(TYPE_JCL);    
+    setEditorContent(test_jcl);
   };
 
   const isNextStepEnabled = useAppSelector(selectNextStepEnabled);
@@ -148,17 +147,13 @@ export default function HorizontalLinearStepper(props: any) {
           <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: stages[activeStep].subStages ? 'calc(100vh - 250px)' : 'calc(100vh - 200px)'}}>
             {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].component : stages[activeStep].component}
           </div>
-          <Box sx={{ display: 'flex', flexDirection: 'row', p: 1, borderTop: 'solid 1px lightgray' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'row', p: 1, borderTop: 'solid 1px lightgray', justifyContent: 'flex-end'}}>
             <Box sx={{ flex: '1 1 auto' }} >
-              {stages[activeStep].hasYaml &&
-                <Button variant="outlined" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handleYAML()}>View YAML</Button>
-              }
-              {stages[activeStep].hasJCL &&
-                <Button disabled={!isNextStepEnabled} variant="outlined" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handlePreview({})}>Preview Job</Button>
-              }
-              {stages[activeStep].hasOutput &&
-                <Button variant="outlined" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handlePreview({})}>Submit Job</Button>
-              }
+              {stages[activeStep].label === 'Planning' ? (
+                <Button variant="outlined" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handlePreview({})}>
+                  Submit Job
+                </Button>
+              ) : null}
             </Box>
             <Button
               variant="outlined"
@@ -183,7 +178,15 @@ export default function HorizontalLinearStepper(props: any) {
                 Discard Setup
               </Button>
             </Link>
-
+            {stages[activeStep].isSkippable &&
+              <Button 
+                variant="contained" 
+                sx={{ textTransform: 'none', mr: 1 }} 
+                onClick={() => handleNext()}
+              >
+                Skip {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].label : stages[activeStep].label}
+              </Button>
+            }
             <Button 
               disabled={!isNextStepEnabled && !stages[activeStep].isSkippable}
               variant="contained" 
@@ -192,9 +195,6 @@ export default function HorizontalLinearStepper(props: any) {
             >
               {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].nextButton : stages[activeStep].nextButton}
             </Button>
-            {stages[activeStep].isSkippable &&
-              <Button variant="contained" sx={{ textTransform: 'none', mr: 1 }} onClick={() => handleNext()}>Skip Step</Button>
-            }
           </Box>
         </React.Fragment>
       )}
