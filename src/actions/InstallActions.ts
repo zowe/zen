@@ -39,6 +39,7 @@ export class InstallActions {
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
     version: string, zoweConfig: any): Promise<IResponse> {
+      console.log("zoweConfig from runInstallation():", JSON.stringify(zoweConfig))
     return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
   }
 

@@ -126,6 +126,7 @@ const createWindow = (): void => {
   })
 
   ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs, version, zoweConfig) => {
+    console.log("zoweConfig from install-mvs:", JSON.stringify(zoweConfig))
     const res = await installActions.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
     return res;
   });
