@@ -25,7 +25,7 @@ import { IResponse } from '../../../types/interfaces';
 import Alert from "@mui/material/Alert";
 import { alertEmitter } from "../Header";
 import { Checkbox, FormControlLabel } from "@mui/material";
-import { getConfiguration, getZoweConfig, setTopLevelYamlConfig } from "../../../services/ConfigService";
+import { getConfiguration, getZoweConfig, setTopLevelYamlConfig, setZoweConfig } from "../../../services/ConfigService";
 
 const serverSchema = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
@@ -140,7 +140,7 @@ const Planning = () => {
   const zoweVersion = useAppSelector(selectZoweVersion);
   const installationArgs: any = useAppSelector(selectInstallationArgs);
   const [requiredSpace, setRequiredSpace] = useState(1300); //in megabytes
-  const localYaml: any = getZoweConfig();
+  let localYaml: any = getZoweConfig();
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
@@ -172,6 +172,10 @@ const Planning = () => {
       } else {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
           dispatch(setYaml(res.details));
+          if(localYaml == undefined){
+            localYaml = res.details;
+            setZoweConfig(res.details);
+          }
           return res.status
         }).then((yamlStatus: boolean) => {
           window.electron.ipcRenderer.getZoweSchema().then((res: IResponse) => {
