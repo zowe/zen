@@ -23,10 +23,10 @@ class Installation {
   public async runInstallation (
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
-    version: string
+    version: string,
+    zoweConfig: any
   ): Promise<IResponse> {
-
-    const savingResult = await this.generateYamlFile();
+    const savingResult = await this.generateYamlFile(zoweConfig);
     if (!savingResult.status) {
       return savingResult;
     }
@@ -138,10 +138,9 @@ class Installation {
       return {status: result.rc === 0, details: result.jobOutput}
   }
 
-  async generateYamlFile() {
-    const zoweYaml: any = ConfigurationStore.getConfig();
+  async generateYamlFile(zoweConfig: any) {
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-    await fs.writeFile(filePath, stringify(zoweYaml), (err: any) => {
+    await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
       if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           return {status: false, details: err.message};
