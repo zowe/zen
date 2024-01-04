@@ -118,7 +118,6 @@ const Security = () => {
   const process = (event: any) => {
     event.preventDefault();
     toggleProgress(true);
-    console.log("**** getZoweConfig() from Security.tsx: ", JSON.stringify(getZoweConfig()));
     window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
         clearInterval(timer);
