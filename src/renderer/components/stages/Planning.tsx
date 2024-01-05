@@ -175,7 +175,6 @@ const Planning = () => {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
           dispatch(setYaml(res.details));
           if(localYaml == undefined){
-            console.log('Setting zoweConfig:', JSON.stringify(res.details))
             localYaml = res.details;
             setZoweConfig(res.details);
           }
@@ -525,7 +524,7 @@ Please customize job statement below to match your system requirements.
                   setTopLevelYamlConfig('node.home', e.target.value);
                 }}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe workspace dir</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location of Node.js in USS</p>
             </div>
           </FormControl>
           </div>
