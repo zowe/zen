@@ -216,8 +216,8 @@ const Planning = () => {
             if (line.includes('node')) nodeHome = installationArgs.nodeHome ? installationArgs.nodeHome : line;
             if (line.includes('java')) javaHome = installationArgs.javaHome ? installationArgs.javaHome : line;
           });
-          nodeHome && dispatch(setInstallationArgs({...installationArgs, nodeHome: nodeHome}))
-          javaHome && dispatch(setInstallationArgs({...installationArgs, javaHome: javaHome}))
+          nodeHome && dispatch(setInstallationArgs({...installationArgs, nodeHome: nodeHome})) && setTopLevelYamlConfig("node.home", nodeHome);
+          javaHome && dispatch(setInstallationArgs({...installationArgs, javaHome: javaHome})) && setTopLevelYamlConfig("java.home", javaHome);
         } catch (error) {
           return {status: false, details: error.message}
         }
