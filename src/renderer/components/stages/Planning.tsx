@@ -175,6 +175,7 @@ const Planning = () => {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
           dispatch(setYaml(res.details));
           if(localYaml == undefined){
+            console.log('Setting zoweConfig:', JSON.stringify(res.details))
             localYaml = res.details;
             setZoweConfig(res.details);
           }
@@ -363,7 +364,7 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Installation location (Runtime Directory)"
                 variant="standard"
-                value={localYaml.runtimeDirectory || installationArgs.installationDir}
+                value={localYaml?.runtimeDirectory || installationArgs.installationDir}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}));
                   setTopLevelYamlConfig("zowe.runtimeDirectory", e.target.value);
@@ -380,7 +381,7 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Workspace Directory"
                 variant="standard"
-                value={localYaml.zowe.workspaceDirectory || installationArgs.workspaceDir}
+                value={localYaml?.zowe.workspaceDirectory || installationArgs.workspaceDir}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, workspaceDir: e.target.value}));
                   setTopLevelYamlConfig("zowe.workspaceDirectory", e.target.value);
@@ -397,7 +398,7 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Log Directory"
                 variant="standard"
-                value={localYaml.zowe.logDirectory || installationArgs.logDir}
+                value={localYaml?.zowe.logDirectory || installationArgs.logDir}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, logDir: e.target.value}));
                   setTopLevelYamlConfig("zowe.logDirectory", e.target.value);
@@ -414,7 +415,7 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Extention Directory"
                 variant="standard"
-                value={localYaml.zowe.extensionDirectory || installationArgs.extentionDir}
+                value={localYaml?.zowe.extensionDirectory || installationArgs.extentionDir}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, extentionDir: e.target.value}));
                   setTopLevelYamlConfig("zowe.extensionDirectory", e.target.value);
@@ -431,7 +432,7 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Rbac Profile Identifier"
                 variant="standard"
-                value={localYaml.zowe.rbacProfileIdentifier || installationArgs.rbacProfile}
+                value={localYaml?.zowe.rbacProfileIdentifier || installationArgs.rbacProfile}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}));
                   setTopLevelYamlConfig("zowe.rbacProfileIdentifier", e.target.value);
@@ -450,7 +451,7 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Job Name"
                 variant="standard"
-                value={localYaml.zowe.job.name || installationArgs.jobName}
+                value={localYaml?.zowe.job.name || installationArgs.jobName}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, jobName: e.target.value}));
                   setTopLevelYamlConfig("zowe.job.name", e.target.value);
@@ -467,7 +468,7 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Job Prefix"
                 variant="standard"
-                value={localYaml.zowe.job.prefix || installationArgs.jobPrefix}
+                value={localYaml?.zowe.job.prefix || installationArgs.jobPrefix}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, jobPrefix: e.target.value}));
                   setTopLevelYamlConfig("zowe.job.prefix", e.target.value);
@@ -484,7 +485,7 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Cookie Identifier"
                 variant="standard"
-                value={localYaml.zowe.cookieIdentifier || installationArgs.cookieId}
+                value={localYaml?.zowe.cookieIdentifier || installationArgs.cookieId}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}));
                   setTopLevelYamlConfig("zowe.cookieIdentifier", e.target.value);
@@ -501,7 +502,7 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Java location"
                 variant="standard"
-                value={localYaml.java.home || installationArgs.javaHome}
+                value={localYaml?.java.home || installationArgs.javaHome}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, javaHome: e.target.value}));
                   setTopLevelYamlConfig("java.home", e.target.value);
@@ -518,7 +519,7 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Node JS location"
                 variant="standard"
-                value={localYaml.node.home || installationArgs.nodeHome}
+                value={localYaml?.node.home || installationArgs.nodeHome}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, nodeHome: e.target.value}));
                   setTopLevelYamlConfig('node.home', e.target.value);
@@ -550,7 +551,7 @@ Please customize job statement below to match your system requirements.
                       style={{marginLeft: 0}}
                       label="Zosmf Host"
                       variant="standard"
-                      value={localYaml.zOSMF.host || connectionArgs.host}
+                      value={localYaml?.zOSMF.host || connectionArgs.host}
                       onChange={(e) => {
                         dispatch(setInstallationArgs({...installationArgs, zosmfHost: e.target.value}));
                         setTopLevelYamlConfig("zOSMF.host", e.target.value);
@@ -567,7 +568,7 @@ Please customize job statement below to match your system requirements.
                       style={{marginLeft: 0}}
                       label="Zosmf Port"
                       variant="standard"
-                      value={localYaml.zOSMF.port || installationArgs.zosmfPort}
+                      value={localYaml?.zOSMF.port || installationArgs.zosmfPort}
                       onChange={(e) => {
                         dispatch(setInstallationArgs({...installationArgs, zosmfPort: e.target.value}));
                         setTopLevelYamlConfig("zOSMF.port", e.target.value);
@@ -586,7 +587,7 @@ Please customize job statement below to match your system requirements.
                       style={{marginLeft: 0}}
                       label="Zosmf Application Id"
                       variant="standard"
-                      value={localYaml.zOSMF.applId || installationArgs.zosmfApplId}
+                      value={localYaml?.zOSMF.applId || installationArgs.zosmfApplId}
                       onChange={(e) => {
                         dispatch(setInstallationArgs({...installationArgs, zosmfApplId: e.target.value}));
                         setTopLevelYamlConfig("zOSMF.port", e.target.value);
