@@ -119,6 +119,12 @@ a:hover {
   border-bottom: 1px solid #E0E0E0;
 }
 
+.substepper {
+  padding: 6px 100px 18px;
+  /* border-bottom: 1px solid #E0E0E0; */
+  background-color: #E0E0E0;
+}
+
 .action-card {
   display: flex; 
   flex-direction: row;

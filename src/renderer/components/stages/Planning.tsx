@@ -24,6 +24,8 @@ import { useAppDispatch, useAppSelector } from '../../hooks';
 import { IResponse } from '../../../types/interfaces';
 import Alert from "@mui/material/Alert";
 import { alertEmitter } from "../Header";
+import { Checkbox, FormControlLabel } from "@mui/material";
+import EditorDialog from "../common/EditorDialog";
 
 const serverSchema = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
@@ -55,7 +57,7 @@ const serverSchema = {
       "$anchor": "zoweDatasetMember",
       "type": "string",
       "description": "A 1-8-char all caps dataset member name",
-      "pattern": "^([A-Z\$\#\@]){1}([A-Z0-9\$\#\@]){0,7}$",
+      "pattern": "^([A-Z$#@]){1}([A-Z0-9$#@]){0,7}$",
       "minLength": 1,
       "maxLength": 8
     },
@@ -133,9 +135,22 @@ const Planning = () => {
   const [jobStatementValidation, setJobStatementValidation] = useState('');
   const [locationsValidated, setLocationsValidated] = useState(false);
   const [validationDetails, setValidationDetails] = useState({javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''});
+  const [showZosmfAttributes, setShowZosmfAttributes] = useState(true);
 
   const zoweVersion = useAppSelector(selectZoweVersion);
   const installationArgs: any = useAppSelector(selectInstallationArgs);
+  const [requiredSpace, setRequiredSpace] = useState(1300); //in megabytes
+
+  const [contentType, setContentType] = useState('output');
+  const [editorVisible, setEditorVisible] = useState(false);
+  const [editorContent, setEditorContent] = useState('');
+
+  const toggleEditorVisibility = (type?: any) => {
+    if (type) {
+      setContentType(type);
+    }
+    setEditorVisible(!editorVisible);
+  };
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
@@ -152,16 +167,17 @@ const Planning = () => {
         // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
         schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
         schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
+        schema.$id = serverSchema.$id;
         dispatch(setSchema(schema));
-        let installationDir = '', javaHome, nodeHome;
+        let installationDir = '';
         if (res.details.config?.zowe?.runtimeDirectory && res.details.config?.zowe?.workspaceDirectory) {
           const getParentDir = (path: string): string => path.split('/').filter((i: string, ind: number) => i || !ind).slice(0, -1).join('/');
           const runtimeParent = getParentDir(res.details.config.zowe.runtimeDirectory);
           const workspaceParent = getParentDir(res.details.config.zowe.workspaceDirectory);
           if (runtimeParent === workspaceParent) installationDir = runtimeParent;
         }
-        javaHome = (res.details.config?.java?.home) ? res.details.config.java.home : '';
-        nodeHome = (res.details.config?.node?.home) ? res.details.config.node.home : '';
+        const javaHome = (res.details.config?.java?.home) ? res.details.config.java.home : '';
+        const nodeHome = (res.details.config?.node?.home) ? res.details.config.node.home : '';
         dispatch(setInstallationArgs({...installationArgs, installationDir, javaHome, nodeHome}));
       } else {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
@@ -173,6 +189,7 @@ const Planning = () => {
             // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
             schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
             schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
+            schema.$id = serverSchema.$id;
             dispatch(setSchema(schema));
           }); 
         }); 
@@ -181,7 +198,8 @@ const Planning = () => {
   }, []);  
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
+    // dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
+    dispatch(setNextStepEnabled(true));
   }, [jobHeaderSaved, locationsValidated]);
 
   useEffect(() => {
@@ -218,6 +236,8 @@ const Planning = () => {
     window.electron.ipcRenderer.saveJobHeader(connectionArgs.jobStatement)
       .then(() => getENVVars())
       .then((res: IResponse) => {
+        setEditorContent(res.details);
+        setContentType('output');
         if (!res.status) { // Failure case
           setJobStatementValidation(res.details);
           console.warn('Failed to verify job statement');
@@ -233,6 +253,8 @@ const Planning = () => {
         dispatch(setLoading(false));
       })
       .catch((err: Error) => {
+        setEditorContent(err.message);
+        setContentType('output');
         console.warn(err);
         setJobStatementValidation(err.message);
         alertEmitter.emit('showAlert', err.message, 'error');
@@ -254,9 +276,11 @@ const Planning = () => {
     Promise.all([
       window.electron.ipcRenderer.checkJava(connectionArgs, installationArgs.javaHome),
       window.electron.ipcRenderer.checkNode(connectionArgs, installationArgs.nodeHome),
-      window.electron.ipcRenderer.checkSpace(connectionArgs, installationArgs.installationDir)
+      //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks.
     ]).then((res: Array<IResponse>) => {
-      const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''}
+      const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
+      setEditorContent(res.map(item=>item.details).join('\n'));
+      setContentType('output');
       try {
         details.javaVersion = res[0].details.split('\n').filter((i: string) => i.trim().startsWith('java version'))[0].trim().slice(14, -1);
       } catch (error) {
@@ -269,17 +293,7 @@ const Planning = () => {
         details.error = details.error + `Can't get node version; `;
         console.warn(res[1].details);
       }
-      try {
-        const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
-        details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
-        // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
-        if (parseInt(details.spaceAvailableMb, 10) < 1300) { 
-          details.error = details.error + `Not enough space, you need at least 1300MB; `;
-        }
-      } catch (error) {
-        details.error = details.error + `Can't check space available; `;
-        console.warn(res[2].details);
-      }
+
       setValidationDetails(details);
       dispatch(setLoading(false));
       if (!details.error) {
@@ -294,10 +308,11 @@ const Planning = () => {
 
   return (
     <ContainerCard title="Before you start" description="Prerequisites, requirements and roles needed to install">
+      <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} content={editorContent}/>
       <Box sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto', opacity: step === 0 ? 1 : opacity}}>
         <Typography sx={{ mb: 2 }} color="text.secondary"> 
           {/* TODO: Allow to choose Zowe version here by click here, support for other instalation types? */}
-          {zoweVersion ? `About to install latest Zowe version: ${zoweVersion} from the convenience build` : ''}
+          {zoweVersion ? `About to install latest Zowe version: ${zoweVersion} from the convenience build. Required space: ${requiredSpace}MB` : ''}
         </Typography>
         <Typography id="position-0" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">     
         {/* <Describe permissions that may be needed in detail>  */}  
@@ -338,44 +353,215 @@ Please customize job statement below to match your system requirements.
           <Typography id="position-1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
             {`Now let's define general USS locations`}
           </Typography>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ flex: 1 }}>
           <FormControl>
-            <TextField 
-              id="installation-input"
-              required
-              style={{marginLeft: 0}}
-              label="Installation location"
-              variant="standard"
-              helperText="Location for Zowe source files"
-              value={installationArgs.installationDir}
-              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}))}
-            />
+            <div>
+              <TextField
+                id="installation-input"
+                required
+                style={{marginLeft: 0}}
+                label="Installation location (Runtime Directory)"
+                variant="standard"
+                value={installationArgs.installationDir}
+                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}))}
+              />
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe source files. Required space: {`${requiredSpace}MB`}</p>
+            </div>
           </FormControl>
           <FormControl>
-            <TextField 
-              id="java-home-input"
-              required
-              style={{marginLeft: 0}}
-              label="Java location"
-              variant="standard"
-              helperText="Location of Java in USS"
-              value={installationArgs.javaHome}
-              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, javaHome: e.target.value}))}
-            />
+            <div>
+              <TextField
+                id="workspace-input"
+                required
+                style={{marginLeft: 0}}
+                label="Workspace Directory"
+                variant="standard"
+                value={installationArgs.workspaceDir}
+                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, workspaceDir: e.target.value}))}
+              />
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe workspace dir</p>
+            </div>
           </FormControl>
           <FormControl>
-            <TextField 
-              id="node-home-input"
-              required
-              style={{marginLeft: 0}}
-              label="Node JS location"
-              variant="standard"
-              helperText="Location of Node JS in USS"
-              value={installationArgs.nodeHome}
-              onChange={(e) => dispatch(setInstallationArgs({...installationArgs, nodeHome: e.target.value}))}
-            />
+            <div>
+              <TextField
+                id="log-input"
+                required
+                style={{marginLeft: 0}}
+                label="Log Directory"
+                variant="standard"
+                value={installationArgs.logDir}
+                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, logDir: e.target.value}))}
+              />
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe Log dir</p>
+            </div>
           </FormControl>
+          <FormControl>
+            <div>
+              <TextField
+                id="extention-input"
+                required
+                style={{marginLeft: 0}}
+                label="Extention Directory"
+                variant="standard"
+                value={installationArgs.extentionDir}
+                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, extentionDir: e.target.value}))}
+              />
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe extention dir</p>
+            </div>
+          </FormControl>
+          <FormControl>
+            <div>
+              <TextField
+                id="rbac-input"
+                required
+                style={{marginLeft: 0}}
+                label="Rbac Profile Identifier"
+                variant="standard"
+                value={installationArgs.rbacProfile}
+                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}))}
+              />
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>An ID used for determining resource names used in RBAC authorization checks</p>
+            </div>
+          </FormControl>
+          </div>
+          <div style={{ flex: 1 }}>
+          <FormControl>
+            <div>
+              <TextField
+                id="job-name-input"
+                required
+                style={{marginLeft: 0}}
+                label="Job Name"
+                variant="standard"
+                value={installationArgs.jobName}
+                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, jobName: e.target.value}))}
+              />
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Job name of Zowe primary ZWESLSTC started task.</p>
+            </div>
+          </FormControl>
+          <FormControl>
+            <div>
+              <TextField
+                id="job-prefix-input"
+                required
+                style={{marginLeft: 0}}
+                label="Job Prefix"
+                variant="standard"
+                value={installationArgs.jobPrefix}
+                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, jobPrefix: e.target.value}))}
+              />
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>A short prefix to customize address spaces created by Zowe job.</p>
+            </div>
+          </FormControl>
+          <FormControl>
+            <div>
+              <TextField
+                id="cookie-input"
+                required
+                style={{marginLeft: 0}}
+                label="Cookie Identifier"
+                variant="standard"
+                value={installationArgs.cookieId}
+                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}))}
+              />
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>An ID that can be used by servers that distinguish their cookies from unrelated Zowe installs</p>
+            </div>
+          </FormControl>
+          <FormControl>
+            <div>
+              <TextField
+                id="java-home-input"
+                required
+                style={{marginLeft: 0}}
+                label="Java location"
+                variant="standard"
+                value={installationArgs.javaHome}
+                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, javaHome: e.target.value}))}
+              />
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location of Java in USS</p>
+            </div>
+          </FormControl>
+          <FormControl>
+            <div>
+              <TextField
+                id="node-home-input"
+                required
+                style={{marginLeft: 0}}
+                label="Node JS location"
+                variant="standard"
+                value={installationArgs.nodeHome}
+                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, nodeHome: e.target.value}))}
+              />
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe workspace dir</p>
+            </div>
+          </FormControl>
+          </div>
+          </div>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={showZosmfAttributes}
+                onChange={(e) => setShowZosmfAttributes(e.target.checked)}
+              />
+            }
+            label="Set Zosmf Attributes"
+          />
+
+          {showZosmfAttributes && (
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ flex: 1 }}>
+                <FormControl>
+                  <div>
+                    <TextField
+                      id="zosmf-host"
+                      required
+                      style={{marginLeft: 0}}
+                      label="Zosmf Host"
+                      variant="standard"
+                      value={connectionArgs.host}
+                      onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfHost: e.target.value}))}
+                    />
+                    <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Host or domain name of your z/OSMF instance.</p>
+                  </div>
+                </FormControl>
+                <FormControl>
+                  <div>
+                    <TextField
+                      id="zosmf-port"
+                      required
+                      style={{marginLeft: 0}}
+                      label="Zosmf Port"
+                      variant="standard"
+                      value={installationArgs.zosmfPort}
+                      onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfPort: e.target.value}))}
+                    />
+                    <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Port number of your z/OSMF instance.</p>
+                  </div>
+                </FormControl>
+              </div>
+              <div style={{ flex: 1 }}>
+                <FormControl>
+                  <div>
+                    <TextField
+                      id="zosmf-appl-id"
+                      required
+                      style={{marginLeft: 0}}
+                      label="Zosmf Application Id"
+                      variant="standard"
+                      value={installationArgs.zosmfApplId}
+                      onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfApplId: e.target.value}))}
+                    />
+                    <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Port number of your z/OSMF instance.</p>
+
+                  </div>
+                </FormControl>
+              </div>
+            </div>
+          )}
           <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type={step === 1 ? "submit" : "button"} variant="text" onClick={e => validateLocations(e)}>Validate locations</Button>
+            <Button sx={{boxShadow: 'none', mr: '12px', marginLeft: '50%'}} type={step === 1 ? "submit" : "button"} variant="text" onClick={e => validateLocations(e)}>Validate locations</Button>
             {locationsValidated ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : validationDetails.error ? null: null}
           </FormControl>
         </Box>
@@ -383,7 +569,7 @@ Please customize job statement below to match your system requirements.
       {step > 1 
         ? <Box sx={{height: step === 2 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0', opacity: step === 2 ? 1 : opacity}}>
           <Typography id="position-2" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-            {`Found Java version: ${validationDetails.javaVersion}, Node version: ${validationDetails.nodeVersion}, Space available: ${validationDetails.spaceAvailableMb}MB
+          {`Found Java version: ${validationDetails.javaVersion}, Node version: ${validationDetails.nodeVersion}
 
 All set, ready to proceed.
 

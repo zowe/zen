@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { SyntheticEvent, useEffect } from "react";
+import React, { SyntheticEvent, useEffect, useState } from "react";
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -16,7 +16,10 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import secureIcon from '../../../assets/secure.png';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -24,7 +27,8 @@ import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
-import { setConnectionArgs, setConnectionStatus, selectConnectionArgs, selectConnectionStatus } from './connectionSlice';
+import { setConnectionArgs, setConnectionStatus, selectConnectionArgs, selectConnectionStatus, setHost, setPort,
+               setUser, setPassword, setJobStatement, setSecure, setSecureOptions } from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
@@ -123,7 +127,7 @@ const FTPConnectionForm = () => {
           variant="standard"
           helperText="Target system for Zowe z/OS components installation"
           value={connectionArgs.host}
-          onChange={(e) => {dispatch(setConnectionArgs({...connectionArgs, host: e.target.value}))}}
+          onChange={(e) => { dispatch(setHost(e.target.value)) }}
         />
       </FormControl>
       <FormControl>
@@ -135,7 +139,7 @@ const FTPConnectionForm = () => {
           variant="standard"
           helperText="FTP port number. If you'll not specify we try use default service port"
           value={connectionArgs.port}
-          onChange={(e) => dispatch(setConnectionArgs({...connectionArgs, port: Number(e.target.value)}))}
+    onChange={(e) => { dispatch(setPort(Number(e.target.value))) }}
         />
       </FormControl>
       <FormControl>
@@ -146,7 +150,7 @@ const FTPConnectionForm = () => {
           variant="standard"
           helperText="Your z/OS (Mainframe) user name"
           value={connectionArgs.user}
-          onChange={(e) => dispatch(setConnectionArgs({...connectionArgs, user: e.target.value}))}
+          onChange={(e) => { dispatch(setUser(e.target.value)) }}
         />
       </FormControl>
       <FormControl>
@@ -162,9 +166,81 @@ const FTPConnectionForm = () => {
               <span>We keep your password only for the current session</span>
             </span>}
           value={connectionArgs.password}
-          onChange={(e) => dispatch(setConnectionArgs({...connectionArgs, password: e.target.value}))}
+          onChange={(e) => { dispatch(setPassword(e.target.value)) }}
         />
       </FormControl>
+      <FormControl>
+        <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>  
+          <FormControlLabel
+            control={<Checkbox  
+              onChange={(e) => { dispatch(setSecure(e.target.checked)) }} 
+            />}
+            label="Use FTP over TLS"
+            labelPlacement="start"
+            value={connectionArgs.secure}          
+          />
+        </Container>
+      </FormControl>
+
+      {connectionArgs.secure &&
+      <Container sx={{
+        borderTopLeftRadius: "1rem", borderTopRightRadius: "1rem", borderBottomRightRadius: "1rem", borderBottomLeftRadius: "1rem",
+        borderColor: "#aaaaaa", backgroundColor: "#f0f0f0", borderStyle: "solid", padding: "1rem"
+      }}>
+      <FormControl>
+        <TextField
+          id="standard-required"
+          label="Min TLS"
+          variant="standard"
+          select={true}
+          helperText="Minimum TLS version to accept from server"
+          value={connectionArgs.secureOptions.minVersion}
+          onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, minVersion: e.target.value})) }} 
+
+        >
+          <MenuItem value={"TLSv1"}>1.0</MenuItem>
+          <MenuItem value={"TLSv1.1"}>1.1</MenuItem>
+          <MenuItem value={"TLSv1.2"}>1.2</MenuItem>
+          <MenuItem value={"TLSv1.3"}>1.3</MenuItem>
+</TextField>
+      </FormControl>
+      <FormControl>
+        <TextField
+          id="standard-required"
+          label="Max TLS"
+          variant="standard"
+          select={true}
+          helperText="Maximum TLS version to accept from server"
+          value={connectionArgs.secureOptions.maxVersion}
+          onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, maxVersion: e.target.value})) }} 
+
+        >
+          <MenuItem value={"TLSv1"}>1.0</MenuItem>
+          <MenuItem value={"TLSv1.1"}>1.1</MenuItem>
+          <MenuItem value={"TLSv1.2"}>1.2</MenuItem>
+          <MenuItem value={"TLSv1.3"}>1.3</MenuItem>
+        </TextField>
+      </FormControl>
+
+      <FormControl>
+        <Container sx={{display: "flex", justifyContent: "left", flexDirection: "row"}}>  
+          <FormControlLabel
+            control={<Checkbox  
+              onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.value})) }}
+            />}
+            label="Accept all certificates"
+            labelPlacement="start"
+            value={!connectionArgs.secureOptions.rejectUnauthorized}
+          />
+        </Container>
+      </FormControl>
+
+      </Container>
+      }
+          
+
+
+
       <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>
         <Button sx={{boxShadow: 'none'}} type="submit" variant="text" onClick={() => processForm()}>Validate credentials</Button>
         <div style={{opacity: formProcessed ? '1' : '0', minWidth: '32px', paddingLeft: '12px'}}>

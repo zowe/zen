@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-const { contextBridge, ipcRenderer } = require('electron');
+import { contextBridge, ipcRenderer } from 'electron';
 import { IIpcConnectionArgs } from '../types/interfaces';
 
 contextBridge.exposeInMainWorld('electron', {
@@ -64,9 +64,15 @@ contextBridge.exposeInMainWorld('electron', {
     getInstallationProgress() {
       return ipcRenderer.invoke("get-installation-progress");
     },
+    initSecurityButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
+      return ipcRenderer.invoke("init-security", connectionArgs, installationArgs, zoweConfig);
+    },
+    getInitSecurityProgress(){
+      return ipcRenderer.invoke("get-init-security-progress");
+    },
     on(channel: string, func: any) {
       // REVIEW: Used to have channel validation with ipcRenderer.send, do we need something similar for ipcRenderer.invoke?
-      const validChannels = ['install-mvs'];
+      const validChannels = ['install-mvs', 'init-security'];
       if (validChannels.includes(channel)) {
         ipcRenderer.on(channel, (event, ...args) => func(...args));
       }

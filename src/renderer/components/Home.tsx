@@ -88,7 +88,11 @@ const Home = () => {
     window.electron.ipcRenderer.findPreviousInstallations().then((res: IResponse) => {
       const connectionStore = res.details;
       if (connectionStore["connection-type"] === 'ftp') {
-        const connectionArgs: IIpcConnectionArgs = {...connectionStore["ftp-details"], password: '', connectionType: 'ftp'}; 
+        console.log(JSON.stringify(connectionStore['ftp-details'],null,2));
+        const connectionArgs: IIpcConnectionArgs = {
+          ...connectionStore["ftp-details"],
+          password: '',
+          connectionType: 'ftp'}; 
         dispatch(setConnectionArgs(connectionArgs));
       } else {
         // TODO: Add support for other types
