@@ -25,6 +25,7 @@ import { IResponse } from '../../../types/interfaces';
 import Alert from "@mui/material/Alert";
 import { alertEmitter } from "../Header";
 import { Checkbox, FormControlLabel } from "@mui/material";
+import EditorDialog from "../common/EditorDialog";
 
 const serverSchema = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
@@ -140,6 +141,17 @@ const Planning = () => {
   const installationArgs: any = useAppSelector(selectInstallationArgs);
   const [requiredSpace, setRequiredSpace] = useState(1300); //in megabytes
 
+  const [contentType, setContentType] = useState('output');
+  const [editorVisible, setEditorVisible] = useState(false);
+  const [editorContent, setEditorContent] = useState('');
+
+  const toggleEditorVisibility = (type?: any) => {
+    if (type) {
+      setContentType(type);
+    }
+    setEditorVisible(!editorVisible);
+  };
+
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
     // FIXME: Add a popup warning in case failed to get config files
@@ -224,6 +236,8 @@ const Planning = () => {
     window.electron.ipcRenderer.saveJobHeader(connectionArgs.jobStatement)
       .then(() => getENVVars())
       .then((res: IResponse) => {
+        setEditorContent(res.details);
+        setContentType('output');
         if (!res.status) { // Failure case
           setJobStatementValidation(res.details);
           console.warn('Failed to verify job statement');
@@ -239,6 +253,8 @@ const Planning = () => {
         dispatch(setLoading(false));
       })
       .catch((err: Error) => {
+        setEditorContent(err.message);
+        setContentType('output');
         console.warn(err);
         setJobStatementValidation(err.message);
         alertEmitter.emit('showAlert', err.message, 'error');
@@ -260,9 +276,11 @@ const Planning = () => {
     Promise.all([
       window.electron.ipcRenderer.checkJava(connectionArgs, installationArgs.javaHome),
       window.electron.ipcRenderer.checkNode(connectionArgs, installationArgs.nodeHome),
-      window.electron.ipcRenderer.checkSpace(connectionArgs, installationArgs.installationDir)
+      //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks.
     ]).then((res: Array<IResponse>) => {
-      const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''}
+      const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
+      setEditorContent(res.map(item=>item.details).join('\n'));
+      setContentType('output');
       try {
         details.javaVersion = res[0].details.split('\n').filter((i: string) => i.trim().startsWith('java version'))[0].trim().slice(14, -1);
       } catch (error) {
@@ -275,17 +293,7 @@ const Planning = () => {
         details.error = details.error + `Can't get node version; `;
         console.warn(res[1].details);
       }
-      try {
-        const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
-        details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
-        // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
-        if (parseInt(details.spaceAvailableMb, 10) < requiredSpace) { 
-          details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
-        }
-      } catch (error) {
-        details.error = details.error + `Can't check space available; `;
-        console.warn(res[2].details);
-      }
+
       setValidationDetails(details);
       dispatch(setLoading(false));
       if (!details.error) {
@@ -300,6 +308,7 @@ const Planning = () => {
 
   return (
     <ContainerCard title="Before you start" description="Prerequisites, requirements and roles needed to install">
+      <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} content={editorContent}/>
       <Box sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto', opacity: step === 0 ? 1 : opacity}}>
         <Typography sx={{ mb: 2 }} color="text.secondary"> 
           {/* TODO: Allow to choose Zowe version here by click here, support for other instalation types? */}
@@ -560,7 +569,7 @@ Please customize job statement below to match your system requirements.
       {step > 1 
         ? <Box sx={{height: step === 2 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0', opacity: step === 2 ? 1 : opacity}}>
           <Typography id="position-2" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-            {`Found Java version: ${validationDetails.javaVersion}, Node version: ${validationDetails.nodeVersion}, Space available: ${validationDetails.spaceAvailableMb}MB
+          {`Found Java version: ${validationDetails.javaVersion}, Node version: ${validationDetails.nodeVersion}
 
 All set, ready to proceed.
 
