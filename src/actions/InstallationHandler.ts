@@ -22,7 +22,7 @@ class Installation {
 
   public async runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
     version: string
   ): Promise<IResponse> {
 

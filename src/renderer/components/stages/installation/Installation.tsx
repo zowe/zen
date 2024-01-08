@@ -100,7 +100,7 @@ const Installation = () => {
   const process = (event: any) => {
     event.preventDefault();
     dispatch(setLoading(true));
-    const {javaHome, nodeHome, installationDir} = installationArgs;
+    const {javaHome, nodeHome, installationDir, installationType, smpeDir} = installationArgs;
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
     Promise.all([
@@ -113,20 +113,25 @@ const Installation = () => {
       window.electron.ipcRenderer.setConfigByKey('node.home', nodeHome),
       window.electron.ipcRenderer.setConfigByKey('zowe.externalDomains', [connectionArgs.host])
     ]).then(() => {
-      setYaml(window.electron.ipcRenderer.getConfig());
-      toggleProgress(true);
-      dispatch(setLoading(false));
-      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version).then((res: IResponse) => {
-        if(!res.status){ //errors during runInstallation()
-          alertEmitter.emit('showAlert', res.details, 'error');
-        }
-        dispatch(setNextStepEnabled(res.status));
-        clearInterval(timer);
-      }).catch(() => {
-        clearInterval(timer);
-        dispatch(setNextStepEnabled(false));
-        console.warn('Installation failed');
-      });
+      if(installationType === 'smpe'){
+        dispatch(setNextStepEnabled(true))
+        dispatch(setLoading(false));
+      } else {
+        setYaml(window.electron.ipcRenderer.getConfig());
+        toggleProgress(true);
+        dispatch(setLoading(false));
+        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version).then((res: IResponse) => {
+          if(!res.status){ //errors during runInstallation()
+            alertEmitter.emit('showAlert', res.details, 'error');
+          }
+          dispatch(setNextStepEnabled(res.status));
+          clearInterval(timer);
+        }).catch(() => {
+          clearInterval(timer);
+          dispatch(setNextStepEnabled(false));
+          console.warn('Installation failed');
+        });
+      }
     })
   }
 
@@ -175,14 +180,14 @@ const Installation = () => {
       <ContainerCard title="Installation" description="Provide installation details"> 
         <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
-          {`Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
+          {installationArgs.installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
         </Typography>
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>  
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Install MVS datasets</Button>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'Install MVS datasets'}</Button>
         </FormControl> : null}
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="installation-progress">
         {!showProgress ? null :
