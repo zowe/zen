@@ -95,20 +95,19 @@ const Certificates = () => {
         if(validate.errors) {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
-          setStageConfig(false, errPath+' '+errMsg, newData, false);
+          setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
           setConfiguration(section, newData, true);
-          setStageConfig(true, '', newData, true);
+          setStageConfig(true, '', newData);
         }
       }
     }
   };
 
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any, proceed: boolean) => {
+  const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
-    dispatch(setNextStepEnabled(proceed));
   } 
 
   return (

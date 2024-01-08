@@ -105,7 +105,6 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
       setZoweConfig(jsonData);
     } else if(isSchemaValid && jsonData) {
       setZoweConfig(jsonData);
-      dispatch(setNextStepEnabled(true));
       setSetupYaml(jsonData);
       updateConfig(jsonData);
     }

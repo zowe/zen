@@ -179,6 +179,7 @@ export default function HorizontalLinearStepper(props: any) {
             </Link>
             {stages[activeStep].isSkippable &&
               <Button 
+                disabled={isNextStepEnabled}
                 variant="contained" 
                 sx={{ textTransform: 'none', mr: 1 }} 
                 onClick={() => handleNext()}
@@ -187,7 +188,7 @@ export default function HorizontalLinearStepper(props: any) {
               </Button>
             }
             <Button 
-              disabled={!isNextStepEnabled && !stages[activeStep].isSkippable}
+              disabled={!isNextStepEnabled}
               variant="contained" 
               sx={{ textTransform: 'none', mr: 1 }}
               onClick={() => handleNext()}

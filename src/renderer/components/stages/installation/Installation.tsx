@@ -124,6 +124,7 @@ const Installation = () => {
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
+        dispatch(setNextStepEnabled(false));
         console.warn('Installation failed');
       });
     })
@@ -150,19 +151,18 @@ const Installation = () => {
       if(validate.errors) {
         const errPath = validate.errors[0].schemaPath;
         const errMsg = validate.errors[0].message;
-        setStageConfig(false, errPath+' '+errMsg, updatedData, false);
+        setStageConfig(false, errPath+' '+errMsg, updatedData);
       } else {
         setConfiguration(section, updatedData, true);
-        setStageConfig(true, '', updatedData, true);
+        setStageConfig(true, '', updatedData);
       }
     }
   }
 
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any, proceed: boolean) => {
+  const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
-    dispatch(setNextStepEnabled(proceed));
   }
 
   return (
