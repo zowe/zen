@@ -22,9 +22,14 @@ class Installation {
 
   public async runInstallation (
     connectionArgs: IIpcConnectionArgs, 
+<<<<<<< HEAD
     installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
     version: string,
     zoweConfig: any
+=======
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
+    version: string
+>>>>>>> origin/v2.x/staging
   ): Promise<IResponse> {
     const savingResult = await this.generateYamlFile(zoweConfig);
     if (!savingResult.status) {
