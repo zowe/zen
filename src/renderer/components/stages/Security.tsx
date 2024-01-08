@@ -82,7 +82,7 @@ const Security = () => {
         setInitProgress(res);
       })
     }, 3000);
-    const nextPosition = document.getElementById('isInit-progress');
+    const nextPosition = document.getElementById('init-progress');
     nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress]);
 
@@ -100,7 +100,7 @@ const Security = () => {
       }).catch(() => {
         clearInterval(timer);
         dispatch(setNextStepEnabled(false));
-        console.warn('zwe isInit security failed');
+        console.warn('zwe init security failed');
       });
   }
 
@@ -147,12 +147,12 @@ const Security = () => {
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={(data: any, isYamlUpdated: boolean) => handleFormChange(data, isYamlUpdated, true)} formData={setupYaml}/>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Security Config</Button>
-          <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="isInit-progress">
+          <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="init-progress">
           {!showProgress ? null :
           <React.Fragment>
-            <ProgressCard label={`Write configuration file locally to temp directory`} id="isInit-security-progress-card" status={initProgress.writeYaml}/>
+            <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={initProgress.writeYaml}/>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={initProgress.uploadYaml}/>
-            <ProgressCard label={`Run zwe isInit security`} id="success-progress-card" status={initProgress.success}/>
+            <ProgressCard label={`Run zwe init security`} id="success-progress-card" status={initProgress.success}/>
           </React.Fragment>
         }
         </Box>

@@ -21,7 +21,7 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
-import { useTheme, createTheme } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
 
 
 // TODO: define props, stages, stage interfaces
