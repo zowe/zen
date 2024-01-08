@@ -37,7 +37,7 @@ const Installation = () => {
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.dataset : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.dataset);
   const [showProgress, toggleProgress] = useState(false);
-  const [init, setInit] = useState(false);
+  const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
@@ -79,7 +79,7 @@ const Installation = () => {
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
-    setInit(true);
+    setIsFormInit(true);
   }, []);
 
   useEffect(() => {
@@ -130,9 +130,9 @@ const Installation = () => {
   }
 
   const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = init ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    let updatedData = isFormInit ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
     
-    setInit(false);
+    setIsFormInit(false);
 
     updatedData = isYamlUpdated ? data.dataset : updatedData;
     if (updatedData && setupYaml && setupYaml.prefix !== updatedData.prefix) {

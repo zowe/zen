@@ -28,7 +28,7 @@ const Certificates = () => {
   const yaml = useAppSelector(selectYaml);
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.certificate);
-  const [init, setInit] = useState(false);
+  const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
@@ -58,7 +58,7 @@ const Certificates = () => {
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
-    setInit(true);
+    setIsFormInit(true);
   }, []);
 
   const toggleEditorVisibility = (type: any) => {
@@ -67,8 +67,8 @@ const Certificates = () => {
   };
   
   const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    let newData = init ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
-    setInit(false);
+    let newData = isFormInit ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    setIsFormInit(false);
 
     if (newData) {
       newData = isYamlUpdated ? data.certificate : newData;

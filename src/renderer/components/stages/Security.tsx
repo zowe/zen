@@ -32,8 +32,8 @@ const Security = () => {
   const yaml = useAppSelector(selectYaml);
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.security : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.security);
-  const [isInit, setIsInit] = useState(false);
-  const [initialize, setInitialize] = useState(false);
+  const [isFormInit, setIsFormInit] = useState(false);
+  const [initializeForm, setInitializeForm] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
@@ -72,8 +72,8 @@ const Security = () => {
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
-    setInitialize(true);
-    setIsInit(true);
+    setInitializeForm(true);
+    setIsFormInit(true);
   }, []);
 
   useEffect(() => {
@@ -104,11 +104,11 @@ const Security = () => {
   }
 
   const handleFormChange = (data: any, isYamlUpdated?: boolean, customParam?: boolean) => {
-    if(!initialize) {
+    if(!initializeForm) {
       return;
     }
-    let newData = isInit ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
-    setIsInit(false);
+    let newData = isFormInit ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    setIsFormInit(false);
 
     if (newData) {
       newData = isYamlUpdated ? data.security : newData;
