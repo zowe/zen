@@ -72,7 +72,7 @@ contextBridge.exposeInMainWorld('electron', {
     },
     on(channel: string, func: any) {
       // REVIEW: Used to have channel validation with ipcRenderer.send, do we need something similar for ipcRenderer.invoke?
-      const validChannels = ['install-mvs'];
+      const validChannels = ['install-mvs', 'init-security'];
       if (validChannels.includes(channel)) {
         ipcRenderer.on(channel, (event, ...args) => func(...args));
       }

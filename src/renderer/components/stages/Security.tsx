@@ -32,7 +32,8 @@ const Security = () => {
   const yaml = useAppSelector(selectYaml);
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.security : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.security);
-  const [init, setInit] = useState(false);
+  const [isInit, setIsInit] = useState(false);
+  const [initialize, setInitialize] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
@@ -67,31 +68,47 @@ const Security = () => {
   }
 
   useEffect(() => {
+    dispatch(setNextStepEnabled(false));
+    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
+      setSetupYaml(initConfig);
+    }
+    setInitialize(true);
+    setIsInit(true);
+  }, []);
+
+  useEffect(() => {
     timer = setInterval(() => {
       window.electron.ipcRenderer.getInitSecurityProgress().then((res: any) => {
         setInitProgress(res);
       })
     }, 3000);
-    const nextPosition = document.getElementById('init-progress');
+    const nextPosition = document.getElementById('isInit-progress');
     nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress]);
-
-  useEffect(() => {
-    dispatch(setNextStepEnabled(false));
-    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
-      setSetupYaml(initConfig);
-    }
-    setInit(true);
-  }, []);
 
   const toggleEditorVisibility = (type: any) => {
     setContentType(type);
     setEditorVisible(!editorVisible);
   };
 
-  const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    let newData = init ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
-    setInit(false);
+  const process = (event: any) => {
+    event.preventDefault();
+    toggleProgress(true);
+    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
+        dispatch(setNextStepEnabled(res.status));
+        clearInterval(timer);
+      }).catch(() => {
+        clearInterval(timer);
+        console.warn('zwe isInit security failed');
+      });
+  }
+
+  const handleFormChange = (data: any, isYamlUpdated?: boolean, customParam?: boolean) => {
+    if(!initialize) {
+      return;
+    }
+    let newData = isInit ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    setIsInit(false);
 
     if (newData) {
       newData = isYamlUpdated ? data.security : newData;
@@ -117,19 +134,6 @@ const Security = () => {
     dispatch(setNextStepEnabled(proceed));
   }
 
-  const process = (event: any) => {
-    event.preventDefault();
-    toggleProgress(true);
-    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
-        dispatch(setNextStepEnabled(res.status));
-        clearInterval(timer);
-      }).catch(() => {
-        clearInterval(timer);
-        console.warn('zwe init security failed');
-      });
-    
-  }
-
   return (
     <div>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
@@ -141,14 +145,14 @@ const Security = () => {
         <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
+          <JsonForm schema={setupSchema} onChange={(data: any, isYamlUpdated: boolean) => handleFormChange(data, isYamlUpdated, true)} formData={setupYaml}/>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Security Config</Button>
-          <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="init-progress">
+          <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="isInit-progress">
           {!showProgress ? null :
           <React.Fragment>
-            <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={initProgress.writeYaml}/>
+            <ProgressCard label={`Write configuration file locally to temp directory`} id="isInit-security-progress-card" status={initProgress.writeYaml}/>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={initProgress.uploadYaml}/>
-            <ProgressCard label={`Run zwe init security`} id="success-progress-card" status={initProgress.success}/>
+            <ProgressCard label={`Run zwe isInit security`} id="success-progress-card" status={initProgress.success}/>
           </React.Fragment>
         }
         </Box>
