@@ -15,7 +15,7 @@ import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } fro
 import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import { IResponse } from '../../../../types/interfaces';
-import { setConfiguration, getConfiguration } from '../../../../services/ConfigService';
+import { setConfiguration, getConfiguration, getZoweConfig } from '../../../../services/ConfigService';
 import ProgressCard from '../../common/ProgressCard';
 import ContainerCard from '../../common/ContainerCard';
 import JsonForm from '../../common/JsonForms';
@@ -120,7 +120,7 @@ const Installation = () => {
         setYaml(window.electron.ipcRenderer.getConfig());
         toggleProgress(true);
         dispatch(setLoading(false));
-        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version).then((res: IResponse) => {
+        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, getZoweConfig()).then((res: IResponse) => {
           if(!res.status){ //errors during runInstallation()
             alertEmitter.emit('showAlert', res.details, 'error');
           }

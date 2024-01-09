@@ -110,8 +110,9 @@ a:hover {
 
 .stepper-container {
   flex-grow: 1;
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .stepper {

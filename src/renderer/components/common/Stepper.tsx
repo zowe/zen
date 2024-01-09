@@ -193,7 +193,7 @@ export default function HorizontalLinearStepper(props: any) {
               sx={{ textTransform: 'none', mr: 1 }}
               onClick={() => handleNext()}
             >
-              {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].nextButton : stages[activeStep].nextButton}
+              {(stages[activeStep].subStages && activeSubStep < stages[activeStep].subStages.length - 1) ? stages[activeStep].subStages[activeSubStep].nextButton : stages[activeStep].nextButton}
             </Button>
           </Box>
         </React.Fragment>
