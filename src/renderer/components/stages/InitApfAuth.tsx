@@ -157,7 +157,6 @@ const InitApfAuth = () => {
                 multiline
                 maxRows={6}
                 value={setupYaml.prefix}
-                onChange={(e) => {}}
                 variant="filled"
                 disabled
             />
@@ -169,7 +168,6 @@ const InitApfAuth = () => {
                 multiline
                 maxRows={6}
                 value={setupYaml.authLoadlib}
-                onChange={(e) => {}}
                 variant="filled"
                 disabled
             />
@@ -181,7 +179,6 @@ const InitApfAuth = () => {
                 multiline
                 maxRows={6}
                 value={setupYaml.authPluginLib}
-                onChange={(e) => {}}
                 variant="filled"
                 disabled
             />
