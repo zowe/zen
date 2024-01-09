@@ -37,7 +37,7 @@ export class InstallActions {
 
   runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
     version: string, zoweConfig: any): Promise<IResponse> {
     return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
   }

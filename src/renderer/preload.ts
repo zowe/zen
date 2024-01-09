@@ -58,7 +58,7 @@ contextBridge.exposeInMainWorld('electron', {
     checkDirExists(connectionArgs: IIpcConnectionArgs, location: string) {
       return ipcRenderer.invoke("check-dir-exists", connectionArgs, location);
     },
-    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string, zoweConfig: any) {
+    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, version: string, zoweConfig: any) {
       return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version, zoweConfig);
     },
     getInstallationProgress() {
