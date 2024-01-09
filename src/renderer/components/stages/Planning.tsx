@@ -170,7 +170,7 @@ const Planning = () => {
         schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
         schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
         schema.$id = serverSchema.$id;
-        delete schema.$defs.networkSettings.properties.server.properties.listenAddresses.items.ref;
+        delete schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
         schema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverSchema.$defs.ipv4
         dispatch(setSchema(schema));
         let installationDir = '';
