@@ -83,6 +83,28 @@ export const setZoweConfig = (data: any) => {
   localStorage.setItem(section+ 'Config', JSON.stringify(flattenedConfig));
 }
 
+export const setTopLevelYamlConfig = (section: string, data: any) => {
+  if(!data) {
+    return;
+  }
+
+  let storedZoweConfig = localStorage.getItem('zoweConfig');
+    if (!storedZoweConfig) {
+      return;
+    }
+
+    // Parse the stored configuration from JSON
+    storedZoweConfig = JSON.parse(storedZoweConfig);
+    const zoweConfig: any = unflatten(storedZoweConfig)
+
+    if (zoweConfig && zoweConfig.zowe) {
+      zoweConfig[section] = data;
+      const flattenedZoweConfig = flatten(zoweConfig);
+      localStorage.setItem('zoweConfig', JSON.stringify(flattenedZoweConfig));
+    }
+
+}
+
 // To get the entire zowe configuration
 export const getZoweConfig = () => {
   const section = 'zowe';

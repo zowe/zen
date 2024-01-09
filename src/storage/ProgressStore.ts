@@ -18,7 +18,13 @@ const storeDefault = {
     "download": false,
     "upload": false,
     "unpax": false,
-    "install": false
+    "install": false,
+    "initMVS": false
+  },
+  "initSecurity": {
+    "writeYaml": false,
+    "uploadYaml": false,
+    "success": false
   },
   "certificate": {
     "writeYaml": false,

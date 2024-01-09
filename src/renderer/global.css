@@ -110,13 +110,20 @@ a:hover {
 
 .stepper-container {
   flex-grow: 1;
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .stepper {
   padding: 6px 24px 18px;
   border-bottom: 1px solid #E0E0E0;
+}
+
+.substepper {
+  padding: 6px 100px 18px;
+  /* border-bottom: 1px solid #E0E0E0; */
+  background-color: #E0E0E0;
 }
 
 .action-card {
