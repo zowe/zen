@@ -58,8 +58,8 @@ contextBridge.exposeInMainWorld('electron', {
     checkDirExists(connectionArgs: IIpcConnectionArgs, location: string) {
       return ipcRenderer.invoke("check-dir-exists", connectionArgs, location);
     },
-    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string) {
-      return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version);
+    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, version: string, zoweConfig: any) {
+      return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version, zoweConfig);
     },
     apfAuthButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
       return ipcRenderer.invoke("init-apf", connectionArgs, installationArgs, zoweConfig);
@@ -70,9 +70,15 @@ contextBridge.exposeInMainWorld('electron', {
     getInstallationProgress() {
       return ipcRenderer.invoke("get-installation-progress");
     },
+    initSecurityButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
+      return ipcRenderer.invoke("init-security", connectionArgs, installationArgs, zoweConfig);
+    },
+    getInitSecurityProgress(){
+      return ipcRenderer.invoke("get-init-security-progress");
+    },
     on(channel: string, func: any) {
       // REVIEW: Used to have channel validation with ipcRenderer.send, do we need something similar for ipcRenderer.invoke?
-      const validChannels = ['install-mvs'];
+      const validChannels = ['install-mvs', 'init-security'];
       if (validChannels.includes(channel)) {
         ipcRenderer.on(channel, (event, ...args) => func(...args));
       }

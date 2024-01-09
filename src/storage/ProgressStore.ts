@@ -25,6 +25,11 @@ const storeDefault = {
     "writeYaml": false,
     "uploadYaml": false,
     "success": false
+  },
+  "initSecurity": {
+    "writeYaml": false,
+    "uploadYaml": false,
+    "success": false
   }
 };
 

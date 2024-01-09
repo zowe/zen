@@ -125,8 +125,8 @@ const createWindow = (): void => {
     return res;
   })
 
-  ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs, version) => {
-    const res = await installActions.runInstallation(connectionArgs, installationArgs, version);
+  ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs, version, zoweConfig) => {
+    const res = await installActions.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
     return res;
   });
 
@@ -146,6 +146,19 @@ const createWindow = (): void => {
     const res = ProgressStore.getAll()['installation'];
     return res;
   });
+
+  ipcMain.handle('init-security', async (event, connectionArgs, installationArgs, zoweConfig) => {
+    const res = await installActions.initSecurity(connectionArgs, installationArgs, zoweConfig);
+    return res;
+  });
+
+
+  ipcMain.handle('get-init-security-progress', async (event) => {
+    const res = ProgressStore.getAll()['initSecurity'];
+    return res;
+  });
+
+
 
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();

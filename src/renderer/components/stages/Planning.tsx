@@ -25,6 +25,8 @@ import { IResponse } from '../../../types/interfaces';
 import Alert from "@mui/material/Alert";
 import { alertEmitter } from "../Header";
 import { Checkbox, FormControlLabel } from "@mui/material";
+import { getConfiguration, getZoweConfig, setTopLevelYamlConfig, setZoweConfig } from "../../../services/ConfigService";
+import EditorDialog from "../common/EditorDialog";
 
 const serverSchema = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
@@ -139,6 +141,18 @@ const Planning = () => {
   const zoweVersion = useAppSelector(selectZoweVersion);
   const installationArgs: any = useAppSelector(selectInstallationArgs);
   const [requiredSpace, setRequiredSpace] = useState(1300); //in megabytes
+  let localYaml: any = getZoweConfig();
+
+  const [contentType, setContentType] = useState('output');
+  const [editorVisible, setEditorVisible] = useState(false);
+  const [editorContent, setEditorContent] = useState('');
+
+  const toggleEditorVisibility = (type?: any) => {
+    if (type) {
+      setContentType(type);
+    }
+    setEditorVisible(!editorVisible);
+  };
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
@@ -156,6 +170,10 @@ const Planning = () => {
         schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
         schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
         schema.$id = serverSchema.$id;
+        if(schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
+          delete schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
+          schema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverSchema.$defs.ipv4
+        }
         dispatch(setSchema(schema));
         let installationDir = '';
         if (res.details.config?.zowe?.runtimeDirectory && res.details.config?.zowe?.workspaceDirectory) {
@@ -166,10 +184,14 @@ const Planning = () => {
         }
         const javaHome = (res.details.config?.java?.home) ? res.details.config.java.home : '';
         const nodeHome = (res.details.config?.node?.home) ? res.details.config.node.home : '';
-        dispatch(setInstallationArgs({...installationArgs, installationDir, javaHome, nodeHome}));
+        dispatch(setInstallationArgs({...installationArgs, installationDir: installationDir, javaHome: javaHome, nodeHome: nodeHome}));
       } else {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
           dispatch(setYaml(res.details));
+          if(localYaml == undefined){
+            localYaml = res.details;
+            setZoweConfig(res.details);
+          }
           return res.status
         }).then((yamlStatus: boolean) => {
           window.electron.ipcRenderer.getZoweSchema().then((res: IResponse) => {
@@ -208,7 +230,8 @@ const Planning = () => {
             if (line.includes('node')) nodeHome = installationArgs.nodeHome ? installationArgs.nodeHome : line;
             if (line.includes('java')) javaHome = installationArgs.javaHome ? installationArgs.javaHome : line;
           });
-          dispatch(setInstallationArgs({...installationArgs, javaHome, nodeHome}));
+          nodeHome && dispatch(setInstallationArgs({...installationArgs, nodeHome: nodeHome})) && setTopLevelYamlConfig("node.home", nodeHome);
+          javaHome && dispatch(setInstallationArgs({...installationArgs, javaHome: javaHome})) && setTopLevelYamlConfig("java.home", javaHome);
         } catch (error) {
           return {status: false, details: error.message}
         }
@@ -224,6 +247,8 @@ const Planning = () => {
     window.electron.ipcRenderer.saveJobHeader(connectionArgs.jobStatement)
       .then(() => getENVVars())
       .then((res: IResponse) => {
+        setEditorContent(res.details);
+        setContentType('output');
         if (!res.status) { // Failure case
           setJobStatementValidation(res.details);
           console.warn('Failed to verify job statement');
@@ -239,6 +264,8 @@ const Planning = () => {
         dispatch(setLoading(false));
       })
       .catch((err: Error) => {
+        setEditorContent(err.message);
+        setContentType('output');
         console.warn(err);
         setJobStatementValidation(err.message);
         alertEmitter.emit('showAlert', err.message, 'error');
@@ -260,9 +287,11 @@ const Planning = () => {
     Promise.all([
       window.electron.ipcRenderer.checkJava(connectionArgs, installationArgs.javaHome),
       window.electron.ipcRenderer.checkNode(connectionArgs, installationArgs.nodeHome),
-      window.electron.ipcRenderer.checkSpace(connectionArgs, installationArgs.installationDir)
+      //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks.
     ]).then((res: Array<IResponse>) => {
-      const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''}
+      const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
+      setEditorContent(res.map(item=>item.details).join('\n'));
+      setContentType('output');
       try {
         details.javaVersion = res[0].details.split('\n').filter((i: string) => i.trim().startsWith('java version'))[0].trim().slice(14, -1);
       } catch (error) {
@@ -275,17 +304,7 @@ const Planning = () => {
         details.error = details.error + `Can't get node version; `;
         console.warn(res[1].details);
       }
-      try {
-        const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
-        details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
-        // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
-        if (parseInt(details.spaceAvailableMb, 10) < requiredSpace) { 
-          details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
-        }
-      } catch (error) {
-        details.error = details.error + `Can't check space available; `;
-        console.warn(res[2].details);
-      }
+
       setValidationDetails(details);
       dispatch(setLoading(false));
       if (!details.error) {
@@ -300,6 +319,7 @@ const Planning = () => {
 
   return (
     <ContainerCard title="Before you start" description="Prerequisites, requirements and roles needed to install">
+      <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} content={editorContent}/>
       <Box sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto', opacity: step === 0 ? 1 : opacity}}>
         <Typography sx={{ mb: 2 }} color="text.secondary"> 
           {/* TODO: Allow to choose Zowe version here by click here, support for other instalation types? */}
@@ -354,8 +374,11 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Installation location (Runtime Directory)"
                 variant="standard"
-                value={installationArgs.installationDir}
-                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}))}
+                value={localYaml?.runtimeDirectory || installationArgs.installationDir}
+                onChange={(e) => {
+                  dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}));
+                  setTopLevelYamlConfig("zowe.runtimeDirectory", e.target.value);
+                }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe source files. Required space: {`${requiredSpace}MB`}</p>
             </div>
@@ -368,8 +391,11 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Workspace Directory"
                 variant="standard"
-                value={installationArgs.workspaceDir}
-                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, workspaceDir: e.target.value}))}
+                value={localYaml?.zowe.workspaceDirectory || installationArgs.workspaceDir}
+                onChange={(e) => {
+                  dispatch(setInstallationArgs({...installationArgs, workspaceDir: e.target.value}));
+                  setTopLevelYamlConfig("zowe.workspaceDirectory", e.target.value);
+                }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe workspace dir</p>
             </div>
@@ -382,8 +408,11 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Log Directory"
                 variant="standard"
-                value={installationArgs.logDir}
-                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, logDir: e.target.value}))}
+                value={localYaml?.zowe.logDirectory || installationArgs.logDir}
+                onChange={(e) => {
+                  dispatch(setInstallationArgs({...installationArgs, logDir: e.target.value}));
+                  setTopLevelYamlConfig("zowe.logDirectory", e.target.value);
+                }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe Log dir</p>
             </div>
@@ -396,8 +425,11 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Extention Directory"
                 variant="standard"
-                value={installationArgs.extentionDir}
-                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, extentionDir: e.target.value}))}
+                value={localYaml?.zowe.extensionDirectory || installationArgs.extentionDir}
+                onChange={(e) => {
+                  dispatch(setInstallationArgs({...installationArgs, extentionDir: e.target.value}));
+                  setTopLevelYamlConfig("zowe.extensionDirectory", e.target.value);
+                }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe extention dir</p>
             </div>
@@ -410,8 +442,11 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Rbac Profile Identifier"
                 variant="standard"
-                value={installationArgs.rbacProfile}
-                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}))}
+                value={localYaml?.zowe.rbacProfileIdentifier || installationArgs.rbacProfile}
+                onChange={(e) => {
+                  dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}));
+                  setTopLevelYamlConfig("zowe.rbacProfileIdentifier", e.target.value);
+                }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>An ID used for determining resource names used in RBAC authorization checks</p>
             </div>
@@ -426,8 +461,11 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Job Name"
                 variant="standard"
-                value={installationArgs.jobName}
-                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, jobName: e.target.value}))}
+                value={localYaml?.zowe.job.name || installationArgs.jobName}
+                onChange={(e) => {
+                  dispatch(setInstallationArgs({...installationArgs, jobName: e.target.value}));
+                  setTopLevelYamlConfig("zowe.job.name", e.target.value);
+                }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Job name of Zowe primary ZWESLSTC started task.</p>
             </div>
@@ -440,8 +478,11 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Job Prefix"
                 variant="standard"
-                value={installationArgs.jobPrefix}
-                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, jobPrefix: e.target.value}))}
+                value={localYaml?.zowe.job.prefix || installationArgs.jobPrefix}
+                onChange={(e) => {
+                  dispatch(setInstallationArgs({...installationArgs, jobPrefix: e.target.value}));
+                  setTopLevelYamlConfig("zowe.job.prefix", e.target.value);
+                }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>A short prefix to customize address spaces created by Zowe job.</p>
             </div>
@@ -454,8 +495,11 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Cookie Identifier"
                 variant="standard"
-                value={installationArgs.cookieId}
-                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}))}
+                value={localYaml?.zowe.cookieIdentifier || installationArgs.cookieId}
+                onChange={(e) => {
+                  dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}));
+                  setTopLevelYamlConfig("zowe.cookieIdentifier", e.target.value);
+                }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>An ID that can be used by servers that distinguish their cookies from unrelated Zowe installs</p>
             </div>
@@ -468,8 +512,11 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Java location"
                 variant="standard"
-                value={installationArgs.javaHome}
-                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, javaHome: e.target.value}))}
+                value={localYaml?.java.home || installationArgs.javaHome}
+                onChange={(e) => {
+                  dispatch(setInstallationArgs({...installationArgs, javaHome: e.target.value}));
+                  setTopLevelYamlConfig("java.home", e.target.value);
+                }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location of Java in USS</p>
             </div>
@@ -482,10 +529,13 @@ Please customize job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Node JS location"
                 variant="standard"
-                value={installationArgs.nodeHome}
-                onChange={(e) => dispatch(setInstallationArgs({...installationArgs, nodeHome: e.target.value}))}
+                value={localYaml?.node.home || installationArgs.nodeHome}
+                onChange={(e) => {
+                  dispatch(setInstallationArgs({...installationArgs, nodeHome: e.target.value}));
+                  setTopLevelYamlConfig('node.home', e.target.value);
+                }}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location for Zowe workspace dir</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location of Node.js in USS</p>
             </div>
           </FormControl>
           </div>
@@ -511,8 +561,11 @@ Please customize job statement below to match your system requirements.
                       style={{marginLeft: 0}}
                       label="Zosmf Host"
                       variant="standard"
-                      value={connectionArgs.host}
-                      onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfHost: e.target.value}))}
+                      value={localYaml?.zOSMF.host || connectionArgs.host}
+                      onChange={(e) => {
+                        dispatch(setInstallationArgs({...installationArgs, zosmfHost: e.target.value}));
+                        setTopLevelYamlConfig("zOSMF.host", e.target.value);
+                      }}
                     />
                     <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Host or domain name of your z/OSMF instance.</p>
                   </div>
@@ -525,8 +578,11 @@ Please customize job statement below to match your system requirements.
                       style={{marginLeft: 0}}
                       label="Zosmf Port"
                       variant="standard"
-                      value={installationArgs.zosmfPort}
-                      onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfPort: e.target.value}))}
+                      value={localYaml?.zOSMF.port || installationArgs.zosmfPort}
+                      onChange={(e) => {
+                        dispatch(setInstallationArgs({...installationArgs, zosmfPort: e.target.value}));
+                        setTopLevelYamlConfig("zOSMF.port", e.target.value);
+                      }}
                     />
                     <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Port number of your z/OSMF instance.</p>
                   </div>
@@ -541,8 +597,11 @@ Please customize job statement below to match your system requirements.
                       style={{marginLeft: 0}}
                       label="Zosmf Application Id"
                       variant="standard"
-                      value={installationArgs.zosmfApplId}
-                      onChange={(e) => dispatch(setInstallationArgs({...installationArgs, zosmfApplId: e.target.value}))}
+                      value={localYaml?.zOSMF.applId || installationArgs.zosmfApplId}
+                      onChange={(e) => {
+                        dispatch(setInstallationArgs({...installationArgs, zosmfApplId: e.target.value}));
+                        setTopLevelYamlConfig("zOSMF.port", e.target.value);
+                      }}
                     />
                     <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Port number of your z/OSMF instance.</p>
 
@@ -560,7 +619,7 @@ Please customize job statement below to match your system requirements.
       {step > 1 
         ? <Box sx={{height: step === 2 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0', opacity: step === 2 ? 1 : opacity}}>
           <Typography id="position-2" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-            {`Found Java version: ${validationDetails.javaVersion}, Node version: ${validationDetails.nodeVersion}, Space available: ${validationDetails.spaceAvailableMb}MB
+          {`Found Java version: ${validationDetails.javaVersion}, Node version: ${validationDetails.nodeVersion}
 
 All set, ready to proceed.
 

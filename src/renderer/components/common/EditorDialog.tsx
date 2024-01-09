@@ -105,7 +105,6 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
       setZoweConfig(jsonData);
     } else if(isSchemaValid && jsonData) {
       setZoweConfig(jsonData);
-      dispatch(setNextStepEnabled(true));
       setSetupYaml(jsonData);
       updateConfig(jsonData);
     }
@@ -119,7 +118,9 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
       properties.map(prop => {
         setConfiguration(prop, setup[prop]);
       });
-      onChange(setup, true);
+      if (onChange) {
+        onChange(setup, true);
+      }
     }
   }
 
@@ -174,9 +175,14 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
           <MonacoEditorComponent contentType={contentType} initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid} schemaError={schemaError} />
         </DialogContent>
         <DialogActions>
-          <Button onClick={triggerFileInputClick}>Import</Button>
-          <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload}/>
-          <Button onClick={handleFileExport}>Export</Button>
+          {contentType === 'yaml' && (
+            <>
+              <Button onClick={triggerFileInputClick}>Import</Button>
+              <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
+              <Button onClick={handleFileExport}>Export</Button>
+            </>
+          )}
+          {contentType === 'jcl' && <Button onClick={toggleEditorVisibility}>Submit Job</Button>}
           <Button onClick={toggleEditorVisibility}>Close</Button>
         </DialogActions>
       </Dialog> 

@@ -15,15 +15,18 @@ import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } fro
 import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import { IResponse } from '../../../../types/interfaces';
-import { setConfiguration, getConfiguration } from '../../../../services/ConfigService';
+import { setConfiguration, getConfiguration, getZoweConfig } from '../../../../services/ConfigService';
 import ProgressCard from '../../common/ProgressCard';
 import ContainerCard from '../../common/ContainerCard';
 import JsonForm from '../../common/JsonForms';
 import EditorDialog from "../../common/EditorDialog";
 import Ajv from "ajv";
 import { alertEmitter } from "../../Header";
+import { createTheme } from '@mui/material/styles';
 
 const Installation = () => {
+
+  const theme = createTheme();
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
@@ -34,10 +37,11 @@ const Installation = () => {
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.dataset : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.dataset);
   const [showProgress, toggleProgress] = useState(false);
-  const [init, setInit] = useState(false);
+  const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
+  const [contentType, setContentType] = useState('');
   const [installationProgress, setInstallationProgress] = useState({
     uploadYaml: false,
     download: false,
@@ -55,6 +59,8 @@ const Installation = () => {
   const initConfig = getConfiguration(section);
 
   const TYPE_YAML = "yaml";
+  const TYPE_JCL = "jcl";
+  const TYPE_OUTPUT = "output";
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -73,7 +79,7 @@ const Installation = () => {
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
-    setInit(true);
+    setIsFormInit(true);
   }, []);
 
   useEffect(() => {
@@ -86,14 +92,15 @@ const Installation = () => {
     nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress]);
 
-  const toggleEditorVisibility = () => {
+  const toggleEditorVisibility = (type: any) => {
+    setContentType(type);
     setEditorVisible(!editorVisible);
   };
 
   const process = (event: any) => {
     event.preventDefault();
     dispatch(setLoading(true));
-    const {javaHome, nodeHome, installationDir} = installationArgs;
+    const {javaHome, nodeHome, installationDir, installationType, smpeDir} = installationArgs;
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
     Promise.all([
@@ -106,26 +113,32 @@ const Installation = () => {
       window.electron.ipcRenderer.setConfigByKey('node.home', nodeHome),
       window.electron.ipcRenderer.setConfigByKey('zowe.externalDomains', [connectionArgs.host])
     ]).then(() => {
-      setYaml(window.electron.ipcRenderer.getConfig());
-      toggleProgress(true);
-      dispatch(setLoading(false));
-      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version).then((res: IResponse) => {
-        if(!res.status){ //errors during runInstallation()
-          alertEmitter.emit('showAlert', res.details, 'error');
-        }
-        dispatch(setNextStepEnabled(res.status));
-        clearInterval(timer);
-      }).catch(() => {
-        clearInterval(timer);
-        console.warn('Installation failed');
-      });
+      if(installationType === 'smpe'){
+        dispatch(setNextStepEnabled(true))
+        dispatch(setLoading(false));
+      } else {
+        setYaml(window.electron.ipcRenderer.getConfig());
+        toggleProgress(true);
+        dispatch(setLoading(false));
+        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, getZoweConfig()).then((res: IResponse) => {
+          if(!res.status){ //errors during runInstallation()
+            alertEmitter.emit('showAlert', res.details, 'error');
+          }
+          dispatch(setNextStepEnabled(res.status));
+          clearInterval(timer);
+        }).catch(() => {
+          clearInterval(timer);
+          dispatch(setNextStepEnabled(false));
+          console.warn('Installation failed');
+        });
+      }
     })
   }
 
-  const editHLQ = (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = init ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+  const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
+    let updatedData = isFormInit ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
     
-    setInit(false);
+    setIsFormInit(false);
 
     updatedData = isYamlUpdated ? data.dataset : updatedData;
     if (updatedData && setupYaml && setupYaml.prefix !== updatedData.prefix) {
@@ -143,37 +156,38 @@ const Installation = () => {
       if(validate.errors) {
         const errPath = validate.errors[0].schemaPath;
         const errMsg = validate.errors[0].message;
-        setStageConfig(false, errPath+' '+errMsg, updatedData, false);
+        setStageConfig(false, errPath+' '+errMsg, updatedData);
       } else {
         setConfiguration(section, updatedData, true);
-        setStageConfig(true, '', updatedData, true);
+        setStageConfig(true, '', updatedData);
       }
     }
   }
 
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any, proceed: boolean) => {
+  const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
-    dispatch(setNextStepEnabled(proceed));
   }
 
   return (
     <div>
-      <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
-        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
-      </div>
+      <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View Yaml</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
+      </Box>
       <ContainerCard title="Installation" description="Provide installation details"> 
-        <EditorDialog contentType={TYPE_YAML} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={editHLQ}/>
+        <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
-          {`Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
+          {installationArgs.installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
         </Typography>
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={setupSchema} onChange={editHLQ} formData={setupYaml}/>
+          <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>  
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Install MVS datasets</Button>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'Install MVS datasets'}</Button>
         </FormControl> : null}
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="installation-progress">
         {!showProgress ? null :
