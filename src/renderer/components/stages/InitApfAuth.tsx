@@ -8,16 +8,15 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState} from "react";
 import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { IResponse } from '../../../types/interfaces';
 import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
 import ProgressCard from '../common/ProgressCard';
 import ContainerCard from '../common/ContainerCard';
-import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
@@ -133,9 +132,6 @@ const InitApfAuth = () => {
 
   return (
     <div>
-      <div style={{ position: 'fixed', top: '140px', right: '30px'}}>
-        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'x-small'}} onClick={toggleEditorVisibility}>Open Editor</Button>
-      </div>
       <ContainerCard title="APF Authorize Load Libraries" description="Run the `zwe init apfauth` command to APF authorize load libraries."> 
         <EditorDialog isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={editHLQ}/>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
