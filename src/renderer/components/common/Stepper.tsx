@@ -24,6 +24,7 @@ import EditorDialog from "./EditorDialog";
 import Security from '../stages/Security';
 import savedInstall from '../../assets/saved-install-green.png';
 import trash from '../../assets/trash.png';
+import { createTheme } from '@mui/material/styles';
 
 
 // TODO: define props, stages, stage interfaces
@@ -31,6 +32,8 @@ import trash from '../../assets/trash.png';
 
 export default function HorizontalLinearStepper(props: any) {
 
+  const theme = createTheme();
+  
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
   const TYPE_OUTPUT = "output";
@@ -64,11 +67,6 @@ export default function HorizontalLinearStepper(props: any) {
     toggleEditorVisibility(TYPE_YAML);
   }
 
-  const handlePreview = (test_jcl: any) => {
-    toggleEditorVisibility(TYPE_JCL);    
-    setEditorContent(test_jcl);
-  };
-
   const handleSubmit = () => {
      //here:
     // submit -> open editor with result -> mark skip button as continue button
@@ -100,6 +98,11 @@ export default function HorizontalLinearStepper(props: any) {
   const handleReset = () => {
     alertEmitter.emit('hideAlert');
     setActiveStep(0);
+  };
+
+  const handlePreview = (test_jcl: any) => {
+    toggleEditorVisibility(TYPE_JCL);    
+    setEditorContent(test_jcl);
   };
 
   const isNextStepEnabled = useAppSelector(selectNextStepEnabled);
@@ -158,7 +161,7 @@ export default function HorizontalLinearStepper(props: any) {
           <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: stages[activeStep].subStages ? 'calc(100vh - 250px)' : 'calc(100vh - 200px)'}}>
             {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].component : stages[activeStep].component}
           </div>
-          <Box sx={{ display: 'flex', flexDirection: 'row', p: 1, borderTop: 'solid 1px lightgray' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'row', p: 1, borderTop: 'solid 1px lightgray', justifyContent: 'flex-end'}}>
             <Box sx={{ flex: '1 1 auto' }} >
               {stages[activeStep].hasYaml &&
                 <Button variant="outlined" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handleYAML()}>View YAML</Button>
@@ -200,20 +203,33 @@ export default function HorizontalLinearStepper(props: any) {
               Previous step
             </Button>
             {stages[activeStep].isSkippable && !isNextStepEnabled &&
+            <Link style={{margin: 0}} to="/">
               <Button 
-                variant="outlined" 
-                color="warning"
-                sx={{ textTransform: 'none', mr: 1}} 
-                onClick={() => handleNext()}>Skip step</Button>
+                variant="outlined"
+                sx={{ textTransform: 'none', mr: 1 }}
+                onClick={() => alertEmitter.emit('hideAlert')}>
+                Discard Setup
+              </Button>
+            </Link>
+            }
+            {stages[activeStep].isSkippable &&
+              <Button 
+                disabled={isNextStepEnabled}
+                variant="contained" 
+                sx={{ textTransform: 'none', mr: 1 }} 
+                onClick={() => handleNext()}
+              >
+                Skip {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].label : stages[activeStep].label}
+              </Button>
             }
             <Button 
-              disabled={!isNextStepEnabled && !stages[activeStep].isSkippable}
+              disabled={!isNextStepEnabled}
               variant="contained" 
               sx={{ textTransform: 'none', mr: 1 }}
-              onClick={() => handleNext()}>
-              {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].nextButton : stages[activeStep].nextButton}
+              onClick={() => handleNext()}
+            >
+              {(stages[activeStep].subStages && activeSubStep < stages[activeStep].subStages.length - 1) ? stages[activeStep].subStages[activeSubStep].nextButton : stages[activeStep].nextButton}
             </Button>
-            
           </Box>
         </React.Fragment>
       )}
