@@ -114,39 +114,37 @@ class Installation {
     }
   }
 
-<<<<<<< HEAD
   public async apfAuth(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string}, zoweConfig: any): Promise<any>{
-=======
+    console.log('writing current yaml to disk');
+    const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
+    await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
+      if (err) {
+          console.warn("Can't save configuration to zowe.yaml");
+          return ProgressStore.set('apfAuth.writeYaml', false);
+      }
+    });
+    ProgressStore.set('apfAuth.writeYaml', true);
+    console.log("uploading yaml...");
+    const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
+    if(!uploadYaml.status){
+      return ProgressStore.set('apfAuth.uploadYaml', false);;
+
+    }
+    ProgressStore.set('apfAuth.uploadYaml', uploadYaml.status);
+    const script = `cd ${installationArgs.installationDir}/runtime/bin;\n./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml`;
+    const result = await new Script().run(connectionArgs, script);
+    ProgressStore.set('apfAuth.success', result.rc === 0);
+    return {status: result.rc === 0, details: result.jobOutput}
+  }
+  
   public async initSecurity(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string}, zoweConfig: any): Promise<IResponse>{
->>>>>>> v2.x/staging
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
       await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
         if (err) {
             console.warn("Can't save configuration to zowe.yaml");
-<<<<<<< HEAD
-            return ProgressStore.set('apfAuth.writeYaml', false);
-        }
-      });
-      ProgressStore.set('apfAuth.writeYaml', true);
-      console.log("uploading yaml...");
-      const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
-      if(!uploadYaml.status){
-        return ProgressStore.set('apfAuth.uploadYaml', false);;
-
-      }
-      ProgressStore.set('apfAuth.uploadYaml', uploadYaml.status);
-      const script = `cd ${installationArgs.installationDir}/runtime/bin;\n./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml`;
-      const result = await new Script().run(connectionArgs, script);
-      ProgressStore.set('apfAuth.success', result.rc === 0);
-      return {status: result.rc === 0, details: result.jobOutput}
-    }
-
-  async generateYamlFile() {
-    const zoweYaml: any = ConfigurationStore.getConfig();
-=======
             ProgressStore.set('initSecurity.writeYaml', false);
             return {status: false, details: `Can't save configuration to zowe.yaml`};
         }
@@ -165,7 +163,6 @@ class Installation {
   }
 
   async generateYamlFile(zoweConfig: any) {
->>>>>>> v2.x/staging
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
     await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
       if (err) {
