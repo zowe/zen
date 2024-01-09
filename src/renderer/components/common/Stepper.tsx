@@ -185,7 +185,7 @@ export default function HorizontalLinearStepper(props: any) {
                 Quit
               </Button>
             </Link>
-            <Link style={{margin: 0}} to="/">
+            {/* <Link style={{margin: 0}} to="/">
               <Button // TODO: Not implemented
                 color="success"
                 variant="outlined"
@@ -194,7 +194,7 @@ export default function HorizontalLinearStepper(props: any) {
                 <img style={{width: '16px', height: '20px', paddingRight: '8px'}} src={savedInstall} alt="save and close"/>
                 Save & close
               </Button>
-            </Link>
+            </Link> */}
             <Button
               variant="outlined"
               disabled={activeStep === 0}
@@ -202,7 +202,7 @@ export default function HorizontalLinearStepper(props: any) {
               sx={{ textTransform: 'none', mr: 1 }}>
               Previous step
             </Button>
-            {stages[activeStep].isSkippable && !isNextStepEnabled &&
+            {/* {stages[activeStep].isSkippable && !isNextStepEnabled &&
             <Link style={{margin: 0}} to="/">
               <Button 
                 variant="outlined"
@@ -211,7 +211,7 @@ export default function HorizontalLinearStepper(props: any) {
                 Discard Setup
               </Button>
             </Link>
-            }
+            } */}
             {stages[activeStep].isSkippable &&
               <Button 
                 disabled={isNextStepEnabled}
