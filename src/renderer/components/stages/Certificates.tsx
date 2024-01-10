@@ -36,8 +36,9 @@ const Certificates = () => {
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
   const verifyCertsSchema = schema ? {"type": "object", "properties": {"verifyCertificates": schema.properties.zowe.properties.verifyCertificates}} : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.certificate);
-  const [verifyCertsYaml, setVerifyCertsYaml] = useState({'verifyCertificates': yaml?.zowe.verifyCertificates});
+  const [verifyCertsYaml, setVerifyCertsYaml] = useState({verifyCertificates: (getZoweConfig() as any).zowe.verifyCertificates})
   const [isFormInit, setIsFormInit] = useState(false);
+  const [initializeForm, setInitializeForm] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -80,6 +81,7 @@ const Certificates = () => {
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
+    setInitializeForm(true);
     setIsFormInit(true);
   }, []);
 
@@ -98,29 +100,15 @@ const Certificates = () => {
     setEditorVisible(!editorVisible);
   };
   
-  const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
+  const handleFormChange = (data: any, isYamlUpdated?: boolean, customParam?: boolean) => {
+    if(!initializeForm) {
+      return;
+    }
     let newData = isFormInit ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
     setIsFormInit(false);
 
     if (newData) {
-      newData = isYamlUpdated ? data.certificate : newData;
-
-      if(setupSchema.if) {
-        const ifProp = Object.keys(setupSchema.if.properties)[0];
-        const ifPropValue = setupSchema.if.properties[ifProp].const.toLowerCase();
-        const thenProp = setupSchema.then.required[0].toLowerCase();
-        const elseProp = setupSchema.else.required[0].toLowerCase();
-
-        if(newData && newData[ifProp]) {
-          const newDataPropValue = newData[ifProp].toLowerCase();
-          if( newDataPropValue == ifPropValue && newData[elseProp] ) {
-            delete newData[elseProp];
-          }
-          if(newDataPropValue != ifPropValue && newData[thenProp]) {
-            delete newData[thenProp];
-          }
-        }
-      }
+      newData = isYamlUpdated ? data.security : newData;
 
       if(validate) {
         validate(newData);
@@ -137,6 +125,9 @@ const Certificates = () => {
   };
 
   const handleVerifyCertsChange = (e: any) => {
+    if(!initializeForm) {
+      return;
+    }
     if(e.verifyCertificates && e.verifyCertificates != verifyCertsYaml.verifyCertificates){
       if(validateVerifyCertSchema){
         validateVerifyCertSchema(e);
