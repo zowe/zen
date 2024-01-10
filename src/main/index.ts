@@ -135,6 +135,18 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('init-apf', async (event, connectionArgs, installationArgs, zoweConfig) => {
+    const res = await installActions.apfAuth(connectionArgs, installationArgs, zoweConfig);
+    return res;
+  });
+
+
+  ipcMain.handle('get-apf-auth-progress', async (event) => {
+    const res = ProgressStore.getAll()['apfAuth'];
+    return res;
+  });
+
+
   ipcMain.handle('get-installation-progress', async (event) => {
     const res = ProgressStore.getAll()['installation'];
     return res;
