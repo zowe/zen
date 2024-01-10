@@ -162,17 +162,6 @@ export default function HorizontalLinearStepper(props: any) {
             {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].component : stages[activeStep].component}
           </div>
           <Box sx={{ display: 'flex', flexDirection: 'row', p: 1, borderTop: 'solid 1px lightgray', justifyContent: 'flex-end'}}>
-            <Box sx={{ flex: '1 1 auto' }} >
-              {stages[activeStep].hasYaml &&
-                <Button variant="outlined" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handleYAML()}>View YAML</Button>
-              }
-              {stages[activeStep].hasJCL &&
-                <Button disabled={!isNextStepEnabled} variant="outlined" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handlePreview({})}>Preview Job</Button>
-              }
-              {stages[activeStep].hasOutput &&
-                <Button variant="outlined" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handlePreview({})}>View/Submit job</Button>
-              }
-            </Box>
             {/* TODO: This needs a confirmation modal */}
             <Link style={{margin: 0}} to="/">
               <Button 
