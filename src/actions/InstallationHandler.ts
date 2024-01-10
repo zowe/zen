@@ -266,7 +266,7 @@ export class FTPInstallation extends Installation {
       return ProgressStore.set('certificate.uploadYaml', false);;
     }
     ProgressStore.set('certificate.uploadYaml', uploadYaml.status);
-    const script = `cd ${installDir}/runtime/bin;\n./zwe init certificate -c ${installDir}/zowe.yaml`;
+    const script = `cd ${installDir}/runtime/bin;\n./zwe init certificate --update-config -c ${installDir}/zowe.yaml`;
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('certificate.zweInitCertificate', result.rc === 0);
     return {status: result.rc === 0, details: result.jobOutput}
