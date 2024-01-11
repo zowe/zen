@@ -17,7 +17,7 @@ interface InstallationState {
     installationDir: string;
     workspaceDir: string;
     logDir: string,
-    extentionDir: string,
+    extensionDir: string,
     installationType?: string;
     downloadDir: string;
     userUploadedPaxPath?: string;
@@ -42,7 +42,7 @@ const initialState: InstallationState = {
     installationDir: '',
     workspaceDir: '',
     logDir:'',
-    extentionDir:'',
+    extensionDir:'',
     installationType: 'download',
     userUploadedPaxPath: '',
     smpeDir: '',

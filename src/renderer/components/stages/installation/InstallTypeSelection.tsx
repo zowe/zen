@@ -66,9 +66,9 @@ const InstallationType = () => {
   }
 
   return (
-    <ContainerCard title="Installation Type" description="Please select the desired install method"> 
+    <ContainerCard title="Installation Type" description="Please select the desired install method."> 
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-        {`Please select an option`}
+        {`Please select an option.`}
       </Typography>
       <FormControl>
         <RadioGroup

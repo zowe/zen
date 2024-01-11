@@ -431,14 +431,14 @@ Please customize the job statement below to match your system requirements.
           <FormControl>
             <div>
               <TextField
-                id="extention-input"
+                id="extension-input"
                 required
                 style={{marginLeft: 0}}
-                label="Extention Directory"
+                label="Extensions Directory"
                 variant="standard"
-                value={localYaml?.zowe.extensionDirectory || installationArgs.extentionDir}
+                value={localYaml?.zowe.extensionDirectory || installationArgs.extensionDir}
                 onChange={(e) => {
-                  dispatch(setInstallationArgs({...installationArgs, extentionDir: e.target.value}));
+                  dispatch(setInstallationArgs({...installationArgs, extensionDir: e.target.value}));
                   setTopLevelYamlConfig("zowe.extensionDirectory", e.target.value);
                 }}
               />
@@ -546,7 +546,7 @@ Please customize the job statement below to match your system requirements.
                   setTopLevelYamlConfig('node.home', e.target.value);
                 }}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Location of Node.js in USS</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>z/OS Unix location of Node.js.</p>
             </div>
           </FormControl>
           </div>
@@ -558,7 +558,7 @@ Please customize the job statement below to match your system requirements.
                 onChange={(e) => setShowZosmfAttributes(e.target.checked)}
               />
             }
-            label="Set z/OSMF Attributes"
+            label="Set z/OSMF Attributes (optional)"
           />
 
           {showZosmfAttributes && (
