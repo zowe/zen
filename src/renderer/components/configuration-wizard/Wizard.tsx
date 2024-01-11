@@ -15,13 +15,15 @@ import Installation from "../stages/installation/Installation";
 import Security from "../stages/Security";
 import Certificates from "../stages/Certificates";
 import Initialization from "../stages/Initialization";
+import ReviewInstallation from '../stages/ReviewInstallation';
 import spock from '../../assets/spock.svg'
 import InstallationType from '../stages/installation/InstallTypeSelection';
 import { selectLoading } from './wizardSlice';
 import { useAppSelector } from '../../hooks';
 import InitApfAuth from '../stages/InitApfAuth';
 
-const stages = [
+export const stages = [
+  {id: 4, label: 'Review Installation', component: <ReviewInstallation/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Finish Installation'},
   {id: 0, label: 'Connection', component: <Connection/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Continue'},
   {id: 1, label: 'Planning', component: <Planning/>, hasJCL: false, isSkippable: false, hasOutput: true, steps: 3, nextButton: 'Continue to Installation Options'},
   {id: 2, label: 'Installation Type', component: <InstallationType/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Continue to Components Installation'},
@@ -30,7 +32,8 @@ const stages = [
     {id: 1, label: 'APF Auth', component: <InitApfAuth/>, hasJCL: true, isSkippable: true, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Security Setup'},
     {id: 2, label: 'Security', component: <Security/>, hasJCL: true, isSkippable: true, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Certificates Setup'},
     {id: 3, label: 'Certificates', component: <Certificates/>, hasJCL: true, isSkippable: true, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Instance Setup'},
-  ], nextButton: <div style={{display: 'flex', alignItems: 'center'}}><img style={{width: '18px', height: '18px', paddingRight: '12px'}} src={spock}/>Live long and prosper</div>},
+  ], nextButton: 'Review'},
+  {id: 4, label: 'Review Installation', component: <ReviewInstallation/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Finish Installation'},
 ]
 
 const Wizard = () => {
