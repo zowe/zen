@@ -161,7 +161,7 @@ export default function HorizontalLinearStepper(props: any) {
           <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: stages[activeStep].subStages ? 'calc(100vh - 250px)' : 'calc(100vh - 200px)'}}>
             {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].component : stages[activeStep].component}
           </div>
-          <Box sx={{ bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, borderTop: 'solid 1px lightgray', justifyContent: 'flex-end'}}>
+          <Box sx={{ display: 'flex', flexDirection: 'row', p: "8px 8px 0 8px", borderTop: 'solid 1px lightgray', justifyContent: 'flex-end'}}>
             {/* TODO: This needs a confirmation modal */}
             <Link style={{margin: 0}} to="/">
               <Button // TODO: Not implemented
