@@ -35,7 +35,7 @@ const initialState: ConnectionState = {
       //the content below is from the object meant to be passed to secureContext.
       //TODO create a "MAX" and "MIN" that gets set to tls.DEFAULT_MAX/MIN_VERSION on server-side?
       maxVersion: "TLSv1.3",
-      minVersion: "TLSv1.1"
+      minVersion: "TLSv1.2"
     }
   },
 };
