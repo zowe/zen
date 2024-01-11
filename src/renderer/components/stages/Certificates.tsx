@@ -176,7 +176,7 @@ const Certificates = () => {
               clearInterval(timer);
               console.warn('zwe init certificates failed');
             });
-          }}>Run 'zwe init certificates'</Button>
+          }}>Initialize Zowe Certificates</Button>
         </Box>
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="certificate-progress">
         {!showProgress ? null :
