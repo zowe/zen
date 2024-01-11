@@ -161,19 +161,8 @@ export default function HorizontalLinearStepper(props: any) {
           <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: stages[activeStep].subStages ? 'calc(100vh - 250px)' : 'calc(100vh - 200px)'}}>
             {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].component : stages[activeStep].component}
           </div>
-          <Box sx={{ display: 'flex', flexDirection: 'row', p: 1, borderTop: 'solid 1px lightgray', justifyContent: 'flex-end'}}>
+          <Box sx={{ bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, borderTop: 'solid 1px lightgray', justifyContent: 'flex-end'}}>
             {/* TODO: This needs a confirmation modal */}
-            <Link style={{margin: 0}} to="/">
-              <Button 
-                color="error"
-                variant="outlined"
-                sx={{ textTransform: 'none', mr: 1 }}
-                onClick={() => alertEmitter.emit('hideAlert')}>
-                  {/* transform flips our little icon from right to left */}
-                <img style={{width: '16px', transform: 'scaleX(-1)', height: '20px', paddingLeft: '8px'}} src={trash} alt="Quit"/>
-                Quit
-              </Button>
-            </Link>
             <Link style={{margin: 0}} to="/">
               <Button // TODO: Not implemented
                 color="success"
@@ -191,16 +180,6 @@ export default function HorizontalLinearStepper(props: any) {
               sx={{ textTransform: 'none', mr: 1 }}>
               Previous step
             </Button>
-            {stages[activeStep].isSkippable && !isNextStepEnabled &&
-            <Link style={{margin: 0}} to="/">
-              <Button 
-                variant="outlined"
-                sx={{ textTransform: 'none', mr: 1 }}
-                onClick={() => alertEmitter.emit('hideAlert')}>
-                Discard Setup
-              </Button>
-            </Link>
-            }
             {stages[activeStep].isSkippable &&
               <Button 
                 disabled={isNextStepEnabled}
