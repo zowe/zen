@@ -50,7 +50,7 @@ const Connection = () => {
   return (
     <ContainerCard 
       title="Connection" 
-      description="Specify connection details" 
+      description="Specify connection details to your z/OS mainframe." 
       onSubmit={(e: SyntheticEvent) => e.preventDefault()} 
       sx={{display: 'flex', flexDirection: 'column', height: '-webkit-fill-available'}}
     >
@@ -125,7 +125,7 @@ const FTPConnectionForm = () => {
           id="standard-required"
           label="Host"
           variant="standard"
-          helperText="Target system for Zowe z/OS components installation"
+          helperText="Target z/OS system for Zowe's installation."
           value={connectionArgs.host}
           onChange={(e) => { dispatch(setHost(e.target.value)) }}
         />
@@ -137,7 +137,7 @@ const FTPConnectionForm = () => {
           type="number"
           InputLabelProps={{ shrink: true }}
           variant="standard"
-          helperText="FTP port number. If you'll not specify we try use default service port"
+          helperText="FTP port number. If not specified, Zen will try to use a default service port."
           value={connectionArgs.port}
     onChange={(e) => { dispatch(setPort(Number(e.target.value))) }}
         />
@@ -148,7 +148,7 @@ const FTPConnectionForm = () => {
           id="standard-required"
           label="User Name"
           variant="standard"
-          helperText="Your z/OS (Mainframe) user name"
+          helperText="Your z/OS user name or user ID."
           value={connectionArgs.user}
           onChange={(e) => { dispatch(setUser(e.target.value)) }}
         />
@@ -163,7 +163,7 @@ const FTPConnectionForm = () => {
           variant="standard"
           helperText={<span style={{display: 'flex', margin: 0}}>
               <img style={{width: '12px', height: '16px', paddingRight: '8px'}} src={secureIcon} alt="secure"/> 
-              <span>We keep your password only for the current session</span>
+              <span>Your password is securely stored for only the current session.</span>
             </span>}
           value={connectionArgs.password}
           onChange={(e) => { dispatch(setPassword(e.target.value)) }}
@@ -175,7 +175,7 @@ const FTPConnectionForm = () => {
             control={<Checkbox  
               onChange={(e) => { dispatch(setSecure(e.target.checked)) }} 
             />}
-            label="Use FTP over TLS"
+            label="Use FTP over TLS."
             labelPlacement="start"
             value={connectionArgs.secure}          
           />
@@ -193,16 +193,17 @@ const FTPConnectionForm = () => {
           label="Min TLS"
           variant="standard"
           select={true}
-          helperText="Minimum TLS version to accept from server"
+          helperText="Minimum TLS version to accept from server."
           value={connectionArgs.secureOptions.minVersion}
           onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, minVersion: e.target.value})) }} 
 
         >
-          <MenuItem value={"TLSv1"}>1.0</MenuItem>
-          <MenuItem value={"TLSv1.1"}>1.1</MenuItem>
+          {/* TODO: This needs to be conditionally added, because older Zowe versions support 1.0-1.1 */}
+          {/* <MenuItem value={"TLSv1"}>1.0</MenuItem>
+          <MenuItem value={"TLSv1.1"}>1.1</MenuItem> */}
           <MenuItem value={"TLSv1.2"}>1.2</MenuItem>
           <MenuItem value={"TLSv1.3"}>1.3</MenuItem>
-</TextField>
+      </TextField>
       </FormControl>
       <FormControl>
         <TextField
@@ -210,25 +211,28 @@ const FTPConnectionForm = () => {
           label="Max TLS"
           variant="standard"
           select={true}
-          helperText="Maximum TLS version to accept from server"
+          helperText="Maximum TLS version to accept from server."
           value={connectionArgs.secureOptions.maxVersion}
           onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, maxVersion: e.target.value})) }} 
 
         >
-          <MenuItem value={"TLSv1"}>1.0</MenuItem>
-          <MenuItem value={"TLSv1.1"}>1.1</MenuItem>
+          {/* TODO: This needs to be conditionally added, because older Zowe versions support 1.0-1.1 */}
+          {/* <MenuItem value={"TLSv1"}>1.0</MenuItem>
+          <MenuItem value={"TLSv1.1"}>1.1</MenuItem> */}
           <MenuItem value={"TLSv1.2"}>1.2</MenuItem>
           <MenuItem value={"TLSv1.3"}>1.3</MenuItem>
         </TextField>
       </FormControl>
 
       <FormControl>
-        <Container sx={{display: "flex", justifyContent: "left", flexDirection: "row"}}>  
+        <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>
           <FormControlLabel
-            control={<Checkbox  
-              onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.value})) }}
-            />}
-            label="Accept all certificates"
+            control={
+              <Checkbox  
+                onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.value})) }}
+              />
+            }
+            label="Accept all certificates."
             labelPlacement="start"
             value={!connectionArgs.secureOptions.rejectUnauthorized}
           />
@@ -241,9 +245,9 @@ const FTPConnectionForm = () => {
 
 
 
-      <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>
+      <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row", paddingTop: '12px', paddingBottom: '12px'}}>
         <Button sx={{boxShadow: 'none'}} type="submit" variant="text" onClick={() => processForm()}>Validate credentials</Button>
-        <div style={{opacity: formProcessed ? '1' : '0', minWidth: '32px', paddingLeft: '12px'}}>
+        <div style={{opacity: formProcessed ? '1' : '0'}}>
           {useAppSelector(selectConnectionStatus) ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> 
           : validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error')}
         </div>

@@ -21,6 +21,9 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
+import Security from '../stages/Security';
+import savedInstall from '../../assets/saved-install-green.png';
+import trash from '../../assets/trash.png';
 import { createTheme } from '@mui/material/styles';
 
 
@@ -59,6 +62,10 @@ export default function HorizontalLinearStepper(props: any) {
   const getSkipText = () => {
     return 'Skip step';//+stages[activeStep+1].label;
   };
+
+  const handleYAML = () => {
+    toggleEditorVisibility(TYPE_YAML);
+  }
 
   const handleSubmit = () => {
      //here:
@@ -108,8 +115,16 @@ export default function HorizontalLinearStepper(props: any) {
           const stepProps = {};
           const labelProps = {};
           return (
+            // This adds shadow to the "filing cabinet" top-slip UI
             <Step key={stage.id} {...stepProps}>
-              <div style={activeStep === index && stages[activeStep].subStages ? {backgroundColor: '#E0E0E0', padding: '5px 5px 20px 5px', marginBottom: '-18px', borderTopRightRadius: '3px', borderTopLeftRadius: '3px'} : {}}>
+              <div style={activeStep === index && stages[activeStep].subStages ? 
+                {backgroundColor: '#E0E0E0', 
+                padding: '10px 20px 25px', 
+                position: 'relative', 
+                marginBottom: '-27px', 
+                borderTopRightRadius: '7px', 
+                borderTopLeftRadius: '7px',
+                boxShadow: 'rgb(0 0 0 / 15%) 0px 6px 4px -1px inset'} : {}}>
                 <StepLabel {...labelProps}>
                     {stage.label}
                 </StepLabel>
@@ -146,37 +161,25 @@ export default function HorizontalLinearStepper(props: any) {
           <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: stages[activeStep].subStages ? 'calc(100vh - 250px)' : 'calc(100vh - 200px)'}}>
             {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].component : stages[activeStep].component}
           </div>
-          <Box sx={{ display: 'flex', flexDirection: 'row', p: 1, borderTop: 'solid 1px lightgray', justifyContent: 'flex-end'}}>
-            <Box sx={{ flex: '1 1 auto' }} >
-              {stages[activeStep].label === 'Planning' ? (
-                <Button variant="outlined" sx={{ marginRight: '3px', textTransform: 'none' }} onClick={() => handlePreview({})}>
-                  Submit Job
-                </Button>
-              ) : null}
-            </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'row', p: "8px 8px 0 8px", borderTop: 'solid 1px lightgray', justifyContent: 'flex-end'}}>
+            {/* TODO: This needs a confirmation modal */}
+            <Link style={{margin: 0}} to="/">
+              <Button // TODO: Not implemented
+                color="success"
+                variant="outlined"
+                sx={{ textTransform: 'none', mr: 1 }}
+                onClick={() => alertEmitter.emit('hideAlert')}>
+                <img style={{width: '16px', height: '20px', paddingRight: '8px'}} src={savedInstall} alt="save and close"/>
+                Save & close
+              </Button>
+            </Link>
             <Button
               variant="outlined"
               disabled={activeStep === 0}
               onClick={handleBack}
               sx={{ textTransform: 'none', mr: 1 }}>
-              Previous Step
+              Previous step
             </Button>
-            <Link style={{margin: 0}} to="/">
-              <Button // TODO: Not implemented
-                variant="outlined"
-                sx={{ textTransform: 'none', mr: 1 }}
-                onClick={() => alertEmitter.emit('hideAlert')}>
-                Save and close
-              </Button>
-            </Link>
-            <Link style={{margin: 0}} to="/">
-              <Button 
-                variant="outlined"
-                sx={{ textTransform: 'none', mr: 1 }}
-                onClick={() => alertEmitter.emit('hideAlert')}>
-                Discard Setup
-              </Button>
-            </Link>
             {stages[activeStep].isSkippable &&
               <Button 
                 disabled={isNextStepEnabled}

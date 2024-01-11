@@ -66,9 +66,9 @@ const InstallationType = () => {
   }
 
   return (
-    <ContainerCard title="Installation Type" description="Please select the desired install method"> 
+    <ContainerCard title="Installation Type" description="Please select the desired install method."> 
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-        {`Please select an option`}
+        {`Please select an option.`}
       </Typography>
       <FormControl>
         <RadioGroup
@@ -103,7 +103,7 @@ const InstallationType = () => {
             }}
         />
     </FormControl>}
-    {installValue === "smpe" && <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
+    {installValue === "smpe" && <FormControl sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
         <Button sx={{boxShadow: 'none', mr: '12px'}} type={"submit"} variant="text" onClick={async e => {
             e.preventDefault();
             window.electron.ipcRenderer.checkDirExists(connectionArgs, smpePath).then((res: boolean) => {
@@ -118,7 +118,7 @@ const InstallationType = () => {
           {`Zen will download the latest Zowe convenience build in PAX archive format from `}
           <Link href="zowe.org">{'https://zowe.org'}</Link>
         </Typography>
-        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small'}} onClick={showLicenseAgreement}>License Agreement</Button>
+        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} onClick={showLicenseAgreement}>License Agreement</Button>
         {showLicense && <LicenseDialog isAgreementVisible={true} licenseAgreement={licenseAgreement}/>}
       </div>}
     {installValue === "upload" &&   <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
