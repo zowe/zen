@@ -34,14 +34,14 @@ const cards: Array<ICard> = [
   {
     id: "install", 
     name: "New Zowe Installation", 
-    description: "It will help you download, install, and configure Zowe on z/OS", 
+    description: "It will help you download, install, and configure Zowe on z/OS.", 
     link: "/wizard",
     media: installationImg,
   }, 
   {
     id: "configure", 
     name: "Zowe Installation Dry Run", 
-    description: "It will guide you through the installation steps without running the installation", 
+    description: "It will guide you through the installation steps without running the installation.", 
     link: "/",
     media: installationDryImg,
   }

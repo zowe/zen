@@ -37,13 +37,19 @@ export class InstallActions {
 
   runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
-    version: string): Promise<IResponse> {
-    return this.strategy.runInstallation(connectionArgs, installationArgs, version);
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
+    version: string, zoweConfig: any): Promise<IResponse> {
+    return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
   }
 
   initSecurity(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string}, zoweConfig: any): Promise<IResponse> {
     return this.strategy.initSecurity(connectionArgs, installationArgs, zoweConfig);
   }
+
+  apfAuth(connectionArgs: IIpcConnectionArgs,
+    installationArgs: {installationDir: string}, zoweConfig: any): Promise<IResponse> {
+    return this.strategy.apfAuth(connectionArgs, installationArgs, zoweConfig);
+  }
+
 }

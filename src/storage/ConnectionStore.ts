@@ -78,7 +78,7 @@ const storeDefault = {
       "enableTrace": false,
       "rejectUnauthorized": true,
       "maxVersion": "TLSv1.3",
-      "minVersion": "TLSv1.1"
+      "minVersion": "TLSv1.2"
     },    
     "jobStatement": `//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,
 //         MSGLEVEL=(1,1),MSGCLASS=A`
