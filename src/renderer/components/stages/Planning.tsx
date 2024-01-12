@@ -329,6 +329,7 @@ const Planning = () => {
   }
 
   return (
+    <React.Fragment><span id="position-0"></span>
     <ContainerCard title="Before you start" description="Prerequisites, requirements and roles needed to install.">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} content={editorContent}/>
       <Box sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto', opacity: step === 0 ? 1 : opacity}}>
@@ -336,7 +337,7 @@ const Planning = () => {
           {/* TODO: Allow to choose Zowe version here by click here, support for other instalation types? */}
           {zoweVersion ? `About to install latest Zowe version: ${zoweVersion} from the convenience build. Approximate required space: ${requiredSpace}MB` : ''}
         </Typography>
-        <Typography id="position-0" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">     
+        <Typography sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">     
         {/* <Describe permissions that may be needed in detail>  */}  
         {`The basic role for the installation is the system programmer ( OMVS / z/OS ) 
 For some stages, you may need additional permissions: 
@@ -508,7 +509,7 @@ Please customize the job statement below to match your system requirements.
                 variant="standard"
                 value={localYaml?.zowe.cookieIdentifier || installationArgs.cookieId}
                 onChange={(e) => {
-                  dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}));
+                  dispatch(setInstallationArgs({...installationArgs, cookieId: e.target.value}));
                   setTopLevelYamlConfig("zowe.cookieIdentifier", e.target.value);
                 }}
               />
@@ -639,6 +640,7 @@ All set, ready to proceed.`
         </Box>
         : <div/> }
     </ContainerCard>
+    </React.Fragment>
   );
 };
 
