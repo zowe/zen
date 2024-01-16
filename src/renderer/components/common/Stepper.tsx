@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -22,7 +22,7 @@ import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
 import { createTheme } from '@mui/material/styles';
-
+import eventDispatcher from '../../../utils/eventDispatcher';
 
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
@@ -44,6 +44,19 @@ export default function HorizontalLinearStepper(props: any) {
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState('');
   const [currStep, setCurrStep] = useState(1);
+
+  useEffect(() => {
+    const updateActiveStepListener = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
+      setActiveStep(newActiveStep);
+      const newSubStep = isSubStep ? subStepIndex : 0;
+      setActiveSubStep(newSubStep);
+      console.log("ACTING UPON THE EVENT|n");
+    };
+    eventDispatcher.on('updateActiveStep', updateActiveStepListener);
+    return () => {
+      eventDispatcher.off('updateActiveStep', updateActiveStepListener);
+    };
+  }, []); 
 
   const toggleEditorVisibility = (type?: any) => {
     if (type) {
@@ -67,8 +80,15 @@ export default function HorizontalLinearStepper(props: any) {
     toggleEditorVisibility(TYPE_OUTPUT);
   };
 
+  const handleSkip = () => {
+    stages[activeStep].isSkipped = true;
+    stages[activeStep].subStages[activeSubStep].isSkipped = true;
+    handleNext();
+  }
+
   const handleNext = () => {
     alertEmitter.emit('hideAlert');
+    
     if(stages[activeStep].subStages && activeSubStep + 1 < stages[activeStep].subStages.length){
       setActiveSubStep((prevActiveSubStep) => prevActiveSubStep + 1)
     } else {
@@ -182,7 +202,7 @@ export default function HorizontalLinearStepper(props: any) {
                 disabled={isNextStepEnabled}
                 variant="contained" 
                 sx={{ textTransform: 'none', mr: 1 }} 
-                onClick={() => handleNext()}
+                onClick={() => handleSkip()}
               >
                 Skip {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].label : stages[activeStep].label}
               </Button>
