@@ -20,6 +20,16 @@ const storeDefault = {
     "unpax": false,
     "install": false,
     "initMVS": false
+  },
+  "apfAuth":{
+    "writeYaml": false,
+    "uploadYaml": false,
+    "success": false
+  },
+  "initSecurity": {
+    "writeYaml": false,
+    "uploadYaml": false,
+    "success": false
   }
 };
 

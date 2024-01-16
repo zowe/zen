@@ -19,15 +19,18 @@ import spock from '../../assets/spock.svg'
 import InstallationType from '../stages/installation/InstallTypeSelection';
 import { selectLoading } from './wizardSlice';
 import { useAppSelector } from '../../hooks';
+import InitApfAuth from '../stages/InitApfAuth';
 
 const stages = [
-  {id: 0, label: 'Connection', component: <Connection/>, nextButton: 'Continue'},
-  {id: 1, label: 'Planning', component: <Planning/>, nextButton: 'Continue to installation options'},
-  {id: 2, label: 'Installation Type', component: <InstallationType/>, nextButton: 'Continue to components installation'},
-  {id: 3, label: 'Installation', component: <Installation/>, nextButton: 'Continue to zowe Security'},
-  {id: 4, label: 'Security', component: <Security/>, nextButton: 'Continue to certificates setup'},
-  {id: 5, label: 'Certificates', component: <Certificates/>, nextButton: 'Continue to instance setup'},
-  {id: 6, label: 'Initialization', component: <Initialization/>, nextButton: <div style={{display: 'flex', alignItems: 'center'}}><img style={{width: '18px', height: '18px', paddingRight: '12px'}} src={spock}/>Live long and prosper</div>},
+  {id: 0, label: 'Connection', component: <Connection/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Continue'},
+  {id: 1, label: 'Planning', component: <Planning/>, hasJCL: false, isSkippable: false, hasOutput: true, steps: 3, nextButton: 'Continue to Installation Options'},
+  {id: 2, label: 'Installation Type', component: <InstallationType/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Continue to Components Installation'},
+  {id: 3, label: 'Initialization', component: <Initialization/>, hasJCL: true, isSkippable: true, hasYaml: true, hasOutput: true, steps: 1, subStages: [
+    {id: 0, label: 'Installation', component: <Installation/>, hasJCL: true, isSkippable: true, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to APF Auth Setup'},
+    {id: 1, label: 'APF Auth', component: <InitApfAuth/>, hasJCL: true, isSkippable: true, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Security Setup'},
+    {id: 2, label: 'Security', component: <Security/>, hasJCL: true, isSkippable: true, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Certificates Setup'},
+    {id: 3, label: 'Certificates', component: <Certificates/>, hasJCL: true, isSkippable: true, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Instance Setup'},
+  ], nextButton: <div style={{display: 'flex', alignItems: 'center'}}><img style={{width: '18px', height: '18px', paddingRight: '12px'}} src={spock}/>Live long and prosper</div>},
 ]
 
 const Wizard = () => {
