@@ -17,10 +17,18 @@ export interface jobValidation {
   jobStatementValidMsg: string;
 }
 
+export interface locationValidation {
+  locValidationDetails: any;
+}
+
 const initialState: jobValidation = {
   jobStatement: '',
   jobStatementValid: false,
   jobStatementValidMsg: ''
+}
+
+const locValidationInitialState: locationValidation = {
+  locValidationDetails: {}
 }
 
 export const planningSlice = createSlice({
@@ -39,11 +47,25 @@ export const planningSlice = createSlice({
   }
 })
 
+export const locationValidationSlice = createSlice({
+    name: 'locationValidation',
+    initialState: locValidationInitialState,
+    reducers: {
+      setLocationValidationDetails: (state, action: PayloadAction<any>) => {
+          state.locValidationDetails = action.payload;
+      }
+    }
+  })
+
 export const { setJobStatementValid, setJobStatementValidMsg, setJobStatement } = planningSlice.actions;
+export const { setLocationValidationDetails } = locationValidationSlice.actions
 
 export const selectJobStatement = (state: RootState) => state.planning.jobStatement;
 export const selectJobStatementValid = (state: RootState) => state.planning.jobStatementValid;
 export const selectJobStatementValidMsg = (state: RootState) => state.planning.jobStatementValidMsg;
+export const selectLocValidationDetails = (state: RootState) => state.locationValidation.locValidationDetails;
 
-export default planningSlice.reducer;
+
+export const planningReducer = planningSlice.reducer;
+export const locationValidationReducer = locationValidationSlice.reducer;
 

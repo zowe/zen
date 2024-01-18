@@ -13,7 +13,8 @@ import connectionReducer from './components/stages/connection/connectionSlice';
 import wizardReducer from './components/configuration-wizard/wizardSlice';
 import installationReducer from './components/stages/installation/installationSlice';
 import progressReducer from './components/stages/progressSlice';
-import planningReducer from './components/stages/PlanningSlice';
+import { planningReducer, locationValidationReducer } from './components/stages/PlanningSlice';
+
 
 export const store = configureStore({
   reducer: {
@@ -21,7 +22,8 @@ export const store = configureStore({
     connection: connectionReducer,
     installation: installationReducer,
     progress: progressReducer,
-    planning: planningReducer
+    planning: planningReducer,
+    locationValidation: locationValidationReducer
   },
 });
 

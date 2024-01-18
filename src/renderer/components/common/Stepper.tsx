@@ -157,7 +157,9 @@ export default function HorizontalLinearStepper(props: any) {
     // To not access the stage if any previous stage is not completed
     for (let i = 0; i < newActiveStep; i++) {
       const statusAtIndex = stageProgressStatus[i];
-      if (!statusAtIndex) {
+      // We can access 'Review Installation' if Initialization in not completed since it can be skipped
+      // To do: Find a way to get rid of the hardcoding 
+      if (!statusAtIndex && !(newActiveStep == 4 && i == 3)) {
         return;
       }
     }
