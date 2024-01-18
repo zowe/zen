@@ -14,6 +14,7 @@ import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
 import { selectInstallationArgs, selectZoweVersion, setInstallationArgs } from './installationSlice';
+import { setInstallationStatus } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
@@ -45,10 +46,12 @@ const InstallationType = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if((installValue === "download" && agreeLicense == false) || (installValue === "upload" && paxPath == "") || installValue === "smpe" && installationArgs.smpeDir == ""){
+    if((installValue === "download" && agreeLicense == false) || (installValue === "upload" && paxPath == "") || (installValue === "smpe" && installationArgs.smpeDir == "" && !smpePathValidated)){
         dispatch(setNextStepEnabled(false));
+        dispatch(setInstallationStatus(false));
     } else {
         dispatch(setNextStepEnabled(true));
+        dispatch(setInstallationStatus(true));
     }
     
   }, [installValue, paxPath, installationArgs, agreeLicense]);

@@ -32,9 +32,7 @@ const ReviewInstallation = () => {
   return (
     
     <ContainerCard title="Review Installation" description="Review the Installation">
-      <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start'}}>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => updateActiveStep(2, false)}>Active step?</Button>
-      </Box>
+      
       <Box sx={{ overflow: 'auto' }}>
         {stages.map(stage => (
           <React.Fragment key={stage.id}>

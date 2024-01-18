@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -19,6 +20,8 @@ import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/connection/connectionSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from '../stages/progressSlice';
+import { selectInstallationStatus } from '../stages/installation/installationSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
 import Security from '../stages/Security';
@@ -26,12 +29,31 @@ import savedInstall from '../../assets/saved-install-green.png';
 import trash from '../../assets/trash.png';
 import { createTheme } from '@mui/material/styles';
 import eventDispatcher from '../../../utils/eventDispatcher';
+import Warning from '@mui/icons-material/Warning';
+import CheckCircle from '@mui/icons-material/CheckCircle';
 
+import '../../styles/Stepper.css';
+import { StepIcon } from '@mui/material';
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
 
 export default function HorizontalLinearStepper(props: any) {
 
+  const connectionStatus = useSelector(selectConnectionStatus);
+
+  const stageProgressStatus = [
+    useSelector(selectConnectionStatus),
+    useSelector(selectPlanningStatus),
+    useSelector(selectInstallationStatus),
+    useSelector(selectInitializationStatus),
+  ];
+
+  const subStageProgressStatus = [
+    useSelector(selectDatasetInstallationStatus),
+    useSelector(selectApfAuthStatus),
+    useSelector(selectSecurityStatus),
+    useSelector(selectCertificateStatus), 
+  ]
   const theme = createTheme();
   
   const TYPE_YAML = "yaml";
@@ -47,6 +69,7 @@ export default function HorizontalLinearStepper(props: any) {
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState('');
   const [currStep, setCurrStep] = useState(1);
+  const [stepComplete, setStepComplete] = useState(false);
 
   useEffect(() => {
     const updateActiveStepListener = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
@@ -54,6 +77,7 @@ export default function HorizontalLinearStepper(props: any) {
       const newSubStep = isSubStep ? subStepIndex : 0;
       setActiveSubStep(newSubStep);
       console.log("ACTING UPON THE EVENT|n");
+      // handleStepperClick(newActiveStep, isSubStep, subStepIndex);
     };
     eventDispatcher.on('updateActiveStep', updateActiveStepListener);
     return () => {
@@ -97,7 +121,7 @@ export default function HorizontalLinearStepper(props: any) {
     alertEmitter.emit('hideAlert');
     
     if(stages[activeStep].subStages && activeSubStep + 1 < stages[activeStep].subStages.length){
-      setActiveSubStep((prevActiveSubStep) => prevActiveSubStep + 1)
+      setActiveSubStep((prevActiveSubStep) => prevActiveSubStep + 1);
     } else {
       if(activeStep + 1 === stages.length) {
         console.log('Start Zowe');
@@ -125,6 +149,60 @@ export default function HorizontalLinearStepper(props: any) {
     setEditorContent(test_jcl);
   };
 
+  const handleStepperClick = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
+    if(!connectionStatus) {
+      return;
+    }
+
+    // To not access the stage if any previous stage is not completed
+    for (let i = 0; i < newActiveStep; i++) {
+      const statusAtIndex = stageProgressStatus[i];
+      if (!statusAtIndex) {
+        return;
+      }
+    }
+
+    setActiveStep(newActiveStep);
+    const newSubStep = isSubStep ? subStepIndex : 0;
+    setActiveSubStep(newSubStep);
+    console.log("ACTING UPON THE EVENT|n");
+  };
+
+  const getStepIcon = (error: any, stageId: number, isSubStep?: boolean, subStepId?: number) => {
+    
+    if ((error && activeStep>stageId && !isSubStep) || (error && isSubStep && activeSubStep>subStepId)) {
+      return <StepIcon icon={<Warning sx={{ color: 'orange', fontSize: '1.2rem' }} />} />;
+    }
+  
+    if (!error) {
+      return <StepIcon icon={<CheckCircle sx={{ color: 'green', fontSize: '1.2rem' }} />} />;
+    }
+
+    else {
+      return (
+        <StepIcon
+          icon={
+            <div
+              style={{
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                backgroundColor: 'grey',
+                color: 'white',
+                fontSize: '0.8rem', // Adjust the font size as needed
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {isSubStep ? subStepId : stageId}
+            </div>
+          }
+        />
+      );
+    }
+  };
+
   const isNextStepEnabled = useAppSelector(selectNextStepEnabled);
 
   return (
@@ -133,7 +211,10 @@ export default function HorizontalLinearStepper(props: any) {
       <Stepper className="stepper" activeStep={activeStep}>
         {stages.map((stage: any, index: number) => {
           const stepProps = {};
-          const labelProps = {};
+          const labelProps: {error?: boolean;} = {};
+
+          labelProps.error = stageProgressStatus[index] ? false : true;
+
           return (
             // This adds shadow to the "filing cabinet" top-slip UI
             <Step key={stage.id} {...stepProps}>
@@ -145,8 +226,11 @@ export default function HorizontalLinearStepper(props: any) {
                 borderTopRightRadius: '7px', 
                 borderTopLeftRadius: '7px',
                 boxShadow: 'rgb(0 0 0 / 15%) 0px 6px 4px -1px inset'} : {}}>
-                <StepLabel {...labelProps}>
-                    {stage.label}
+                <StepLabel {...labelProps} 
+                  error={labelProps.error} 
+                  // icon={labelProps.error ? <Warning sx={{ color: 'orange', fontSize: '1.2rem' }} /> : <CheckCircle sx={{ color: 'green', fontSize: '1.2rem' }} />}>
+                  icon={getStepIcon(labelProps.error, stage.id)}>
+                  <span className="navigator" onClick={() => handleStepperClick(stage.id, !!stage.subStage)}>{stage.label}</span>
                 </StepLabel>
               </div>
             </Step>
@@ -156,11 +240,16 @@ export default function HorizontalLinearStepper(props: any) {
       {stages[activeStep].subStages &&  <Stepper className="substepper" activeStep={activeSubStep}>
         {stages[activeStep].subStages.map((stage: any, index: number) => {
           const stepProps = {};
-          const labelProps = {};
+          const labelProps: {error?: boolean;} = {};
+          labelProps.error = subStageProgressStatus[index] ? false : true;
+
           return (
             <Step key={stage.id} {...stepProps}>
-                <StepLabel {...labelProps}>
-                    {stage.label}
+                <StepLabel {...labelProps}
+                  error={labelProps.error} 
+                  // icon={labelProps.error ? <Warning sx={{ color: 'orange', fontSize: '1.2rem' }} /> : <CheckCircle sx={{ color: 'green', fontSize: '1.2rem' }} />}>
+                  icon={getStepIcon(labelProps.error, activeStep, true, index)}>
+                <span className="navigator" onClick={() => handleStepperClick(activeStep, true, stage.id )}>{stage.label}</span>
                 </StepLabel>
             </Step>
           );

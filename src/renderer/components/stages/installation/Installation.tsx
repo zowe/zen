@@ -14,6 +14,7 @@ import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
 import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
+import { setDatasetInstallationStatus, selectDatasetInstallationStatus } from "../progressSlice";
 import { IResponse } from '../../../../types/interfaces';
 import { setConfiguration, getConfiguration, getZoweConfig } from '../../../../services/ConfigService';
 import ProgressCard from '../../common/ProgressCard';
@@ -114,7 +115,8 @@ const Installation = () => {
       window.electron.ipcRenderer.setConfigByKey('zowe.externalDomains', [connectionArgs.host])
     ]).then(() => {
       if(installationType === 'smpe'){
-        dispatch(setNextStepEnabled(true))
+        dispatch(setNextStepEnabled(true));
+        dispatch(setDatasetInstallationStatus(true));
         dispatch(setLoading(false));
       } else {
         setYaml(window.electron.ipcRenderer.getConfig());
@@ -125,10 +127,12 @@ const Installation = () => {
             alertEmitter.emit('showAlert', res.details, 'error');
           }
           dispatch(setNextStepEnabled(res.status));
+          dispatch(setDatasetInstallationStatus(res.status));
           clearInterval(timer);
         }).catch(() => {
           clearInterval(timer);
           dispatch(setNextStepEnabled(false));
+          dispatch(setDatasetInstallationStatus(false));
           console.warn('Installation failed');
         });
       }

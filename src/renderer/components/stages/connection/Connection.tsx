@@ -9,6 +9,7 @@
  */
 
 import React, { SyntheticEvent, useEffect, useState } from "react";
+import { useSelector } from 'react-redux';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -43,8 +44,10 @@ const Connection = () => {
     setExpanded(isExpanded ? panel : false);
   };
 
+  const connectionStatus = useSelector(selectConnectionStatus);
+
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
   }, []);
 
   return (
@@ -114,6 +117,11 @@ const FTPConnectionForm = () => {
       }); 
   };
 
+  const handleFormChange = () => {
+    dispatch(setConnectionStatus(false));
+    dispatch(setNextStepEnabled(false));
+  }
+
   return (
     <Box 
       onSubmit={(e: SyntheticEvent) => e.preventDefault()} 
@@ -127,7 +135,7 @@ const FTPConnectionForm = () => {
           variant="standard"
           helperText="Target z/OS system for Zowe's installation."
           value={connectionArgs.host}
-          onChange={(e) => { dispatch(setHost(e.target.value)) }}
+          onChange={(e) => { dispatch(setHost(e.target.value)); handleFormChange(); }}
         />
       </FormControl>
       <FormControl>
@@ -139,7 +147,7 @@ const FTPConnectionForm = () => {
           variant="standard"
           helperText="FTP port number. If not specified, Zen will try to use a default service port."
           value={connectionArgs.port}
-    onChange={(e) => { dispatch(setPort(Number(e.target.value))) }}
+    onChange={(e) => { dispatch(setPort(Number(e.target.value))); handleFormChange(); }}
         />
       </FormControl>
       <FormControl>
@@ -150,7 +158,7 @@ const FTPConnectionForm = () => {
           variant="standard"
           helperText="Your z/OS user name or user ID."
           value={connectionArgs.user}
-          onChange={(e) => { dispatch(setUser(e.target.value)) }}
+          onChange={(e) => { dispatch(setUser(e.target.value)); handleFormChange(); }}
         />
       </FormControl>
       <FormControl>
@@ -166,14 +174,14 @@ const FTPConnectionForm = () => {
               <span>Your password is securely stored for only the current session.</span>
             </span>}
           value={connectionArgs.password}
-          onChange={(e) => { dispatch(setPassword(e.target.value)) }}
+          onChange={(e) => { dispatch(setPassword(e.target.value)); handleFormChange(); }}
         />
       </FormControl>
       <FormControl>
         <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>  
           <FormControlLabel
             control={<Checkbox  
-              onChange={(e) => { dispatch(setSecure(e.target.checked)) }} 
+              onChange={(e) => { dispatch(setSecure(e.target.checked)); handleFormChange(); }} 
             />}
             label="Use FTP over TLS."
             labelPlacement="start"
@@ -195,7 +203,7 @@ const FTPConnectionForm = () => {
           select={true}
           helperText="Minimum TLS version to accept from server."
           value={connectionArgs.secureOptions.minVersion}
-          onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, minVersion: e.target.value})) }} 
+          onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, minVersion: e.target.value})); handleFormChange(); }} 
 
         >
           {/* TODO: This needs to be conditionally added, because older Zowe versions support 1.0-1.1 */}
@@ -213,7 +221,7 @@ const FTPConnectionForm = () => {
           select={true}
           helperText="Maximum TLS version to accept from server."
           value={connectionArgs.secureOptions.maxVersion}
-          onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, maxVersion: e.target.value})) }} 
+          onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, maxVersion: e.target.value})); handleFormChange(); }} 
 
         >
           {/* TODO: This needs to be conditionally added, because older Zowe versions support 1.0-1.1 */}
@@ -229,7 +237,7 @@ const FTPConnectionForm = () => {
           <FormControlLabel
             control={
               <Checkbox  
-                onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.value})) }}
+                onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.value})); handleFormChange(); }}
               />
             }
             label="Accept all certificates."
