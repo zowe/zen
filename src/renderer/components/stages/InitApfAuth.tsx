@@ -31,7 +31,7 @@ const InitApfAuth = () => {
   const theme = createTheme();
 
   const stageId = 3;
-  const subStageId = 2;
+  const subStageId = 1;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);

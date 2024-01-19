@@ -295,7 +295,12 @@ const Planning = () => {
           setIsJobStatementValid(true);
           dispatch(setJobStatementValid(true));
           alertEmitter.emit('hideAlert');
-          if (step < 1) {
+          if(locationsValidated) {
+            dispatch(setPlanningStatus(true));
+            dispatch(setNextStepEnabled(true));
+            setOpacity(0);
+            setStep(2);
+          } else if (step < 1) {
             setOpacity(0);
             setStep(1);
           }

@@ -41,6 +41,9 @@ export default function HorizontalLinearStepper(props: any) {
 
   const connectionStatus = useSelector(selectConnectionStatus);
 
+  const INIT_STAGE_ID = 3;
+  const REVIEW_STAGE_ID = 4;
+
   const stageProgressStatus = [
     useSelector(selectConnectionStatus),
     useSelector(selectPlanningStatus),
@@ -158,8 +161,7 @@ export default function HorizontalLinearStepper(props: any) {
     for (let i = 0; i < newActiveStep; i++) {
       const statusAtIndex = stageProgressStatus[i];
       // We can access 'Review Installation' if Initialization in not completed since it can be skipped
-      // To do: Find a way to get rid of the hardcoding 
-      if (!statusAtIndex && !(newActiveStep == 4 && i == 3)) {
+      if (!statusAtIndex && !(newActiveStep == REVIEW_STAGE_ID && i == INIT_STAGE_ID)) {
         return;
       }
     }
