@@ -191,7 +191,7 @@ export default function HorizontalLinearStepper(props: any) {
                 borderRadius: '50%',
                 backgroundColor: 'grey',
                 color: 'white',
-                fontSize: '0.8rem', // Adjust the font size as needed
+                fontSize: '0.8rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

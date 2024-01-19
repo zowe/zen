@@ -13,6 +13,7 @@ import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
+import { setApfAuthStatus, setInitializationStatus, selectApfAuthStatus } from './progressSlice';
 import { IResponse } from '../../../types/interfaces';
 import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
 import ProgressCard from '../common/ProgressCard';
@@ -21,6 +22,7 @@ import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
 import { createTheme } from '@mui/material/styles';
+import {stages} from "../configuration-wizard/Wizard";
 
 const InitApfAuth = () => {
 
@@ -28,12 +30,14 @@ const InitApfAuth = () => {
 
   const theme = createTheme();
 
+  const stageId = 3;
+  const subStageId = 2;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.dataset : "";
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.dataset);
+  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
   const [showProgress, toggleProgress] = useState(false);
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -65,7 +69,9 @@ const InitApfAuth = () => {
   }
   
   useEffect(() => {
-    // dispatch(setNextStepEnabled(false));
+    dispatch(setNextStepEnabled(false));
+    stages[stageId].subStages[subStageId].isSkipped = true;
+    stages[stageId].isSkipped = true;
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
@@ -93,9 +99,12 @@ const InitApfAuth = () => {
     toggleProgress(true);
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
+        dispatch(setApfAuthStatus(res.status));
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
+        dispatch(setInitializationStatus(false));
+        dispatch(setApfAuthStatus(false));
         console.warn('zwe init apfauth failed');
       });
   }

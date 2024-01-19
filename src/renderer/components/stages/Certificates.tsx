@@ -18,16 +18,19 @@ import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
+import {stages} from "../configuration-wizard/Wizard";
 
 const Certificates = () => {
 
   const theme = createTheme();
 
+  const stageId = 3;
+  const subStageId = 3;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
-  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.certificate);
+  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -46,7 +49,7 @@ const Certificates = () => {
   let certificateSchema;
   let validate: any;
   if(schema) {
-    certificateSchema = schema.properties.zowe.properties.setup.properties.certificate;
+    certificateSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
   }
 
   if(certificateSchema) {
@@ -55,6 +58,8 @@ const Certificates = () => {
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
+    stages[stageId].subStages[subStageId].isSkipped = true;
+    stages[stageId].isSkipped = true;
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
@@ -114,8 +119,8 @@ const Certificates = () => {
     <div>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>Preview Job</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Certificates" description="Configure Zowe Certificates."> 
         <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>

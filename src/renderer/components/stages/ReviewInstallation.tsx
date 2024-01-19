@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {Box, Button, Typography, Tooltip} from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -17,12 +17,28 @@ import {stages} from "../configuration-wizard/Wizard";
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { useAppSelector } from '../../hooks';
 import eventDispatcher from '../../../utils/eventDispatcher';
+import EditorDialog from "../common/EditorDialog";
+import { createTheme } from '@mui/material/styles';
 
 import '../../styles/ReviewInstallation.css';
 
 const ReviewInstallation = () => {
 
+  const [contentType, setContentType] = useState('');
+  const [editorVisible, setEditorVisible] = useState(false);
+
   const connectionArgs = useAppSelector(selectConnectionArgs);
+
+  const theme = createTheme();
+
+  const TYPE_YAML = "yaml";
+  const TYPE_JCL = "jcl";
+  const TYPE_OUTPUT = "output";
+
+  const toggleEditorVisibility = (type: any) => {
+    setContentType(type);
+    setEditorVisible(!editorVisible);
+  };
 
   const updateActiveStep = (index: number, isSubStep: boolean, subStepIndex?: number) => {
     eventDispatcher.emit('updateActiveStep', index, isSubStep, subStepIndex);
@@ -30,7 +46,11 @@ const ReviewInstallation = () => {
   }
 
   return (
-    
+    <div>
+      <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
+      </Box>
     <ContainerCard title="Review Installation" description="Review the Installation">
       
       <Box sx={{ overflow: 'auto' }}>
@@ -95,6 +115,7 @@ const ReviewInstallation = () => {
         ))}
       </Box>
     </ContainerCard>
+    </div>
   );
 };
 

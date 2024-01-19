@@ -14,7 +14,7 @@ import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
 import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
-import { setDatasetInstallationStatus, selectDatasetInstallationStatus } from "../progressSlice";
+import { setDatasetInstallationStatus, setInitializationStatus ,selectDatasetInstallationStatus } from "../progressSlice";
 import { IResponse } from '../../../../types/interfaces';
 import { setConfiguration, getConfiguration, getZoweConfig } from '../../../../services/ConfigService';
 import ProgressCard from '../../common/ProgressCard';
@@ -24,6 +24,7 @@ import EditorDialog from "../../common/EditorDialog";
 import Ajv from "ajv";
 import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
+import {stages} from "../../configuration-wizard/Wizard";
 
 const Installation = () => {
 
@@ -31,12 +32,14 @@ const Installation = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
+  const stageId = 3;
+  const subStageId = 0;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.dataset : "";
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.dataset);
+  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
   const [showProgress, toggleProgress] = useState(false);
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -68,7 +71,7 @@ const Installation = () => {
   let datasetSchema;
   let validate: any;
   if(schema) {
-    datasetSchema = schema.properties.zowe.properties.setup.properties.dataset;
+    datasetSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
   }
 
   if(datasetSchema) {
@@ -77,6 +80,8 @@ const Installation = () => {
   
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
+    stages[stageId].subStages[subStageId].isSkipped = true;
+    stages[stageId].isSkipped = true;
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
@@ -132,7 +137,9 @@ const Installation = () => {
         }).catch(() => {
           clearInterval(timer);
           dispatch(setNextStepEnabled(false));
+          dispatch(setInitializationStatus(false));
           dispatch(setDatasetInstallationStatus(false));
+          stages[stageId].subStages[subStageId].isSkipped = true;
           console.warn('Installation failed');
         });
       }

@@ -23,7 +23,7 @@ export const store = configureStore({
     installation: installationReducer,
     progress: progressReducer,
     planning: planningReducer,
-    locationValidation: locationValidationReducer
+    locationValidation: locationValidationReducer,
   },
 });
 

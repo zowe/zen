@@ -16,7 +16,7 @@ import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
 import ContainerCard from '../common/ContainerCard';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CheckCircle from '@mui/icons-material/CheckCircle';
 import { setYaml, setSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs, setConnectionArgs } from './connection/connectionSlice';
 import { setPlanningStatus, selectPlanningStatus } from './progressSlice';
@@ -388,7 +388,10 @@ const Planning = () => {
   const onJobStatementChange = (newJobStatement: string) => {
     setIsJobStatementUpdated(true);
     setJobStatementValue(newJobStatement);
+    setJobHeaderSaved(false);
+    setPlanningStatus(false);
     dispatch(setJobStatement(newJobStatement));
+    dispatch(setPlanningStatus(false))
     setOpacity(1);
     setStep(0);
   }
@@ -441,7 +444,7 @@ Please customize the job statement below to match your system requirements.
         <FormControl sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', justifyContent: 'center'}} type={step === 0 ? "submit" : "button"} variant="text" onClick={e => saveJobHeader(e)}>Save and validate</Button>
           {jobHeaderSaved ? 
-            <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : null}
+            <CheckCircle sx={{ color: 'green', fontSize: '1rem' }} /> : null}
         </FormControl>
       </Box>
       {step > 0 
@@ -713,7 +716,7 @@ Please customize the job statement below to match your system requirements.
           )}
           <FormControl sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
             <Button sx={{boxShadow: 'none'}} type={step === 1 ? "submit" : "button"} variant="text" onClick={e => validateLocations(e)}>Validate locations</Button>
-            {locationsValidated ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : validationDetails.error ? null: null}
+            {locationsValidated ? <CheckCircle sx={{ color: 'green', fontSize: '1rem' }} /> : validationDetails.error ? null: null}
           </FormControl>
         </Box>
         : <div/> }
