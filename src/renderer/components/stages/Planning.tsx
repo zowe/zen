@@ -344,25 +344,48 @@ const Planning = () => {
     }
     dispatch(setLoading(true));
 
+    // TODO: Possible feature for future: add to checkDir to see if existing Zowe install exists.
+    // Then give the user ability to use existing zowe.yaml to auto-fill in fields from Zen
     Promise.all([
       window.electron.ipcRenderer.checkJava(connectionArgs, installationArgs.javaHome),
       window.electron.ipcRenderer.checkNode(connectionArgs, installationArgs.nodeHome),
-      //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks.
+      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, installationArgs.installationDir),
+      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, installationArgs.workspaceDir),
+      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, installationArgs.extensionDir),
+      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, installationArgs.logDir),
     ]).then((res: Array<IResponse>) => {
       const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
-      setEditorContent(res.map(item=>item.details).join('\n'));
+      setEditorContent(res.map(item=>item?.details).join('\n'));
       setContentType('output');
+
+      // If res[?] doesn't exist, ?-th window.electronc.ipcRender call failed...
       try {
         details.javaVersion = res[0].details.split('\n').filter((i: string) => i.trim().startsWith('java version'))[0].trim().slice(14, -1);
       } catch (error) {
-        details.error = details.error + `Can't get java version; `;
+        details.error = details.error + `Can't get Java version `;
         console.warn(res[0].details);
       }
       try {
         details.nodeVersion = res[1].details.split('\n').filter((i: string) => i.trim().startsWith('v'))[0].slice(1);
       } catch (error) {
-        details.error = details.error + `Can't get node version; `;
+        details.error = details.error + `Can't get Node.js version `;
         console.warn(res[1].details);
+      }
+      if (res[2].status == false) { // Checking run-time directory existence or creating it failed?
+        details.error = details.error + res[2].details;
+        console.warn(res[2].details);
+      }
+      if (res[3].status == false) { // workspace directory
+        details.error = details.error + res[3].details;
+        console.warn(res[3].details);
+      }
+      if (res[4].status == false) { // extensions directory
+        details.error = details.error + res[4].details;
+        console.warn(res[4].details);
+      }
+      if (res[5].status == false) { // logs directory
+        details.error = details.error + res[5].details;
+        console.warn(res[5].details);
       }
       //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks.
       // try {
