@@ -128,7 +128,7 @@ class Installation {
     console.log("uploading yaml...");
     const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
     if(!uploadYaml.status){
-      return ProgressStore.set('apfAuth.uploadYaml', false);;
+      return ProgressStore.set('apfAuth.uploadYaml', false);
 
     }
     ProgressStore.set('apfAuth.uploadYaml', uploadYaml.status);

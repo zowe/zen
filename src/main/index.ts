@@ -115,13 +115,18 @@ const createWindow = (): void => {
     return res;
   });
 
-  ipcMain.handle('check-space', async (event, connectionArgs, location) => {
-    const res: any = await PlanningActions.checkSpace(connectionArgs, location);
+  ipcMain.handle('check-space-create-dir', async (event, connectionArgs, location) => {
+    const res: any = await PlanningActions.checkSpaceAndCreateDir(connectionArgs, location);
     return res;
   });
 
   ipcMain.handle('check-dir-exists', async (event, connectionArgs, location) => {
     const res: any = await checkDirExists(connectionArgs, location);
+    return res;
+  })
+
+  ipcMain.handle('check-dir-or-create', async (event, connectionArgs, location) => {
+    const res: any = await PlanningActions.checkOrCreateDir(connectionArgs, location);
     return res;
   })
 
