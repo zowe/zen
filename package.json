@@ -6,7 +6,6 @@
   "version": "1.0.0",
   "main": ".webpack/main",
   "scripts": {
-    "test": "ts-node -r tsconfig-paths/register -r ts-node/register testSecurityTab.spec.ts",
     "start": "electron-forge start --enable-logging",
     "package": "electron-forge package",
     "make": "electron-forge make",
