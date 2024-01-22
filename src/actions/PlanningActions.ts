@@ -32,14 +32,23 @@ export class PlanningActions {
     return await new CheckNode().run(connectionArgs, location);
   }
 
-  public static async checkSpace(connectionArgs: IIpcConnectionArgs, location: string): Promise<IResponse> {
-    // TODO: Check if there is zowe.yaml in this dir already, use it.
+  public static async checkSpaceAndCreateDir(connectionArgs: IIpcConnectionArgs, location: string): Promise<IResponse> {
+    await this.checkOrCreateDir(connectionArgs, location);
+    return await new CheckSpace().run(connectionArgs, location);
+  }
+
+  public static async checkOrCreateDir(connectionArgs: IIpcConnectionArgs, location: string): Promise<IResponse> {
     const dirExists = await checkDirExists(connectionArgs, location);
     if (!dirExists) {
       const dirCreated = await makeDir(connectionArgs, location);
-      if (!dirCreated) return {status: false, details: `Can't create dir ${location}`}
+      if (!dirCreated) {
+        return Promise.resolve({status: false, details: `Can't create dir ${location}`});
+      } else {
+        return Promise.resolve({status: true, details: `Directory successfully created at ${location}`});
+      }
+    } else {
+      return Promise.resolve({status: true, details: `Directory already existed at ${location}`});
     }
-    return await new CheckSpace().run(connectionArgs, location);
   }
   
   public static getExampleZowe(): Promise<{status: boolean, details: any}> {
