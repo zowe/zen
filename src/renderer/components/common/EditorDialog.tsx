@@ -30,14 +30,14 @@ const test_jcl = `
 
 const test_op = "WARNING: 'Some Warning'\nERROR: 'Some Error'\nINFO: 'Some Info'\nABEND: 'Some abend error' ";
 
-const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onChange, readOnlyYaml} : {contentType: any, isEditorVisible: boolean, toggleEditorVisibility: any, onChange?: any, readOnlyYaml?: boolean}) => {
+const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onChange, content, readOnlyYaml} : {contentType: any, isEditorVisible: boolean, toggleEditorVisibility: any, onChange?: any, content?: any, readOnlyYaml?: boolean}) => {
 
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const [setupYaml, setSetupYaml] = useState(yaml);
   const [editorVisible, setEditorVisible] = useState(false);
-  const [editorContent, setEditorContent] = useState('');
+  const [editorContent, setEditorContent] = useState(content ? content : '');
   const [isSchemaValid, setIsSchemaValid] = useState(true);
   const [schemaError, setSchemaError] = useState('');
   const fileInputRef = useRef(null);
