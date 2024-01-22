@@ -30,7 +30,7 @@ const test_jcl = `
 
 const test_op = "WARNING: 'Some Warning'\nERROR: 'Some Error'\nINFO: 'Some Info'\nABEND: 'Some abend error' ";
 
-const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onChange} : any) => {
+const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onChange, readOnlyYaml} : {contentType: any, isEditorVisible: boolean, toggleEditorVisibility: any, onChange?: any, readOnlyYaml?: boolean}) => {
 
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
@@ -172,13 +172,18 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
         }}>
         <DialogTitle>Editor</DialogTitle>
         <DialogContent sx={{paddingBottom: '0'}}>
-          <MonacoEditorComponent contentType={contentType} initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid} schemaError={schemaError} />
+          <MonacoEditorComponent contentType={contentType} initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid} schemaError={schemaError} readOnlyYaml={readOnlyYaml} />
         </DialogContent>
         <DialogActions>
           {contentType === 'yaml' && (
             <>
-              <Button onClick={triggerFileInputClick}>Import</Button>
-              <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
+              {!readOnlyYaml && (
+                <div>
+                  <Button onClick={triggerFileInputClick}>Import</Button>
+                  <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
+                </div>
+                )
+              }
               <Button onClick={handleFileExport}>Export</Button>
             </>
           )}
