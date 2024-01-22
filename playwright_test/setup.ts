@@ -7,13 +7,6 @@ const continueButtonSelector = '.MuiButton-containedPrimary.MuiButton-sizeMedium
 const userNameInputSelector = 'label:has-text("User Name") + div input#standard-required';
 const greenCheckIconSelector = 'div svg.MuiSvgIcon-colorSuccess';
 
-const runtime_dir = '/u/ts5223'
-const extension_dir = '/u/ts5223/extension'
-const log_dir = '/u/ts5223/log'
-const job_name = 'ZWEMVDHP'
-const job_prefix = 'ZWE'
-const java_path = '/rsusr/java/IBM/J8.0_64.sr7fp11'
-const node_path = '/proj/mvd/node/installs/node-v18.18.2-os390-s390x-202310180251'
 
 export async function setup(): Promise<ElectronApplication> {
   electronApp = await electron.launch({ args: ['.webpack/main/index.js'] });
@@ -47,18 +40,18 @@ export async function setup(): Promise<ElectronApplication> {
   await page.click(continueButtonSelector)
   await page.locator("//button[contains(text(), 'Save and validate')]").click();
   await page.waitForTimeout(5000);
-  await page.getByLabel('Run-time Directory (or installation location)').fill(runtime_dir);
+  await page.getByLabel('Run-time Directory (or installation location)').fill(process.env.ZOWE_ROOT_DIR);
   await page.getByLabel('Workspace Directory').fill(process.env.ZOWE_WORKSPACE_DIR);
-  await page.getByLabel('Extensions Directory').fill(extension_dir);
-  await page.getByLabel('Log Directory').fill(log_dir);
+  await page.getByLabel('Extensions Directory').fill(process.env.ZOWE_EXTENSION_DIR);
+  await page.getByLabel('Log Directory').fill(process.env.ZOWE_LOG_DIR);
   await page.getByLabel('Rbac Profile Identifier').fill('1');
-  await page.getByLabel('Job Name').fill(job_name);
-  await page.getByLabel('Job Prefix').fill(job_prefix);
-  await page.getByLabel('Java location').fill(java_path);
-  await page.getByLabel('Node.js location').fill(node_path);
-  await page.getByLabel('z/OSMF Application Id').fill('IZUDFLT');
+  await page.getByLabel('Job Name').fill(process.env.JOB_NAME);
+  await page.getByLabel('Job Prefix').fill(process.env.JOB_PREFIX);
+  await page.getByLabel('Java location').fill(process.env.JAVA_HOME);
+  await page.getByLabel('Node.js location').fill(process.env.NODE_HOME);
+  await page.getByLabel('z/OSMF Application Id').fill(process.env.ZOSMF_APP_ID);
   await page.locator("//button[contains(text(), 'Validate locations')]").click();
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(16000);
   await page.locator("//button[contains(text(), 'Continue to Installation Options')]").click();
 
   return electronApp;

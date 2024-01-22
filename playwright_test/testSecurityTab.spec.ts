@@ -12,15 +12,7 @@ const mainXpath = '//html/body/div/div[2]/div/div[4]/div/form/div/div[3]/div[1]/
 const writeConfig_greenCheckXpath = '#card-init-security-progress-card svg.MuiSvgIcon-colorSuccess'
 const uploadYaml_greenCheckXpath = '#card-download-progress-card svg.MuiSvgIcon-colorSuccess'
 const init_security_greenCheckXpath = '#card-success-progress-card svg.MuiSvgIcon-colorSuccess'
-const timeout = 30000;
-const ADMIN = 'MVDUSER'
-const SYS_PROG = 'MVDUSER'
-const STC = 'MVDUSER'
-const AUX = 'ZWEMVD09'
-const USER_ZIS = 'ZWESISTC'
-const USER_ZOWE = 'ZWESMVD'
-const STC_ZIS = 'ZWESISHP'
-const STC_ZOWE = 'ZWEMVDHP'
+
 
 async function setupPage(page: Page) {
   electronApp = await setup();
@@ -69,14 +61,14 @@ test('Test all required fields', async () => {
 test('Test Security RACF Product', async () => {
   page = await electronApp.firstWindow();
   await page.locator('input[role="combobox"]').fill('RACF');
-  await page.getByLabel('Admin').fill(ADMIN);
-  await page.getByLabel('Stc').fill(STC);
-  await page.getByLabel('Sys Prog').fill(SYS_PROG);
-  await page.locator(mainXpath +'/div/div/div[2]/div/div/input').fill(USER_ZIS);
-  await page.locator(mainXpath +'/div/div/div[1]/div/div/input').fill(USER_ZOWE);
-  await page.getByLabel('Aux').fill(AUX);
-  await page.locator(mainXpath + '/div[1]/div/div[1]/div/div/input').fill(STC_ZOWE);
-  await page.locator(mainXpath + '/div[1]/div/div[2]/div/div/input').fill(STC_ZIS);
+  await page.getByLabel('Admin').fill(process.env.SECURITY_ADMIN);
+  await page.getByLabel('Stc').fill(process.env.SECURITY_STC);
+  await page.getByLabel('Sys Prog').fill(process.env.SECURITY_SYSPROG);
+  await page.locator(mainXpath +'/div/div/div[2]/div/div/input').fill(process.env.SECURITY_USER_ZIS);
+  await page.locator(mainXpath +'/div/div/div[1]/div/div/input').fill(process.env.SECURITY_USER_ZOWE);
+  await page.getByLabel('Aux').fill(process.env.SECURITY_AUX);
+  await page.locator(mainXpath + '/div[1]/div/div[1]/div/div/input').fill(process.env.SECURITY_STC_ZOWE);
+  await page.locator(mainXpath + '/div[1]/div/div[2]/div/div/input').fill(process.env.SECURITY_STC_ZIS);
   await page.locator("//button[contains(text(), 'Initialize Security Config')]").click();
   await page.waitForSelector(writeConfig_greenCheckXpath, { timeout: 50000 });
   const isIconVisible1 = await page.isVisible(writeConfig_greenCheckXpath);
@@ -94,14 +86,14 @@ test('Test Security RACF Product', async () => {
 test('Test Security TSS Product', async () => {
   page = await electronApp.firstWindow();
   await page.locator('input[role="combobox"]').fill('TSS');
-  await page.getByLabel('Admin').fill(ADMIN);
-  await page.getByLabel('Stc').fill(STC);
-  await page.getByLabel('Sys Prog').fill(SYS_PROG);
-  await page.locator(mainXpath +'/div/div/div[2]/div/div/input').fill(USER_ZIS);
-  await page.locator(mainXpath +'/div/div/div[1]/div/div/input').fill(USER_ZOWE);
-  await page.getByLabel('Aux').fill(AUX);
-  await page.locator(mainXpath + '/div[1]/div/div[1]/div/div/input').fill(STC_ZOWE);
-  await page.locator(mainXpath + '/div[1]/div/div[2]/div/div/input').fill(STC_ZIS);
+  await page.getByLabel('Admin').fill(process.env.SECURITY_ADMIN);
+  await page.getByLabel('Stc').fill(process.env.SECURITY_STC);
+  await page.getByLabel('Sys Prog').fill(process.env.SECURITY_SYSPROG);
+  await page.locator(mainXpath +'/div/div/div[2]/div/div/input').fill(process.env.SECURITY_USER_ZIS);
+  await page.locator(mainXpath +'/div/div/div[1]/div/div/input').fill(process.env.SECURITY_USER_ZOWE);
+  await page.getByLabel('Aux').fill(process.env.SECURITY_AUX);
+  await page.locator(mainXpath + '/div[1]/div/div[1]/div/div/input').fill(process.env.SECURITY_STC_ZOWE);
+  await page.locator(mainXpath + '/div[1]/div/div[2]/div/div/input').fill(process.env.SECURITY_STC_ZIS);
   await page.locator("//button[contains(text(), 'Initialize Security Config')]").click();
   await page.waitForSelector(writeConfig_greenCheckXpath, { timeout: 50000 });
   const isIconVisible1 = await page.isVisible(writeConfig_greenCheckXpath);
@@ -119,14 +111,14 @@ test('Test Security TSS Product', async () => {
 test('Test Security AF2 Product', async () => {
   page = await electronApp.firstWindow();
   await page.locator('input[role="combobox"]').fill('AF2');
-  await page.getByLabel('Admin').fill(ADMIN);
-  await page.getByLabel('Stc').fill(STC);
-  await page.getByLabel('Sys Prog').fill(SYS_PROG);
-  await page.locator(mainXpath +'/div/div/div[2]/div/div/input').fill(USER_ZIS);
-  await page.locator(mainXpath +'/div/div/div[1]/div/div/input').fill(USER_ZOWE);
-  await page.getByLabel('Aux').fill(AUX);
-  await page.locator(mainXpath + '/div[1]/div/div[1]/div/div/input').fill(STC_ZOWE);
-  await page.locator(mainXpath + '/div[1]/div/div[2]/div/div/input').fill(STC_ZIS);
+  await page.getByLabel('Admin').fill(process.env.SECURITY_ADMIN);
+  await page.getByLabel('Stc').fill(process.env.SECURITY_STC);
+  await page.getByLabel('Sys Prog').fill(process.env.SECURITY_SYSPROG);
+  await page.locator(mainXpath +'/div/div/div[2]/div/div/input').fill(process.env.SECURITY_USER_ZIS);
+  await page.locator(mainXpath +'/div/div/div[1]/div/div/input').fill(process.env.SECURITY_USER_ZOWE);
+  await page.getByLabel('Aux').fill(process.env.SECURITY_AUX);
+  await page.locator(mainXpath + '/div[1]/div/div[1]/div/div/input').fill(process.env.SECURITY_STC_ZOWE);
+  await page.locator(mainXpath + '/div[1]/div/div[2]/div/div/input').fill(process.env.SECURITY_STC_ZIS);
   await page.locator("//button[contains(text(), 'Initialize Security Config')]").click();
   await page.waitForSelector(writeConfig_greenCheckXpath, { timeout: 50000 });
   const isIconVisible1 = await page.isVisible(writeConfig_greenCheckXpath);
