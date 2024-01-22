@@ -582,7 +582,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Job Name"
                 variant="standard"
-                value={localYaml?.zowe?.job.name || installationArgs.jobName}
+                value={localYaml?.zowe?.job?.name || installationArgs.jobName}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, jobName: e.target.value}));
                   setTopLevelYamlConfig("zowe.job.name", e.target.value);
@@ -600,7 +600,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Job Prefix"
                 variant="standard"
-                value={localYaml?.zowe?.job.prefix || installationArgs.jobPrefix}
+                value={localYaml?.zowe?.job?.prefix || installationArgs.jobPrefix}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, jobPrefix: e.target.value}));
                   setTopLevelYamlConfig("zowe.job.prefix", e.target.value);
