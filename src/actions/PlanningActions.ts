@@ -54,7 +54,7 @@ export class PlanningActions {
         res.on('end', () => {
           try {
             const parsedData = parse(data);
-            ConfigurationStore.setConfig(parsedData);
+            // ConfigurationStore.setConfig(parsedData);
             resolve({status: true, details: parsedData});
           } catch (error) {
             reject({status: false, details: {error}});

@@ -188,10 +188,6 @@ const Planning = () => {
       } else {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
           dispatch(setYaml(res.details));
-          if(localYaml == undefined){
-            localYaml = res.details;
-            setZoweConfig(res.details);
-          }
           return res.status
         }).then((yamlStatus: boolean) => {
           window.electron.ipcRenderer.getZoweSchema().then((res: IResponse) => {
@@ -205,6 +201,13 @@ const Planning = () => {
         }); 
       }
     })
+    if(localYaml == undefined){
+      window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
+        localYaml = res.details;
+        setZoweConfig(res.details);
+        return res.status
+      })
+    }
   }, []);  
 
   useEffect(() => {
