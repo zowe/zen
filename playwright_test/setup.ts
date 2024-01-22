@@ -51,7 +51,7 @@ export async function setup(): Promise<ElectronApplication> {
   await page.getByLabel('Node.js location').fill(process.env.NODE_HOME);
   await page.getByLabel('z/OSMF Application Id').fill(process.env.ZOSMF_APP_ID);
   await page.locator("//button[contains(text(), 'Validate locations')]").click();
-  await page.waitForTimeout(16000);
+  await page.waitForTimeout(2000);
   await page.locator("//button[contains(text(), 'Continue to Installation Options')]").click();
 
   return electronApp;
