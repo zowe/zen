@@ -52,11 +52,14 @@ contextBridge.exposeInMainWorld('electron', {
     checkNode(connectionArgs: IIpcConnectionArgs, location: string) {
       return ipcRenderer.invoke("check-node", connectionArgs, location);
     },
-    checkSpace(connectionArgs: IIpcConnectionArgs, location: string) {
-      return ipcRenderer.invoke("check-space", connectionArgs, location);
+    checkSpaceAndCreateDir(connectionArgs: IIpcConnectionArgs, location: string) {
+      return ipcRenderer.invoke("check-space-create-dir", connectionArgs, location);
     },
     checkDirExists(connectionArgs: IIpcConnectionArgs, location: string) {
       return ipcRenderer.invoke("check-dir-exists", connectionArgs, location);
+    },
+    checkDirOrCreate(connectionArgs: IIpcConnectionArgs, location: string) {
+      return ipcRenderer.invoke("check-dir-or-create", connectionArgs, location);
     },
     installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, version: string, zoweConfig: any) {
       return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version, zoweConfig);
