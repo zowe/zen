@@ -14,7 +14,7 @@ import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
 import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
-import { setDatasetInstallationStatus, setInitializationStatus ,selectDatasetInstallationStatus } from "../progressSlice";
+import { setDatasetInstallationStatus, setInitializationStatus ,selectDatasetInstallationStatus, selectInitializationStatus } from "../progressSlice";
 import { IResponse } from '../../../../types/interfaces';
 import { setConfiguration, getConfiguration, getZoweConfig } from '../../../../services/ConfigService';
 import ProgressCard from '../../common/ProgressCard';
@@ -77,11 +77,14 @@ const Installation = () => {
   if(datasetSchema) {
     validate = ajv.compile(datasetSchema);
   }
+
+  const isStepSkipped = !useAppSelector(selectDatasetInstallationStatus);
+  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
   
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    stages[stageId].subStages[subStageId].isSkipped = true;
-    stages[stageId].isSkipped = true;
+    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
+    stages[stageId].isSkipped = isInitializationSkipped;
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
@@ -122,6 +125,7 @@ const Installation = () => {
       if(installationType === 'smpe'){
         dispatch(setNextStepEnabled(true));
         dispatch(setDatasetInstallationStatus(true));
+        dispatch(setInitializationStatus(true));
         dispatch(setLoading(false));
       } else {
         setYaml(window.electron.ipcRenderer.getConfig());
@@ -133,6 +137,8 @@ const Installation = () => {
           }
           dispatch(setNextStepEnabled(res.status));
           dispatch(setDatasetInstallationStatus(res.status));
+          dispatch(setDatasetInstallationStatus(true));
+          dispatch(setInitializationStatus(true));
           clearInterval(timer);
         }).catch(() => {
           clearInterval(timer);
@@ -140,6 +146,7 @@ const Installation = () => {
           dispatch(setInitializationStatus(false));
           dispatch(setDatasetInstallationStatus(false));
           stages[stageId].subStages[subStageId].isSkipped = true;
+          stages[stageId].isSkipped = true;
           console.warn('Installation failed');
         });
       }

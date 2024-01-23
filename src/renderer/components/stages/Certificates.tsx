@@ -13,6 +13,7 @@ import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { setConfiguration, getConfiguration } from '../../../services/ConfigService';
+import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -56,10 +57,13 @@ const Certificates = () => {
     validate = ajv.compile(certificateSchema);
   }
 
+  const isStepSkipped = !useAppSelector(selectCertificateStatus);
+  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
+
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    stages[stageId].subStages[subStageId].isSkipped = true;
-    stages[stageId].isSkipped = true;
+    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
+    stages[stageId].isSkipped = isInitializationSkipped
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }

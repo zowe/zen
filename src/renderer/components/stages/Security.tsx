@@ -12,7 +12,7 @@ import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { setSecurityStatus, setInitializationStatus, selectSecurityStatus } from './progressSlice';
+import { setSecurityStatus, setInitializationStatus, selectSecurityStatus, selectInitializationStatus } from './progressSlice';
 import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
@@ -72,10 +72,13 @@ const Security = () => {
     validate = ajv.compile(securitySchema);
   }
 
+  const isStepSkipped = !useAppSelector(selectSecurityStatus);
+  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
+
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    stages[stageId].subStages[subStageId].isSkipped = true;
-    stages[stageId].isSkipped = true;
+    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped
+    stages[stageId].isSkipped = isInitializationSkipped
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
@@ -104,12 +107,15 @@ const Security = () => {
     window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
         dispatch(setSecurityStatus(res.status));
+        stages[stageId].subStages[subStageId].isSkipped = !res.status;
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
         dispatch(setNextStepEnabled(false));
         dispatch(setSecurityStatus(false));
         dispatch(setInitializationStatus(false));
+        stages[stageId].subStages[subStageId].isSkipped = true;
+        stages[stageId].isSkipped = true;
         console.warn('zwe init security failed');
       });
   }

@@ -43,7 +43,9 @@ export const progressSlice = createSlice({
         state.securityStatus &&
         state.certificateStatus
       ) {
-        state.initializationStatus = action.payload;
+        state.initializationStatus = true;
+      } else {
+        state.initializationStatus = false;
       }
     },
     setDatasetInstallationStatus: (state, action: PayloadAction<boolean>) => {

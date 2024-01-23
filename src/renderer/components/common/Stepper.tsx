@@ -174,7 +174,7 @@ export default function HorizontalLinearStepper(props: any) {
 
   const getStepIcon = (error: any, stageId: number, isSubStep?: boolean, subStepId?: number) => {
     
-    if ((error && activeStep>stageId && !isSubStep) || (error && isSubStep && activeSubStep>subStepId)) {
+    if ((error && activeStep>stageId && !isSubStep) || (error && isSubStep && stages[stageId].subStages[subStepId].isSkipped)) {
       return <StepIcon icon={<Warning sx={{ color: 'orange', fontSize: '1.2rem' }} />} />;
     }
   

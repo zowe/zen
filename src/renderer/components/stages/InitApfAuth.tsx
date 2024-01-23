@@ -13,7 +13,7 @@ import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
-import { setApfAuthStatus, setInitializationStatus, selectApfAuthStatus } from './progressSlice';
+import { setApfAuthStatus, setInitializationStatus, selectApfAuthStatus, selectInitializationStatus } from './progressSlice';
 import { IResponse } from '../../../types/interfaces';
 import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
 import ProgressCard from '../common/ProgressCard';
@@ -67,11 +67,14 @@ const InitApfAuth = () => {
   if(datasetSchema) {
     validate = ajv.compile(datasetSchema);
   }
+
+  const isStepSkipped = !useAppSelector(selectApfAuthStatus);
+  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
   
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    stages[stageId].subStages[subStageId].isSkipped = true;
-    stages[stageId].isSkipped = true;
+    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
+    stages[stageId].isSkipped = isInitializationSkipped;
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
       setSetupYaml(initConfig);
     }
@@ -100,11 +103,15 @@ const InitApfAuth = () => {
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
         dispatch(setApfAuthStatus(res.status));
+        stages[stageId].subStages[subStageId].isSkipped = !res.status;
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
+        dispatch(setNextStepEnabled(false));
         dispatch(setInitializationStatus(false));
         dispatch(setApfAuthStatus(false));
+        stages[stageId].subStages[subStageId].isSkipped = true;
+        stages[stageId].isSkipped = true;
         console.warn('zwe init apfauth failed');
       });
   }

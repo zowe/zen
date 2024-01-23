@@ -184,10 +184,10 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
                 </div>
                 )
               }
-              <Button onClick={handleFileExport}>Export</Button>
             </>
           )}
           {contentType === 'jcl' && <Button onClick={toggleEditorVisibility}>Submit Job</Button>}
+          <Button onClick={handleFileExport}>Export</Button>
           <Button onClick={toggleEditorVisibility}>Close</Button>
         </DialogActions>
       </Dialog> 
