@@ -141,7 +141,6 @@ const Planning = () => {
   const planningStatus = useAppSelector(selectPlanningStatus);
   
   const [step, setStep] = useState(0);
-  const [opacity, setOpacity] = useState(1);
 
   const [jobHeaderSaved, setJobHeaderSaved] = useState(false);
   const [isJobStatementUpdated, setIsJobStatementUpdated] = useState(false);
@@ -237,7 +236,6 @@ const Planning = () => {
     const nextPosition = document.getElementById(`position-${step}`);
     nextPosition.scrollIntoView({behavior: 'smooth'});
     setTimeout(() => {
-      setOpacity(1);
     }, 500);
   }, [step]);
 
@@ -268,7 +266,6 @@ const Planning = () => {
       setEditorContent(jobStatementValidMsg);
       setContentType('output');
       if (step < 1) {
-        setOpacity(0);
         setStep(1);
       }
       if(planningStatus && !isLocationsUpdated) {
@@ -298,10 +295,8 @@ const Planning = () => {
           if(locationsValidated) {
             dispatch(setPlanningStatus(true));
             dispatch(setNextStepEnabled(true));
-            setOpacity(0);
             setStep(2);
           } else if (step < 1) {
-            setOpacity(0);
             setStep(1);
           }
         }
@@ -329,7 +324,6 @@ const Planning = () => {
       setEditorContent(jobStatementValidMsg);
       setContentType('output');
       dispatch(setNextStepEnabled(true));
-      setOpacity(0);
       setStep(2);
       return;
     }
@@ -403,10 +397,10 @@ const Planning = () => {
       dispatch(setLocationValidationDetails(details))
       dispatch(setLoading(false));
       if (!details.error) {
+        alertEmitter.emit('hideAlert');
         setLocationsValidated(true);
         dispatch(setPlanningStatus(true));
         setStep(2);
-        setOpacity(0);
       } else {
         alertEmitter.emit('showAlert', details.error, 'error');
       }
@@ -420,7 +414,6 @@ const Planning = () => {
     setPlanningStatus(false);
     dispatch(setJobStatement(newJobStatement));
     dispatch(setPlanningStatus(false))
-    setOpacity(1);
     setStep(0);
   }
 
@@ -430,13 +423,14 @@ const Planning = () => {
     setLocationsValidated(false);
     dispatch(setPlanningStatus(false));
     dispatch(setNextStepEnabled(false));
+    setStep(1);
   }
 
   return (
     <React.Fragment><span id="position-0"></span>
     <ContainerCard title="Before you start" description="Prerequisites, requirements and roles needed to install.">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} content={editorContent}/>
-      <Box sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto', opacity: step === 0 ? 1 : opacity}}>
+      <Box sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto'}}>
         <Typography sx={{ mb: 2 }} color="text.secondary"> 
           {/* TODO: Allow to choose Zowe version here by click here, support for other instalation types? */}
           {zoweVersion ? `About to install latest Zowe version: ${zoweVersion} from the convenience build. Approximate required space: ${requiredSpace}MB` : ''}
@@ -476,7 +470,7 @@ Please customize the job statement below to match your system requirements.
         </FormControl>
       </Box>
       {step > 0 
-        ? <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0', opacity: step === 1 ? 1 : opacity}}>
+        ? <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}}>
           <Typography id="position-1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
             {`Now let's define some properties like z/OS Unix locations, identifiers, and z/OSMF details (optional).`}
           </Typography>
@@ -750,7 +744,7 @@ Please customize the job statement below to match your system requirements.
         : <div/> }
       {/* <Add a checklist of components / settings user want to use, filter further steps accordingly */}
       {step > 1 
-        ? <Box sx={{height: step === 2 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0', opacity: step === 2 ? 1 : opacity}}>
+        ? <Box sx={{height: step === 2 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}}>
           <Typography id="position-2" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
           {`Found Java version: ${validationDetails.javaVersion}, Node version: ${validationDetails.nodeVersion}
 
