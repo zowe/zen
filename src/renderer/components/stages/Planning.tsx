@@ -188,10 +188,6 @@ const Planning = () => {
       } else {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
           dispatch(setYaml(res.details));
-          if(localYaml == undefined){
-            localYaml = res.details;
-            setZoweConfig(res.details);
-          }
           return res.status
         }).then((yamlStatus: boolean) => {
           window.electron.ipcRenderer.getZoweSchema().then((res: IResponse) => {
@@ -205,6 +201,14 @@ const Planning = () => {
         }); 
       }
     })
+
+    if(localYaml == undefined){
+      window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
+        localYaml = res.details;
+        setZoweConfig(res.details);
+        return res.status
+      })
+    }
   }, []);  
 
   useEffect(() => {
@@ -409,7 +413,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Run-time Directory (or installation location)"
                 variant="standard"
-                value={localYaml?.runtimeDirectory || installationArgs.installationDir}
+                value={localYaml?.zowe.runtimeDirectory || installationArgs.installationDir}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}));
                   setTopLevelYamlConfig("zowe.runtimeDirectory", e.target.value);
@@ -616,7 +620,7 @@ Please customize the job statement below to match your system requirements.
                       value={localYaml?.zOSMF.port || installationArgs.zosmfPort}
                       onChange={(e) => {
                         dispatch(setInstallationArgs({...installationArgs, zosmfPort: e.target.value}));
-                        setTopLevelYamlConfig("zOSMF.port", e.target.value);
+                        setTopLevelYamlConfig("zOSMF.port", Number(e.target.value));
                       }}
                     />
                     <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Port number of your z/OSMF instance.</p>
