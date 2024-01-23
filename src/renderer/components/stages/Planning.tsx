@@ -316,9 +316,9 @@ const Planning = () => {
       });    
   }
 
-  const validateLocations = (e: any) => {
+  const validateLocations = (e: any, click?: boolean) => {
    
-    if(planningStatus && !isLocationsUpdated) {
+    if(planningStatus && !isLocationsUpdated && !click) {
       setLocationsValidated(true);
       setValidationDetails(locationValidationDetails);
       setEditorContent(jobStatementValidMsg);
@@ -737,7 +737,7 @@ Please customize the job statement below to match your system requirements.
             </div>
           )}
           <FormControl sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-            <Button sx={{boxShadow: 'none'}} type={step === 1 ? "submit" : "button"} variant="text" onClick={e => validateLocations(e)}>Validate locations</Button>
+            <Button sx={{boxShadow: 'none'}} type={step === 1 ? "submit" : "button"} variant="text" onClick={e => validateLocations(e, true)}>Validate locations</Button>
             {locationsValidated ? <CheckCircle sx={{ color: 'green', fontSize: '1rem' }} /> : validationDetails.error ? null: null}
           </FormControl>
         </Box>
