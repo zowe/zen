@@ -7,11 +7,10 @@ Make sure command zen is installed by running `npm install`
 Example command:
 
 ```
-
-  ZOWE_EXTENSION_DIR=/path/to/zowe/extension \
-  ZOWE_LOG_DIR=/path/to/zowe/logs \
-  ZOWE_ROOT_DIR=/path/to/zowe \
-  ZOWE_WORKSPACE_DIR=/path/to/zowe/workspaceDir \
+  ZOWE_EXTENSION_DIR=\\path\\to\\zowe\\extension \
+  ZOWE_LOG_DIR=\\path\\to\\zowe\\logs \
+  ZOWE_ROOT_DIR=\\path\\to\\zowe \
+  ZOWE_WORKSPACE_DIR=\\path\\to\\zowe\\workspaceDir \
   SSH_HOST=test-server \
   SSH_PORT=12022 \
   SSH_USER=********* \
@@ -19,8 +18,8 @@ Example command:
   ZOSMF_PORT=10443 \
   JOB_NAME=  \
   JOB_PREFIX=ZWE \
-  JAVA_HOME=/path/to/java \
-  NODE_HOME=/path/to/node \
+  JAVA_HOME=\\path\\to\\java \
+  NODE_HOME=\\path\\to\\node \
   SECURITY_ADMIN=ZWEADMIN \
   SECURITY_SYSPROG=ZWEADMIN \
   SECURITY_STC=ZWEADMIN \
