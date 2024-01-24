@@ -71,7 +71,7 @@ const Certificates = () => {
     setIsFormInit(false);
 
     if (newData) {
-      newData = isYamlUpdated ? data.certificate : newData;
+      newData = isYamlUpdated ? data.zowe.setup.certificate : newData;
 
       if(setupSchema.if) {
         const ifProp = Object.keys(setupSchema.if.properties)[0];

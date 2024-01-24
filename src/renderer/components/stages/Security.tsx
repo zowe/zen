@@ -112,7 +112,7 @@ const Security = () => {
     setIsFormInit(false);
 
     if (newData) {
-      newData = isYamlUpdated ? data.security : newData;
+      newData = isYamlUpdated ? data.zowe.setup.security : newData;
 
       if(validate) {
         validate(newData);

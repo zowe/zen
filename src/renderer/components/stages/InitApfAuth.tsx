@@ -105,7 +105,7 @@ const InitApfAuth = () => {
     
     setInit(false);
 
-    updatedData = isYamlUpdated ? data.dataset : updatedData;
+    updatedData = isYamlUpdated ? data.zowe.setup.dataset : updatedData;
     if (updatedData && setupYaml && setupYaml.prefix !== updatedData.prefix) {
       const newPrefix = updatedData.prefix ? updatedData.prefix : '';
       const newData = Object.keys(setupYaml).reduce((acc, k) => {
