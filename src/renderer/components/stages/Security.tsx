@@ -107,6 +107,7 @@ const Security = () => {
     window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
         dispatch(setSecurityStatus(res.status));
+        dispatch(setInitializationStatus(res.status));
         stages[stageId].subStages[subStageId].isSkipped = !res.status;
         clearInterval(timer);
       }).catch(() => {

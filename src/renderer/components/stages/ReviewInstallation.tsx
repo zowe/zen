@@ -9,6 +9,7 @@
  */
 
 import React, {useEffect, useState} from "react";
+import { useSelector } from 'react-redux';
 import {Box, Button, Typography, Tooltip} from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -19,6 +20,10 @@ import { useAppSelector } from '../../hooks';
 import eventDispatcher from '../../../utils/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
+import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from './progressSlice';
+import { selectConnectionStatus } from "./connection/connectionSlice";
+import { selectInstallationStatus } from "./installation/installationSlice";
+import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 
 import '../../styles/ReviewInstallation.css';
 
@@ -31,9 +36,31 @@ const ReviewInstallation = () => {
 
   const theme = createTheme();
 
+  const stageProgressStatus = [
+    useSelector(selectConnectionStatus),
+    useSelector(selectPlanningStatus),
+    useSelector(selectInstallationStatus),
+    useSelector(selectInitializationStatus),
+  ];
+  
+  const subStageProgressStatus = [
+    useSelector(selectDatasetInstallationStatus),
+    useSelector(selectApfAuthStatus),
+    useSelector(selectSecurityStatus),
+    useSelector(selectCertificateStatus), 
+  ];
+
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
   const TYPE_OUTPUT = "output";
+
+  useEffect(() => {
+    if(selectConnectionStatus && selectPlanningStatus && selectInstallationStatus && selectInitializationStatus) {
+      setNextStepEnabled(true);
+    } else {
+      setNextStepEnabled(false);
+    }  
+  }, []);
 
   const toggleEditorVisibility = (type: any) => {
     setContentType(type);
@@ -42,7 +69,6 @@ const ReviewInstallation = () => {
 
   const updateActiveStep = (index: number, isSubStep: boolean, subStepIndex?: number) => {
     eventDispatcher.emit('updateActiveStep', index, isSubStep, subStepIndex);
-    console.log("---------EMITING EVENT----\n");
   }
 
   return (
@@ -60,7 +86,7 @@ const ReviewInstallation = () => {
             {stage.id === 0 && (
               <Box className="review-component-box-conn">
                 <Typography className="review-component-text" onClick={() => updateActiveStep(stage.id, false)}>{stage.label}</Typography>
-                {!stage.isSkippable && (<Tooltip title="Connection Successful" arrow><CheckCircleIcon className="checkmark" /></Tooltip>)}
+                {stageProgressStatus[stage.id] && (<Tooltip title="Connection Successful" arrow><CheckCircleIcon className="checkmark" /></Tooltip>)}
                 <Box className="connection-attr-box">
                   <Box className="connection-attr">
                     <Typography>
@@ -93,8 +119,8 @@ const ReviewInstallation = () => {
               <div>
                 <Box className="review-component-box">
                   <Typography className="review-component-text" onClick={() => updateActiveStep(stage.id, false)}>{stage.label}</Typography>
-                  {!stage.isSkipped && (<Tooltip title={`${stage.label} Successful`} arrow><CheckCircleIcon className="checkmark" /></Tooltip>)}
-                  {stage.isSkipped && (<Tooltip title={`${stage.label} Pending`} arrow><WarningIcon className="warningIcon"/></Tooltip>)}
+                  {stageProgressStatus[stage.id] && (<Tooltip title={`${stage.label} Successful`} arrow><CheckCircleIcon className="checkmark" /></Tooltip>)}
+                  {!stageProgressStatus[stage.id] && (<Tooltip title={`${stage.label} Pending`} arrow><WarningIcon className="warningIcon"/></Tooltip>)}
                 </Box>
                 
                 <Box className="substages">
@@ -103,8 +129,8 @@ const ReviewInstallation = () => {
                     {stage.subStages && stage.subStages.map(subStage => (
                       <Box key={subStage.id} className="review-component-box-nested">
                         <Typography className="review-component-text" onClick={() => updateActiveStep(stage.id, true, subStage.id)}>{subStage.label}</Typography>
-                        {!subStage.isSkipped && (<Tooltip title={`${subStage.label} Successful`} arrow><CheckCircleIcon className="checkmark" /></Tooltip>)}
-                        {subStage.isSkipped && (<Tooltip title={`${subStage.label} Pending`} arrow><WarningIcon className="warningIcon"/></Tooltip>)}
+                        {subStageProgressStatus[subStage.id] && (<Tooltip title={`${subStage.label} Successful`} arrow><CheckCircleIcon className="checkmark" /></Tooltip>)}
+                        {!subStageProgressStatus[subStage.id] && (<Tooltip title={`${subStage.label} Pending`} arrow><WarningIcon className="warningIcon"/></Tooltip>)}
                       </Box>
                       )
                     )}
