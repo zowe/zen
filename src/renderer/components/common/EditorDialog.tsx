@@ -119,7 +119,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
         setConfiguration(prop, setup[prop]);
       });
       if (onChange) {
-        onChange(setup, true);
+        onChange(data, true);
       }
     }
   }
