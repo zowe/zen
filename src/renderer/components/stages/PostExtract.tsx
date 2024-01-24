@@ -521,8 +521,6 @@ const PostExtract = () => {
     let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml: data) : (data ? data : setupYaml);
     setIsFormInit(false);
 
-    console.log('data:', JSON.stringify(data));
-
     if (data.externalDomains || data.externalPort || data.configmgr || data.launchScript) {
       newData = isYamlUpdated ? data.zowe : newData;
 
@@ -532,9 +530,7 @@ const PostExtract = () => {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
-          console.log('Validate errors"');
         } else {
-          console.log('validation ok');
           setTopLevelYamlConfig('zowe.externalDomains', data.externalDomains);
           setTopLevelYamlConfig('zowe.externalPort', data.externalPort);
           setTopLevelYamlConfig('zowe.configmgr', data.configmgr);
