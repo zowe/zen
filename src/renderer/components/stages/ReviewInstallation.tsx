@@ -78,7 +78,7 @@ const ReviewInstallation = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
-    <ContainerCard title="Review Installation" description="Review the Installation">
+    <ContainerCard title="Review Installation" description="Review all steps before clicking Finish Installation. Visit a previous step to change it.">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} readOnlyYaml={true} />
       <Box sx={{ overflow: 'auto' }}>
         {stages.map(stage => (

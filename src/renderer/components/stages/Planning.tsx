@@ -208,10 +208,6 @@ const Planning = () => {
       } else {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
           dispatch(setYaml(res.details));
-          if(localYaml == undefined){
-            localYaml = res.details;
-            setZoweConfig(res.details);
-          }
           return res.status
         }).then((yamlStatus: boolean) => {
           window.electron.ipcRenderer.getZoweSchema().then((res: IResponse) => {
@@ -225,6 +221,13 @@ const Planning = () => {
         }); 
       }
     })
+    if(localYaml == undefined){
+      window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
+        localYaml = res.details;
+        setZoweConfig(res.details);
+        return res.status
+      })
+    }
   }, []);  
 
   useEffect(() => {
@@ -330,7 +333,7 @@ const Planning = () => {
 
     e.preventDefault();
     setValidationDetails({...validationDetails, error: ''});
-    if (!installationArgs.javaHome || !installationArgs.nodeHome || !installationArgs.installationDir) {
+    if (!localYaml?.java?.home || !localYaml?.node?.home || !localYaml?.zowe?.runtimeDirectory) {
       console.warn('Please fill in all values');
       alertEmitter.emit('showAlert', 'Please fill in all values', 'error');
       //showAlert('Please fill in all values', 'success', 5000);
@@ -341,12 +344,12 @@ const Planning = () => {
     // TODO: Possible feature for future: add to checkDir to see if existing Zowe install exists.
     // Then give the user ability to use existing zowe.yaml to auto-fill in fields from Zen
     Promise.all([
-      window.electron.ipcRenderer.checkJava(connectionArgs, installationArgs.javaHome),
-      window.electron.ipcRenderer.checkNode(connectionArgs, installationArgs.nodeHome),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, installationArgs.installationDir),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, installationArgs.workspaceDir),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, installationArgs.extensionDir),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, installationArgs.logDir),
+      window.electron.ipcRenderer.checkJava(connectionArgs, localYaml?.java?.home),
+      window.electron.ipcRenderer.checkNode(connectionArgs, localYaml?.node?.home),
+      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.runtimeDirectory),
+      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.workspaceDirectory),
+      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.extensionDirectory),
+      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.logDirectory),
     ]).then((res: Array<IResponse>) => {
       const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
       setEditorContent(res.map(item=>item?.details).join('\n'));
@@ -484,7 +487,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Run-time Directory (or installation location)"
                 variant="standard"
-                value={localYaml?.runtimeDirectory || installationArgs.installationDir}
+                value={localYaml?.zowe.runtimeDirectory || installationArgs.installationDir}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}));
                   setTopLevelYamlConfig("zowe.runtimeDirectory", e.target.value);
@@ -705,7 +708,7 @@ Please customize the job statement below to match your system requirements.
                       value={localYaml?.zOSMF?.port || installationArgs.zosmfPort}
                       onChange={(e) => {
                         dispatch(setInstallationArgs({...installationArgs, zosmfPort: e.target.value}));
-                        setTopLevelYamlConfig("zOSMF.port", e.target.value);
+                        setTopLevelYamlConfig("zOSMF.port", Number(e.target.value));
                         formChangeHandler();
                       }}
                     />
