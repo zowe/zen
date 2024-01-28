@@ -7,13 +7,29 @@ Make sure command zen is installed by running `npm install`
 Example command:
 
 ```
-ZOWE_ROOT_DIR=/path/to/zowe \
+
+  ZOWE_EXTENSION_DIR=/path/to/zowe/extens ion \
+  ZOWE_LOG_DIR=/path/to/zowe/logs \
+  ZOWE_ROOT_DIR=/path/to/zowe \
   ZOWE_WORKSPACE_DIR=/path/to/zowe/workspaceDir \
   SSH_HOST=test-server \
   SSH_PORT=12022 \
   SSH_USER=********* \
   SSH_PASSWD=********* \
   ZOSMF_PORT=10443 \
+  JOB_NAME=  \
+  JOB_PREFIX=ZWE \
+  JAVA_HOME=/path/to/java \
+  NODE_HOME=/path/to/node \
+  SECURITY_ADMIN=ZWEADMIN \
+  SECURITY_SYSPROG=ZWEADMIN \
+  SECURITY_STC=ZWEADMIN \
+  SECURITY_AUX=ZWESASTC \
+  SECURITY_USER_ZIS=ZWESIUSR \
+  SECURITY_USER_ZOWE=ZWESVUSR \
+  SECURITY_STC_ZIS=ZWESISTC \
+  SECURITY_STC_ZOWE=ZWESLSTC \
+  ZOSMF_APP_ID=IZUDFLT \
   npm run playtest
 ```
 
