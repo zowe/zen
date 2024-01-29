@@ -10,7 +10,7 @@
 
 import {IncomingMessage} from "http";
 import {connectFTPServer} from "./utils";
-import {IIpcConnectionArgs} from "../types/interfaces";
+import {IIpcConnectionArgs, IResponse} from "../types/interfaces";
 
 import * as fs from 'fs';
 import * as https from 'https';
@@ -29,7 +29,7 @@ export class FileTransfer {
     return downFile.toString();
   }
 
-  public async download_PAX(file: any, fullPath: string) {
+  public async download_PAX(file: any, fullPath: string): Promise<IResponse> {
     return new Promise(resolve => {
       const saveFile: NodeJS.WritableStream = fs.createWriteStream(fullPath);
       https.get(file, function (response: IncomingMessage) {
