@@ -30,14 +30,14 @@ const test_jcl = `
 
 const test_op = "WARNING: 'Some Warning'\nERROR: 'Some Error'\nINFO: 'Some Info'\nABEND: 'Some abend error' ";
 
-const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onChange} : any) => {
+const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onChange, content, readOnlyYaml} : {contentType: any, isEditorVisible: boolean, toggleEditorVisibility: any, onChange?: any, content?: any, readOnlyYaml?: boolean}) => {
 
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const [setupYaml, setSetupYaml] = useState(yaml);
   const [editorVisible, setEditorVisible] = useState(false);
-  const [editorContent, setEditorContent] = useState('');
+  const [editorContent, setEditorContent] = useState(content ? content : '');
   const [isSchemaValid, setIsSchemaValid] = useState(true);
   const [schemaError, setSchemaError] = useState('');
   const fileInputRef = useRef(null);
@@ -172,17 +172,22 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
         }}>
         <DialogTitle>Editor</DialogTitle>
         <DialogContent sx={{paddingBottom: '0'}}>
-          <MonacoEditorComponent contentType={contentType} initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid} schemaError={schemaError} />
+          <MonacoEditorComponent contentType={contentType} initialContent={editorContent} onContentChange={handleEditorContentChange} isSchemaValid={isSchemaValid} schemaError={schemaError} readOnlyYaml={readOnlyYaml} />
         </DialogContent>
         <DialogActions>
           {contentType === 'yaml' && (
             <>
-              <Button onClick={triggerFileInputClick}>Import</Button>
-              <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
-              <Button onClick={handleFileExport}>Export</Button>
+              {!readOnlyYaml && (
+                <div>
+                  <Button onClick={triggerFileInputClick}>Import</Button>
+                  <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
+                </div>
+                )
+              }
             </>
           )}
           {contentType === 'jcl' && <Button onClick={toggleEditorVisibility}>Submit Job</Button>}
+          <Button onClick={handleFileExport}>Export</Button>
           <Button onClick={toggleEditorVisibility}>Close</Button>
         </DialogActions>
       </Dialog> 
