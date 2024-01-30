@@ -134,12 +134,14 @@ const Installation = () => {
         window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, getZoweConfig()).then((res: IResponse) => {
           if(!res.status){ //errors during runInstallation()
             alertEmitter.emit('showAlert', res.details, 'error');
+            toggleProgress(false);
+          } else {
+            dispatch(setNextStepEnabled(res.status));
+            dispatch(setDatasetInstallationStatus(res.status));
+            dispatch(setDatasetInstallationStatus(true));
+            dispatch(setInitializationStatus(true));
+            clearInterval(timer);
           }
-          dispatch(setNextStepEnabled(res.status));
-          dispatch(setDatasetInstallationStatus(res.status));
-          dispatch(setDatasetInstallationStatus(true));
-          dispatch(setInitializationStatus(true));
-          clearInterval(timer);
         }).catch(() => {
           clearInterval(timer);
           dispatch(setNextStepEnabled(false));
