@@ -117,9 +117,9 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
         } else {
           // setConfiguration(section, newData, true);
           setLYaml((prevYaml: any) => ({
-            ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: newData}}
+            ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}
           }))
-          dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: newData}}}))
+          dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}}))
           setStageConfig(true, '', newData);
         }
       }
