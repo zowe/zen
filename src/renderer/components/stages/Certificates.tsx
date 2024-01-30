@@ -120,6 +120,7 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
             ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}
           }))
           dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}}))
+          window.electron.ipRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
           setStageConfig(true, '', newData);
         }
       }

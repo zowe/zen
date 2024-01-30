@@ -34,7 +34,7 @@ const Security = () => {
   const schema = useAppSelector(selectSchema);
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security);
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security ?? {product: 'RACF'});
   const [isFormInit, setIsFormInit] = useState(false);
   const [initializeForm, setInitializeForm] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -133,6 +133,7 @@ const Security = () => {
             ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: newData}}
           }))
           dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: newData}}}))
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: newData}}});
           setStageConfig(true, '', newData);
         }
       }

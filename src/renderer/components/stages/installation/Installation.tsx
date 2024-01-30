@@ -159,6 +159,7 @@ const Installation = () => {
           ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}
         }))
         dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}}))
+        window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}})
         setStageConfig(true, '', updatedData);
       }
     }
