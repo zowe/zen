@@ -135,7 +135,6 @@ const InitApfAuth = () => {
         const errMsg = validate.errors[0].message;
         setStageConfig(false, errPath+' '+errMsg, updatedData, false);
       } else {
-        console.log('initApfAuth.tsx - NEW DATA NEEDS TO BE WRITTEN:', JSON.stringify(updatedData, null, 2));
         // setConfiguration(section, updatedData, true);
         setStageConfig(true, '', updatedData, true);
       }
