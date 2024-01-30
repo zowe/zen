@@ -106,18 +106,10 @@ const Installation = () => {
     event.preventDefault();
     dispatch(setLoading(true));
     const {javaHome, nodeHome, installationDir, installationType, smpeDir} = installationArgs;
-    console.log('instlalationArgs:', JSON.stringify(installationArgs));
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
     Promise.all([
       window.electron.ipcRenderer.setConfigByKey('zowe.setup.dataset', setupYaml),
-      // window.electron.ipcRenderer.setConfigByKey('zowe.runtimeDirectory', `${installationDir}/runtime`),
-      // window.electron.ipcRenderer.setConfigByKey('zowe.logDirectory', `${installationDir}/logs`),
-      // window.electron.ipcRenderer.setConfigByKey('zowe.workspaceDirectory', `${installationDir}/workspace`),
-      // window.electron.ipcRenderer.setConfigByKey('zowe.extensionDirectory', `${installationDir}/extensions`),
-      // window.electron.ipcRenderer.setConfigByKey('java.home', javaHome),
-      // window.electron.ipcRenderer.setConfigByKey('node.home', nodeHome),
-      // window.electron.ipcRenderer.setConfigByKey('zowe.externalDomains', [connectionArgs.host])
     ]).then(() => {
       if(installationType === 'smpe'){
         dispatch(setNextStepEnabled(true));
@@ -163,16 +155,10 @@ const Installation = () => {
         const errMsg = validate.errors[0].message;
         setStageConfig(false, errPath+' '+errMsg, updatedData);
       } else {
-        console.log('da yaml:', JSON.stringify(yaml));
-        console.log('Installation.tsx - NEW DATA NEEDS TO BE WRITTEN:', JSON.stringify({
-          ...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}
-        }, null, 2));
-        // window.electron.ipcRenderer.setConfigByKey('zowe.setup.dataset', updatedData);
         setLYaml((prevYaml: any) => ({
           ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}
         }))
         dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}}))
-        // setConfiguration(section, updatedData, true);
         setStageConfig(true, '', updatedData);
       }
     }

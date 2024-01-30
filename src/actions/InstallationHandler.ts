@@ -208,9 +208,6 @@ export class FTPInstallation extends Installation {
   async uploadYaml(connectionArgs: IIpcConnectionArgs, installDir: string) {
     const tempPath = path.join(app.getPath("temp"), "zowe.yaml");
     const filePath = path.join(installDir, "zowe.yaml");
-    console.log('zowe.yaml temp path: ', tempPath);
-    console.log('installDir::',  installDir);
-    console.log('filepath:', filePath);
     await new FileTransfer().upload(connectionArgs, tempPath, filePath, DataType.BINARY)
     const script = `chtag -t -c ISO8859-1 ${installDir}/zowe.yaml`;
     const result = await new Script().run(connectionArgs, script);
