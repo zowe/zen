@@ -16,7 +16,7 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import { OUTPUT_HILITE, OUTPUT_THEME } from '../../Highlighters/jclOutput';
 import { JCL_HILITE, JCL_LIGHT } from '../../Highlighters/jcl';
 
-const MonacoEditorComponent = ({contentType, initialContent, onContentChange, isSchemaValid, schemaError} : any) => {
+const MonacoEditorComponent = ({contentType, initialContent, onContentChange, isSchemaValid, schemaError, readOnlyYaml} : {contentType: any, initialContent: any, onContentChange: any, isSchemaValid: any, schemaError: any, readOnlyYaml?: boolean}) => {
 
   const editorRef = useRef(null);
   const [isError, setIsError] = useState(false);
@@ -29,6 +29,7 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
   useEffect(() => {
     if(contentType == 'yaml') {
       readOnly = false;
+      readOnly = !!readOnlyYaml;
       lang = 'yaml';
       monaco.languages.register({ id: 'yaml' });
     } else if(contentType == 'output') {

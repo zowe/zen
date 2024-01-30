@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { setSecurityStatus, setInitializationStatus, selectSecurityStatus, selectInitializationStatus } from './progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -22,15 +23,19 @@ import { IResponse } from "../../../types/interfaces";
 import ProgressCard from "../common/ProgressCard";
 import React from "react";
 import { createTheme } from '@mui/material/styles';
+import progressSlice from "./progressSlice";
+import {stages} from "../configuration-wizard/Wizard";
 
 const Security = () => {
   const theme = createTheme();
 
+  const stageId = 3;
+  const subStageId = 2;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
-  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.security : "";
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.security);
+  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security);
   const [isFormInit, setIsFormInit] = useState(false);
   const [initializeForm, setInitializeForm] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -59,18 +64,20 @@ const Security = () => {
   let securitySchema;
   let validate: any;
   if(schema) {
-    securitySchema = schema.properties.zowe.properties.setup.properties.security;
+    securitySchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
   }
 
   if(securitySchema) {
     validate = ajv.compile(securitySchema);
   }
 
+  const isStepSkipped = !useAppSelector(selectSecurityStatus);
+  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
+
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    // if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
-    //   setSetupYaml(initConfig);
-    // }
+    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped
+    stages[stageId].isSkipped = isInitializationSkipped
     setInitializeForm(true);
     setIsFormInit(true);
   }, []);
@@ -95,10 +102,17 @@ const Security = () => {
     toggleProgress(true);
     window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
+        dispatch(setSecurityStatus(res.status));
+        dispatch(setInitializationStatus(res.status));
+        stages[stageId].subStages[subStageId].isSkipped = !res.status;
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
         dispatch(setNextStepEnabled(false));
+        dispatch(setSecurityStatus(false));
+        dispatch(setInitializationStatus(false));
+        stages[stageId].subStages[subStageId].isSkipped = true;
+        stages[stageId].isSkipped = true;
         console.warn('zwe init security failed');
       });
   }
@@ -140,9 +154,9 @@ const Security = () => {
   return (
     <div>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>Preview Job</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Security" description="Configure Zowe Security.">
         <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>

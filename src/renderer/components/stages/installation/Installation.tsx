@@ -14,6 +14,7 @@ import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
 import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
+import { setDatasetInstallationStatus, setInitializationStatus ,selectDatasetInstallationStatus, selectInitializationStatus } from "../progressSlice";
 import { IResponse } from '../../../../types/interfaces';
 import ProgressCard from '../../common/ProgressCard';
 import ContainerCard from '../../common/ContainerCard';
@@ -22,6 +23,7 @@ import EditorDialog from "../../common/EditorDialog";
 import Ajv from "ajv";
 import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
+import {stages} from "../../configuration-wizard/Wizard";
 
 const Installation = () => {
 
@@ -29,12 +31,14 @@ const Installation = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
+  const stageId = 3;
+  const subStageId = 0;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.dataset : "";
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.dataset);
+  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
   const [showProgress, toggleProgress] = useState(false);
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -66,18 +70,20 @@ const Installation = () => {
   let datasetSchema;
   let validate: any;
   if(schema) {
-    datasetSchema = schema.properties.zowe.properties.setup.properties.dataset;
+    datasetSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
   }
 
   if(datasetSchema) {
     validate = ajv.compile(datasetSchema);
   }
+
+  const isStepSkipped = !useAppSelector(selectDatasetInstallationStatus);
+  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
   
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    // if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
-    //   setSetupYaml(initConfig);
-    // }
+    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
+    stages[stageId].isSkipped = isInitializationSkipped;
     setIsFormInit(true);
   }, []);
 
@@ -114,7 +120,9 @@ const Installation = () => {
       // window.electron.ipcRenderer.setConfigByKey('zowe.externalDomains', [connectionArgs.host])
     ]).then(() => {
       if(installationType === 'smpe'){
-        dispatch(setNextStepEnabled(true))
+        dispatch(setNextStepEnabled(true));
+        dispatch(setDatasetInstallationStatus(true));
+        dispatch(setInitializationStatus(true));
         dispatch(setLoading(false));
       } else {
         setYaml(window.electron.ipcRenderer.getConfig());
@@ -125,10 +133,17 @@ const Installation = () => {
             alertEmitter.emit('showAlert', res.details, 'error');
           }
           dispatch(setNextStepEnabled(res.status));
+          dispatch(setDatasetInstallationStatus(res.status));
+          dispatch(setDatasetInstallationStatus(true));
+          dispatch(setInitializationStatus(true));
           clearInterval(timer);
         }).catch(() => {
           clearInterval(timer);
           dispatch(setNextStepEnabled(false));
+          dispatch(setInitializationStatus(false));
+          dispatch(setDatasetInstallationStatus(false));
+          stages[stageId].subStages[subStageId].isSkipped = true;
+          stages[stageId].isSkipped = true;
           console.warn('Installation failed');
         });
       }
@@ -172,7 +187,7 @@ const Installation = () => {
   return (
     <div>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View Yaml</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
