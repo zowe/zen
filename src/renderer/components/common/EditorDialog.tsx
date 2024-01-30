@@ -39,13 +39,6 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
   const [isSchemaValid, setIsSchemaValid] = useState(true);
   const [schemaError, setSchemaError] = useState('');
   const fileInputRef = useRef(null);
-  let initZoweConfig: any;
-
-
-  // if(contentType == 'yaml') {
-  //   initZoweConfig = getZoweConfig();
-  // }
-  
 
   useEffect(() => {
     setEditorVisible(isEditorVisible);
@@ -102,38 +95,16 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
       const errMsg = validate.errors[0].message;
       setSchemaError(`Invalid Schema: ${errPath}. ${errMsg} `, );
       jsonData = jsonData ? jsonData : "";
-      // setZoweConfig(jsonData);
-      // console.log('setting config:', JSON.stringify(jsonData, null, 2));
-      // window.electron.ipcRenderer.setConfig(jsonData).then((res: any) => {
-      //   // console.log('new yaml saved')
-      // })
     } else if(isSchemaValid && jsonData) {
-      // setZoweConfig(jsonData);
-      console.log('setting config:', JSON.stringify(jsonData, null, 2));
       window.electron.ipcRenderer.setConfig(jsonData);
       dispatch(setYaml(jsonData));
       setSetupYaml(jsonData);
-      updateConfig(jsonData);
+      if(onChange) {
+        onChange(jsonData, true);
+      }
     }
 
   };
-
-  const updateConfig = (data: any) => {
-    if (data && Object.keys(data).length > 0) {
-      // window.electron.ipcRenderer.setConfig(data);
-      // const setup = data.zowe.setup;
-      // const properties = Object.keys(setup);
-      // properties.map(prop => {
-      //   // setConfiguration(prop, setup[prop]);
-      //   window.electron.ipcRenderer.setConfigByKey(prop, setup[prop]).then((res: any) => {
-      //     console.log(`updated ${prop} with value ${JSON.stringify(setup[prop])} in yaml`)
-      //   })
-      // });
-      if (onChange) {
-        onChange(data, true);
-      }
-    }
-  }
 
   const triggerFileInputClick = () => {
     fileInputRef.current.click();
