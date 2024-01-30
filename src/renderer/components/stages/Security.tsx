@@ -129,7 +129,6 @@ const Security = () => {
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
-          console.log('security data:', JSON.stringify(newData));
           setLYaml((prevYaml: any) => ({
             ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: newData}}
           }))
