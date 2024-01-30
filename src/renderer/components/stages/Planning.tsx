@@ -185,7 +185,6 @@ const Planning = () => {
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       if (res.status) {
         dispatch(setYaml(res.details.config));
-        console.log('got local yaml:', JSON.stringify(res.details.config, null, 2));
         setLocalYaml(res.details.config);
         const schema = res.details.schema;
         // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
