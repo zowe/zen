@@ -12,7 +12,7 @@ import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { selectCertificateStatus, selectInitializationStatus } from './progressSlice';
+import { selectCertificateStatus, selectInitializationStatus, setCertificateStatus } from './progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -170,6 +170,8 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
             setShowProgress(true);
             window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
               dispatch(setNextStepEnabled(true));
+              dispatch(setCertificateStatus(res.status));
+              stages[stageId].subStages[subStageId].isSkipped = !res.status;
               clearInterval(timer);
             }).catch(() => {
               clearInterval(timer);
