@@ -14,7 +14,6 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { IResponse } from '../../../types/interfaces';
-import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
 import ProgressCard from '../common/ProgressCard';
 import ContainerCard from '../common/ContainerCard';
 import EditorDialog from "../common/EditorDialog";
@@ -50,7 +49,6 @@ const InitApfAuth = () => {
   let timer: any;
 
   const section = 'dataset';
-  const initConfig = getConfiguration(section);
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -66,9 +64,6 @@ const InitApfAuth = () => {
   
   useEffect(() => {
     // dispatch(setNextStepEnabled(false));
-    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
-      setSetupYaml(initConfig);
-    }
     setInit(true);
   }, []);
 
@@ -91,7 +86,7 @@ const InitApfAuth = () => {
   const process = (event: any) => {
     event.preventDefault();
     toggleProgress(true);
-    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
+    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
         clearInterval(timer);
       }).catch(() => {
@@ -101,7 +96,7 @@ const InitApfAuth = () => {
   }
 
   const editHLQ = (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = init ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    let updatedData = init ? (Object.keys(yaml?.zowe.setup.dataset).length > 0 ? yaml?.zowe.setup.dataset : data) : (data ? data : yaml?.zowe.setup.datasetg);
     
     setInit(false);
 
@@ -123,7 +118,8 @@ const InitApfAuth = () => {
         const errMsg = validate.errors[0].message;
         setStageConfig(false, errPath+' '+errMsg, updatedData, false);
       } else {
-        setConfiguration(section, updatedData, true);
+        console.log('initApfAuth.tsx - NEW DATA NEEDS TO BE WRITTEN:', JSON.stringify(updatedData, null, 2));
+        // setConfiguration(section, updatedData, true);
         setStageConfig(true, '', updatedData, true);
       }
     }

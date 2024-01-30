@@ -91,7 +91,7 @@ class Installation {
       }
 
       if(!installation.status){
-        return {status: false, details: `Error running zwe install: ${installation.details}`};
+        return {status: false, details: `Error running zwe install: ${JSON.stringify(installation.details)}`};
       }
 
       let initMvs;
@@ -208,6 +208,9 @@ export class FTPInstallation extends Installation {
   async uploadYaml(connectionArgs: IIpcConnectionArgs, installDir: string) {
     const tempPath = path.join(app.getPath("temp"), "zowe.yaml");
     const filePath = path.join(installDir, "zowe.yaml");
+    console.log('zowe.yaml temp path: ', tempPath);
+    console.log('installDir::',  installDir);
+    console.log('filepath:', filePath);
     await new FileTransfer().upload(connectionArgs, tempPath, filePath, DataType.BINARY)
     const script = `chtag -t -c ISO8859-1 ${installDir}/zowe.yaml`;
     const result = await new Script().run(connectionArgs, script);
@@ -245,13 +248,13 @@ export class FTPInstallation extends Installation {
   }
 
   async install(connectionArgs: IIpcConnectionArgs, installDir: string) {
-    const script = `cd ${installDir}/runtime/bin;\n./zwe install -c ${installDir}/zowe.yaml --allow-overwritten --update-config`;
+    const script = `cd ${installDir}/runtime/bin;\n./zwe install -c ${installDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
 
   async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string) {
-    const script = `cd ${installDir}/runtime/bin;\n./zwe init mvs -c ${installDir}/zowe.yaml --allow-overwritten --update-config`;
+    const script = `cd ${installDir}/runtime/bin;\n./zwe init mvs -c ${installDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }

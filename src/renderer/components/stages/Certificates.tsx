@@ -12,7 +12,6 @@ import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { setConfiguration, getConfiguration } from '../../../services/ConfigService';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -35,7 +34,6 @@ const Certificates = () => {
   const [contentType, setContentType] = useState('');
 
   const section = 'certificate';
-  const initConfig: any = getConfiguration(section);
 
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
@@ -55,9 +53,9 @@ const Certificates = () => {
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
-      setSetupYaml(initConfig);
-    }
+    // if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
+    //   setSetupYaml(initConfig);
+    // }
     setIsFormInit(true);
   }, []);
 
@@ -67,7 +65,7 @@ const Certificates = () => {
   };
   
   const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    let newData = isFormInit ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    let newData = isFormInit ? (Object.keys(yaml?.zowe.setup.certificate).length > 0 ? yaml?.zowe.setup.certificate : data) : (data ? data : yaml?.zowe.setup.certificate);
     setIsFormInit(false);
 
     if (newData) {
@@ -97,7 +95,8 @@ const Certificates = () => {
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
-          setConfiguration(section, newData, true);
+          console.log('Certificate.tsx - NEW DATA NEEDS TO BE WRITTEN: ', JSON.stringify(newData, null ,2));
+          // setConfiguration(section, newData, true);
           setStageConfig(true, '', newData);
         }
       }

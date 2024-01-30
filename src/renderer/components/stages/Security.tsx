@@ -12,7 +12,6 @@ import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -50,7 +49,7 @@ const Security = () => {
   const connectionArgs = useAppSelector(selectConnectionArgs);
 
   const section = 'security';
-  const initConfig: any = getConfiguration(section);
+  // const initConfig: any = getConfiguration(section);
   
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
@@ -69,9 +68,9 @@ const Security = () => {
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
-      setSetupYaml(initConfig);
-    }
+    // if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
+    //   setSetupYaml(initConfig);
+    // }
     setInitializeForm(true);
     setIsFormInit(true);
   }, []);
@@ -94,7 +93,7 @@ const Security = () => {
   const process = (event: any) => {
     event.preventDefault();
     toggleProgress(true);
-    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
+    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
         clearInterval(timer);
       }).catch(() => {
@@ -108,7 +107,7 @@ const Security = () => {
     if(!initializeForm) {
       return;
     }
-    let newData = isFormInit ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    let newData = isFormInit ? (Object.keys(yaml?.zowe.setup.security).length > 0 ? yaml?.zowe.setup.security: data) : (data ? data : yaml?.zowe.setup.security);
     setIsFormInit(false);
 
     if (newData) {
@@ -121,7 +120,11 @@ const Security = () => {
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
-          setConfiguration(section, newData, true);
+          // setConfiguration(section, newData, true);
+          console.log('Security.tsx - newData:', newData);
+          window.electron.ipcRenderer.setConfigByKey('zowe.setup.security', newData).then((res: any) => {
+            console.log('updated zowe.setuo.security')
+          })
           setStageConfig(true, '', newData);
         }
       }

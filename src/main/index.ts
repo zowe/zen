@@ -17,6 +17,7 @@ import { PlanningActions } from "../actions/PlanningActions";
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ProgressStore } from "../storage/ProgressStore";
 import { checkDirExists } from '../services/utils';
+import { ConfigurationStore } from '../storage/ConfigurationStore';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -82,6 +83,11 @@ const createWindow = (): void => {
 
   ipcMain.handle('get-zowe-schema', async (event) => {
     const res: any = await PlanningActions.getZoweSchema();
+    return res;
+  });
+
+  ipcMain.handle('set-config', async (event, completeZoweYamlObj: any) => {
+    const res: any = await ConfigurationStore.setConfig(completeZoweYamlObj);
     return res;
   });
 
