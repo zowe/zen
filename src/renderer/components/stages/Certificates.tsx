@@ -17,6 +17,11 @@ import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
+import { selectInstallationArgs } from "./installation/installationSlice";
+import { selectConnectionArgs } from "./connection/connectionSlice";
+import { IResponse } from "../../../../src/types/interfaces";
+import React from "react";
+import ProgressCard from "../common/ProgressCard";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../configuration-wizard/Wizard";
 
@@ -29,16 +34,28 @@ const Certificates = () => {
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
-  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
+  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const installationArgs = useAppSelector(selectInstallationArgs);
+  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
+  const verifyCertsSchema = schema ? {"type": "object", "properties": {"verifyCertificates": schema.properties.zowe.properties.verifyCertificates}} : "";
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.certificate);
+  const [verifyCertsYaml, setVerifyCertsYaml] = useState({verifyCertificates: yaml?.zowe.verifyCertificates})
   const [isFormInit, setIsFormInit] = useState(false);
+  const [initializeForm, setInitializeForm] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
+  const [showProgress, setShowProgress] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
 
   const section = 'certificate';
 
+  const [certificateProgress, setCertificateProgress] = useState({
+    writeYaml: false,
+    uploadYaml: false,
+    zweInitCertificate: false,
+  });
+  let timer: any;
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
   const TYPE_OUTPUT = "output";
@@ -47,6 +64,7 @@ const Certificates = () => {
   ajv.addKeyword("$anchor");
   let certificateSchema;
   let validate: any;
+  let validateVerifyCertSchema: any;
   if(schema) {
     certificateSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
   }
@@ -55,7 +73,11 @@ const Certificates = () => {
     validate = ajv.compile(certificateSchema);
   }
 
-  const isStepSkipped = !useAppSelector(selectCertificateStatus);
+if(verifyCertsSchema) {
+  validateVerifyCertSchema = ajv.compile(verifyCertsSchema);
+}  
+
+const isStepSkipped = !useAppSelector(selectCertificateStatus);
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
   useEffect(() => {
@@ -64,6 +86,16 @@ const Certificates = () => {
     stages[stageId].isSkipped = isInitializationSkipped
     setIsFormInit(true);
   }, []);
+
+  useEffect(() => {
+    timer = setInterval(() => {
+      window.electron.ipcRenderer.getCertificateProgress().then((res: any) => {
+        setCertificateProgress(res);
+      })
+    }, 3000);
+    const nextPosition = document.getElementById('certificate-progress');
+    nextPosition.scrollIntoView({behavior: 'smooth'});
+  }, [showProgress]);
 
   const toggleEditorVisibility = (type: any) => {
     setContentType(type);
@@ -75,24 +107,7 @@ const Certificates = () => {
     setIsFormInit(false);
 
     if (newData) {
-      newData = isYamlUpdated ? data.certificate : newData;
-
-      if(setupSchema.if) {
-        const ifProp = Object.keys(setupSchema.if.properties)[0];
-        const ifPropValue = setupSchema.if.properties[ifProp].const.toLowerCase();
-        const thenProp = setupSchema.then.required[0].toLowerCase();
-        const elseProp = setupSchema.else.required[0].toLowerCase();
-
-        if(newData && newData[ifProp]) {
-          const newDataPropValue = newData[ifProp].toLowerCase();
-          if( newDataPropValue == ifPropValue && newData[elseProp] ) {
-            delete newData[elseProp];
-          }
-          if(newDataPropValue != ifPropValue && newData[thenProp]) {
-            delete newData[thenProp];
-          }
-        }
-      }
+      newData = isYamlUpdated ? data.security : newData;
 
       if(validate) {
         validate(newData);
@@ -108,6 +123,28 @@ const Certificates = () => {
       }
     }
   };
+
+  const handleVerifyCertsChange = (e: any) => {
+    if(!initializeForm) {
+      return;
+    }
+    if(e.verifyCertificates && e.verifyCertificates != verifyCertsYaml.verifyCertificates){
+      if(validateVerifyCertSchema){
+        validateVerifyCertSchema(e);
+        if(validateVerifyCertSchema.errors) {
+          const errPath = validateVerifyCertSchema.errors[0].schemaPath;
+          const errMsg = validateVerifyCertSchema.errors[0].message;
+          setIsFormValid(false);
+          setFormError(errPath+' '+errMsg);
+          dispatch(setNextStepEnabled(false));
+        } else {
+          setVerifyCertsYaml({'verifyCertificates': e.verifyCertificates});
+          setIsFormValid(true);
+          dispatch(setNextStepEnabled(true));
+        }
+      }
+    }
+  }
 
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
@@ -127,6 +164,27 @@ const Certificates = () => {
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
+          <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+            e.preventDefault();
+            setShowProgress(true);
+            window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
+              dispatch(setNextStepEnabled(true));
+              clearInterval(timer);
+            }).catch(() => {
+              clearInterval(timer);
+              console.warn('zwe init certificates failed');
+            });
+          }}>Initialize Zowe Certificates</Button>
+        </Box>
+        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="certificate-progress">
+        {!showProgress ? null :
+          <React.Fragment>
+            <ProgressCard label="Write configuration file to local disk" id="download-progress-card" status={certificateProgress.writeYaml}/>
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={certificateProgress.uploadYaml}/>
+            <ProgressCard label="Run certificate initialization script (zwe init certifiate)" id="install-progress-card" status={certificateProgress.zweInitCertificate}/>
+          </React.Fragment>
+        }
         </Box>
       </ContainerCard>
     </div>

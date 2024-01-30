@@ -141,6 +141,11 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('zwe-init-certificates', async (event, connectionArgs, installationArgs, zoweConfig) => {
+    const res = await installActions.runZweInitCertificates(connectionArgs, installationArgs, zoweConfig);
+    return res;
+  });
+
   ipcMain.handle('init-apf', async (event, connectionArgs, installationArgs, zoweConfig) => {
     const res = await installActions.apfAuth(connectionArgs, installationArgs, zoweConfig);
     return res;
@@ -155,6 +160,11 @@ const createWindow = (): void => {
 
   ipcMain.handle('get-installation-progress', async (event) => {
     const res = ProgressStore.getAll()['installation'];
+    return res;
+  });
+
+  ipcMain.handle('get-certificate-progress', async (event) => {
+    const res = ProgressStore.getAll()['certificate'];
     return res;
   });
 
