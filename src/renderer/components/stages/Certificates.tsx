@@ -11,7 +11,7 @@
 import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import { selectCertificateStatus, selectInitializationStatus, setCertificateStatus } from './progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
@@ -33,7 +33,7 @@ const Certificates = () => {
   const subStageId = 3;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
-  const yaml = useAppSelector(selectYaml);
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const installationArgs = useAppSelector(selectInstallationArgs);
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
@@ -103,11 +103,10 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
   };
   
   const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    let newData = isFormInit ? (Object.keys(yaml?.zowe.setup.certificate).length > 0 ? yaml?.zowe.setup.certificate : data) : (data ? data : yaml?.zowe.setup.certificate);
+    let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.certificate) : (data.zowe?.setup?.certificate ? data.zowe.setup.certificate : data);
     setIsFormInit(false);
 
     if (newData) {
-      newData = isYamlUpdated ? data.security : newData;
 
       if(validate) {
         validate(newData);
@@ -116,8 +115,11 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
-          console.log('Certificate.tsx - NEW DATA NEEDS TO BE WRITTEN: ', JSON.stringify(newData, null ,2));
           // setConfiguration(section, newData, true);
+          setLYaml((prevYaml: any) => ({
+            ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: newData}}
+          }))
+          dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: newData}}}))
           setStageConfig(true, '', newData);
         }
       }
@@ -160,7 +162,7 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Certificates" description="Configure Zowe Certificates."> 
-        <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>

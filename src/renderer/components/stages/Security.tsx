@@ -11,7 +11,7 @@
 import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import { setSecurityStatus, setInitializationStatus, selectSecurityStatus, selectInitializationStatus } from './progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
@@ -23,7 +23,6 @@ import { IResponse } from "../../../types/interfaces";
 import ProgressCard from "../common/ProgressCard";
 import React from "react";
 import { createTheme } from '@mui/material/styles';
-import progressSlice from "./progressSlice";
 import {stages} from "../configuration-wizard/Wizard";
 
 const Security = () => {
@@ -33,7 +32,7 @@ const Security = () => {
   const subStageId = 2;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
-  const yaml = useAppSelector(selectYaml);
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security);
   const [isFormInit, setIsFormInit] = useState(false);
@@ -52,9 +51,6 @@ const Security = () => {
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-
-  const section = 'security';
-  // const initConfig: any = getConfiguration(section);
   
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
@@ -117,15 +113,14 @@ const Security = () => {
       });
   }
 
-  const handleFormChange = (data: any, isYamlUpdated?: boolean, customParam?: boolean) => {
+  const handleFormChange = (data: any) => {
     if(!initializeForm) {
       return;
     }
-    let newData = isFormInit ? (Object.keys(yaml?.zowe.setup.security).length > 0 ? yaml?.zowe.setup.security: data) : (data ? data : yaml?.zowe.setup.security);
+    let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.security) : (data.zowe?.setup?.security ? data.zowe.setup.security : data);
     setIsFormInit(false);
 
     if (newData) {
-      newData = isYamlUpdated ? data.security : newData;
 
       if(validate) {
         validate(newData);
@@ -134,11 +129,11 @@ const Security = () => {
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
-          // setConfiguration(section, newData, true);
-          console.log('Security.tsx - newData:', newData);
-          window.electron.ipcRenderer.setConfigByKey('zowe.setup.security', newData).then((res: any) => {
-            console.log('updated zowe.setuo.security')
-          })
+          console.log('security data:', JSON.stringify(newData));
+          setLYaml((prevYaml: any) => ({
+            ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: newData}}
+          }))
+          dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: newData}}}))
           setStageConfig(true, '', newData);
         }
       }
@@ -159,10 +154,10 @@ const Security = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Security" description="Configure Zowe Security.">
-        <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={setupSchema} onChange={(data: any, isYamlUpdated: boolean) => handleFormChange(data, isYamlUpdated, true)} formData={setupYaml}/>
+          <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Security Config</Button>
           <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="init-progress">
           {!showProgress ? null :

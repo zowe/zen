@@ -99,7 +99,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
       window.electron.ipcRenderer.setConfig(jsonData);
       dispatch(setYaml(jsonData));
       setSetupYaml(jsonData);
-      if(onChange) {
+      if (onChange) {
         onChange(jsonData, true);
       }
     }
