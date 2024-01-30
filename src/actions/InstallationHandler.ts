@@ -132,7 +132,7 @@ class Installation {
 
     }
     ProgressStore.set('apfAuth.uploadYaml', uploadYaml.status);
-    const script = `cd ${installationArgs.installationDir}/runtime/bin;\n./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+    const script = `cd ${installationArgs.installationDir}/runtime/bin;\n./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml \n--allow-overwritten --update-config`;
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('apfAuth.success', result.rc === 0);
     return {status: result.rc === 0, details: result.jobOutput}
@@ -156,7 +156,7 @@ class Installation {
         return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
       ProgressStore.set('initSecurity.uploadYaml', uploadYaml.status);
-      const script = `cd ${installationArgs.installationDir}/runtime/bin;\n./zwe init security -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+      const script = `cd ${installationArgs.installationDir}/runtime/bin;\n./zwe init security -c ${installationArgs.installationDir}/zowe.yaml \n--allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
       ProgressStore.set('initSecurity.success', result.rc === 0);
       return {status: result.rc === 0, details: result.jobOutput}
