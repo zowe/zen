@@ -19,7 +19,7 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
     return "";
   }
 
-  const properties = Object.keys(schema.properties);
+  const properties = Object.keys(schema?.properties);
 
   const elements = properties.map((prop: any) => {
     if (schema.properties[prop].type === 'object') {
@@ -39,7 +39,7 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
       }
 
       const subSchema = schema.properties[prop];
-      const subProperties = Object.keys(subSchema.properties);
+      const subProperties = Object.keys(subSchema?.properties);
 
       const subElements = subProperties.map((subProp: any) => ({
         type: 'Control',
