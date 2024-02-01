@@ -8,8 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, {useEffect, useRef, useState} from "react";
-import { Box, Button, FormControl, Typography } from '@mui/material';
+import React, {useCallback, useEffect, useRef, useState} from "react";
+import { Box, Button, FormControl, Typography, debounce } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
 import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
@@ -142,8 +142,12 @@ const Installation = () => {
     })
   }
 
-  const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    // console.log('Installation.tsx - Data:', JSON.stringify(data));
+  const debouncedChange = useCallback(
+    debounce((state: any)=>{handleFormChange(state)}, 1000),
+    []
+)
+
+  const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
     let updatedData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.dataset) : (data.zowe?.setup?.dataset ? data.zowe.setup.dataset : data);
     
     setIsFormInit(false);
@@ -155,20 +159,16 @@ const Installation = () => {
         const errMsg = validate.errors[0].message;
         setStageConfig(false, errPath+' '+errMsg, updatedData);
       } else {
-        setLYaml((prevYaml: any) => ({
-          ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}
-        }))
-        dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}}))
-        window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}})
-        setStageConfig(true, '', updatedData);
+        const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}};
+        window.electron.ipcRenderer.setConfig(newYaml)
       }
     }
   }
 
+
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
-    setSetupYaml(data);
   }
 
   return (
@@ -183,7 +183,8 @@ const Installation = () => {
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
           {installationArgs.installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
         </Typography>
-        <Box sx={{ width: '60vw' }}>
+
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>  

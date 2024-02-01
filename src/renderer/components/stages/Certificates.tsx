@@ -84,10 +84,10 @@ const Certificates = () => {
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
           // setConfiguration(section, newData, true);
-          setLYaml((prevYaml: any) => ({
-            ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}
-          }))
-          dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}}))
+          // setLYaml((prevYaml: any) => ({
+          //   ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}
+          // }))
+          // dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}}))
           window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
           setStageConfig(true, '', newData);
         }
@@ -110,7 +110,7 @@ const Certificates = () => {
       </Box>
       <ContainerCard title="Certificates" description="Configure Zowe Certificates."> 
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
-        <Box sx={{ width: '60vw' }}>
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>

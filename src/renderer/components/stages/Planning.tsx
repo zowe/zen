@@ -199,13 +199,13 @@ const Planning = () => {
         let installationDir = '';
         if (res.details.config?.zowe?.runtimeDirectory && res.details.config?.zowe?.workspaceDirectory) {
           const getParentDir = (path: string): string => path.split('/').filter((i: string, ind: number) => i || !ind).slice(0, -1).join('/');
-          const runtimeParent = getParentDir(res.details.config.zowe.runtimeDirectory);
-          const workspaceParent = getParentDir(res.details.config.zowe.workspaceDirectory);
+          const runtimeParent = getParentDir(res.details.config?.zowe?.runtimeDirectory);
+          const workspaceParent = getParentDir(res.details.config?.zowe?.workspaceDirectory);
           if (runtimeParent === workspaceParent) installationDir = runtimeParent;
         }
         const javaHome = (res.details.config?.java?.home) ? res.details.config.java.home : '';
         const nodeHome = (res.details.config?.node?.home) ? res.details.config.node.home : '';
-        dispatch(setInstallationArgs({...installationArgs, installationDir: res.details.config.zowe.runtimeDirectory, javaHome: javaHome, nodeHome: nodeHome}));
+        dispatch(setInstallationArgs({...installationArgs, installationDir: res.details.config?.zowe?.runtimeDirectory ?? '', javaHome: javaHome, nodeHome: nodeHome}));
       } else {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
           dispatch(setYaml(res.details));
@@ -491,7 +491,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Run-time Directory (or installation location)"
                 variant="standard"
-                value={localYaml?.zowe.runtimeDirectory || installationArgs.installationDir}
+                value={localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
@@ -514,7 +514,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Workspace Directory"
                 variant="standard"
-                value={localYaml?.zowe.workspaceDirectory ?? ''}
+                value={localYaml?.zowe?.workspaceDirectory ?? ''}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, workspaceDir: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
