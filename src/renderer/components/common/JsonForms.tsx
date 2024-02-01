@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { JsonForms } from '@jsonforms/react';
 import { materialRenderers, materialCells } from '@jsonforms/material-renderers';
 import { ThemeProvider } from '@mui/material/styles';
@@ -133,16 +133,18 @@ export default function JsonForm(props: any) {
     return null;
   };
 
+  const [formState, setFormState] = useState(isFormDataEmpty ? getDefaultFormData(schema, {}) : formData);
+
   return (
     <ThemeProvider theme={jsonFormTheme}>
     <JsonForms
       schema={schema}
       uischema={makeUISchema(schema, '/', formData)}
-      data={formData}
+      data={formState}
       renderers={materialRenderers}
       cells={materialCells}
       config={{showUnfocusedDescription: true}}
-      onChange={({ data, errors }) => { onChange(data) }}
+      onChange={({ data, errors }) => { setFormState(data); onChange(data) }}
     />
     </ThemeProvider>
   );
