@@ -12,18 +12,18 @@ import { FTPConnection, CLIConnection } from './ConnectionHandler'
 
 export class ConnectionActions {
   mode: any;
-  strategy: any;
+  installStrategy: any;
 
   constructor() {
-    this.mode = 'ftp'; // REVIEW: get from storage when picking strategy?
-    this.strategy = this.getStartegy();
+    this.mode = 'ftp'; // REVIEW: get from storage when picking installStrategy?
+    this.installStrategy = this.getInstallStrategy();
   }
 
   setMode(mode: string) {
     this.mode = mode;
   }
 
-  getStartegy(): any {
+  getInstallStrategy(): any {
     switch (this.mode) {
       case 'ftp':
         return new FTPConnection();
@@ -35,14 +35,14 @@ export class ConnectionActions {
   }
 
   checkConnectionData(config: any) {
-    return this.strategy.checkConnectionData(config);
+    return this.installStrategy.checkConnectionData(config);
   }
 
   saveConnectionData(config: any) {
-    return this.strategy.saveConnectionData(config);
+    return this.installStrategy.saveConnectionData(config);
   }
 
   saveJobStatement(jobStatement: any) {
-    return this.strategy.saveJobStatement(jobStatement);
+    return this.installStrategy.saveJobStatement(jobStatement);
   }
 }

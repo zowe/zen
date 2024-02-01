@@ -13,18 +13,18 @@ import { FTPInstallation, CLIInstallation } from './InstallationHandler';
 
 export class InstallActions {
   mode: any;
-  strategy: any;
+  installStrategy: any;
 
   constructor() {
-    this.mode = 'ftp'; // REVIEW: get from storage when picking strategy?
-    this.strategy = this.getStartegy();
+    this.mode = 'ftp'; // REVIEW: get from storage when picking installStrategy?
+    this.installStrategy = this.getInstallStrategy();
   }
 
   setMode(mode: string) {
     this.mode = mode;
   }
 
-  getStartegy(): any {
+  getInstallStrategy(): any {
     switch (this.mode) {
       case 'ftp':
         return new FTPInstallation();
@@ -39,17 +39,17 @@ export class InstallActions {
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
     version: string, zoweConfig: any): Promise<IResponse> {
-    return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
+    return this.installStrategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
   }
 
-  initSecurity(connectionArgs: IIpcConnectionArgs,
+  runInitSecurity(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string}, zoweConfig: any): Promise<IResponse> {
-    return this.strategy.initSecurity(connectionArgs, installationArgs, zoweConfig);
+    return this.installStrategy.runInitSecurity(connectionArgs, installationArgs, zoweConfig);
   }
 
-  apfAuth(connectionArgs: IIpcConnectionArgs,
+  runApfAuth(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string}, zoweConfig: any): Promise<IResponse> {
-    return this.strategy.apfAuth(connectionArgs, installationArgs, zoweConfig);
+    return this.installStrategy.runApfAuth(connectionArgs, installationArgs, zoweConfig);
   }
 
 }

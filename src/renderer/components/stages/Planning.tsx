@@ -204,7 +204,7 @@ const Planning = () => {
         }
         const javaHome = (res.details.config?.java?.home) ? res.details.config.java.home : '';
         const nodeHome = (res.details.config?.node?.home) ? res.details.config.node.home : '';
-        dispatch(setInstallationArgs({...installationArgs, installationDir: installationDir, javaHome: javaHome, nodeHome: nodeHome}));
+        dispatch(setInstallationArgs({...installationArgs, installationDir: res.details.config?.zowe?.runtimeDirectory ?? '', javaHome: javaHome, nodeHome: nodeHome}));
       } else {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
           dispatch(setYaml(res.details));
@@ -405,6 +405,8 @@ const Planning = () => {
         dispatch(setPlanningStatus(true));
         setStep(2);
       } else {
+        dispatch(setPlanningStatus(false));
+        dispatch(setLoading(false));
         alertEmitter.emit('showAlert', details.error, 'error');
       }
     })

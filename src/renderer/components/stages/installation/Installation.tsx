@@ -123,36 +123,35 @@ const Installation = () => {
       window.electron.ipcRenderer.setConfigByKey('zowe.externalDomains', [connectionArgs.host])
     ]).then(() => {
       if(installationType === 'smpe'){
-        dispatch(setNextStepEnabled(true));
-        dispatch(setDatasetInstallationStatus(true));
-        dispatch(setInitializationStatus(true));
+        installButtonProceedNextSteps(true);
         dispatch(setLoading(false));
       } else {
         setYaml(window.electron.ipcRenderer.getConfig());
         toggleProgress(true);
         dispatch(setLoading(false));
         window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, getZoweConfig()).then((res: IResponse) => {
-          if(!res.status){ //errors during runInstallation()
+          if(!res.status){ // Error case for runInstallation()
             alertEmitter.emit('showAlert', res.details, 'error');
             toggleProgress(false);
           } else {
-            dispatch(setNextStepEnabled(res.status));
-            dispatch(setDatasetInstallationStatus(res.status));
-            dispatch(setDatasetInstallationStatus(true));
-            dispatch(setInitializationStatus(true));
+            installButtonProceedNextSteps(res.status);
             clearInterval(timer);
           }
         }).catch(() => {
           clearInterval(timer);
-          dispatch(setNextStepEnabled(false));
-          dispatch(setInitializationStatus(false));
-          dispatch(setDatasetInstallationStatus(false));
+          installButtonProceedNextSteps(false);
           stages[stageId].subStages[subStageId].isSkipped = true;
           stages[stageId].isSkipped = true;
           console.warn('Installation failed');
         });
       }
     })
+  }
+
+  const installButtonProceedNextSteps = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setInitializationStatus(status));
+    dispatch(setDatasetInstallationStatus(status));
   }
 
   const handleFormChange = (data: any, isYamlUpdated?: boolean) => {

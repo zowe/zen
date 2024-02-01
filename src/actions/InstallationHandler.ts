@@ -114,7 +114,7 @@ class Installation {
     }
   }
 
-  public async apfAuth(connectionArgs: IIpcConnectionArgs,
+  public async runApfAuth(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string}, zoweConfig: any): Promise<any>{
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
@@ -138,7 +138,7 @@ class Installation {
     return {status: result.rc === 0, details: result.jobOutput}
   }
   
-  public async initSecurity(connectionArgs: IIpcConnectionArgs,
+  public async runInitSecurity(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string}, zoweConfig: any): Promise<IResponse>{
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')

@@ -23,6 +23,7 @@ import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../configuration-wizard/Wizard";
+import { alertEmitter } from "../Header";
 
 const InitApfAuth = () => {
 
@@ -101,20 +102,29 @@ const InitApfAuth = () => {
     event.preventDefault();
     toggleProgress(true);
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
-        dispatch(setNextStepEnabled(res.status));
-        dispatch(setApfAuthStatus(res.status));
-        dispatch(setInitializationStatus(res.status));
-        stages[stageId].subStages[subStageId].isSkipped = !res.status;
+        if(!res.status){
+          alertEmitter.emit('showAlert', res.details, 'error');
+          toggleProgress(false);
+        } else {
+          apfAuthButtonProceedNextSteps(res.status);
+          stages[stageId].subStages[subStageId].isSkipped = !res.status;
+          clearInterval(timer);
+        }
+      }).catch((err: any) => {
+        alertEmitter.emit('showAlert', err.toString(), 'error');
+        toggleProgress(false);
         clearInterval(timer);
-      }).catch(() => {
-        clearInterval(timer);
-        dispatch(setNextStepEnabled(false));
-        dispatch(setInitializationStatus(false));
-        dispatch(setApfAuthStatus(false));
+        apfAuthButtonProceedNextSteps(false);
         stages[stageId].subStages[subStageId].isSkipped = true;
         stages[stageId].isSkipped = true;
-        console.warn('zwe init apfauth failed');
+        console.warn('zwe init apfauth failed', err);
       });
+  }
+
+  const apfAuthButtonProceedNextSteps = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setInitializationStatus(status));
+    dispatch(setApfAuthStatus(status));
   }
 
   const editHLQ = (data: any, isYamlUpdated?: boolean) => {
@@ -163,7 +173,7 @@ const InitApfAuth = () => {
       <ContainerCard title="APF Authorize Load Libraries" description="Run the `zwe init apfauth` command to APF authorize load libraries.">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={editHLQ}/>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
-          {`Please review the following dataset setup configuration values before pressing run.\n`}
+          {`Please review the following dataset setup configuration values before pressing run. If you need to make changes, go back to the previous step.\n`}
         </Typography>
         <Box sx={{ width: '60vw' }}>
             <TextField
