@@ -103,6 +103,8 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
       setSchemaError(`Invalid Schema: ${errPath}. ${errMsg} `, );
       jsonData = jsonData ? jsonData : "";
       setSetupYaml(jsonData);
+      window.electron.ipcRenderer.setConfig(jsonData);
+      dispatch(setYaml(jsonData));
     } else if(isSchemaValid && jsonData) {
       window.electron.ipcRenderer.setConfig(jsonData);
       dispatch(setYaml(jsonData));
