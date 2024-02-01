@@ -13,7 +13,7 @@ import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { setConfiguration, getConfiguration } from '../../../services/ConfigService';
-import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './installation/progressSlice';
+import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progress/progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";

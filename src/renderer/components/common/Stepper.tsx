@@ -20,7 +20,7 @@ import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/connection/connectionSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from '../stages/installation/progressSlice';
+import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from '../stages/progress/progressSlice';
 import { selectInstallationStatus } from '../stages/installation/installationSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";

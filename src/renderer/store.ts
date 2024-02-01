@@ -12,7 +12,7 @@ import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import connectionReducer from './components/stages/connection/connectionSlice';
 import wizardReducer from './components/configuration-wizard/wizardSlice';
 import installationReducer from './components/stages/installation/installationSlice';
-import progressReducer from './components/stages/installation/progressSlice';
+import progressReducer from './components/stages/progress/progressSlice';
 import { planningReducer, locationValidationReducer } from './components/stages/PlanningSlice';
 
 
