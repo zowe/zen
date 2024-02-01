@@ -23,9 +23,8 @@ import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import secureIcon from '../../../assets/secure.png';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
@@ -270,8 +269,16 @@ const FTPConnectionForm = () => {
       }
           
       <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row", paddingTop: '12px', paddingBottom: '12px'}}>
-        <Button sx={{boxShadow: 'none'}} type="submit" variant="text" onClick={() => processForm()}>Validate credentials</Button>
-        <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1rem', marginTop: '9px' }} />}</div>
+        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
+          <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '12px'}} 
+            onClick={processForm}
+          >
+            Validate credentials
+          </Button>
+        </Box>
+        <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div>
+        <Button color="success" sx={{boxShadow: 'none', margin: '0 0 0 10px', textTransform: 'none'}} type="submit" onClick={() => processForm()}>Resume</Button>
+        <div><PlayCircleFilledWhiteIcon sx={{ color: 'green', fontSize: '1.4rem', marginTop: '6px', marginLeft: '0', cursor: 'pointer' }} onClick={() => processForm()} /></div>
         <div style={{opacity: formProcessed ? '1' : '0'}}>
           {!connectionStatus && (validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error'))}
         </div>

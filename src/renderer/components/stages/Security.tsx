@@ -12,7 +12,7 @@ import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { setSecurityStatus, setInitializationStatus, selectSecurityStatus, selectInitializationStatus } from './progressSlice';
+import { setSecurityStatus, setInitializationStatus, selectSecurityStatus, selectInitializationStatus } from './installation/progressSlice';
 import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
@@ -24,7 +24,7 @@ import { IResponse } from "../../../types/interfaces";
 import ProgressCard from "../common/ProgressCard";
 import React from "react";
 import { createTheme } from '@mui/material/styles';
-import progressSlice from "./progressSlice";
+import progressSlice from "./installation/progressSlice";
 import {stages} from "../configuration-wizard/Wizard";
 
 const Security = () => {

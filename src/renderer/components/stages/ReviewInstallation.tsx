@@ -20,7 +20,7 @@ import { useAppSelector } from '../../hooks';
 import eventDispatcher from '../../../utils/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
-import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from './progressSlice';
+import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from './installation/progressSlice';
 import { selectConnectionStatus } from "./connection/connectionSlice";
 import { selectInstallationStatus } from "./installation/installationSlice";
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
