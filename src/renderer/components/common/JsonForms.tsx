@@ -133,18 +133,18 @@ export default function JsonForm(props: any) {
     return null;
   };
 
-  const [formState, setFormState] = useState(isFormDataEmpty ? getDefaultFormData(schema, {}) : formData);
+  // const [formState, setFormState] = useState(isFormDataEmpty ? getDefaultFormData(schema, {}) : formData);
 
   return (
     <ThemeProvider theme={jsonFormTheme}>
     <JsonForms
       schema={schema}
       uischema={makeUISchema(schema, '/', formData)}
-      data={formState}
+      data={formData}
       renderers={materialRenderers}
       cells={materialCells}
       config={{showUnfocusedDescription: true}}
-      onChange={({ data, errors }) => { setFormState(data); onChange(data) }}
+      onChange={({ data, errors }) => { onChange(data) }}
     />
     </ThemeProvider>
   );
