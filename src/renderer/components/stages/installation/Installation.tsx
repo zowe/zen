@@ -161,6 +161,7 @@ const Installation = () => {
       } else {
         const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}};
         window.electron.ipcRenderer.setConfig(newYaml)
+        setStageConfig(true, '', updatedData);
       }
     }
   }
@@ -169,6 +170,7 @@ const Installation = () => {
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
+    setSetupYaml(data);
   }
 
   return (

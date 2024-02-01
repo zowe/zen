@@ -82,6 +82,7 @@ const Certificates = () => {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
         } else {
           // setConfiguration(section, newData, true);
           // setLYaml((prevYaml: any) => ({

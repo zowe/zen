@@ -130,6 +130,7 @@ const Security = () => {
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
           window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: newData}}});
+          setStageConfig(true, '', newData);
         }
       }
     }
