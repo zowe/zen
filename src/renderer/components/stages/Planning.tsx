@@ -278,7 +278,7 @@ const Planning = () => {
     setJobStatementValidationMsg('');
     dispatch(setLoading(true));
     window.electron.ipcRenderer.saveJobHeader(jobStatementValue)
-      // .then(() => getENVVars())
+      .then(() => getENVVars())
       .then((res: IResponse) => {
         setEditorContent(res.details);
         setContentType('output');

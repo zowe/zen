@@ -102,7 +102,7 @@ const Installation = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const process = (event: any) => {
+  const process = (event: any, skipDownload?: boolean) => {
     event.preventDefault();
     dispatch(setLoading(true));
     const {javaHome, nodeHome, installationDir, installationType, smpeDir} = installationArgs;
@@ -120,7 +120,7 @@ const Installation = () => {
         setYaml(window.electron.ipcRenderer.getConfig());
         toggleProgress(true);
         dispatch(setLoading(false));
-        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
+        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
           if(!res.status){ //errors during runInstallation()
             alertEmitter.emit('showAlert', res.details, 'error');
           }
@@ -192,6 +192,7 @@ const Installation = () => {
         </Box>  
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'Install MVS datasets'}</Button>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e, true)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'SKIP DOWNLOAD and Install MVS datasets'}</Button>
         </FormControl> : null}
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="installation-progress">
         {!showProgress ? null :

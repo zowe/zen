@@ -43,8 +43,8 @@ export class InstallActions {
   runInstallation (
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
-    version: string, zoweConfig: any): Promise<IResponse> {
-    return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
+    version: string, zoweConfig: any, skipDownload: boolean): Promise<IResponse> {
+    return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig, skipDownload);
   }
 
   initSecurity(connectionArgs: IIpcConnectionArgs,
