@@ -203,9 +203,7 @@ const Planning = () => {
           const workspaceParent = getParentDir(res.details.config?.zowe?.workspaceDirectory);
           if (runtimeParent === workspaceParent) installationDir = runtimeParent;
         }
-        const javaHome = (res.details.config?.java?.home) ? res.details.config.java.home : '';
-        const nodeHome = (res.details.config?.node?.home) ? res.details.config.node.home : '';
-        dispatch(setInstallationArgs({...installationArgs, installationDir: res.details.config?.zowe?.runtimeDirectory ?? '', javaHome: javaHome, nodeHome: nodeHome}));
+        dispatch(setInstallationArgs({...installationArgs, installationDir: res.details.config?.zowe?.runtimeDirectory ?? ''}));
       } else {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
           dispatch(setYaml(res.details));
@@ -248,11 +246,11 @@ const Planning = () => {
           const lines = res.details.split('\n').map((l: string) => l.trim()).filter((l: string) => !l.includes("echo"));
           let nodeHome, javaHome;
           lines.map((line: string) => {
-            if (line.includes('node')) nodeHome = localYaml?.node.home ? installationArgs.nodeHome : line;
-            if (line.includes('java')) javaHome = localYaml?.java.home ? installationArgs.javaHome : line;
+            if (line.includes('node')) nodeHome = installationArgs.nodeHome ? installationArgs.nodeHome : line;
+            if (line.includes('java')) javaHome = installationArgs.javaHome ? installationArgs.javaHome : line;
           });
-          nodeHome && nodeHome != '' && dispatch(setInstallationArgs({...installationArgs, nodeHome: nodeHome}))
-          javaHome && javaHome != '' && dispatch(setInstallationArgs({...installationArgs, javaHome: javaHome}))
+          nodeHome && dispatch(setInstallationArgs({...installationArgs, nodeHome: nodeHome}))
+          javaHome && dispatch(setInstallationArgs({...installationArgs, javaHome: javaHome}))
 
         } catch (error) {
           return {status: false, details: error.message}
