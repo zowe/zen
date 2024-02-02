@@ -21,8 +21,8 @@ import eventDispatcher from '../../../utils/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
 import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from './progress/progressSlice';
-import { selectConnectionStatus } from "./connection/connectionSlice";
-import { selectInstallationStatus } from "./installation/installationSlice";
+import { selectConnectionStatus } from "./progress/progressSlice";
+import { selectInstallationTypeStatus } from "./progress/progressSlice";
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 
 import '../../styles/ReviewInstallation.css';
@@ -39,7 +39,7 @@ const ReviewInstallation = () => {
   const stageProgressStatus = [
     useSelector(selectConnectionStatus),
     useSelector(selectPlanningStatus),
-    useSelector(selectInstallationStatus),
+    useSelector(selectInstallationTypeStatus),
     useSelector(selectInitializationStatus),
   ];
   
@@ -55,7 +55,7 @@ const ReviewInstallation = () => {
   const TYPE_OUTPUT = "output";
 
   useEffect(() => {
-    if(selectConnectionStatus && selectPlanningStatus && selectInstallationStatus && selectInitializationStatus) {
+    if(selectConnectionStatus && selectPlanningStatus && selectInstallationTypeStatus && selectInitializationStatus) {
       setNextStepEnabled(true);
     } else {
       setNextStepEnabled(false);

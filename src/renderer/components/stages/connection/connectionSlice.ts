@@ -13,7 +13,6 @@ import { RootState } from '../../../store';
 import { IIpcConnectionArgs, IIpcConnectionArgsSecureOptions } from '../../../../types/interfaces';
 
 export interface ConnectionState {
-  connectionStatus: boolean;
   connectionArgs: IIpcConnectionArgs;
   connectionValidationDetails: string;
   acceptCertificates: boolean;
@@ -21,7 +20,6 @@ export interface ConnectionState {
 
 //TODO also seen in ConnectionStore. Necessary or duplication?
 const initialState: ConnectionState = {
-  connectionStatus: false,
   connectionArgs: {
     host: '',
     connectionType: 'ftp',
@@ -72,9 +70,6 @@ export const connectionSlice = createSlice({
     setSecureOptions: (state, action: PayloadAction<IIpcConnectionArgsSecureOptions>) => {
       state.connectionArgs.secureOptions = action.payload;
     },
-    setConnectionStatus: (state, action: PayloadAction<boolean>) => {
-      state.connectionStatus = action.payload;
-    },
     setConnectionValidationDetails: (state, action: PayloadAction<string>) => {
       state.connectionValidationDetails = action.payload;
     },
@@ -84,12 +79,11 @@ export const connectionSlice = createSlice({
   },
 });
 
-export const { setConnectionArgs, setConnectionStatus, setHost, setPort,
+export const { setConnectionArgs, setHost, setPort,
                setUser, setPassword, setJobStatement, setSecure, setSecureOptions, setConnectionValidationDetails, setAcceptCertificates,
              } = connectionSlice.actions;
 
 export const selectConnectionArgs = (state: RootState) => state.connection.connectionArgs;
-export const selectConnectionStatus = (state: RootState) => state.connection.connectionStatus;
 export const selectConnectionSecure= (state: RootState) => state.connection.connectionArgs.secure;
 export const selectConnectionValidationDetails = (state: RootState) => state.connection.connectionValidationDetails;
 export const selectAcceptCertificates = (state: RootState) => state.connection.acceptCertificates;

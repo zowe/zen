@@ -13,7 +13,8 @@ import { Box, Button, FormControl, FormControlLabel, FormLabel, Link, Radio, Rad
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid, selectInstallationType, selectSmpeDir, selectLicenseAgreement, selectSmpeDirValid, setInstallationStatus } from './installationSlice';
+import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid, selectInstallationType, selectSmpeDir, selectLicenseAgreement, selectSmpeDirValid } from './installationSlice';
+import { setInstallationTypeStatus } from "../progress/progressSlice"; 
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
@@ -45,7 +46,7 @@ const InstallationType = () => {
     if((installValue === "download" && agreeLicense == false) || (installValue === "upload" && paxPath == "") || installValue === "smpe" && (smpePath === "" || !smpePathValidated)){
         dispatch(setNextStepEnabled(false));
     } else {
-        dispatch(setInstallationStatus(true))
+        dispatch(setInstallationTypeStatus(true))
         dispatch(setNextStepEnabled(true));
     }
     
@@ -68,7 +69,7 @@ const InstallationType = () => {
   const installTypeChangeHandler = (type: string) => {
     dispatch(setInstallationType(type));
     setInstallValue(type);
-    dispatch(setInstallationStatus(false))
+    dispatch(setInstallationTypeStatus(false))
   }
 
   const onSmpePathChange = (path: string) => {
@@ -76,7 +77,7 @@ const InstallationType = () => {
     setSmpePath(path);
     dispatch(setSmpeDirValid(false));
     setSmpePathValidated(false);
-    dispatch(setInstallationStatus(false))
+    dispatch(setInstallationTypeStatus(false))
   }
 
   return (

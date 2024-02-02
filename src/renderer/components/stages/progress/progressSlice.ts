@@ -12,7 +12,9 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
 
 export interface progressState {
+  connectionStatus: boolean;
   planningStatus: boolean;
+  installationTypeStatus: boolean;
   initializationStatus: boolean;
   datasetInstallationStatus: boolean;
   apfAuthStatus: boolean;
@@ -21,20 +23,28 @@ export interface progressState {
 }
 
 const initialState: progressState = {
+  connectionStatus: false,
   planningStatus: false,
+  installationTypeStatus: false,
   initializationStatus: false,
   datasetInstallationStatus: false,
   apfAuthStatus: false,
   securityStatus: false,
-  certificateStatus: false
+  certificateStatus: false,
 }
 
 export const progressSlice = createSlice({
   name: 'progress',
   initialState,
   reducers: {
+    setConnectionStatus: (state, action: PayloadAction<boolean>) => {
+      state.connectionStatus = action.payload;
+    },
     setPlanningStatus: (state, action: PayloadAction<boolean>) => {
       state.planningStatus = action.payload;
+    },
+    setInstallationTypeStatus: (state, action: PayloadAction<boolean>) => {
+      state.installationTypeStatus = action.payload;
     },
     setInitializationStatus: (state, action: PayloadAction<boolean>) => {
       if (
@@ -63,9 +73,11 @@ export const progressSlice = createSlice({
   }
 });
 
-export const { setPlanningStatus, setInitializationStatus, setDatasetInstallationStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus } = progressSlice.actions;
+export const { setConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setInitializationStatus, setDatasetInstallationStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus } = progressSlice.actions;
 
+export const selectConnectionStatus = (state: RootState) => state.progress.connectionStatus;
 export const selectPlanningStatus = (state: RootState) => state.progress.planningStatus;
+export const selectInstallationTypeStatus = (state: RootState) => state.progress.installationTypeStatus;
 export const selectInitializationStatus = (state: RootState) => state.progress.initializationStatus;
 export const selectDatasetInstallationStatus= (state: RootState) => state.progress.datasetInstallationStatus;
 export const selectApfAuthStatus = (state: RootState) => state.progress.apfAuthStatus;

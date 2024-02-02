@@ -17,11 +17,11 @@ import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import { selectConnectionStatus } from '../stages/connection/connectionSlice';
+import { selectConnectionStatus } from '../stages/progress/progressSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from '../stages/progress/progressSlice';
-import { selectInstallationStatus } from '../stages/installation/installationSlice';
+import { selectInstallationTypeStatus } from '../stages/progress/progressSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
 import Security from '../stages/Security';
@@ -47,7 +47,7 @@ export default function HorizontalLinearStepper(props: any) {
   const stageProgressStatus = [
     useSelector(selectConnectionStatus),
     useSelector(selectPlanningStatus),
-    useSelector(selectInstallationStatus),
+    useSelector(selectInstallationTypeStatus),
     useSelector(selectInitializationStatus),
   ];
 
