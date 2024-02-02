@@ -248,11 +248,11 @@ const Planning = () => {
           const lines = res.details.split('\n').map((l: string) => l.trim()).filter((l: string) => !l.includes("echo"));
           let nodeHome, javaHome;
           lines.map((line: string) => {
-            if (line.includes('node')) nodeHome = localYaml?.node.home ? installationArgs.nodeHome : line;
-            if (line.includes('java')) javaHome = localYaml?.java.home ? installationArgs.javaHome : line;
+            if (line.includes('node')) nodeHome = installationArgs.nodeHome ? installationArgs.nodeHome : line;
+            if (line.includes('java')) javaHome = installationArgs.javaHome ? installationArgs.javaHome : line;
           });
-          nodeHome && nodeHome != '' && dispatch(setInstallationArgs({...installationArgs, nodeHome: nodeHome}))
-          javaHome && javaHome != '' && dispatch(setInstallationArgs({...installationArgs, javaHome: javaHome}))
+          nodeHome && dispatch(setInstallationArgs({...installationArgs, nodeHome: nodeHome}))
+          javaHome && dispatch(setInstallationArgs({...installationArgs, javaHome: javaHome}))
 
         } catch (error) {
           return {status: false, details: error.message}
