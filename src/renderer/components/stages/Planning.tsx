@@ -251,8 +251,8 @@ const Planning = () => {
             if (line.includes('node')) nodeHome = installationArgs.nodeHome ? installationArgs.nodeHome : line;
             if (line.includes('java')) javaHome = installationArgs.javaHome ? installationArgs.javaHome : line;
           });
-          nodeHome && dispatch(setInstallationArgs({...installationArgs, nodeHome: nodeHome}))
-          javaHome && dispatch(setInstallationArgs({...installationArgs, javaHome: javaHome}))
+          nodeHome && nodeHome != '' && dispatch(setInstallationArgs({...installationArgs, nodeHome: nodeHome}))
+          javaHome && javaHome != '' && dispatch(setInstallationArgs({...installationArgs, javaHome: javaHome}))
 
         } catch (error) {
           return {status: false, details: error.message}
