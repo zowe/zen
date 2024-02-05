@@ -34,9 +34,12 @@ import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../conf
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
-import { setProgress, getProgress, getCompleteProgress } from '../progress/progressStore';
+import { setProgress, getProgress, getCompleteProgress, setActiveStage, getActiveStage } from '../progress/progressStore';
 
 const Connection = () => {
+
+  const STAGE_ID = 0;
+  const SUB_STAGES = false;
 
   const dispatch = useAppDispatch();
   const zoweCLIVersion = useAppSelector(selectZoweCLIVersion);
@@ -50,6 +53,7 @@ const Connection = () => {
 
   useEffect(() => {
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
+    setActiveStage(STAGE_ID, SUB_STAGES, 0);
   }, []);
 
   return (
@@ -136,6 +140,26 @@ const FTPConnectionForm = () => {
 
   const resumeProgress = () => {
     const progressStatus = getCompleteProgress();
+
+    const stageProgress = [
+      progressStatus.connectionStatus,
+      progressStatus.planningStatus,
+      progressStatus.installationTypeStatus,
+      progressStatus.initializationStatus,
+      progressStatus.reviewStatus
+    ];
+
+    const subStageProgress = [
+      progressStatus.datasetInstallationStatus,
+      progressStatus.apfAuthStatus,
+      progressStatus.securityStatus,
+      progressStatus.certificateStatus
+    ];
+
+    const activeStage = getActiveStage();
+
+    console.log('activeStage: ', activeStage);
+
     console.log(progressStatus);
   }
 

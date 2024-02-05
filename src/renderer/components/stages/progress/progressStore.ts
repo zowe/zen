@@ -10,7 +10,20 @@ const progressStatus: progressState = {
   apfAuthStatus: false,
   securityStatus: false,
   certificateStatus: false,
+  reviewStatus: false,
 }
+
+interface activeStage {
+  stageId: number,
+  isSubStage: boolean;
+  subStageId: number;
+}
+
+let activeState: activeStage = {
+  stageId: 0,
+  isSubStage: false,
+  subStageId: 0,
+};
 
 export const initProgress = () => {
   const progress = localStorage.getItem('stage-progress');
@@ -48,5 +61,23 @@ export const getCompleteProgress = () : progressState => {
   }
 }
 
+export const setActiveStage = (stageId: number, isSubStage: boolean, subStageId: number): void => {
+  activeState.stageId = stageId;
+  activeState.isSubStage = isSubStage;
+  activeState.subStageId = subStageId;
+  const flattenedProgress = flatten(activeState);
+  localStorage.setItem('active-stage', JSON.stringify(flattenedProgress));
+}
+
+export const getActiveStage = () : activeStage => {
+  let flattenedStage;
+  const activeStage = localStorage.getItem('active-stage');
+  if(activeStage) {
+    flattenedStage = activeStage ? JSON.parse(activeStage) : {};
+    return unflatten(flattenedStage);
+  } else {
+    return activeState;
+  }
+}
 
 

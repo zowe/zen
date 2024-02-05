@@ -21,18 +21,35 @@ export interface progressState {
   apfAuthStatus: boolean;
   securityStatus: boolean;
   certificateStatus: boolean;
+  reviewStatus: boolean;
 }
 
 const initialState: progressState = {
-  connectionStatus: getProgress('connectionStatus'),
-  planningStatus: getProgress('planningStatus'),
-  installationTypeStatus: getProgress('installationTypeStatus'),
-  initializationStatus: getProgress('initializationStatus'),
-  datasetInstallationStatus: getProgress('datasetInstallationStatus'),
-  apfAuthStatus: getProgress('apfAuthStatus'),
-  securityStatus: getProgress('securityStatus'),
-  certificateStatus: getProgress('certificateStatus'),
+  connectionStatus: false,
+  planningStatus: false,
+  installationTypeStatus: false,
+  initializationStatus: false,
+  datasetInstallationStatus: false,
+  apfAuthStatus: false,
+  securityStatus: false,
+  certificateStatus: false,
+  reviewStatus: false,
 }
+
+
+// TO do: Initialization when we add the logic to maintain the state of the stage.
+
+// const initialState: progressState = {
+//   connectionStatus: getProgress('connectionStatus'),
+//   planningStatus: getProgress('planningStatus'),
+//   installationTypeStatus: getProgress('installationTypeStatus'),
+//   initializationStatus: getProgress('initializationStatus'),
+//   datasetInstallationStatus: getProgress('datasetInstallationStatus'),
+//   apfAuthStatus: getProgress('apfAuthStatus'),
+//   securityStatus: getProgress('securityStatus'),
+//   certificateStatus: getProgress('certificateStatus'),
+//   reviewStatus: getProgress('reviewStatus')
+// }
 
 export const progressSlice = createSlice({
   name: 'progress',
@@ -80,10 +97,14 @@ export const progressSlice = createSlice({
       state.certificateStatus = action.payload;
       setProgress('certificateStatus', action.payload);
     },
+    setReviewStatus: (state, action: PayloadAction<boolean>) => {
+      state.certificateStatus = action.payload;
+      setProgress('reviewStatus', action.payload);
+    },
   }
 });
 
-export const { setConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setInitializationStatus, setDatasetInstallationStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus } = progressSlice.actions;
+export const { setConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setInitializationStatus, setDatasetInstallationStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus, setReviewStatus } = progressSlice.actions;
 
 export const selectConnectionStatus = (state: RootState) => state.progress.connectionStatus;
 export const selectPlanningStatus = (state: RootState) => state.progress.planningStatus;
@@ -93,5 +114,6 @@ export const selectDatasetInstallationStatus= (state: RootState) => state.progre
 export const selectApfAuthStatus = (state: RootState) => state.progress.apfAuthStatus;
 export const selectSecurityStatus = (state: RootState) => state.progress.securityStatus;
 export const selectCertificateStatus = (state: RootState) => state.progress.certificateStatus;
+export const selectReviewStatus = (state: RootState) => state.progress.reviewStatus;
 
 export default progressSlice.reducer;
