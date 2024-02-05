@@ -34,6 +34,7 @@ import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../conf
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
+import { setProgress, getProgress, getCompleteProgress } from '../progress/progressStore';
 
 const Connection = () => {
 
@@ -132,6 +133,11 @@ const FTPConnectionForm = () => {
         dispatch(setLoading(false));
       }); 
   };
+
+  const resumeProgress = () => {
+    const progressStatus = getCompleteProgress();
+    console.log(progressStatus);
+  }
 
   return (
     <Box 
@@ -278,7 +284,7 @@ const FTPConnectionForm = () => {
           </Button>
         </Box>
         <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div>
-        <Button color="success" sx={{boxShadow: 'none', margin: '0 0 0 10px', textTransform: 'none'}} type="submit" onClick={() => processForm()}>Resume</Button>
+        <Button color="success" sx={{boxShadow: 'none', margin: '0 0 0 10px', textTransform: 'none'}} type="submit" onClick={() => resumeProgress()}>Resume</Button>
         <div><PlayCircleFilledWhiteIcon sx={{ color: 'green', fontSize: '1.4rem', marginTop: '6px', marginLeft: '0', cursor: 'pointer' }} onClick={() => processForm()} /></div>
         <div style={{opacity: formProcessed ? '1' : '0'}}>
           {!connectionStatus && (validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error'))}

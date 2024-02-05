@@ -10,6 +10,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
+import { setProgress, getProgress } from './progressStore';
 
 export interface progressState {
   connectionStatus: boolean;
@@ -23,14 +24,14 @@ export interface progressState {
 }
 
 const initialState: progressState = {
-  connectionStatus: false,
-  planningStatus: false,
-  installationTypeStatus: false,
-  initializationStatus: false,
-  datasetInstallationStatus: false,
-  apfAuthStatus: false,
-  securityStatus: false,
-  certificateStatus: false,
+  connectionStatus: getProgress('connectionStatus'),
+  planningStatus: getProgress('planningStatus'),
+  installationTypeStatus: getProgress('installationTypeStatus'),
+  initializationStatus: getProgress('initializationStatus'),
+  datasetInstallationStatus: getProgress('datasetInstallationStatus'),
+  apfAuthStatus: getProgress('apfAuthStatus'),
+  securityStatus: getProgress('securityStatus'),
+  certificateStatus: getProgress('certificateStatus'),
 }
 
 export const progressSlice = createSlice({
@@ -39,12 +40,15 @@ export const progressSlice = createSlice({
   reducers: {
     setConnectionStatus: (state, action: PayloadAction<boolean>) => {
       state.connectionStatus = action.payload;
+      setProgress('connectionStatus', action.payload);
     },
     setPlanningStatus: (state, action: PayloadAction<boolean>) => {
       state.planningStatus = action.payload;
+      setProgress('planningStatus', action.payload);
     },
     setInstallationTypeStatus: (state, action: PayloadAction<boolean>) => {
       state.installationTypeStatus = action.payload;
+      setProgress('installationTypeStatus', action.payload);
     },
     setInitializationStatus: (state, action: PayloadAction<boolean>) => {
       if (
@@ -54,21 +58,27 @@ export const progressSlice = createSlice({
         state.certificateStatus
       ) {
         state.initializationStatus = true;
+        setProgress('initializationStatus', true);
       } else {
         state.initializationStatus = false;
+        setProgress('initializationStatus', false);
       }
     },
     setDatasetInstallationStatus: (state, action: PayloadAction<boolean>) => {
       state.datasetInstallationStatus = action.payload;
+      setProgress('datasetInstallationStatus', action.payload);
     },
     setApfAuthStatus: (state, action: PayloadAction<boolean>) => {
       state.apfAuthStatus = action.payload;
+      setProgress('apfAuthStatus', action.payload);
     },
     setSecurityStatus: (state, action: PayloadAction<boolean>) => {
       state.securityStatus = action.payload;
+      setProgress('securityStatus', action.payload);
     },
     setCertificateStatus: (state, action: PayloadAction<boolean>) => {
       state.certificateStatus = action.payload;
+      setProgress('certificateStatus', action.payload);
     },
   }
 });

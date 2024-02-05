@@ -1,58 +1,52 @@
-const STAGES = 5;
-const SUBSTAGES = 4;
-let stageStatus: number[] = [];
-let subStageStatus: number[] = [];
+import { flatten, unflatten } from 'flat';
+import { progressState } from "./progressSlice"; 
 
-const saveStageStatusToLocalStorage = (key: string, value: number[]) => {
-  localStorage.setItem(key, JSON.stringify(value));
+const progressStatus: progressState = {
+  connectionStatus: false,
+  planningStatus: false,
+  installationTypeStatus: false,
+  initializationStatus: false,
+  datasetInstallationStatus: false,
+  apfAuthStatus: false,
+  securityStatus: false,
+  certificateStatus: false,
 }
 
-export const initStageStatus = () => {
-  const status = localStorage.getItem('stage-status');
-  if (!status) {
-    for (let i = 0; i < STAGES; i++) {
-      stageStatus[i] = 0;
-    }
-    saveStageStatusToLocalStorage('stage-status', stageStatus);
+export const initProgress = () => {
+  const progress = localStorage.getItem('stage-progress');
+  if(!progress) {
+    const flattenedProgress = flatten(progressStatus);
+    localStorage.setItem('stage-progress', JSON.stringify(flattenedProgress));
+  } 
+}
+
+export const setProgress = (key: keyof progressState, newValue: boolean): void => {
+  progressStatus[key] = newValue;
+  const flattenedProgress = flatten(progressStatus);
+  localStorage.setItem('stage-progress', JSON.stringify(flattenedProgress));
+}
+
+export const getProgress = (key: keyof progressState): boolean => {
+  const progress = localStorage.getItem('stage-progress');
+  if(progress) {
+    const flattenedProgress = JSON.parse(progress);
+    const unflattenedProgress = unflatten(flattenedProgress) as progressState;
+    return unflattenedProgress[key];
   } else {
-    stageStatus = JSON.parse(status);
+    return progressStatus[key];
   }
 }
 
-export const initSubStageStatus = () => {
-  const status = localStorage.getItem('sub-stage-status');
-  if (!status) {
-    for (let i = 0; i < SUBSTAGES; i++) {
-      subStageStatus[i] = 0;
-    }
-    saveStageStatusToLocalStorage('sub-stage-status', subStageStatus);
+export const getCompleteProgress = () : progressState => {
+  let flattenedProgress;
+  const progress = localStorage.getItem('stage-progress');
+  if(progress) {
+    flattenedProgress = progress ? JSON.parse(progress) : {};
+    return unflatten(flattenedProgress);
   } else {
-    subStageStatus = JSON.parse(status);
+    return progressStatus;
   }
 }
 
-export const setStageStatus = (stageId: number, status: number) => {
-  stageStatus[stageId] = status;
-  saveStageStatusToLocalStorage('stage-status', stageStatus);
-}
 
-export const setSubStageStatus = (subStageId: number, status: number) => {
-  subStageStatus[subStageId] = status;
-  saveStageStatusToLocalStorage('sub-stage-status', subStageStatus);
-}
 
-export const getStageStatus = (stageId: number) => {
-  const status = localStorage.getItem('stage-status');
-  if (status) {
-    stageStatus = JSON.parse(status);
-  }
-  return stageStatus[stageId];
-}
-
-export const getSubStageStatus = (subStageId: number) => {
-  const status = localStorage.getItem('sub-stage-status');
-  if (status) {
-    subStageStatus = JSON.parse(status);
-  }
-  return subStageStatus[subStageId];
-}
