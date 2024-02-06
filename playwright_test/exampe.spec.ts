@@ -1,12 +1,31 @@
 const { test, expect } = require('@playwright/test')
 import { ElectronApplication, Page, _electron as electron } from 'playwright'
-
+import { spawn } from 'child_process';
+import path from 'path';
 
 let electronApp: ElectronApplication
 let page: Page
 
 
 test.beforeAll(async () => {
+  const createDirsScriptPath = path.resolve(__dirname, './prepare.js');
+  console.log('Creating child process with command:', 'node', [createDirsScriptPath]);
+  const child = spawn('node', [createDirsScriptPath]);
+  if (!child) {
+    console.error('Failed to spawn child process');
+    return;
+  }
+  console.log('Child process created successfully');
+  child.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+  });
+  child.stderr.on('data', (data) => {
+    console.error(`stderr: ${data}`);
+  });
+  child.on('error', (error) => {
+    console.error('Child process encountered an error:', error);
+  });
+  await new Promise(resolve => setTimeout(resolve, 3000));
   electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
   electronApp.on('window', async (page) => {
     const filename = page.url()?.split('/').pop()
@@ -18,8 +37,9 @@ test.beforeAll(async () => {
       console.log(msg.text())
     })
   })
+});
 
-})
+
 
 test.afterAll(async () => {
   await electronApp.close()
