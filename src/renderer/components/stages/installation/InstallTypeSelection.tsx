@@ -22,10 +22,14 @@ import ProgressCard from '../../common/ProgressCard';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
+import { setActiveStep } from "../progress/activeStepSlice"; 
 
 const InstallationType = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
+
+  const STAGE_ID = 2;
+  const SUB_STAGES = false;
 
   const dispatch = useAppDispatch();
   const connectionArgs = useAppSelector(selectConnectionArgs);
@@ -41,6 +45,10 @@ const InstallationType = () => {
   let timer: any;
 
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+  }, []);
 
   useEffect(() => {
     if((installValue === "download" && agreeLicense == false) || (installValue === "upload" && paxPath == "") || installValue === "smpe" && (smpePath === "" || !smpePathValidated)){

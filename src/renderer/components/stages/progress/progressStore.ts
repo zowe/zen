@@ -61,10 +61,16 @@ export const getCompleteProgress = () : progressState => {
   }
 }
 
-export const setActiveStage = (stageId: number, isSubStage: boolean, subStageId: number): void => {
+export const setActiveStage = (stageId: number, isSubStage: boolean, subStageId?: number): void => {
   activeState.stageId = stageId;
   activeState.isSubStage = isSubStage;
-  activeState.subStageId = subStageId;
+
+  if(!isSubStage) {
+    activeState.subStageId = 0;
+  } else {
+    activeState.subStageId = subStageId;
+  }
+  
   const flattenedProgress = flatten(activeState);
   localStorage.setItem('active-stage', JSON.stringify(flattenedProgress));
 }

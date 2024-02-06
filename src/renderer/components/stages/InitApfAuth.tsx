@@ -22,11 +22,16 @@ import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
 import { createTheme } from '@mui/material/styles';
-import {stages} from "../configuration-wizard/Wizard";
+import { stages } from "../configuration-wizard/Wizard";
+import { setActiveStep } from "./progress/activeStepSlice";
 
 const InitApfAuth = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
+
+  const STAGE_ID = 3;
+  const SUB_STAGES = true;
+  const SUB_STAGE_ID = 1;
 
   const theme = createTheme();
 
@@ -73,6 +78,7 @@ const InitApfAuth = () => {
   
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
+    dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
     stages[stageId].isSkipped = isInitializationSkipped;
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {

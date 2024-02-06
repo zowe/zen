@@ -25,10 +25,15 @@ import ProgressCard from "../common/ProgressCard";
 import React from "react";
 import { createTheme } from '@mui/material/styles';
 import progressSlice from "./progress/progressSlice";
-import {stages} from "../configuration-wizard/Wizard";
+import { stages } from "../configuration-wizard/Wizard";
+import { setActiveStep } from "./progress/activeStepSlice";
 
 const Security = () => {
   const theme = createTheme();
+
+  const STAGE_ID = 3;
+  const SUB_STAGES = true;
+  const SUB_STAGE_ID = 2;
 
   const stageId = 3;
   const subStageId = 2;
@@ -77,6 +82,7 @@ const Security = () => {
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
+    dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     stages[stageId].subStages[subStageId].isSkipped = isStepSkipped
     stages[stageId].isSkipped = isInitializationSkipped
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {

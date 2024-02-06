@@ -31,6 +31,7 @@ import { createTheme } from '@mui/material/styles';
 import eventDispatcher from '../../../utils/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
+import Home from '../Home';
 
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
@@ -79,14 +80,23 @@ export default function HorizontalLinearStepper(props: any) {
       setActiveStep(newActiveStep);
       const newSubStep = isSubStep ? subStepIndex : 0;
       setActiveSubStep(newSubStep);
-      console.log("ACTING UPON THE EVENT|n");
-      // handleStepperClick(newActiveStep, isSubStep, subStepIndex);
     };
     eventDispatcher.on('updateActiveStep', updateActiveStepListener);
+    eventDispatcher.on('resumeStep', handleStepperClick);
     return () => {
       eventDispatcher.off('updateActiveStep', updateActiveStepListener);
+      eventDispatcher.off('resumeStep', handleStepperClick);
     };
   }, []); 
+
+  const handleStageClick = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
+    
+    setActiveStep(newActiveStep);
+    
+    if(isSubStep) {
+      setActiveSubStep(subStepIndex);
+    }
+  };
 
   const toggleEditorVisibility = (type?: any) => {
     if (type) {
@@ -169,7 +179,6 @@ export default function HorizontalLinearStepper(props: any) {
     setActiveStep(newActiveStep);
     const newSubStep = isSubStep ? subStepIndex : 0;
     setActiveSubStep(newSubStep);
-    console.log("ACTING UPON THE EVENT|n");
   };
 
   const getStepIcon = (error: any, stageId: number, isSubStep?: boolean, subStepId?: number) => {
@@ -207,6 +216,11 @@ export default function HorizontalLinearStepper(props: any) {
     }
   };
 
+  const onSaveAndClose = () => {
+    alertEmitter.emit('hideAlert');
+    eventDispatcher.emit('saveAndCloseEvent');
+  }
+
   const isNextStepEnabled = useAppSelector(selectNextStepEnabled);
 
   return (
@@ -241,7 +255,7 @@ export default function HorizontalLinearStepper(props: any) {
           );
         })}
       </Stepper>
-      {stages[activeStep].subStages &&  <Stepper className="substepper" activeStep={activeSubStep}>
+      {stages[activeStep] && stages[activeStep].subStages &&  <Stepper className="substepper" activeStep={activeSubStep}>
         {stages[activeStep].subStages.map((stage: any, index: number) => {
           const stepProps = {};
           const labelProps: {error?: boolean;} = {};
@@ -271,9 +285,9 @@ export default function HorizontalLinearStepper(props: any) {
         </React.Fragment>
       ) : (
         <React.Fragment>
-          <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: stages[activeStep].subStages ? 'calc(100vh - 250px)' : 'calc(100vh - 200px)'}}>
-            {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].component : stages[activeStep].component}
-          </div>
+          {stages[activeStep] && <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: stages[activeStep].subStages ? 'calc(100vh - 250px)' : 'calc(100vh - 200px)'}}>
+            { stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].component : stages[activeStep].component}
+          </div> }
           <Box sx={{ display: 'flex', flexDirection: 'row', p: "8px 8px 0 8px", borderTop: 'solid 1px lightgray', justifyContent: 'flex-end'}}>
             {/* TODO: This needs a confirmation modal */}
             <Link style={{margin: 0}} to="/">
@@ -281,7 +295,7 @@ export default function HorizontalLinearStepper(props: any) {
                 color="success"
                 variant="outlined"
                 sx={{ textTransform: 'none', mr: 1 }}
-                onClick={() => alertEmitter.emit('hideAlert')}>
+                onClick={onSaveAndClose}>
                 <img style={{width: '16px', height: '20px', paddingRight: '8px'}} src={savedInstall} alt="save and close"/>
                 Save & close
               </Button>
@@ -293,14 +307,14 @@ export default function HorizontalLinearStepper(props: any) {
               sx={{ textTransform: 'none', mr: 1 }}>
               Previous step
             </Button>
-            {stages[activeStep].isSkippable &&
+            {stages[activeStep] && stages[activeStep].isSkippable &&
               <Button 
                 disabled={isNextStepEnabled}
                 variant="contained" 
                 sx={{ textTransform: 'none', mr: 1 }} 
                 onClick={() => handleSkip()}
               >
-                Skip {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].label : stages[activeStep].label}
+                Skip {stages[activeStep] && stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].label : stages[activeStep]? stages[activeStep].label: ''}
               </Button>
             }
             <Button 
@@ -309,7 +323,7 @@ export default function HorizontalLinearStepper(props: any) {
               sx={{ textTransform: 'none', mr: 1 }}
               onClick={() => handleNext()}
             >
-              {(stages[activeStep].subStages && activeSubStep < stages[activeStep].subStages.length - 1) ? stages[activeStep].subStages[activeSubStep].nextButton : stages[activeStep].nextButton}
+              {(stages[activeStep] && stages[activeStep].subStages && activeSubStep < stages[activeStep].subStages.length - 1) ? stages[activeStep].subStages[activeSubStep].nextButton : stages[activeStep] ? stages[activeStep].nextButton : ''}
             </Button>
           </Box>
         </React.Fragment>

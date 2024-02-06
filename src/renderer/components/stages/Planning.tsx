@@ -27,6 +27,7 @@ import { IResponse } from '../../../types/interfaces';
 import Alert from "@mui/material/Alert";
 import { alertEmitter } from "../Header";
 import { Checkbox, FormControlLabel } from "@mui/material";
+import { setActiveStep } from './progress/activeStepSlice';
 import { getConfiguration, getZoweConfig, setTopLevelYamlConfig, setZoweConfig } from "../../../services/ConfigService";
 import EditorDialog from "../common/EditorDialog";
 
@@ -129,6 +130,9 @@ const serverSchema = {
 
 const Planning = () => {
 
+  const STAGE_ID = 1;
+  const SUB_STAGES = false;
+
   const dispatch = useAppDispatch();
 
   const connectionArgs = useAppSelector(selectConnectionArgs);
@@ -174,6 +178,8 @@ const Planning = () => {
     // FIXME: Add a popup warning in case failed to get config files
     // FIXME: Save yaml and schema on disk to not to pull it each time?
     // REVIEW: Replace JobStatement text area with set of text fields?
+
+    dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
 
     if(jobStatementValid && !isJobStatementUpdated) {
       saveJobHeader(null);

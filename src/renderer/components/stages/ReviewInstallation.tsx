@@ -16,11 +16,12 @@ import WarningIcon from '@mui/icons-material/Warning';
 import ContainerCard from '../common/ContainerCard';
 import {stages} from "../configuration-wizard/Wizard";
 import { selectConnectionArgs } from './connection/connectionSlice';
-import { useAppSelector } from '../../hooks';
+import { useAppSelector, useAppDispatch } from '../../hooks';
 import eventDispatcher from '../../../utils/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
 import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from './progress/progressSlice';
+import { setActiveStep } from './progress/activeStepSlice';
 import { selectConnectionStatus } from "./progress/progressSlice";
 import { selectInstallationTypeStatus } from "./progress/progressSlice";
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
@@ -28,6 +29,11 @@ import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import '../../styles/ReviewInstallation.css';
 
 const ReviewInstallation = () => {
+
+  const dispatch = useAppDispatch();
+
+  const STAGE_ID: number = 4;
+  const SUB_STAGES: boolean = false;
 
   const [contentType, setContentType] = useState('');
   const [editorVisible, setEditorVisible] = useState(false);
@@ -55,6 +61,8 @@ const ReviewInstallation = () => {
   const TYPE_OUTPUT = "output";
 
   useEffect(() => {
+    dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+
     if(selectConnectionStatus && selectPlanningStatus && selectInstallationTypeStatus && selectInitializationStatus) {
       setNextStepEnabled(true);
     } else {

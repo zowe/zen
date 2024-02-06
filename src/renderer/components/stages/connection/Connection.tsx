@@ -24,7 +24,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import secureIcon from '../../../assets/secure.png';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
+import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
+import { Tooltip } from '@mui/material';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
@@ -32,14 +33,13 @@ import { setConnectionArgs, setConnectionValidationDetails, setHost, setPort,
                setUser, setPassword, setJobStatement, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates} from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
+import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from '../progress/activeStepSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { setProgress, getProgress, getCompleteProgress, setActiveStage, getActiveStage } from '../progress/progressStore';
+import eventDispatcher from "../../../../utils/eventDispatcher";
 
 const Connection = () => {
-
-  const STAGE_ID = 0;
-  const SUB_STAGES = false;
 
   const dispatch = useAppDispatch();
   const zoweCLIVersion = useAppSelector(selectZoweCLIVersion);
@@ -53,7 +53,6 @@ const Connection = () => {
 
   useEffect(() => {
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
-    setActiveStage(STAGE_ID, SUB_STAGES, 0);
   }, []);
 
   return (
@@ -111,6 +110,10 @@ const FTPConnectionForm = () => {
 
   const [formProcessed, toggleFormProcessed] = React.useState(false);
   const [validationDetails, setValidationDetails] = React.useState('');
+
+  const activeStepIndex = useAppSelector(selectActiveStepIndex);
+  const isSubStep = useAppSelector(selectIsSubstep);
+  const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
   
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
@@ -139,28 +142,7 @@ const FTPConnectionForm = () => {
   };
 
   const resumeProgress = () => {
-    const progressStatus = getCompleteProgress();
-
-    const stageProgress = [
-      progressStatus.connectionStatus,
-      progressStatus.planningStatus,
-      progressStatus.installationTypeStatus,
-      progressStatus.initializationStatus,
-      progressStatus.reviewStatus
-    ];
-
-    const subStageProgress = [
-      progressStatus.datasetInstallationStatus,
-      progressStatus.apfAuthStatus,
-      progressStatus.securityStatus,
-      progressStatus.certificateStatus
-    ];
-
-    const activeStage = getActiveStage();
-
-    console.log('activeStage: ', activeStage);
-
-    console.log(progressStatus);
+    eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
   }
 
   return (
@@ -308,8 +290,12 @@ const FTPConnectionForm = () => {
           </Button>
         </Box>
         <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div>
-        <Button color="success" sx={{boxShadow: 'none', margin: '0 0 0 10px', textTransform: 'none'}} type="submit" onClick={() => resumeProgress()}>Resume</Button>
-        <div><PlayCircleFilledWhiteIcon sx={{ color: 'green', fontSize: '1.4rem', marginTop: '6px', marginLeft: '0', cursor: 'pointer' }} onClick={() => processForm()} /></div>
+        {connectionStatus && activeStepIndex>0 && <Tooltip title="Continue to Last Active Stage" arrow>
+          <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
+            <Button sx={{color: '#858081', boxShadow: 'none', margin: '0 0 0 10px', '&:hover': { backgroundColor: 'transparent' }, '&:click': { backgroundColor: 'transparent' }}} type="submit" onClick={() => resumeProgress()}>Resume</Button>
+            <div><ArrowCircleRightIcon sx={{ color: '#858081', fontSize: '1.4rem', marginTop: '5px', marginLeft: '0', cursor: 'pointer' }} onClick={() => resumeProgress()} /></div>
+          </Box>
+        </Tooltip>}
         <div style={{opacity: formProcessed ? '1' : '0'}}>
           {!connectionStatus && (validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error'))}
         </div>

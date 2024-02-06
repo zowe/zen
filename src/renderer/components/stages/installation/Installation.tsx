@@ -25,8 +25,13 @@ import Ajv from "ajv";
 import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
+import { setActiveStep } from "../progress/activeStepSlice";
 
 const Installation = () => {
+
+  const STAGE_ID = 3;
+  const SUB_STAGES = true;
+  const SUB_STAGE_ID = 0;
 
   const theme = createTheme();
 
@@ -83,6 +88,7 @@ const Installation = () => {
   
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
+    dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
     stages[stageId].isSkipped = isInitializationSkipped;
     if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
