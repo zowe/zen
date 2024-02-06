@@ -56,7 +56,7 @@ export default class MenuBuilder {
     ])
 
     this.mainWindow.webContents.on('context-menu', (_, props) => {
-      const { selectionText, isEditable } = props;
+      const { isEditable } = props;
       if(isEditable) {
         textModMenu.popup({window: this.mainWindow});
       } else {

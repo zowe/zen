@@ -29,7 +29,7 @@ export interface IIpcConnectionArgsSecureOptions {
 export interface IIpcConnectionArgs {
   host: string; 
   port?: number; 
-  connectionType?: 'ftp' | 'sftp' | 'zosmf'; 
+  connectionType?: 'ftp' | 'sftp' | 'zosmf' | 'cli'; 
   user: string; 
   password: string;
   jobStatement: string;
