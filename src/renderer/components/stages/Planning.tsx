@@ -145,8 +145,6 @@ const Planning = () => {
   const [jobHeaderSaved, setJobHeaderSaved] = useState(false);
   const [isJobStatementUpdated, setIsJobStatementUpdated] = useState(false);
   const [jobStatementValue, setJobStatementValue] = useState(useAppSelector(selectJobStatement));
-  const [isJobStatementValid, setIsJobStatementValid] = useState(false);
-  const [jobStatementValidationMsg, setJobStatementValidationMsg] = useState('');
   
   const [locationsValidated, setLocationsValidated] = useState(false);
   const [isLocationsUpdated, setIsLocationsUpdated] = useState(false);
@@ -275,7 +273,6 @@ const Planning = () => {
       return;
     }
     e.preventDefault();
-    setJobStatementValidationMsg('');
     dispatch(setLoading(true));
     window.electron.ipcRenderer.saveJobHeader(jobStatementValue)
       .then(() => getENVVars())
@@ -283,14 +280,10 @@ const Planning = () => {
         setEditorContent(res.details);
         setContentType('output');
         if (!res.status) { // Failure case
-          setJobStatementValidationMsg(res.details);
           dispatch(setJobStatementValidMsg(res.details));
-          setIsJobStatementValid(false);
-          dispatch(setJobStatementValid(false));
           console.warn('Failed to verify job statement');
           alertEmitter.emit('showAlert', 'Failed to verify job statement', 'error');
         } else { // Success JCL case
-          setIsJobStatementValid(true);
           dispatch(setJobStatementValid(true));
           alertEmitter.emit('hideAlert');
           if(locationsValidated) {
@@ -308,9 +301,7 @@ const Planning = () => {
         setEditorContent(err.message);
         setContentType('output');
         console.warn(err);
-        setJobStatementValidationMsg(err.message);
         dispatch(setJobStatementValidMsg(err.message));
-        setIsJobStatementValid(false);
         dispatch(setJobStatementValid(false));
         alertEmitter.emit('showAlert', err.message, 'error');
         dispatch(setLoading(false));
