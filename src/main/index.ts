@@ -14,7 +14,7 @@ import { HomeActions } from "../actions/HomeActions";
 import { ConnectionActions } from "../actions/ConnectionActions";
 import { InstallActions } from "../actions/InstallActions";
 import { PlanningActions } from "../actions/PlanningActions";
-import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
+import { IIpcConnectionArgs } from '../types/interfaces';
 import { ProgressStore } from "../storage/ProgressStore";
 import { checkDirExists } from '../services/utils';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
@@ -50,39 +50,39 @@ const createWindow = (): void => {
   // FIXME: Add dev mode switch 
   // mainWindow.webContents.openDevTools();
 
-  ipcMain.handle('check-zowe-cli', async (event) => {
-    const res: any = await HomeActions.checkZoweCLI();
+  ipcMain.handle('check-zowe-cli', async () => {
+    const res = await HomeActions.checkZoweCLI();
     return res;
   });
 
-  ipcMain.handle('get-installation-history', (event) => {
-    const res: IResponse = HomeActions.findPreviousInstallations();
+  ipcMain.handle('get-installation-history', () => {
+    const res = HomeActions.findPreviousInstallations();
     return res;
   });
 
-  ipcMain.handle('upload-pax', async (event) => {
+  ipcMain.handle('upload-pax', async () => {
     return await dialog.showOpenDialog({ properties: ['openFile'], filters: [
       { name: 'pax', extensions: ['pax'] },
     ] });
   });
 
-  ipcMain.handle('save-job-header', async (event, jobStatement) => {
-    const res: IResponse = await connectionActions.saveJobStatement(jobStatement);
+  ipcMain.handle('save-job-header', async (_event, jobStatement: string) => {
+    const res = connectionActions.saveJobStatement(jobStatement);
     return res;
   });
 
-  ipcMain.handle('check-connection', async (event, args: IIpcConnectionArgs) => {
-    const res: IResponse = await connectionActions.checkConnectionData(args);
+  ipcMain.handle('check-connection', async (_event, args: IIpcConnectionArgs) => {
+    const res = await connectionActions.checkConnectionData(args);
     return res;
   });
 
-  ipcMain.handle('get-example-zowe', async (event) => {
-    const res: any = await PlanningActions.getExampleZowe();
+  ipcMain.handle('get-example-zowe', async () => {
+    const res = await PlanningActions.getExampleZowe();
     return res;
   });
 
-  ipcMain.handle('get-zowe-schema', async (event) => {
-    const res: any = await PlanningActions.getZoweSchema();
+  ipcMain.handle('get-zowe-schema', async () => {
+    const res = await PlanningActions.getZoweSchema();
     return res;
   });
 
@@ -96,43 +96,43 @@ const createWindow = (): void => {
     return res;
   });
 
-  ipcMain.handle('set-config-by-key', async (event, key: string, value: any) => {
-    const res: any = await PlanningActions.setConfigByKey(key, value);
+  ipcMain.handle('set-config-by-key', async (_event, key: string, value) => {
+    const res = await PlanningActions.setConfigByKey(key, value);
     return res;
   });
 
-  ipcMain.handle('get-zowe-version', async (event) => {
-    const res: any = await PlanningActions.getZoweVersion();
+  ipcMain.handle('get-zowe-version', async () => {
+    const res = await PlanningActions.getZoweVersion();
     return res;
   });
 
-  ipcMain.handle('get-env-vars', async (event, connectionArgs) => {
-    const res: any = await PlanningActions.getENV(connectionArgs);
+  ipcMain.handle('get-env-vars', async (_event, connectionArgs) => {
+    const res = await PlanningActions.getENV(connectionArgs);
     return res;
   });
 
-  ipcMain.handle('check-java', async (event, connectionArgs, location) => {
-    const res: any = await PlanningActions.checkJava(connectionArgs, location);
+  ipcMain.handle('check-java', async (_event, connectionArgs, location) => {
+    const res = await PlanningActions.checkJava(connectionArgs, location);
     return res;
   });
 
-  ipcMain.handle('check-node', async (event, connectionArgs, location) => {
-    const res: any = await PlanningActions.checkNode(connectionArgs, location);
+  ipcMain.handle('check-node', async (_event, connectionArgs, location) => {
+    const res = await PlanningActions.checkNode(connectionArgs, location);
     return res;
   });
 
-  ipcMain.handle('check-space-create-dir', async (event, connectionArgs, location) => {
-    const res: any = await PlanningActions.checkSpaceAndCreateDir(connectionArgs, location);
+  ipcMain.handle('check-space-create-dir', async (_event, connectionArgs, location) => {
+    const res = await PlanningActions.checkSpaceAndCreateDir(connectionArgs, location);
     return res;
   });
 
-  ipcMain.handle('check-dir-exists', async (event, connectionArgs, location) => {
-    const res: any = await checkDirExists(connectionArgs, location);
+  ipcMain.handle('check-dir-exists', async (_event, connectionArgs, location) => {
+    const res = await checkDirExists(connectionArgs, location);
     return res;
   })
 
-  ipcMain.handle('check-dir-or-create', async (event, connectionArgs, location) => {
-    const res: any = await PlanningActions.checkOrCreateDir(connectionArgs, location);
+  ipcMain.handle('check-dir-or-create', async (_event, connectionArgs, location) => {
+    const res = await PlanningActions.checkOrCreateDir(connectionArgs, location);
     return res;
   })
 
@@ -146,19 +146,19 @@ const createWindow = (): void => {
     return res;
   });
 
-  ipcMain.handle('init-apf', async (event, connectionArgs, installationArgs, zoweConfig) => {
+  ipcMain.handle('init-apf', async (_event, connectionArgs, installationArgs, zoweConfig) => {
     const res = await installActions.apfAuth(connectionArgs, installationArgs, zoweConfig);
     return res;
   });
 
 
-  ipcMain.handle('get-apf-auth-progress', async (event) => {
+  ipcMain.handle('get-apf-auth-progress', async () => {
     const res = ProgressStore.getAll()['apfAuth'];
     return res;
   });
 
 
-  ipcMain.handle('get-installation-progress', async (event) => {
+  ipcMain.handle('get-installation-progress', async () => {
     const res = ProgressStore.getAll()['installation'];
     return res;
   });
@@ -174,7 +174,7 @@ const createWindow = (): void => {
   });
 
 
-  ipcMain.handle('get-init-security-progress', async (event) => {
+  ipcMain.handle('get-init-security-progress', async () => {
     const res = ProgressStore.getAll()['initSecurity'];
     return res;
   });

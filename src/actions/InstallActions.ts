@@ -12,19 +12,19 @@ import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { FTPInstallation, CLIInstallation } from './InstallationHandler';
 
 export class InstallActions {
-  mode: any;
-  strategy: any;
+  mode: IIpcConnectionArgs["connectionType"];
+  strategy: FTPInstallation | CLIInstallation;
 
   constructor() {
     this.mode = 'ftp'; // REVIEW: get from storage when picking strategy?
     this.strategy = this.getStartegy();
   }
 
-  setMode(mode: string) {
+  setMode(mode: IIpcConnectionArgs["connectionType"]) {
     this.mode = mode;
   }
 
-  getStartegy(): any {
+  getStartegy(): FTPInstallation | CLIInstallation {
     switch (this.mode) {
       case 'ftp':
         return new FTPInstallation();
@@ -48,12 +48,12 @@ export class InstallActions {
   }
 
   initSecurity(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string}, zoweConfig: any): Promise<IResponse> {
+    installationArgs: {installationDir: string}, zoweConfig: object): Promise<IResponse> {
     return this.strategy.initSecurity(connectionArgs, installationArgs, zoweConfig);
   }
 
   apfAuth(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string}, zoweConfig: any): Promise<IResponse> {
+    installationArgs: {installationDir: string}, zoweConfig: object): Promise<IResponse> {
     return this.strategy.apfAuth(connectionArgs, installationArgs, zoweConfig);
   }
 

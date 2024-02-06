@@ -22,7 +22,7 @@ class Connection {
 
 export class FTPConnection extends Connection {
   
-  async checkConnectionData(config: any): Promise<IResponse> {
+  async checkConnectionData(config: IIpcConnectionArgs): Promise<IResponse> {
     const response: IResponse = {
       status: false,
       details: ""
@@ -61,12 +61,16 @@ export class FTPConnection extends Connection {
 
 export class CLIConnection extends Connection {
 
-  async checkConnectionData(config: any): Promise<IResponse> {
-    throw new Error('CLIConnection is not implemented');
+  async checkConnectionData(): Promise<IResponse> {
+    return {status: false, details: 'CLIConnection is not implemented'};
   }
 
-  saveConnectionData(config: any) {
-    throw new Error('CLIConnection is not implemented');
+  saveConnectionData() {
+    return {status: false, details: 'CLIConnection is not implemented'};
+  }
+
+  saveJobStatement() {
+    return {status: false, details: 'CLIConnection is not implemented'};
   }
 
 }
