@@ -141,10 +141,6 @@ const FTPConnectionForm = () => {
       }); 
   };
 
-  const resumeProgress = () => {
-    eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
-  }
-
   return (
     <Box 
       onSubmit={(e: SyntheticEvent) => e.preventDefault()} 
@@ -290,12 +286,7 @@ const FTPConnectionForm = () => {
           </Button>
         </Box>
         <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div>
-        {connectionStatus && activeStepIndex>0 && <Tooltip title="Continue to Last Active Stage" arrow>
-          <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
-            <Button sx={{color: '#858081', boxShadow: 'none', margin: '0 0 0 10px', '&:hover': { backgroundColor: 'transparent' }, '&:click': { backgroundColor: 'transparent' }}} type="submit" onClick={() => resumeProgress()}>Resume</Button>
-            <div><ArrowCircleRightIcon sx={{ color: '#858081', fontSize: '1.4rem', marginTop: '5px', marginLeft: '0', cursor: 'pointer' }} onClick={() => resumeProgress()} /></div>
-          </Box>
-        </Tooltip>}
+
         <div style={{opacity: formProcessed ? '1' : '0'}}>
           {!connectionStatus && (validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error'))}
         </div>

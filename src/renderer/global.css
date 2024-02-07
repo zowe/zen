@@ -54,7 +54,7 @@ a:hover {
 .home-container {
   display: flex;
   justify-content: space-evenly;
-  padding-top: 100px;
+  padding-top: 50px;
 }
 
 .wizard-container {
