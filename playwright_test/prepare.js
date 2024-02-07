@@ -13,7 +13,7 @@ async function prepare() {
     user: SSH_USER,
     password: SSH_PASSWD,
   });
-	
+
   await scriptRunner.install(ZOWE_ROOT_DIR);
 }
 

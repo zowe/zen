@@ -37,15 +37,16 @@ class Script {
   
   async download(installDir) {
     try {
-      const { status, version } = await Script.getZoweVersion();
+      const { status, details: version } = await Script.getZoweVersion();
       if (!status) {
         throw new Error('Failed to retrieve Zowe version.');
       }
-
-      const paxURL = `https://zowe.jfrog.io/zowe/list/libs-release-local/org/zowe/${version}/zowe-${version}.pax`;
-	const script = `curl -o ${installDir}/zowe.pax ${paxURL} -k`;
+	const script = `URL="https://zowe.jfrog.io/zowe/list/libs-release-local/org/zowe";
+curl $URL/${version}/zowe-${version}.pax
+-k
+-o ${installDir}/zowe.pax`
       return this.run(script);
-    } catch (error) {
+	} catch (error) {
       console.error('Error:', error);
       return null;
     }
