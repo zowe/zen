@@ -93,10 +93,10 @@ const Security = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const process = (event: any) => {
+  const process = async(event: any) => {
     event.preventDefault();
     toggleProgress(true);
-    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
         dispatch(setSecurityStatus(res.status));
         dispatch(setInitializationStatus(res.status));

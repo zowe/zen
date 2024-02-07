@@ -110,7 +110,7 @@ const Installation = () => {
 
     Promise.all([
       window.electron.ipcRenderer.setConfigByKey('zowe.setup.dataset', setupYaml),
-    ]).then(() => {
+    ]).then(async () => {
       if(installationType === 'smpe'){
         dispatch(setNextStepEnabled(true));
         dispatch(setDatasetInstallationStatus(true));
@@ -120,6 +120,7 @@ const Installation = () => {
         setYaml(window.electron.ipcRenderer.getConfig());
         toggleProgress(true);
         dispatch(setLoading(false));
+        const config = (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml;
         window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
           if(!res.status){ //errors during runInstallation()
             alertEmitter.emit('showAlert', res.details, 'error');
