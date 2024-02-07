@@ -129,10 +129,7 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
   };
 
   const handleVerifyCertsChange = (e: any) => {
-    if(!initializeForm) {
-      return;
-    }
-    if(e.verifyCertificates && e.verifyCertificates != verifyCertsYaml.verifyCertificates){
+    if(e.verifyCertificates){
       if(validateVerifyCertSchema){
         validateVerifyCertSchema(e);
         if(validateVerifyCertSchema.errors) {
@@ -140,10 +137,12 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
           const errMsg = validateVerifyCertSchema.errors[0].message;
           setIsFormValid(false);
           setFormError(errPath+' '+errMsg);
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, verifyCertificates: e.verifyCertificates}})
           dispatch(setNextStepEnabled(false));
         } else {
           setVerifyCertsYaml({'verifyCertificates': e.verifyCertificates});
           setIsFormValid(true);
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, verifyCertificates: e.verifyCertificates}})
           dispatch(setNextStepEnabled(true));
         }
       }
