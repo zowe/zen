@@ -169,10 +169,10 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
           <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={async (e) => {
             e.preventDefault();
             setShowProgress(true);
-            window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
+            window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml).then((res: IResponse) => {
               dispatch(setNextStepEnabled(true));
               dispatch(setCertificateStatus(res.status));
               stages[stageId].subStages[subStageId].isSkipped = !res.status;
