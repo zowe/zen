@@ -22,6 +22,7 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from '../stages/progress/progressSlice';
 import { selectInstallationTypeStatus } from '../stages/progress/progressSlice';
+import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progress/activeStepSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
 import Security from '../stages/Security';
@@ -65,8 +66,8 @@ export default function HorizontalLinearStepper(props: any) {
   const TYPE_OUTPUT = "output";
 
   const {stages} = props;
-  const [activeStep, setActiveStep] = useState(0);
-  const [activeSubStep, setActiveSubStep] = useState(0);
+  const [activeStep, setActiveStep] = useState(useAppSelector(selectActiveStepIndex));
+  const [activeSubStep, setActiveSubStep] = useState(useAppSelector(selectActiveSubStepIndex));
   const [skipped, setSkipped] = useState(new Set());
   const [nextText, setNextText] = useState("Continue");
   const [contentType, setContentType] = useState('output');
