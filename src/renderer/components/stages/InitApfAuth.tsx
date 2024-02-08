@@ -15,7 +15,6 @@ import { selectYaml, selectSchema, setNextStepEnabled, setLoading } from '../con
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { setApfAuthStatus, setInitializationStatus, selectApfAuthStatus, selectInitializationStatus } from './progress/progressSlice';
 import { IResponse } from '../../../types/interfaces';
-import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
 import ProgressCard from '../common/ProgressCard';
 import ContainerCard from '../common/ContainerCard';
 import EditorDialog from "../common/EditorDialog";
@@ -59,7 +58,6 @@ const InitApfAuth = () => {
   let timer: any;
 
   const section = 'dataset';
-  const initConfig = getConfiguration(section);
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -81,9 +79,6 @@ const InitApfAuth = () => {
     dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
     stages[stageId].isSkipped = isInitializationSkipped;
-    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
-      setSetupYaml(initConfig);
-    }
     setInit(true);
   }, []);
 
@@ -106,7 +101,7 @@ const InitApfAuth = () => {
   const process = (event: any) => {
     event.preventDefault();
     toggleProgress(true);
-    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
+    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
         dispatch(setApfAuthStatus(res.status));
         dispatch(setInitializationStatus(res.status));
@@ -124,7 +119,7 @@ const InitApfAuth = () => {
   }
 
   const editHLQ = (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = init ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    let updatedData = init ? (Object.keys(yaml?.zowe.setup.dataset).length > 0 ? yaml?.zowe.setup.dataset : data) : (data ? data : yaml?.zowe.setup.datasetg);
     
     setInit(false);
 
@@ -146,7 +141,7 @@ const InitApfAuth = () => {
         const errMsg = validate.errors[0].message;
         setStageConfig(false, errPath+' '+errMsg, updatedData, false);
       } else {
-        setConfiguration(section, updatedData, true);
+        // setConfiguration(section, updatedData, true);
         setStageConfig(true, '', updatedData, true);
       }
     }
