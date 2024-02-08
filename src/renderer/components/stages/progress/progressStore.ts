@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: EPL-2.0
  *
  * Copyright Contributors to the Zowe Project.
-*/
+ */
 
 import { flatten, unflatten } from 'flat';
 import { progressState } from "./progressSlice"; 
