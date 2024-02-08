@@ -485,7 +485,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Run-time Directory (or installation location)"
                 variant="standard"
-                value={localYaml?.zowe.runtimeDirectory || installationArgs.installationDir}
+                value={localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}));
                   setTopLevelYamlConfig("zowe.runtimeDirectory", e.target.value);
