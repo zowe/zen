@@ -23,6 +23,7 @@ import installationDryImg from '../assets/installation-dry-run.png'
 import eventDispatcher from "../../utils/eventDispatcher";
 import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from './stages/progress/activeStepSlice';
 import { selectConnectionStatus} from './stages/progress/progressSlice';
+import { selectActiveStepDate} from './stages/progress/activeStepSlice';
 import  HorizontalLinearStepper  from './common/Stepper';
 import Wizard from './configuration-wizard/Wizard'
 
@@ -86,6 +87,7 @@ const Home = () => {
   const isSubStep = useAppSelector(selectIsSubstep);
   const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
   const connectionStatus = useAppSelector(selectConnectionStatus);
+  const lastActiveDate = useAppSelector(selectActiveStepDate);
 
   const [showWizard, setShowWizard] = useState(false);
   const stages: any = [];
@@ -151,7 +153,7 @@ const Home = () => {
              <Typography variant="subtitle1" component="div">Saved Installation</Typography>
             </div>
             <Box sx={{display: 'flex', flexDirection: 'row', marginTop: '10px'}}>
-              <div style={{paddingRight: '10px'}}>Last updated on: Dec 10 2024 5 PM</div>
+              <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {lastActiveDate}</div>
               <div style={{marginBottom: '1px', marginTop: '-5px'}}>
               <Tooltip title="Continue to Last Active Stage" arrow>
                   <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '9px', padding: '4px'}} onClick={resumeProgress}>

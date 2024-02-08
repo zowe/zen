@@ -33,13 +33,15 @@ import { setConnectionArgs, setConnectionValidationDetails, setHost, setPort,
                setUser, setPassword, setJobStatement, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates} from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
+import { setActiveStep } from '../progress/activeStepSlice';
 import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from '../progress/activeStepSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
-import { setProgress, getProgress, getCompleteProgress, setActiveStage, getActiveStage } from '../progress/progressStore';
-import eventDispatcher from "../../../../utils/eventDispatcher";
 
 const Connection = () => {
+
+  const STAGE_ID = 0;
+  const SUB_STAGES = false;
 
   const dispatch = useAppDispatch();
   const zoweCLIVersion = useAppSelector(selectZoweCLIVersion);
@@ -53,6 +55,7 @@ const Connection = () => {
 
   useEffect(() => {
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
+    dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
   }, []);
 
   return (
@@ -100,6 +103,9 @@ Found Zowe CLI ${zoweCLIVersion}It can be used as a provider to install Zowe Ser
 
 const FTPConnectionForm = () => {
 
+  const STAGE_ID = 0;
+  const SUB_STAGES = false;
+  
   const dispatch = useAppDispatch();
   
   const connectionStatus = useAppSelector(selectConnectionStatus);
@@ -115,6 +121,9 @@ const FTPConnectionForm = () => {
   const isSubStep = useAppSelector(selectIsSubstep);
   const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
   
+  useEffect(() => {
+    dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+  }, [])
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
     dispatch(setNextStepEnabled(false));

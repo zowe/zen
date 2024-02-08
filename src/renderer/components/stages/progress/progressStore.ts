@@ -1,5 +1,6 @@
 import { flatten, unflatten } from 'flat';
 import { progressState } from "./progressSlice"; 
+import { activeStep } from './activeStepSlice'
 
 const progressStatus: progressState = {
   connectionStatus: false,
@@ -13,16 +14,10 @@ const progressStatus: progressState = {
   reviewStatus: false,
 }
 
-interface activeStage {
-  stageId: number,
-  isSubStage: boolean;
-  subStageId: number;
-}
-
-let activeState: activeStage = {
-  stageId: 0,
-  isSubStage: false,
-  subStageId: 0,
+let activeState: activeStep = {
+  activeStepIndex: 0,
+  isSubStep: false,
+  activeSubStepIndex: 0,
 };
 
 export const initProgress = () => {
@@ -61,21 +56,22 @@ export const getCompleteProgress = () : progressState => {
   }
 }
 
-export const setActiveStage = (stageId: number, isSubStage: boolean, subStageId?: number): void => {
-  activeState.stageId = stageId;
-  activeState.isSubStage = isSubStage;
+export const setActiveStage = (stageId: number, isSubStage: boolean, date: string, subStageId?: number): void => {
+  activeState.activeStepIndex = stageId;
+  activeState.isSubStep = isSubStage;
+  activeState.date = date;
 
   if(!isSubStage) {
-    activeState.subStageId = 0;
+    activeState.activeSubStepIndex = 0;
   } else {
-    activeState.subStageId = subStageId;
+    activeState.activeSubStepIndex = subStageId;
   }
   
   const flattenedProgress = flatten(activeState);
   localStorage.setItem('active-stage', JSON.stringify(flattenedProgress));
 }
 
-export const getActiveStage = () : activeStage => {
+export const getActiveStage = () : activeStep => {
   let flattenedStage;
   const activeStage = localStorage.getItem('active-stage');
   if(activeStage) {

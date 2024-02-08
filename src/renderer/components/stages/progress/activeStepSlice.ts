@@ -15,7 +15,8 @@ import { setActiveStage } from './progressStore'
 export interface activeStep {
   activeStepIndex: number,
   isSubStep: boolean,
-  activeSubStepIndex: number
+  activeSubStepIndex: number,
+  date?: string
 }
 
 const initialState: activeStep = {
@@ -24,6 +25,11 @@ const initialState: activeStep = {
   activeSubStepIndex: 0
 }
 
+const getCurrentDate = () => {
+  const currentDate = new Date();
+  const formattedDate = currentDate.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+  return formattedDate;
+}  
 
 export const activeStepSlice = createSlice({
   name: 'sctiveStage',
@@ -33,7 +39,8 @@ export const activeStepSlice = createSlice({
       state.activeStepIndex = action.payload.activeStepIndex;
       state.isSubStep = action.payload.isSubStep;
       state.activeSubStepIndex = action.payload.activeSubStepIndex;
-      setActiveStage(action.payload.activeStepIndex, action.payload.isSubStep, action.payload.activeSubStepIndex);
+      state.date = getCurrentDate();
+      setActiveStage(action.payload.activeStepIndex, action.payload.isSubStep, state.date, action.payload.activeSubStepIndex);
     },
   }
 });
@@ -43,6 +50,7 @@ export const { setActiveStep } = activeStepSlice.actions;
 export const selectActiveStepIndex = (state: RootState) => state.activeStep.activeStepIndex;
 export const selectIsSubstep = (state: RootState) => state.activeStep.isSubStep;
 export const selectActiveSubStepIndex = (state: RootState) => state.activeStep.activeSubStepIndex;
+export const selectActiveStepDate = (state: RootState) => state.activeStep.date;
 
 
 export default activeStepSlice.reducer;
