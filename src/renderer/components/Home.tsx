@@ -139,30 +139,26 @@ const Home = () => {
           {cards.map(card => makeCard(card))}
         </div>
 
-        {connectionStatus && <div style={{
-           marginBottom: '1px', 
-           marginTop: '130px', 
-           background: 'white', 
-           fontSize: 'small', 
-           marginLeft: '8.9%',
-           padding: '15px',
-           width: '38%'
-           }}>
+        {connectionStatus && <div style={{marginBottom: '1px',marginTop: '130px',background: 'white', fontSize: 'small',marginLeft: '8.9%',padding: '15px',width: '38%'}}>
           <Box sx={{display: 'flex', flexDirection: 'column'}}>
+
             <div style={{paddingBottom: '10px', color: 'black'}}>
              <Typography variant="subtitle1" component="div">Saved Installation</Typography>
             </div>
+
             <Box sx={{display: 'flex', flexDirection: 'row', marginTop: '10px'}}>
               <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {lastActiveDate}</div>
               <div style={{marginBottom: '1px', marginTop: '-5px'}}>
-              <Tooltip title="Continue to Last Active Stage" arrow>
+                <Tooltip title="Continue to Last Active Stage" arrow>
                   <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '9px', padding: '4px'}} onClick={resumeProgress}>
                     Resume Progress
                   </Button>
-              </Tooltip>
-            </div>
+                </Tooltip>
+              </div>
             </Box>
+
           </Box>
+
         </div>}
       </div>
     }

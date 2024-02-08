@@ -32,8 +32,8 @@ const ReviewInstallation = () => {
 
   const dispatch = useAppDispatch();
 
-  const STAGE_ID: number = 4;
-  const SUB_STAGES: boolean = false;
+  const STAGE_ID = 4;
+  const SUB_STAGES = false;
 
   const [contentType, setContentType] = useState('');
   const [editorVisible, setEditorVisible] = useState(false);

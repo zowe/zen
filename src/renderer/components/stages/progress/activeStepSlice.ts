@@ -32,7 +32,7 @@ const getCurrentDate = () => {
 }  
 
 export const activeStepSlice = createSlice({
-  name: 'sctiveStage',
+  name: 'activeStage',
   initialState,
   reducers: {
     setActiveStep: (state, action: PayloadAction<activeStep>) => {
