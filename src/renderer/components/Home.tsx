@@ -162,7 +162,7 @@ const Home = () => {
         </div>}
       </div>
     }
-    {showWizard && <Wizard />}
+    {showWizard && <Wizard initialization={false}/>}
    </>
   );
 };

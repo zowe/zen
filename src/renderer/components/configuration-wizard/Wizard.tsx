@@ -36,12 +36,12 @@ export const stages = [
   {id: 4, label: 'Review Installation', component: <ReviewInstallation/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Finish Installation'},
 ]
 
-const Wizard = () => {
+const Wizard = ({initialization}: {initialization: boolean}) => {
   initProgress();
   return (
       <div className="wizard-container" >
         {useAppSelector(selectLoading) ? <Overlay/> : null}
-        <HorizontalLinearStepper stages={stages}/>
+        <HorizontalLinearStepper stages={stages} initialization={initialization}/>
       </div>
   );
 };

@@ -39,7 +39,7 @@ import { StepIcon } from '@mui/material';
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
 
-export default function HorizontalLinearStepper(props: any) {
+export default function HorizontalLinearStepper({stages, initialization}:{stages: any, initialization?:boolean}) {
 
   const connectionStatus = useSelector(selectConnectionStatus);
 
@@ -65,38 +65,24 @@ export default function HorizontalLinearStepper(props: any) {
   const TYPE_JCL = "jcl";
   const TYPE_OUTPUT = "output";
 
-  const {stages} = props;
-  const [activeStep, setActiveStep] = useState(useAppSelector(selectActiveStepIndex));
-  const [activeSubStep, setActiveSubStep] = useState(useAppSelector(selectActiveSubStepIndex));
-  const [skipped, setSkipped] = useState(new Set());
+  const [activeStep, setActiveStep] =  initialization ? useState(0) : useState(useAppSelector(selectActiveStepIndex));
+  const [activeSubStep, setActiveSubStep] = initialization ? useState(0) : useState(useAppSelector(selectActiveSubStepIndex));
   const [nextText, setNextText] = useState("Continue");
   const [contentType, setContentType] = useState('output');
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState('');
-  const [currStep, setCurrStep] = useState(1);
-  const [stepComplete, setStepComplete] = useState(false);
 
   useEffect(() => {
-    const updateActiveStepListener = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
-      setActiveStep(newActiveStep);
-      const newSubStep = isSubStep ? subStepIndex : 0;
-      setActiveSubStep(newSubStep);
-    };
     eventDispatcher.on('updateActiveStep', updateActiveStepListener);
-    eventDispatcher.on('resumeStep', handleStepperClick);
     return () => {
       eventDispatcher.off('updateActiveStep', updateActiveStepListener);
-      eventDispatcher.off('resumeStep', handleStepperClick);
     };
   }, []); 
 
-  const handleStageClick = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
-    
+  const updateActiveStepListener = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
     setActiveStep(newActiveStep);
-    
-    if(isSubStep) {
-      setActiveSubStep(subStepIndex);
-    }
+    const newSubStep = isSubStep ? subStepIndex : 0;
+    setActiveSubStep(newSubStep);
   };
 
   const toggleEditorVisibility = (type?: any) => {
