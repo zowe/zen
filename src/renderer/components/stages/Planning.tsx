@@ -17,7 +17,7 @@ import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
 import ContainerCard from '../common/ContainerCard';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import { setYaml, setSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
+import { setYaml, setSchema, setNextStepEnabled, setLoading, selectYaml } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs, setConnectionArgs } from './connection/connectionSlice';
 import { setPlanningStatus, selectPlanningStatus } from './progressSlice';
 import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from './installation/installationSlice';
@@ -27,7 +27,6 @@ import { IResponse } from '../../../types/interfaces';
 import Alert from "@mui/material/Alert";
 import { alertEmitter } from "../Header";
 import { Checkbox, FormControlLabel } from "@mui/material";
-import { getConfiguration, getZoweConfig, setTopLevelYamlConfig, setZoweConfig } from "../../../services/ConfigService";
 import EditorDialog from "../common/EditorDialog";
 
 const serverSchema = {
@@ -132,6 +131,7 @@ const Planning = () => {
   const dispatch = useAppDispatch();
 
   const connectionArgs = useAppSelector(selectConnectionArgs);
+  const [localYaml, setLocalYaml] = useState(useAppSelector(selectYaml));
 
   const jobStatementValid = useAppSelector(selectJobStatementValid);
   const jobStatementValidMsg = useAppSelector(selectJobStatementValidMsg);
@@ -145,8 +145,6 @@ const Planning = () => {
   const [jobHeaderSaved, setJobHeaderSaved] = useState(false);
   const [isJobStatementUpdated, setIsJobStatementUpdated] = useState(false);
   const [jobStatementValue, setJobStatementValue] = useState(useAppSelector(selectJobStatement));
-  const [isJobStatementValid, setIsJobStatementValid] = useState(false);
-  const [jobStatementValidationMsg, setJobStatementValidationMsg] = useState('');
   
   const [locationsValidated, setLocationsValidated] = useState(false);
   const [isLocationsUpdated, setIsLocationsUpdated] = useState(false);
@@ -156,7 +154,7 @@ const Planning = () => {
   const zoweVersion = useAppSelector(selectZoweVersion);
   const installationArgs: any = useAppSelector(selectInstallationArgs);
   const [requiredSpace, setRequiredSpace] = useState(1300); //in megabytes
-  let localYaml: any = getZoweConfig();
+  // let localYaml: any = getZoweConfig();
 
   const [contentType, setContentType] = useState('output');
   const [editorVisible, setEditorVisible] = useState(false);
@@ -185,6 +183,7 @@ const Planning = () => {
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       if (res.status) {
         dispatch(setYaml(res.details.config));
+        setLocalYaml(res.details.config);
         const schema = res.details.schema;
         // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
         schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
@@ -198,16 +197,15 @@ const Planning = () => {
         let installationDir = '';
         if (res.details.config?.zowe?.runtimeDirectory && res.details.config?.zowe?.workspaceDirectory) {
           const getParentDir = (path: string): string => path.split('/').filter((i: string, ind: number) => i || !ind).slice(0, -1).join('/');
-          const runtimeParent = getParentDir(res.details.config.zowe.runtimeDirectory);
-          const workspaceParent = getParentDir(res.details.config.zowe.workspaceDirectory);
+          const runtimeParent = getParentDir(res.details.config?.zowe?.runtimeDirectory);
+          const workspaceParent = getParentDir(res.details.config?.zowe?.workspaceDirectory);
           if (runtimeParent === workspaceParent) installationDir = runtimeParent;
         }
-        const javaHome = (res.details.config?.java?.home) ? res.details.config.java.home : '';
-        const nodeHome = (res.details.config?.node?.home) ? res.details.config.node.home : '';
-        dispatch(setInstallationArgs({...installationArgs, installationDir: installationDir, javaHome: javaHome, nodeHome: nodeHome}));
+        dispatch(setInstallationArgs({...installationArgs, installationDir: res.details.config?.zowe?.runtimeDirectory ?? ''}));
       } else {
         window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
           dispatch(setYaml(res.details));
+          setLocalYaml(res.details);
           return res.status
         }).then((yamlStatus: boolean) => {
           window.electron.ipcRenderer.getZoweSchema().then((res: IResponse) => {
@@ -216,18 +214,15 @@ const Planning = () => {
             schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
             schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
             schema.$id = serverSchema.$id;
+            if(schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
+              delete schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
+              schema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverSchema.$defs.ipv4
+            }
             dispatch(setSchema(schema));
           }); 
         }); 
       }
     })
-    if(localYaml == undefined){
-      window.electron.ipcRenderer.getExampleZowe().then((res: IResponse) => {
-        localYaml = res.details;
-        setZoweConfig(res.details);
-        return res.status
-      })
-    }
   }, []);  
 
   useEffect(() => {
@@ -250,8 +245,9 @@ const Planning = () => {
             if (line.includes('node')) nodeHome = installationArgs.nodeHome ? installationArgs.nodeHome : line;
             if (line.includes('java')) javaHome = installationArgs.javaHome ? installationArgs.javaHome : line;
           });
-          nodeHome && dispatch(setInstallationArgs({...installationArgs, nodeHome: nodeHome})) && setTopLevelYamlConfig("node.home", nodeHome);
-          javaHome && dispatch(setInstallationArgs({...installationArgs, javaHome: javaHome})) && setTopLevelYamlConfig("java.home", javaHome);
+          nodeHome && dispatch(setInstallationArgs({...installationArgs, nodeHome: nodeHome}))
+          javaHome && dispatch(setInstallationArgs({...installationArgs, javaHome: javaHome}))
+
         } catch (error) {
           return {status: false, details: error.message}
         }
@@ -275,7 +271,6 @@ const Planning = () => {
       return;
     }
     e.preventDefault();
-    setJobStatementValidationMsg('');
     dispatch(setLoading(true));
     window.electron.ipcRenderer.saveJobHeader(jobStatementValue)
       .then(() => getENVVars())
@@ -283,14 +278,10 @@ const Planning = () => {
         setEditorContent(res.details);
         setContentType('output');
         if (!res.status) { // Failure case
-          setJobStatementValidationMsg(res.details);
           dispatch(setJobStatementValidMsg(res.details));
-          setIsJobStatementValid(false);
-          dispatch(setJobStatementValid(false));
           console.warn('Failed to verify job statement');
           alertEmitter.emit('showAlert', 'Failed to verify job statement', 'error');
         } else { // Success JCL case
-          setIsJobStatementValid(true);
           dispatch(setJobStatementValid(true));
           alertEmitter.emit('hideAlert');
           if(locationsValidated) {
@@ -308,9 +299,7 @@ const Planning = () => {
         setEditorContent(err.message);
         setContentType('output');
         console.warn(err);
-        setJobStatementValidationMsg(err.message);
         dispatch(setJobStatementValidMsg(err.message));
-        setIsJobStatementValid(false);
         dispatch(setJobStatementValid(false));
         alertEmitter.emit('showAlert', err.message, 'error');
         dispatch(setLoading(false));
@@ -471,7 +460,11 @@ Please customize the job statement below to match your system requirements.
         </FormControl>
       </Box>
       {step > 0 
-        ? <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}}>
+        ? <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}} onChange={(e) => {
+            dispatch(setYaml(localYaml));
+            formChangeHandler();
+            }}
+          >
           <Typography id="position-1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
             {`Now let's define some properties like z/OS Unix locations, identifiers, and z/OSMF details (optional).`}
           </Typography>
@@ -488,8 +481,13 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}));
-                  setTopLevelYamlConfig("zowe.runtimeDirectory", e.target.value);
-                  formChangeHandler();
+                  setLocalYaml((prevYaml: { zowe: any; }) => ({
+                    ...prevYaml,
+                    zowe: {...prevYaml.zowe, runtimeDirectory: e.target.value}
+                  }))
+                  window.electron.ipcRenderer.setConfigByKey('zowe.runtimeDirectory', e.target.value).then((res: any) => {
+                    // console.log('updated zowe.runtimeDirectory')
+                  })
                 }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Readable z/OS Unix location for Zowe source files. Approximate space: {`${requiredSpace}MB`}</p>
@@ -503,11 +501,16 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Workspace Directory"
                 variant="standard"
-                value={localYaml?.zowe?.workspaceDirectory || installationArgs.workspaceDir}
+                value={localYaml?.zowe?.workspaceDirectory ?? ''}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, workspaceDir: e.target.value}));
-                  setTopLevelYamlConfig("zowe.workspaceDirectory", e.target.value);
-                  formChangeHandler();
+                  setLocalYaml((prevYaml: { zowe: any; }) => ({
+                    ...prevYaml,
+                    zowe: {...prevYaml.zowe, workspaceDirectory: e.target.value}
+                  }))
+                  window.electron.ipcRenderer.setConfigByKey('zowe.workspaceDirectory', e.target.value).then((res: any) => {
+                    // console.log('updated zowe.workspaceDirectory')
+                  })
                 }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Read and writeable z/OS Unix location for the Zowe workspace.</p>
@@ -524,8 +527,13 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.zowe?.logDirectory || installationArgs.logDir}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, logDir: e.target.value}));
-                  setTopLevelYamlConfig("zowe.logDirectory", e.target.value);
-                  formChangeHandler();
+                  setLocalYaml((prevYaml: { zowe: any; }) => ({
+                    ...prevYaml,
+                    zowe: {...prevYaml.zowe, logDirectory: e.target.value}
+                  }))
+                  window.electron.ipcRenderer.setConfigByKey('zowe.logDirectory', e.target.value).then((res: any) => {
+                    // console.log('updated zowe.logDirectory')
+                  })
                 }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Read and writeable z/OS Unix location for Zowe's logs.</p>
@@ -542,8 +550,13 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.zowe?.extensionDirectory || installationArgs.extensionDir}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, extensionDir: e.target.value}));
-                  setTopLevelYamlConfig("zowe.extensionDirectory", e.target.value);
-                  formChangeHandler();
+                  setLocalYaml((prevYaml: { zowe: any; }) => ({
+                    ...prevYaml,
+                    zowe: {...prevYaml.zowe, extensionDirectory: e.target.value}
+                  }))
+                  window.electron.ipcRenderer.setConfigByKey('zowe.extensionDirectory', e.target.value).then((res: any) => {
+                    // console.log('updated zowe.extensionDirectory')
+                  })
                 }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Read and writeable z/OS Unix location to contain Zowe's extensions.</p>
@@ -560,8 +573,13 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.zowe?.rbacProfileIdentifier || installationArgs.rbacProfile}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}));
-                  setTopLevelYamlConfig("zowe.rbacProfileIdentifier", e.target.value);
-                  formChangeHandler();
+                  setLocalYaml((prevYaml: { zowe: any; }) => ({
+                    ...prevYaml,
+                    zowe: {...prevYaml.zowe, rbacProfileIdentifier: e.target.value}
+                  }))
+                  window.electron.ipcRenderer.setConfigByKey('zowe.rbacProfileIdentifier', e.target.value).then((res: any) => {
+                    // console.log('updated zowe.rbacProfileIdentifier')
+                  })
                 }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>ID used for determining resource names as used in RBAC authorization checks.</p>
@@ -580,8 +598,13 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.zowe?.job?.name || installationArgs.jobName}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, jobName: e.target.value}));
-                  setTopLevelYamlConfig("zowe.job.name", e.target.value);
-                  formChangeHandler();
+                  setLocalYaml((prevYaml: { zowe: any; }) => ({
+                    ...prevYaml,
+                    zowe: {...prevYaml.zowe, job: {...prevYaml.zowe.job, name: e.target.value}}
+                  }))
+                  window.electron.ipcRenderer.setConfigByKey('zowe.job.name', e.target.value).then((res: any) => {
+                    // console.log('updated zowe.job.name')
+                  })
                 }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Job name of the Zowe primary ZWESLSTC started task.</p>
@@ -598,8 +621,13 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.zowe?.job?.prefix || installationArgs.jobPrefix}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, jobPrefix: e.target.value}));
-                  setTopLevelYamlConfig("zowe.job.prefix", e.target.value);
-                  formChangeHandler();
+                  setLocalYaml((prevYaml: { zowe: any; }) => ({
+                    ...prevYaml,
+                    zowe: {...prevYaml.zowe, job: {...prevYaml.zowe.job, prefix: e.target.value}}
+                  }))
+                  window.electron.ipcRenderer.setConfigByKey('zowe.job.prefix', e.target.value).then((res: any) => {
+                    // console.log('updated zowe.job.prefi')
+                  })
                 }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Short prefix to identify/customize address spaces created by the Zowe job.</p>
@@ -616,8 +644,13 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.zowe?.cookieIdentifier || installationArgs.cookieId}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, cookieId: e.target.value}));
-                  setTopLevelYamlConfig("zowe.cookieIdentifier", e.target.value);
-                  formChangeHandler();
+                  setLocalYaml((prevYaml: { zowe: any; }) => ({
+                    ...prevYaml,
+                    zowe: {...prevYaml.zowe, cookieIdentifier: e.target.value}
+                  }))
+                  window.electron.ipcRenderer.setConfigByKey('zowe.cookieIdentifier', e.target.value).then((res: any) => {
+                    // console.log('updated zowe.cookieIdentifier')
+                  })
                 }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>ID that can be used by the servers to distinguish their cookies from unrelated Zowe installs.</p>
@@ -634,8 +667,13 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.java?.home || installationArgs.javaHome}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, javaHome: e.target.value}));
-                  setTopLevelYamlConfig("java.home", e.target.value);
-                  formChangeHandler();
+                  setLocalYaml((prevYaml: { java: any; }) => ({
+                    ...prevYaml,
+                    java: {...prevYaml.java, home: e.target.value}
+                  }))
+                  window.electron.ipcRenderer.setConfigByKey('java.home', e.target.value).then((res: any) => {
+                    // console.log('updated zowe.java.home')
+                  })
                 }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>z/OS Unix location of Java.</p>
@@ -652,8 +690,13 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.node?.home || installationArgs.nodeHome}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, nodeHome: e.target.value}));
-                  setTopLevelYamlConfig('node.home', e.target.value);
-                  formChangeHandler();
+                  setLocalYaml((prevYaml: { node: any; }) => ({
+                    ...prevYaml,
+                    node: {...prevYaml.node, home: e.target.value}
+                  }))
+                  window.electron.ipcRenderer.setConfigByKey('node.home', e.target.value).then((res: any) => {
+                    // console.log('updated zowe.node.home')
+                  })
                 }}
               />
               <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>z/OS Unix location of Node.js.</p>
@@ -688,8 +731,13 @@ Please customize the job statement below to match your system requirements.
                       value={localYaml?.zOSMF?.host || connectionArgs.host}
                       onChange={(e) => {
                         dispatch(setInstallationArgs({...installationArgs, zosmfHost: e.target.value}));
-                        setTopLevelYamlConfig("zOSMF.host", e.target.value);
-                        formChangeHandler();
+                        setLocalYaml((prevYaml: any) => ({
+                          ...prevYaml,
+                          zOSMF: {...prevYaml.zOSMF, host: e.target.value}
+                        }))
+                        window.electron.ipcRenderer.setConfigByKey('zOSMF.host', e.target.value).then((res: any) => {
+                          // console.log('updated zowe.zOSMF.host')
+                        })
                       }}
                     />
                     <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Host (or domain name) of your z/OSMF instance.</p>
@@ -703,11 +751,17 @@ Please customize the job statement below to match your system requirements.
                       style={{marginLeft: 0}}
                       label="z/OSMF Port"
                       variant="standard"
+                      type="number"
                       value={localYaml?.zOSMF?.port || installationArgs.zosmfPort}
                       onChange={(e) => {
                         dispatch(setInstallationArgs({...installationArgs, zosmfPort: e.target.value}));
-                        setTopLevelYamlConfig("zOSMF.port", Number(e.target.value));
-                        formChangeHandler();
+                        setLocalYaml((prevYaml: any) => ({
+                          ...prevYaml,
+                          zOSMF: {...prevYaml.zOSMF, port: Number( e.target.value)}
+                        }))
+                        window.electron.ipcRenderer.setConfigByKey('zOSMF.port', Number(e.target.value)).then((res: any) => {
+                          // console.log('updated zowe.zOSMF.port')
+                        })
                       }}
                     />
                     <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Port number of your z/OSMF instance.</p>
@@ -726,8 +780,13 @@ Please customize the job statement below to match your system requirements.
                       value={localYaml?.zOSMF?.applId || installationArgs.zosmfApplId}
                       onChange={(e) => {
                         dispatch(setInstallationArgs({...installationArgs, zosmfApplId: e.target.value}));
-                        setTopLevelYamlConfig("zOSMF.port", e.target.value);
-                        formChangeHandler();
+                        setLocalYaml((prevYaml: { zOSMF: any; }) => ({
+                          ...prevYaml,
+                          zOSMF: {...prevYaml.zOSMF, applId: e.target.value}
+                        }))
+                        window.electron.ipcRenderer.setConfigByKey('zOSMF.applId', e.target.value).then((res: any) => {
+                          // console.log('updated zowe.zOSMF.applId')
+                        })
                       }}
                     />
                     <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Application ID of your z/OSMF instance.</p>

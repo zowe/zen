@@ -11,12 +11,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { dump, load } from 'js-yaml';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { setConfiguration, setZoweConfig, getZoweConfig } from '../../../services/ConfigService';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import Ajv2019 from "ajv/dist/2019"
 import MonacoEditorComponent from "../common/MonacoEditor";
 import draft7MetaSchema from "ajv/dist/refs/json-schema-draft-07.json";
+import { parse, stringify } from "yaml";
 
 const test_jcl = `
 //MYJOB   JOB (ACCT), 'My Job Description',
@@ -34,8 +33,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
 
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
-  const yaml = useAppSelector(selectYaml);
-  const [setupYaml, setSetupYaml] = useState(yaml);
+  const [setupYaml, setSetupYaml] = useState(useAppSelector(selectYaml));
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState(content ? content : '');
   const [isSchemaValid, setIsSchemaValid] = useState(true);
@@ -43,15 +41,17 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
   const fileInputRef = useRef(null);
   let initZoweConfig: any;
 
-  if(contentType == 'yaml') {
-    initZoweConfig = getZoweConfig();
-  }
+
+  // if(contentType == 'yaml') {
+  //   initZoweConfig = getZoweConfig();
+  // }
+  
 
   useEffect(() => {
     setEditorVisible(isEditorVisible);
     if(isEditorVisible) {
        if(contentType == 'yaml') {
-        setEditorContent(dump(initZoweConfig));
+        setEditorContent(stringify(setupYaml));
       }
       if(contentType == 'jcl') {
         setEditorContent(test_jcl);
@@ -74,7 +74,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
     }
 
     if(newCode && (newCode == "\n" || newCode == "")) {
-      setZoweConfig("");
+      // setZoweConfig("");
       return;
     }
 
@@ -82,7 +82,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
 
     try {
       // To parse the yaml and convert it to the javascript object
-      jsonData = load(newCode);
+      jsonData = parse(newCode);
     } catch (error) {
       console.error('Error parsing YAML:', error);
       jsonData = newCode;
@@ -102,27 +102,19 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
       const errMsg = validate.errors[0].message;
       setSchemaError(`Invalid Schema: ${errPath}. ${errMsg} `, );
       jsonData = jsonData ? jsonData : "";
-      setZoweConfig(jsonData);
-    } else if(isSchemaValid && jsonData) {
-      setZoweConfig(jsonData);
       setSetupYaml(jsonData);
-      updateConfig(jsonData);
+      window.electron.ipcRenderer.setConfig(jsonData);
+      dispatch(setYaml(jsonData));
+    } else if(isSchemaValid && jsonData) {
+      window.electron.ipcRenderer.setConfig(jsonData);
+      dispatch(setYaml(jsonData));
+      setSetupYaml(jsonData);
+      if (onChange) {
+        onChange(jsonData, true);
+      }
     }
 
   };
-
-  const updateConfig = (data: any) => {
-    if (data && Object.keys(data).length > 0) {
-      const setup = data.zowe.setup;
-      const properties = Object.keys(setup);
-      properties.map(prop => {
-        setConfiguration(prop, setup[prop]);
-      });
-      if (onChange) {
-        onChange(setup, true);
-      }
-    }
-  }
 
   const triggerFileInputClick = () => {
     fileInputRef.current.click();
