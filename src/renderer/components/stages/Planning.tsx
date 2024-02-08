@@ -244,8 +244,6 @@ const Planning = () => {
   useEffect(() => {
     const nextPosition = document.getElementById(`position-${step}`);
     nextPosition.scrollIntoView({behavior: 'smooth'});
-    setTimeout(() => {
-    }, 500);
   }, [step]);
 
   const getENVVars = () => {

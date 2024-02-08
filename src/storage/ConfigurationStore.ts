@@ -52,7 +52,7 @@ export class ConfigurationStore {
     return store.store;
   }
 
-  public static setConfigByKey(key: string, value: string): boolean {
+  public static setConfigByKey(key: string, value: string | Array<string>): boolean {
     if (this.validateWithSchema(key)) {
       store.set(`config.${key}`, value);
       return true;
