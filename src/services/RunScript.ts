@@ -10,7 +10,7 @@
 
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
-import {splitUnixScriptByNumOfChars, startBPXBATCHAndShellSession} from "./utils";
+import {parseUnixScriptByNumOfChars, startBPXBATCHAndShellSession} from "./utils";
 
 export class Script {
 
@@ -19,7 +19,7 @@ export class Script {
     // TODO: Shouldn't we change ";" to "&&" to stop on first fail instead of keep going?
     const jcl = `${config.jobStatement}
 ${startBPXBATCHAndShellSession("ZNSCRPT")}
-${splitUnixScriptByNumOfChars(script)};
+${parseUnixScriptByNumOfChars(script)};
 echo "Script finished."
 /* `
     console.log(`JOB: ${jcl}`)

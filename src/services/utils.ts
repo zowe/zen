@@ -52,18 +52,18 @@ export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<
   }
 }
 
-export function splitUnixScriptByNumOfChars(script: string, charCount: number = JCL_UNIX_SCRIPT_CHARS): string {
+// This adds a "\n" inside Unix commands separated by ";"
+export function parseUnixScriptByNumOfChars(script: string, charCount: number = JCL_UNIX_SCRIPT_CHARS): string {
   const parts: string[] = [];
   let currentPart = '';
   let counter = 0;
 
   for (let i = 0; i < script.length; i++) {
       if (counter >= charCount) {
-          // Check if we've exceeded the character limit
           const lastSpaceIndex = currentPart.lastIndexOf(' ');
 
           if (lastSpaceIndex !== -1) {
-              // If there's a space within the character limit, backtrack to the last space
+              // If there's a space within the character limit, backtrack to the last encountered space
               const backtrackedPart = currentPart.substring(0, lastSpaceIndex);
               parts.push(backtrackedPart);
               currentPart = currentPart.substring(lastSpaceIndex + 1);
