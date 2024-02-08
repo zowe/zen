@@ -10,16 +10,14 @@
 
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
+import {startBPXBATCHAndShellSession} from "./utils";
 
 export class CheckJava {
 
   public async run(config: IIpcConnectionArgs, java: string) {
 
     const jcl = `${config.jobStatement}
-//SETPR2    EXEC PGM=BPXBATCH,REGION=0M
-//STDOUT DD SYSOUT=*
-//STDPARM      DD *
-sh set -x;
+${startBPXBATCHAndShellSession("ZNCHKJV")}
 ${java}/bin/java -version;
 echo "Script finished."
 /* `
