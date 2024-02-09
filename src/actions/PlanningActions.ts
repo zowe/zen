@@ -51,7 +51,7 @@ export class PlanningActions {
     }
   }
   
-  public static getExampleZowe(): Promise<{status: boolean, details: any}> {
+  public static getExampleZowe(): Promise<IResponse> {
     return new Promise((resolve, reject) => {
       https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/example-zowe.yaml', (res) => {
         let data = '';
@@ -75,7 +75,7 @@ export class PlanningActions {
     });
   }
 
-  public static getZoweSchema(): Promise<{status: boolean, details: any}> {
+  public static getZoweSchema(): Promise<IResponse> {
     return new Promise((resolve, reject) => {
       https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/schemas/zowe-yaml-schema.json', (res) => {
         let data = '';
@@ -99,7 +99,7 @@ export class PlanningActions {
     });
   }
 
-  public static async getConfig() {
+  public static async getConfig(): Promise<IResponse> {
     const details = ConfigurationStore.getAll();
     if (details.config && details.schema) {
       return {status: true, details};
@@ -108,8 +108,8 @@ export class PlanningActions {
     }
   }
 
-  public static async getZoweVersion() {
-    return new Promise<{ status: boolean, details: any }>((resolve, reject) => {
+  public static async getZoweVersion(): Promise<IResponse> {
+    return new Promise<IResponse>((resolve, reject) => {
       https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/manifest.json.template', (res) => {
         let data = '';
   
@@ -132,7 +132,7 @@ export class PlanningActions {
     });
   }
 
-public static async setConfigByKey(key: string, value: any) {
+public static async setConfigByKey(key: string, value: string | Array<string>): Promise<IResponse> {
     const status = ConfigurationStore.setConfigByKey(key, value);
     return {status, details: ''};
   }

@@ -15,6 +15,8 @@ import { IIpcConnectionArgs, IIpcConnectionArgsSecureOptions } from '../../../..
 export interface ConnectionState {
   connectionStatus: boolean;
   connectionArgs: IIpcConnectionArgs;
+  connectionValidationDetails: string;
+  acceptCertificates: boolean;
 }
 
 //TODO also seen in ConnectionStore. Necessary or duplication?
@@ -38,6 +40,8 @@ const initialState: ConnectionState = {
       minVersion: "TLSv1.2"
     }
   },
+  connectionValidationDetails: 'connectionValidationDetails',
+  acceptCertificates: false,
 };
 
 export const connectionSlice = createSlice({
@@ -71,14 +75,23 @@ export const connectionSlice = createSlice({
     setConnectionStatus: (state, action: PayloadAction<boolean>) => {
       state.connectionStatus = action.payload;
     },
+    setConnectionValidationDetails: (state, action: PayloadAction<string>) => {
+      state.connectionValidationDetails = action.payload;
+    },
+    setAcceptCertificates: (state, action: PayloadAction<boolean>) => {
+      state.acceptCertificates = action.payload;
+    },
   },
 });
 
 export const { setConnectionArgs, setConnectionStatus, setHost, setPort,
-               setUser, setPassword, setJobStatement, setSecure, setSecureOptions,
+               setUser, setPassword, setJobStatement, setSecure, setSecureOptions, setConnectionValidationDetails, setAcceptCertificates,
              } = connectionSlice.actions;
 
 export const selectConnectionArgs = (state: RootState) => state.connection.connectionArgs;
 export const selectConnectionStatus = (state: RootState) => state.connection.connectionStatus;
+export const selectConnectionSecure= (state: RootState) => state.connection.connectionArgs.secure;
+export const selectConnectionValidationDetails = (state: RootState) => state.connection.connectionValidationDetails;
+export const selectAcceptCertificates = (state: RootState) => state.connection.acceptCertificates;
 
 export default connectionSlice.reducer;

@@ -13,12 +13,13 @@ import { Box, Button, FormControl, FormControlLabel, FormLabel, Link, Radio, Rad
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion, setInstallationArgs } from './installationSlice';
+import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid, selectInstallationType, selectSmpeDir, selectLicenseAgreement, selectSmpeDirValid, setInstallationStatus } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
 import ProgressCard from '../../common/ProgressCard';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
 
 const InstallationType = () => {
@@ -26,17 +27,13 @@ const InstallationType = () => {
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
   const dispatch = useAppDispatch();
-//   const schema = useAppSelector(selectSchema);
-//   const yaml = useAppSelector(selectYaml);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-//   const setupSchema = schema.properties.zowe.properties.setup.properties.dataset;
-//   const [setupYaml, setSetupYaml] = useState(yaml.zowe.setup.dataset);
-  const [installValue, setInstallValue] = useState("download");
+  const [installValue, setInstallValue] = useState(useAppSelector(selectInstallationType));
   const [paxPath, setPaxPath] = useState("");
-  const [smpePath, setSmpePath] = useState("");
-  const [smpePathValidated, setSmpePathValidated] = useState(false);
+  const [smpePath, setSmpePath] = useState(useAppSelector(selectSmpeDir));
+  const [smpePathValidated, setSmpePathValidated] = useState(useAppSelector(selectSmpeDirValid));
   const [showLicense, setShowLicense] = useState(false);
-  const [agreeLicense, setAgreeLicense] = useState(false);
+  const [agreeLicense, setAgreeLicense] = useState(useAppSelector(selectLicenseAgreement));
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   const version = useAppSelector(selectZoweVersion);
@@ -45,13 +42,14 @@ const InstallationType = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if((installValue === "download" && agreeLicense == false) || (installValue === "upload" && paxPath == "") || installValue === "smpe" && installationArgs.smpeDir == ""){
+    if((installValue === "download" && agreeLicense == false) || (installValue === "upload" && paxPath == "") || installValue === "smpe" && (smpePath === "" || !smpePathValidated)){
         dispatch(setNextStepEnabled(false));
     } else {
+        dispatch(setInstallationStatus(true))
         dispatch(setNextStepEnabled(true));
     }
     
-  }, [installValue, paxPath, installationArgs, agreeLicense]);
+  }, [installValue, paxPath, installationArgs, agreeLicense, smpePathValidated]);
 
   const showLicenseAgreement = () => {
     setShowLicense(true);
@@ -59,10 +57,26 @@ const InstallationType = () => {
 
   const licenseAgreement = (agree: any) => {
     setAgreeLicense(false);
+    dispatch(setLicenseAgreement(false));
     if(agree == 1) {
       setAgreeLicense(true);
+      dispatch(setLicenseAgreement(true));
     }
     setShowLicense(false);
+  }
+
+  const installTypeChangeHandler = (type: string) => {
+    dispatch(setInstallationType(type));
+    setInstallValue(type);
+    dispatch(setInstallationStatus(false))
+  }
+
+  const onSmpePathChange = (path: string) => {
+    dispatch(setSmpeDir(path));
+    setSmpePath(path);
+    dispatch(setSmpeDirValid(false));
+    setSmpePathValidated(false);
+    dispatch(setInstallationStatus(false))
   }
 
   return (
@@ -73,11 +87,11 @@ const InstallationType = () => {
       <FormControl>
         <RadioGroup
             aria-labelledby="demo-radio-buttons-group-label"
-            defaultValue="download"
+            value={installValue}
             name="radio-buttons-group"
             onChange={(e) => {
                 dispatch(setInstallationArgs({...installationArgs, installationType: e.target.value}))
-                setInstallValue(e.target.value)
+                installTypeChangeHandler(e.target.value)
             }}
         >
             <FormControlLabel value="download" control={<Radio />} label="Download Zowe convenience build PAX from internet" />
@@ -99,7 +113,8 @@ const InstallationType = () => {
             value={installationArgs.smpeDir}
             onChange={(e) => {
                 dispatch(setInstallationArgs({...installationArgs, smpeDir: e.target.value}));
-                setSmpePath(e.target.value)
+                setSmpePath(e.target.value);
+                onSmpePathChange(e.target.value);
             }}
         />
     </FormControl>}
@@ -108,9 +123,10 @@ const InstallationType = () => {
             e.preventDefault();
             window.electron.ipcRenderer.checkDirExists(connectionArgs, smpePath).then((res: boolean) => {
                 setSmpePathValidated(res);
+                dispatch(setSmpeDirValid(true))
             })
         }}>Validate location</Button>
-        {smpePathValidated ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> : <Typography sx={{color: "gray"}}>{'Enter a valid path.'}</Typography> }
+        {smpePathValidated ? <CheckCircle sx={{ color: 'green', fontSize: '1rem', marginTop: '15px', marginLeft: '11px'}} /> : <Typography sx={{color: "gray"}}>{'Enter a valid path.'}</Typography> }
     </FormControl>}
     {installValue === "download" &&
       <div>
@@ -118,7 +134,14 @@ const InstallationType = () => {
           {`Zen will download the latest Zowe convenience build in PAX archive format from `}
           <Link href="zowe.org">{'https://zowe.org'}</Link>
         </Typography>
-        <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} onClick={showLicenseAgreement}>License Agreement</Button>
+        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
+          <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} 
+            onClick={showLicenseAgreement}
+          >
+            License Agreement
+          </Button>
+          { agreeLicense && <CheckCircle sx={{ color: 'green', fontSize: '1rem', marginTop: '15px', marginLeft: '11px'}} />}
+        </Box>
         {showLicense && <LicenseDialog isAgreementVisible={true} licenseAgreement={licenseAgreement}/>}
       </div>}
     {installValue === "upload" &&   <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       

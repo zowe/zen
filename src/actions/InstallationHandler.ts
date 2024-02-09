@@ -14,7 +14,6 @@ import path from "path/posix";
 import { Script } from "../services/RunScript";
 import { stringify } from 'yaml';
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
-import { ConfigurationStore } from "../storage/ConfigurationStore";
 import { ProgressStore } from "../storage/ProgressStore";
 import * as fs from 'fs';
 
@@ -24,7 +23,7 @@ class Installation {
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
     version: string,
-    zoweConfig: any
+    zoweConfig: object
   ): Promise<IResponse> {
     const savingResult = await this.generateYamlFile(zoweConfig);
     if (!savingResult.status) {
@@ -91,7 +90,7 @@ class Installation {
       }
 
       if(!installation.status){
-        return {status: false, details: `Error running zwe install: ${installation.details}`};
+        return {status: false, details: `Error running zwe install: ${JSON.stringify(installation.details)}`};
       }
 
       let initMvs;
@@ -115,10 +114,10 @@ class Installation {
   }
 
   public async apfAuth(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string}, zoweConfig: any): Promise<any>{
+    installationArgs: {installationDir: string}, zoweConfig: object): Promise<IResponse>{
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-    await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
+    await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
       if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           return ProgressStore.set('apfAuth.writeYaml', false);
@@ -128,21 +127,22 @@ class Installation {
     console.log("uploading yaml...");
     const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
     if(!uploadYaml.status){
-      return ProgressStore.set('apfAuth.uploadYaml', false);
+      ProgressStore.set('apfAuth.uploadYaml', false);
+      return {status: false, details: 'Failed to upload YAML file'}
 
     }
     ProgressStore.set('apfAuth.uploadYaml', uploadYaml.status);
-    const script = `cd ${installationArgs.installationDir}/runtime/bin;\n./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml`;
+    const script = `cd ${installationArgs.installationDir}/runtime/bin;\n./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml \n--allow-overwritten --update-config`;
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('apfAuth.success', result.rc === 0);
     return {status: result.rc === 0, details: result.jobOutput}
   }
   
   public async initSecurity(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string}, zoweConfig: any): Promise<IResponse>{
+    installationArgs: {installationDir: string}, zoweConfig: object): Promise<IResponse>{
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-      await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
+      await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
         if (err) {
             console.warn("Can't save configuration to zowe.yaml");
             ProgressStore.set('initSecurity.writeYaml', false);
@@ -156,15 +156,15 @@ class Installation {
         return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
       ProgressStore.set('initSecurity.uploadYaml', uploadYaml.status);
-      const script = `cd ${installationArgs.installationDir}/runtime/bin;\n./zwe init security -c ${installationArgs.installationDir}/zowe.yaml`;
+      const script = `cd ${installationArgs.installationDir}/runtime/bin;\n./zwe init security -c ${installationArgs.installationDir}/zowe.yaml \n--allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
       ProgressStore.set('initSecurity.success', result.rc === 0);
       return {status: result.rc === 0, details: result.jobOutput}
   }
 
-  async generateYamlFile(zoweConfig: any) {
+  async generateYamlFile(zoweConfig: object): Promise<IResponse> {
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-    await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
+    await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
       if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           return {status: false, details: err.message};
@@ -183,23 +183,23 @@ class Installation {
   }
   
   async downloadPax(version: string): Promise<IResponse> {
-    throw new Error('Method not implemented.');
+    return {status: false, details: 'Method not implemented.'}
   }
 
   async uploadPax(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
-    throw new Error('Method not implemented.');
+    return {status: false, details: 'Method not implemented.'}
   }
 
   async unpax(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
-    throw new Error('Method not implemented.');
+    return {status: false, details: 'Method not implemented.'}
   }
 
   async install(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
-    throw new Error('Method not implemented.');
+    return {status: false, details: 'Method not implemented.'}
   }
 
   async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
-    throw new Error('Method not implemented.');
+    return {status: false, details: 'Method not implemented.'}
   }
 }
 
@@ -220,7 +220,7 @@ export class FTPInstallation extends Installation {
     const paxURL = `https://zowe.jfrog.io/zowe/list/libs-release-local/org/zowe/${version}/zowe-${version}.pax`;
     const tempPath = path.join(app.getPath("temp"), "zowe.pax");
     const result = await new FileTransfer().download_PAX(paxURL, tempPath);
-    return {status: true, details: ''} // REVIEW file transfer results
+    return result;
   }
 
   async uploadPax(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
@@ -245,18 +245,18 @@ export class FTPInstallation extends Installation {
   }
 
   async install(connectionArgs: IIpcConnectionArgs, installDir: string) {
-    const script = `cd ${installDir}/runtime/bin;\n./zwe install -c ${installDir}/zowe.yaml`;
+    const script = `cd ${installDir}/runtime/bin;\n./zwe install -c ${installDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
 
   async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string) {
-    const script = `cd ${installDir}/runtime/bin;\n./zwe init mvs -c ${installDir}/zowe.yaml`;
+    const script = `cd ${installDir}/runtime/bin;\n./zwe init mvs -c ${installDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
 
-  async checkInstallData(args: Array<any>) {
+  async checkInstallData() {
     // FIXME: Refine installation data validation
   }
 }

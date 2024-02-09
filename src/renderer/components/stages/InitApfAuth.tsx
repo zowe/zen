@@ -13,14 +13,15 @@ import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
+import { setApfAuthStatus, setInitializationStatus, selectApfAuthStatus, selectInitializationStatus } from './progressSlice';
 import { IResponse } from '../../../types/interfaces';
-import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
 import ProgressCard from '../common/ProgressCard';
 import ContainerCard from '../common/ContainerCard';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
 import { createTheme } from '@mui/material/styles';
+import {stages} from "../configuration-wizard/Wizard";
 
 const InitApfAuth = () => {
 
@@ -28,12 +29,14 @@ const InitApfAuth = () => {
 
   const theme = createTheme();
 
+  const stageId = 3;
+  const subStageId = 1;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.dataset : "";
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.dataset);
+  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
   const [showProgress, toggleProgress] = useState(false);
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -50,7 +53,6 @@ const InitApfAuth = () => {
   let timer: any;
 
   const section = 'dataset';
-  const initConfig = getConfiguration(section);
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -63,12 +65,14 @@ const InitApfAuth = () => {
   if(datasetSchema) {
     validate = ajv.compile(datasetSchema);
   }
+
+  const isStepSkipped = !useAppSelector(selectApfAuthStatus);
+  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
   
   useEffect(() => {
-    // dispatch(setNextStepEnabled(false));
-    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
-      setSetupYaml(initConfig);
-    }
+    dispatch(setNextStepEnabled(false));
+    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
+    stages[stageId].isSkipped = isInitializationSkipped;
     setInit(true);
   }, []);
 
@@ -91,17 +95,25 @@ const InitApfAuth = () => {
   const process = (event: any) => {
     event.preventDefault();
     toggleProgress(true);
-    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
+    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
+        dispatch(setApfAuthStatus(res.status));
+        dispatch(setInitializationStatus(res.status));
+        stages[stageId].subStages[subStageId].isSkipped = !res.status;
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
+        dispatch(setNextStepEnabled(false));
+        dispatch(setInitializationStatus(false));
+        dispatch(setApfAuthStatus(false));
+        stages[stageId].subStages[subStageId].isSkipped = true;
+        stages[stageId].isSkipped = true;
         console.warn('zwe init apfauth failed');
       });
   }
 
   const editHLQ = (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = init ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    let updatedData = init ? (Object.keys(yaml?.zowe.setup.dataset).length > 0 ? yaml?.zowe.setup.dataset : data) : (data ? data : yaml?.zowe.setup.datasetg);
     
     setInit(false);
 
@@ -123,7 +135,7 @@ const InitApfAuth = () => {
         const errMsg = validate.errors[0].message;
         setStageConfig(false, errPath+' '+errMsg, updatedData, false);
       } else {
-        setConfiguration(section, updatedData, true);
+        // setConfiguration(section, updatedData, true);
         setStageConfig(true, '', updatedData, true);
       }
     }
@@ -139,7 +151,7 @@ const InitApfAuth = () => {
   return (
     <div>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("yaml")}>View Yaml</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("yaml")}>View/Edit Yaml</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>

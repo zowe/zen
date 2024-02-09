@@ -9,6 +9,7 @@
  */
 
 import React, { SyntheticEvent, useEffect, useState } from "react";
+import { useSelector } from 'react-redux';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -23,12 +24,13 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import secureIcon from '../../../assets/secure.png';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CheckCircle from '@mui/icons-material/CheckCircle';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
-import { setConnectionArgs, setConnectionStatus, selectConnectionArgs, selectConnectionStatus, setHost, setPort,
-               setUser, setPassword, setJobStatement, setSecure, setSecureOptions } from './connectionSlice';
+import { setConnectionArgs, setConnectionStatus, setConnectionValidationDetails, setHost, setPort,
+               setUser, setPassword, setJobStatement, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionStatus, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates} from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
@@ -43,8 +45,10 @@ const Connection = () => {
     setExpanded(isExpanded ? panel : false);
   };
 
+  const connectionStatus = useAppSelector(selectConnectionStatus);
+
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
   }, []);
 
   return (
@@ -94,11 +98,25 @@ const FTPConnectionForm = () => {
 
   const dispatch = useAppDispatch();
   
+  const connectionStatus = useAppSelector(selectConnectionStatus);
   const connectionArgs = useAppSelector(selectConnectionArgs);
+  const connValidationDetails = useAppSelector(selectConnectionValidationDetails);
+  const [isFtpConnection, setIsFtpConnection] = useState(useAppSelector(selectConnectionSecure));
+  const [isCertificateAccepted, setIsCertificateAccepted] = useState(useAppSelector(selectAcceptCertificates));
+
   const [formProcessed, toggleFormProcessed] = React.useState(false);
   const [validationDetails, setValidationDetails] = React.useState('');
   
+  const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
+    dispatch(setConnectionStatus(false));
+    dispatch(setNextStepEnabled(false));
+  }
+
   const processForm = () => {
+    if(connectionStatus) {
+      toggleFormProcessed(true);
+      setValidationDetails(connValidationDetails);
+    }
     alertEmitter.emit('hideAlert');
     dispatch(setLoading(true));
     window.electron.ipcRenderer
@@ -110,6 +128,7 @@ const FTPConnectionForm = () => {
         }
         toggleFormProcessed(true);
         setValidationDetails(res.details);
+        dispatch(setConnectionValidationDetails(res.details));
         dispatch(setLoading(false));
       }); 
   };
@@ -127,7 +146,7 @@ const FTPConnectionForm = () => {
           variant="standard"
           helperText="Target z/OS system for Zowe's installation."
           value={connectionArgs.host}
-          onChange={(e) => { dispatch(setHost(e.target.value)) }}
+          onChange={(e) => { dispatch(setHost(e.target.value)); handleFormChange(); }}
         />
       </FormControl>
       <FormControl>
@@ -139,7 +158,7 @@ const FTPConnectionForm = () => {
           variant="standard"
           helperText="FTP port number. If not specified, Zen will try to use a default service port."
           value={connectionArgs.port}
-    onChange={(e) => { dispatch(setPort(Number(e.target.value))) }}
+    onChange={(e) => { dispatch(setPort(Number(e.target.value))); handleFormChange(); }}
         />
       </FormControl>
       <FormControl>
@@ -150,7 +169,7 @@ const FTPConnectionForm = () => {
           variant="standard"
           helperText="Your z/OS user name or user ID."
           value={connectionArgs.user}
-          onChange={(e) => { dispatch(setUser(e.target.value)) }}
+          onChange={(e) => { dispatch(setUser(e.target.value)); handleFormChange(); }}
         />
       </FormControl>
       <FormControl>
@@ -166,18 +185,22 @@ const FTPConnectionForm = () => {
               <span>Your password is securely stored for only the current session.</span>
             </span>}
           value={connectionArgs.password}
-          onChange={(e) => { dispatch(setPassword(e.target.value)) }}
+          onChange={(e) => { dispatch(setPassword(e.target.value)); handleFormChange(); }}
         />
       </FormControl>
       <FormControl>
         <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>  
           <FormControlLabel
-            control={<Checkbox  
-              onChange={(e) => { dispatch(setSecure(e.target.checked)) }} 
+            control={<Checkbox 
+              checked={isFtpConnection} 
+              onChange={(e) => { 
+                dispatch(setSecure(e.target.checked)); 
+                handleFormChange(); 
+                setIsFtpConnection(e.target.checked);
+              }} 
             />}
             label="Use FTP over TLS."
             labelPlacement="start"
-            value={connectionArgs.secure}          
           />
         </Container>
       </FormControl>
@@ -195,7 +218,7 @@ const FTPConnectionForm = () => {
           select={true}
           helperText="Minimum TLS version to accept from server."
           value={connectionArgs.secureOptions.minVersion}
-          onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, minVersion: e.target.value})) }} 
+          onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, minVersion: e.target.value})); handleFormChange(); }} 
 
         >
           {/* TODO: This needs to be conditionally added, because older Zowe versions support 1.0-1.1 */}
@@ -213,7 +236,7 @@ const FTPConnectionForm = () => {
           select={true}
           helperText="Maximum TLS version to accept from server."
           value={connectionArgs.secureOptions.maxVersion}
-          onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, maxVersion: e.target.value})) }} 
+          onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, maxVersion: e.target.value})); handleFormChange(); }} 
 
         >
           {/* TODO: This needs to be conditionally added, because older Zowe versions support 1.0-1.1 */}
@@ -227,14 +250,18 @@ const FTPConnectionForm = () => {
       <FormControl>
         <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>
           <FormControlLabel
-            control={
-              <Checkbox  
-                onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.value})) }}
+            control={<Checkbox  
+                checked = {isCertificateAccepted} 
+                onChange={(e) => { 
+                  dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.value}));
+                  dispatch(setAcceptCertificates(e.target.checked));
+                  handleFormChange(); 
+                  setIsCertificateAccepted(e.target.checked);
+                }}
               />
             }
             label="Accept all certificates."
             labelPlacement="start"
-            value={!connectionArgs.secureOptions.rejectUnauthorized}
           />
         </Container>
       </FormControl>
@@ -242,14 +269,11 @@ const FTPConnectionForm = () => {
       </Container>
       }
           
-
-
-
       <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row", paddingTop: '12px', paddingBottom: '12px'}}>
         <Button sx={{boxShadow: 'none'}} type="submit" variant="text" onClick={() => processForm()}>Validate credentials</Button>
+        <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1rem', marginTop: '9px' }} />}</div>
         <div style={{opacity: formProcessed ? '1' : '0'}}>
-          {useAppSelector(selectConnectionStatus) ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> 
-          : validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error')}
+          {!connectionStatus && (validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error'))}
         </div>
       </Container>
     </Box>

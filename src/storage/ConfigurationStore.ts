@@ -18,7 +18,7 @@ export class ConfigurationStore {
   private static validateWithSchema(key: string): boolean {
     const keys = key.split('.');
     const schema = store.get('schema') as any;
-    let schemaPart: any = schema.properties;
+    let schemaPart: any = schema?.properties;
     for (const key of keys) {
         if (!Object.prototype.hasOwnProperty.call(schemaPart, key)) {
             return false;
@@ -52,7 +52,7 @@ export class ConfigurationStore {
     return store.store;
   }
 
-  public static setConfigByKey(key: string, value: string): boolean {
+  public static setConfigByKey(key: string, value: string | Array<string>): boolean {
     if (this.validateWithSchema(key)) {
       store.set(`config.${key}`, value);
       return true;

@@ -1,0 +1,13 @@
+
+.navigator {
+    cursor: pointer;
+    color: #4D4B45;
+    font-size: 0.9rem;
+    transition: color 0.3s, font-size 0.2s;
+}
+
+.navigator:hover {
+    color: black;
+    font-size: 1rem;
+  }
+  

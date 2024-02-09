@@ -11,23 +11,26 @@
 import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { setConfiguration, getConfiguration } from '../../../services/ConfigService';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectCertificateStatus, selectInitializationStatus } from './progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
+import {stages} from "../configuration-wizard/Wizard";
 
 const Certificates = () => {
 
   const theme = createTheme();
 
+  const stageId = 3;
+  const subStageId = 3;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
-  const yaml = useAppSelector(selectYaml);
-  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.certificate);
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -35,7 +38,6 @@ const Certificates = () => {
   const [contentType, setContentType] = useState('');
 
   const section = 'certificate';
-  const initConfig: any = getConfiguration(section);
 
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
@@ -46,18 +48,20 @@ const Certificates = () => {
   let certificateSchema;
   let validate: any;
   if(schema) {
-    certificateSchema = schema.properties.zowe.properties.setup.properties.certificate;
+    certificateSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
   }
 
   if(certificateSchema) {
     validate = ajv.compile(certificateSchema);
   }
 
+  const isStepSkipped = !useAppSelector(selectCertificateStatus);
+  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
+
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
-      setSetupYaml(initConfig);
-    }
+    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
+    stages[stageId].isSkipped = isInitializationSkipped
     setIsFormInit(true);
   }, []);
 
@@ -67,28 +71,10 @@ const Certificates = () => {
   };
   
   const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    let newData = isFormInit ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.certificate) : (data.zowe?.setup?.certificate ? data.zowe.setup.certificate : data);
     setIsFormInit(false);
 
     if (newData) {
-      newData = isYamlUpdated ? data.zowe.setup.certificate : newData;
-
-      if(setupSchema.if) {
-        const ifProp = Object.keys(setupSchema.if.properties)[0];
-        const ifPropValue = setupSchema.if.properties[ifProp].const.toLowerCase();
-        const thenProp = setupSchema.then.required[0].toLowerCase();
-        const elseProp = setupSchema.else.required[0].toLowerCase();
-
-        if(newData && newData[ifProp]) {
-          const newDataPropValue = newData[ifProp].toLowerCase();
-          if( newDataPropValue == ifPropValue && newData[elseProp] ) {
-            delete newData[elseProp];
-          }
-          if(newDataPropValue != ifPropValue && newData[thenProp]) {
-            delete newData[thenProp];
-          }
-        }
-      }
 
       if(validate) {
         validate(newData);
@@ -96,8 +82,14 @@ const Certificates = () => {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
         } else {
-          setConfiguration(section, newData, true);
+          // setConfiguration(section, newData, true);
+          // setLYaml((prevYaml: any) => ({
+          //   ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}
+          // }))
+          // dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}}))
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
           setStageConfig(true, '', newData);
         }
       }
@@ -113,13 +105,13 @@ const Certificates = () => {
   return (
     <div>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>Preview Job</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Certificates" description="Configure Zowe Certificates."> 
-        <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
-        <Box sx={{ width: '60vw' }}>
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>

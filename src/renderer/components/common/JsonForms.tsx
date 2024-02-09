@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { JsonForms } from '@jsonforms/react';
 import { materialRenderers, materialCells } from '@jsonforms/material-renderers';
 import { ThemeProvider } from '@mui/material/styles';
@@ -19,7 +19,7 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
     return "";
   }
 
-  const properties = Object.keys(schema.properties);
+  const properties = Object.keys(schema?.properties);
 
   const elements = properties.map((prop: any) => {
     if (schema.properties[prop].type === 'object') {
@@ -39,7 +39,7 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
       }
 
       const subSchema = schema.properties[prop];
-      const subProperties = Object.keys(subSchema.properties);
+      const subProperties = Object.keys(subSchema?.properties);
 
       const subElements = subProperties.map((subProp: any) => ({
         type: 'Control',
@@ -132,6 +132,8 @@ export default function JsonForm(props: any) {
     }
     return null;
   };
+
+  // const [formState, setFormState] = useState(isFormDataEmpty ? getDefaultFormData(schema, {}) : formData);
 
   return (
     <ThemeProvider theme={jsonFormTheme}>

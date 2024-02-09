@@ -11,8 +11,8 @@
 import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { setSecurityStatus, setInitializationStatus, selectSecurityStatus, selectInitializationStatus } from './progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -23,15 +23,18 @@ import { IResponse } from "../../../types/interfaces";
 import ProgressCard from "../common/ProgressCard";
 import React from "react";
 import { createTheme } from '@mui/material/styles';
+import {stages} from "../configuration-wizard/Wizard";
 
 const Security = () => {
   const theme = createTheme();
 
+  const stageId = 3;
+  const subStageId = 2;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
-  const yaml = useAppSelector(selectYaml);
-  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.security : "";
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.security);
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security ?? {product: 'RACF'});
   const [isFormInit, setIsFormInit] = useState(false);
   const [initializeForm, setInitializeForm] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -48,9 +51,6 @@ const Security = () => {
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-
-  const section = 'security';
-  const initConfig: any = getConfiguration(section);
   
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
@@ -60,18 +60,20 @@ const Security = () => {
   let securitySchema;
   let validate: any;
   if(schema) {
-    securitySchema = schema.properties.zowe.properties.setup.properties.security;
+    securitySchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
   }
 
   if(securitySchema) {
     validate = ajv.compile(securitySchema);
   }
 
+  const isStepSkipped = !useAppSelector(selectSecurityStatus);
+  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
+
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
-      setSetupYaml(initConfig);
-    }
+    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped
+    stages[stageId].isSkipped = isInitializationSkipped
     setInitializeForm(true);
     setIsFormInit(true);
   }, []);
@@ -91,28 +93,34 @@ const Security = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const process = (event: any) => {
+  const process = async(event: any) => {
     event.preventDefault();
     toggleProgress(true);
-    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
+    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
+        dispatch(setSecurityStatus(res.status));
+        dispatch(setInitializationStatus(res.status));
+        stages[stageId].subStages[subStageId].isSkipped = !res.status;
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
         dispatch(setNextStepEnabled(false));
+        dispatch(setSecurityStatus(false));
+        dispatch(setInitializationStatus(false));
+        stages[stageId].subStages[subStageId].isSkipped = true;
+        stages[stageId].isSkipped = true;
         console.warn('zwe init security failed');
       });
   }
 
-  const handleFormChange = (data: any, isYamlUpdated?: boolean, customParam?: boolean) => {
+  const handleFormChange = (data: any) => {
     if(!initializeForm) {
       return;
     }
-    let newData = isFormInit ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.security) : (data.zowe?.setup?.security ? data.zowe.setup.security : data);
     setIsFormInit(false);
 
     if (newData) {
-      newData = isYamlUpdated ? data.zowe.setup.security : newData;
 
       if(validate) {
         validate(newData);
@@ -121,7 +129,7 @@ const Security = () => {
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
-          setConfiguration(section, newData, true);
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: newData}}});
           setStageConfig(true, '', newData);
         }
       }
@@ -137,15 +145,15 @@ const Security = () => {
   return (
     <div>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>Preview Job</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Security" description="Configure Zowe Security.">
-        <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
-        <Box sx={{ width: '60vw' }}>
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={setupSchema} onChange={(data: any, isYamlUpdated: boolean) => handleFormChange(data, isYamlUpdated, true)} formData={setupYaml}/>
+          <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Security Config</Button>
           <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="init-progress">
           {!showProgress ? null :
