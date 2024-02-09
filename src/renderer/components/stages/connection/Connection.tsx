@@ -124,6 +124,7 @@ const FTPConnectionForm = () => {
   useEffect(() => {
     dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
   }, [])
+
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
     dispatch(setNextStepEnabled(false));
