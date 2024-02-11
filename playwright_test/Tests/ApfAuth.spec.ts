@@ -17,7 +17,7 @@ const AUTH_LOAD_LIB = 'IBMUSER.ZWEV1.ZWEAUTH'
 const AUTH_PLUGIN_LIB = 'IBMUSER.ZWEV1.CUST.ZWESAPL'
 const RUNTIME_DIR = process.env.ROOT_PATH + process.env.ZOWE_ROOT_DIR;
 
-test.describe('ConnectionTab', () => {
+test.describe('ApfAuthTab', () => {
     let connectionPage: ConnectionPage;
     let titlePage : TitlePage;
     let apfAuthPage : ApfAuthPage;
