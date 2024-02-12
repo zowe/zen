@@ -24,6 +24,7 @@ import Ajv from "ajv";
 import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
+import { bool } from "prop-types";
 
 const Installation = () => {
 
@@ -111,42 +112,45 @@ const Installation = () => {
     Promise.all([
       window.electron.ipcRenderer.setConfigByKey('zowe.setup.dataset', setupYaml),
     ]).then(async () => {
+      dispatch(setLoading(false));
       if(installationType === 'smpe'){
         dispatch(setNextStepEnabled(true));
         dispatch(setDatasetInstallationStatus(true));
         dispatch(setInitializationStatus(true));
-        dispatch(setLoading(false));
       } else {
         setYaml(window.electron.ipcRenderer.getConfig());
         toggleProgress(true);
-        dispatch(setLoading(false));
+
         const config = (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml;
         window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
-          if(!res.status){ //errors during runInstallation()
+          if(!res.status){ //False case - errors during zwe install
             alertEmitter.emit('showAlert', res.details, 'error');
+            toggleProgress(res.status);
           }
-          dispatch(setNextStepEnabled(res.status));
-          dispatch(setDatasetInstallationStatus(res.status));
-          dispatch(setDatasetInstallationStatus(true));
-          dispatch(setInitializationStatus(true));
+          installProceedActions(res.status);
           clearInterval(timer);
-        }).catch(() => {
+        }).catch((err: any) => {
           clearInterval(timer);
-          dispatch(setNextStepEnabled(false));
-          dispatch(setInitializationStatus(false));
-          dispatch(setDatasetInstallationStatus(false));
+          installProceedActions(false);
           stages[stageId].subStages[subStageId].isSkipped = true;
           stages[stageId].isSkipped = true;
-          console.warn('Installation failed');
+          console.warn('Installation failed', err);
         });
       }
     })
   }
 
+  // True - a proceed, False - blocked
+  const installProceedActions = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setDatasetInstallationStatus(status));
+    dispatch(setInitializationStatus(status));
+  }
+
   const debouncedChange = useCallback(
     debounce((state: any)=>{handleFormChange(state)}, 1000),
     []
-)
+  )
 
   const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
     let updatedData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.dataset) : (data.zowe?.setup?.dataset ? data.zowe.setup.dataset : data);

@@ -42,6 +42,7 @@ export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<
     await client.makeDirectory(dir);
     return true;
   } catch (error) {
+    console.error(error);
     return false;
   } finally {
     client.close();

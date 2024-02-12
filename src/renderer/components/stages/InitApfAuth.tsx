@@ -22,6 +22,7 @@ import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../configuration-wizard/Wizard";
+import { alertEmitter } from "../Header";
 
 const InitApfAuth = () => {
 
@@ -96,20 +97,27 @@ const InitApfAuth = () => {
     event.preventDefault();
     toggleProgress(true);
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
-        dispatch(setNextStepEnabled(res.status));
-        dispatch(setApfAuthStatus(res.status));
-        dispatch(setInitializationStatus(res.status));
+        if(!res.status){ //False case - errors during zwe init apfauth
+          alertEmitter.emit('showAlert', res.details, 'error');
+          toggleProgress(res.status);
+        }
+        apfAuthProceedActions(res.status);
         stages[stageId].subStages[subStageId].isSkipped = !res.status;
         clearInterval(timer);
-      }).catch(() => {
+      }).catch((err: any) => {
         clearInterval(timer);
-        dispatch(setNextStepEnabled(false));
-        dispatch(setInitializationStatus(false));
-        dispatch(setApfAuthStatus(false));
+        apfAuthProceedActions(false);
         stages[stageId].subStages[subStageId].isSkipped = true;
         stages[stageId].isSkipped = true;
-        console.warn('zwe init apfauth failed');
+        console.warn('zwe init apfauth failed', err);
       });
+  }
+
+  // True - a proceed, False - blocked
+  const apfAuthProceedActions = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setApfAuthStatus(status));
+    dispatch(setInitializationStatus(status));
   }
 
   const editHLQ = (data: any, isYamlUpdated?: boolean) => {
