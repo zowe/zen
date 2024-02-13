@@ -30,6 +30,10 @@ import { Checkbox, FormControlLabel } from "@mui/material";
 import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
 
+// TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
+// This is all I want to manually test for now. Future work can min/max this harder
+const JCL_UNIX_SCRIPT_CHARS = 55;
+
 const serverSchema = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
   "$id": "https://zowe.org/schemas/v2/server-common",
@@ -485,6 +489,7 @@ Please customize the job statement below to match your system requirements.
                 label="Run-time Directory (or installation location)"
                 variant="standard"
                 value={installationArgs.installationDir || localYaml?.zowe?.runtimeDirectory}
+                inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
@@ -508,6 +513,7 @@ Please customize the job statement below to match your system requirements.
                 label="Workspace Directory"
                 variant="standard"
                 value={localYaml?.zowe?.workspaceDirectory ?? ''}
+                inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, workspaceDir: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
@@ -531,6 +537,7 @@ Please customize the job statement below to match your system requirements.
                 label="Log Directory"
                 variant="standard"
                 value={installationArgs.logDir || localYaml?.zowe?.logDirectory}
+                inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, logDir: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
@@ -554,6 +561,7 @@ Please customize the job statement below to match your system requirements.
                 label="Extensions Directory"
                 variant="standard"
                 value={installationArgs.extensionDir || localYaml?.zowe?.extensionDirectory}
+                inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, extensionDir: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
