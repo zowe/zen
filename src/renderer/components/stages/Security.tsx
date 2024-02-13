@@ -24,6 +24,7 @@ import ProgressCard from "../common/ProgressCard";
 import React from "react";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../configuration-wizard/Wizard";
+import { alertEmitter } from "../Header";
 
 const Security = () => {
   const theme = createTheme();
@@ -97,20 +98,30 @@ const Security = () => {
     event.preventDefault();
     toggleProgress(true);
     window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml).then((res: IResponse) => {
-        dispatch(setNextStepEnabled(res.status));
-        dispatch(setSecurityStatus(res.status));
-        dispatch(setInitializationStatus(res.status));
+        if(!res.status){ //False case - errors during zwe init apfauth
+          alertEmitter.emit('showAlert', res.details, 'error');
+          toggleProgress(res.status);
+        }
+        securityProceedActions(res.status);
         stages[stageId].subStages[subStageId].isSkipped = !res.status;
         clearInterval(timer);
-      }).catch(() => {
+      }).catch((err: any) => {
+        // TODO: Test this
+        //alertEmitter.emit('showAlert', err.toString(), 'error');
+        toggleProgress(false);
         clearInterval(timer);
-        dispatch(setNextStepEnabled(false));
-        dispatch(setSecurityStatus(false));
-        dispatch(setInitializationStatus(false));
+        securityProceedActions(false);
         stages[stageId].subStages[subStageId].isSkipped = true;
         stages[stageId].isSkipped = true;
-        console.warn('zwe init security failed');
+        console.warn('zwe init security failed', err);
       });
+  }
+
+  // True - a proceed, False - blocked
+  const securityProceedActions = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setSecurityStatus(status));
+    dispatch(setInitializationStatus(status));
   }
 
   const handleFormChange = (data: any) => {
