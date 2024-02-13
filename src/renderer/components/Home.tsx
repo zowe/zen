@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
 import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
-import { setConnectionArgs } from './stages/connection/connectionSlice';
+import { setConnectionArgs, selectConnectionArgs, selectConnectionPassword } from './stages/connection/connectionSlice';
 import { setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { Tooltip } from '@mui/material';
@@ -88,6 +88,7 @@ const Home = () => {
   const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
   const connectionStatus = useAppSelector(selectConnectionStatus);
   const lastActiveDate = useAppSelector(selectActiveStepDate);
+  const connectionPassword = useAppSelector(selectConnectionPassword);
 
   const [showWizard, setShowWizard] = useState(false);
   const stages: any = [];
@@ -107,7 +108,7 @@ const Home = () => {
         console.log(JSON.stringify(connectionStore['ftp-details'],null,2));
         const connectionArgs: IIpcConnectionArgs = {
           ...connectionStore["ftp-details"],
-          password: '',
+          password: connectionPassword,
           connectionType: 'ftp'}; 
         dispatch(setConnectionArgs(connectionArgs));
       } else {
@@ -139,7 +140,7 @@ const Home = () => {
           {cards.map(card => makeCard(card))}
         </div>
 
-        {connectionStatus && <div style={{marginBottom: '1px',marginTop: '130px',background: 'white', fontSize: 'small',marginLeft: '8.9%',padding: '15px',width: '38%'}}>
+        {connectionStatus && <div style={{marginBottom: '1px',marginTop: '130px',background: 'white', fontSize: 'small',marginLeft: '8.9%',padding: '15px 0 15px 15px',width: '495px', boxShadow: '1px 1px 3px #a6a6a6'}}>
           <Box sx={{display: 'flex', flexDirection: 'column'}}>
 
             <div style={{paddingBottom: '10px', color: 'black'}}>
