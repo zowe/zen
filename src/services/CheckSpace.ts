@@ -10,16 +10,14 @@
 
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
+import { startBPXBATCHAndShellSession } from "./utils";
 
 export class CheckSpace {
 
   public async run(config: IIpcConnectionArgs, dir: string) {
 
     const jcl = `${config.jobStatement}
-//SETPR6    EXEC PGM=BPXBATCH,REGION=0M
-//STDOUT DD SYSOUT=*
-//STDPARM      DD *
-sh set -x;
+${startBPXBATCHAndShellSession("ZNCHKSP")}
 echo "SPACE in MB";
 df -m ${dir};
 echo "Script finished."

@@ -39,13 +39,6 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
   const [isSchemaValid, setIsSchemaValid] = useState(true);
   const [schemaError, setSchemaError] = useState('');
   const fileInputRef = useRef(null);
-  let initZoweConfig: any;
-
-
-  // if(contentType == 'yaml') {
-  //   initZoweConfig = getZoweConfig();
-  // }
-  
 
   useEffect(() => {
     setEditorVisible(isEditorVisible);
@@ -74,7 +67,6 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
     }
 
     if(newCode && (newCode == "\n" || newCode == "")) {
-      // setZoweConfig("");
       return;
     }
 

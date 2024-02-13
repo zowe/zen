@@ -10,15 +10,13 @@
 
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
+import {startBPXBATCHAndShellSession} from "./utils";
 
 export class CheckENV {
 
   public async run(connectionArgs: IIpcConnectionArgs) {
     const jcl = `${connectionArgs.jobStatement}
-//SETPR2    EXEC PGM=BPXBATCH,REGION=0M
-//STDOUT DD SYSOUT=*
-//STDPARM      DD *
-sh set -x;
+${startBPXBATCHAndShellSession("ZNCHKNV")}
 echo $JAVA_HOME;
 echo $NODE_HOME;
 /* `
