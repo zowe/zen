@@ -142,7 +142,7 @@ const createWindow = (): void => {
   });
 
   ipcMain.handle('init-apf', async (_event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.apfAuth(connectionArgs, installationArgs, zoweConfig);
+    const res = await installActions.runApfAuth(connectionArgs, installationArgs, zoweConfig);
     return res;
   });
 
@@ -159,7 +159,7 @@ const createWindow = (): void => {
   });
 
   ipcMain.handle('init-security', async (_event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.initSecurity(connectionArgs, installationArgs, zoweConfig);
+    const res = await installActions.runInitSecurity(connectionArgs, installationArgs, zoweConfig);
     return res;
   });
 

@@ -138,7 +138,7 @@ class Installation {
     return {status: result.rc === 0, details: result.jobOutput}
   }
   
-  public async initSecurity(connectionArgs: IIpcConnectionArgs,
+  public async runInitSecurity(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string}, zoweConfig: object): Promise<IResponse>{
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')

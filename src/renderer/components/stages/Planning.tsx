@@ -392,6 +392,7 @@ const Planning = () => {
         dispatch(setPlanningStatus(true));
         setStep(2);
       } else {
+        dispatch(setPlanningStatus(false));
         alertEmitter.emit('showAlert', details.error, 'error');
       }
     })

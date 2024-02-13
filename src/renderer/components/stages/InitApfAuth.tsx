@@ -107,6 +107,9 @@ const InitApfAuth = () => {
       }).catch((err: any) => {
         clearInterval(timer);
         apfAuthProceedActions(false);
+        toggleProgress(false);
+        // TODO: Test this
+        //alertEmitter.emit('showAlert', err.toString(), 'error');
         stages[stageId].subStages[subStageId].isSkipped = true;
         stages[stageId].isSkipped = true;
         console.warn('zwe init apfauth failed', err);
@@ -166,7 +169,7 @@ const InitApfAuth = () => {
       <ContainerCard title="APF Authorize Load Libraries" description="Run the `zwe init apfauth` command to APF authorize load libraries.">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={editHLQ}/>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
-          {`Please review the following dataset setup configuration values before pressing run.\n`}
+          {`Please review the following dataset setup configuration values before pressing run. If you need to make changes, go back to the previous step.\n`}
         </Typography>
         <Box sx={{ width: '60vw' }}>
             <TextField
