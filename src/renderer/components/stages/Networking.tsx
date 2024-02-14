@@ -17,9 +17,8 @@ import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
-import { getZoweConfig, setConfiguration, setTopLevelYamlConfig } from "../../../services/ConfigService";
 
-const PostExtract = () => {
+const Networking = () => {
 
   const theme = createTheme();
 
@@ -468,7 +467,7 @@ const PostExtract = () => {
       }
     }
   }
-  let yaml:any = getZoweConfig();
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   if(yaml.zowe){
     let yamlCopy = {...yaml.zowe}
     delete yamlCopy.setup;
@@ -531,10 +530,10 @@ const PostExtract = () => {
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
-          setTopLevelYamlConfig('zowe.externalDomains', data.externalDomains);
-          setTopLevelYamlConfig('zowe.externalPort', data.externalPort);
-          setTopLevelYamlConfig('zowe.configmgr', data.configmgr);
-          setTopLevelYamlConfig('zowe.launchScript', data.launchScript);
+          // setTopLevelYamlConfig('zowe.externalDomains', data.externalDomains);
+          // setTopLevelYamlConfig('zowe.externalPort', data.externalPort);
+          // setTopLevelYamlConfig('zowe.configmgr', data.configmgr);
+          // setTopLevelYamlConfig('zowe.launchScript', data.launchScript);
           // setConfiguration(section, newData, true);
           setStageConfig(true, '', newData);
         }
@@ -566,4 +565,4 @@ const PostExtract = () => {
   );
 };
 
-export default PostExtract;
+export default Networking;
