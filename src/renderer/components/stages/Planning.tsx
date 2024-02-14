@@ -181,8 +181,6 @@ const Planning = () => {
     // FIXME: Save yaml and schema on disk to not to pull it each time?
     // REVIEW: Replace JobStatement text area with set of text fields?
 
-    dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
-
     if(jobStatementValid && !isJobStatementUpdated) {
       saveJobHeader(null);
       return;
@@ -233,6 +231,10 @@ const Planning = () => {
         }); 
       }
     })
+
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+    }
   }, []);  
 
   useEffect(() => {

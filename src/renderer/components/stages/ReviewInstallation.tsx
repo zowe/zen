@@ -61,13 +61,15 @@ const ReviewInstallation = () => {
   const TYPE_OUTPUT = "output";
 
   useEffect(() => {
-    dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
-
     if(selectConnectionStatus && selectPlanningStatus && selectInstallationTypeStatus && selectInitializationStatus) {
       setNextStepEnabled(true);
     } else {
       setNextStepEnabled(false);
-    }  
+    }
+
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+    }
   }, []);
 
   const toggleEditorVisibility = (type: any) => {

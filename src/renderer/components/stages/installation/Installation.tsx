@@ -87,10 +87,13 @@ const Installation = () => {
   
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
     stages[stageId].isSkipped = isInitializationSkipped;
     setIsFormInit(true);
+
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+    }
   }, []);
 
   useEffect(() => {
