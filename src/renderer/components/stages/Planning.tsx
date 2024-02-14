@@ -460,7 +460,7 @@ Please customize the job statement below to match your system requirements.
         </FormControl>
       </Box>
       {step > 0 
-        ? <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}} onChange={(e) => {
+        ? <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}} onBlur={async (e) => { dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? localYaml)) }} onChange={(e) => {
             dispatch(setYaml(localYaml));
             formChangeHandler();
             }}
