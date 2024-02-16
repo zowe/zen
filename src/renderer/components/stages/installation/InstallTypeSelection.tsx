@@ -23,13 +23,16 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
+import { getStageDetails } from "../progress/progressStore"; 
 
 const InstallationType = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
-  const STAGE_ID = 2;
-  const SUB_STAGES = false;
+  const stageLabel = 'InstallationType';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
 
   const dispatch = useAppDispatch();
   const connectionArgs = useAppSelector(selectConnectionArgs);

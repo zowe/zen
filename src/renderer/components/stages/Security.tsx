@@ -26,16 +26,18 @@ import { createTheme } from '@mui/material/styles';
 import progressSlice from "./progress/progressSlice";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
+import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
 
 const Security = () => {
   const theme = createTheme();
 
-  const STAGE_ID = 3;
-  const SUB_STAGES = true;
-  const SUB_STAGE_ID = 2;
+  const stageLabel = 'Initialization';
+  const subStageLabel = 'Security';
 
-  const stageId = 3;
-  const subStageId = 2;
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
+
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
@@ -78,13 +80,13 @@ const Security = () => {
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped
-    stages[stageId].isSkipped = isInitializationSkipped
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = isStepSkipped
+    stages[STAGE_ID].isSkipped = isInitializationSkipped
     setInitializeForm(true);
     setIsFormInit(true);
 
     return () => {
-      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
 
@@ -110,15 +112,15 @@ const Security = () => {
         dispatch(setNextStepEnabled(res.status));
         dispatch(setSecurityStatus(res.status));
         dispatch(setInitializationStatus(res.status));
-        stages[stageId].subStages[subStageId].isSkipped = !res.status;
+        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
         dispatch(setNextStepEnabled(false));
         dispatch(setSecurityStatus(false));
         dispatch(setInitializationStatus(false));
-        stages[stageId].subStages[subStageId].isSkipped = true;
-        stages[stageId].isSkipped = true;
+        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+        stages[STAGE_ID].isSkipped = true;
         console.warn('zwe init security failed');
       });
   }

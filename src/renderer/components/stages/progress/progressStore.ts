@@ -11,6 +11,7 @@
 import { flatten, unflatten } from 'flat';
 import { progressState } from "./progressSlice"; 
 import { activeStep } from './activeStepSlice'
+import { stages } from '../../configuration-wizard/Wizard';
 
 const progressStatus: progressState = {
   connectionStatus: false,
@@ -29,6 +30,19 @@ const activeState: activeStep = {
   isSubStep: false,
   activeSubStepIndex: 0,
 };
+
+export const getStageDetails = (stageLabel: string) => {
+  const stage = stages.find(stage => stage.label === stageLabel);
+  return stage;
+}
+
+export const getSubStageDetails = (stageId: number, subStageLabel: string) => {
+ const stage = stages[stageId];
+ if (stage && stage.subStages) {
+  return stage.subStages.find(subStage => subStage.label === subStageLabel);
+ }
+ return null;
+}
 
 export const initProgress = () => {
   const progress = localStorage.getItem('stage-progress');

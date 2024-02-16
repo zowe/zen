@@ -25,12 +25,16 @@ import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
+import { getStageDetails, getSubStageDetails } from "../progress/progressStore"; 
 
 const Installation = () => {
 
-  const STAGE_ID = 3;
-  const SUB_STAGES = true;
-  const SUB_STAGE_ID = 0;
+  const stageLabel = 'Initialization';
+  const subStageLabel = 'Installation';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
 
   const theme = createTheme();
 
@@ -92,7 +96,7 @@ const Installation = () => {
     setIsFormInit(true);
 
     return () => {
-      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
 

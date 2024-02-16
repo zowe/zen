@@ -37,11 +37,14 @@ import { setActiveStep } from '../progress/activeStepSlice';
 import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from '../progress/activeStepSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
+import { getStageDetails } from "../progress/progressStore";
 
 const Connection = () => {
 
-  const STAGE_ID = 0;
-  const SUB_STAGES = false;
+  const stageLabel = 'Connection';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
 
   const dispatch = useAppDispatch();
   const zoweCLIVersion = useAppSelector(selectZoweCLIVersion);
@@ -105,9 +108,11 @@ Found Zowe CLI ${zoweCLIVersion}It can be used as a provider to install Zowe Ser
 
 const FTPConnectionForm = () => {
 
-  const STAGE_ID = 0;
-  const SUB_STAGES = false;
-  
+  const stageLabel = "Connection";
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+
   const dispatch = useAppDispatch();
   
   const connectionStatus = useAppSelector(selectConnectionStatus);

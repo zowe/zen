@@ -25,6 +25,7 @@ import { setActiveStep } from './progress/activeStepSlice';
 import { selectConnectionStatus } from "./progress/progressSlice";
 import { selectInstallationTypeStatus } from "./progress/progressSlice";
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
 
 import '../../styles/ReviewInstallation.css';
 
@@ -32,8 +33,10 @@ const ReviewInstallation = () => {
 
   const dispatch = useAppDispatch();
 
-  const STAGE_ID = 4;
-  const SUB_STAGES = false;
+  const stageLabel = 'ReviewInstallation';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
 
   const [contentType, setContentType] = useState('');
   const [editorVisible, setEditorVisible] = useState(false);
