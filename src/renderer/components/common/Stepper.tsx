@@ -25,9 +25,7 @@ import { selectInstallationTypeStatus } from '../stages/progress/progressSlice';
 import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progress/activeStepSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
-import Security from '../stages/Security';
 import savedInstall from '../../assets/saved-install-green.png';
-import trash from '../../assets/trash.png';
 import { createTheme } from '@mui/material/styles';
 import eventDispatcher from '../../../utils/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
@@ -59,7 +57,6 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     useSelector(selectSecurityStatus),
     useSelector(selectCertificateStatus), 
   ]
-  const theme = createTheme();
   
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
