@@ -179,6 +179,12 @@ const Planning = () => {
   };
 
   useEffect(() => {
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+    }
+  })
+
+  useEffect(() => {
     dispatch(setNextStepEnabled(false));
     // FIXME: Add a popup warning in case failed to get config files
     // FIXME: Save yaml and schema on disk to not to pull it each time?
@@ -235,10 +241,7 @@ const Planning = () => {
       }
     })
 
-    return () => {
-      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
-    }
-  }, []);  
+  }, []); 
 
   useEffect(() => {
     dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
