@@ -227,7 +227,7 @@ const FTPConnectionForm = () => {
                 setIsFtpConnection(e.target.checked);
               }} 
             />}
-            label="Use FTP over TLS."
+            label="(Recommended, optional) Use FTP with TLS."
             labelPlacement="start"
           />
         </Container>

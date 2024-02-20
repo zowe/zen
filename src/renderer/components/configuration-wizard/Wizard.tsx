@@ -33,7 +33,7 @@ export const stages = [
     {id: 2, label: 'Security', component: <Security/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Certificates Setup'},
     {id: 3, label: 'Certificates', component: <Certificates/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Instance Setup'},
   ], nextButton: 'Review'},
-  {id: 4, label: 'ReviewInstallation', component: <ReviewInstallation/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Finish Installation'},
+  {id: 4, label: 'Review Installation', component: <ReviewInstallation/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Finish Installation'},
 ]
 
 const Wizard = ({initialization}: {initialization: boolean}) => {

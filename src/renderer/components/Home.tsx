@@ -140,7 +140,7 @@ const Home = () => {
           {cards.map(card => makeCard(card))}
         </div>
 
-        {connectionStatus && <div style={{marginBottom: '1px',marginTop: '130px',background: 'white', fontSize: 'small',marginLeft: '8.9%',padding: '15px 0 15px 15px',width: '495px', boxShadow: '1px 1px 3px #a6a6a6'}}>
+        {connectionStatus && <div style={{marginBottom: '1px',marginTop: '120px',background: 'white', fontSize: 'small',marginLeft: 'calc(8% + 10px)', padding: '15px 0 15px 15px',width: 'calc(80% + 5px)', boxShadow: '1px 1px 3px #a6a6a6'}}>
           <Box sx={{display: 'flex', flexDirection: 'column'}}>
 
             <div style={{paddingBottom: '10px', color: 'black'}}>
