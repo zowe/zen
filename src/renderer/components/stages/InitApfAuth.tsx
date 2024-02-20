@@ -25,7 +25,8 @@ import { alertEmitter } from "../Header";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore"; 
-import { JCL_UNIX_SCRIPT_OK } from "../../../services/utils";
+
+export const JCL_UNIX_SCRIPT_OK = "Script finished.";
 
 const InitApfAuth = () => {
 
@@ -112,11 +113,15 @@ const InitApfAuth = () => {
 
         if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // Error during zwe init apfAuth
           alertEmitter.emit('showAlert', res.details[3], 'error');
-          toggleProgress(res.status);
+          toggleProgress(false);
+          apfAuthProceedActions(false);
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+          clearInterval(timer);
+        } else {
+          apfAuthProceedActions(res.status);
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+          clearInterval(timer);
         }
-        apfAuthProceedActions(res.status);
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
-        clearInterval(timer);
       }).catch((err: any) => {
         clearInterval(timer);
         apfAuthProceedActions(false);
