@@ -9,16 +9,23 @@
  */
 
 import '../global.css';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
-import { Box, Card, CardContent, CardMedia, Typography } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
-import { setConnectionArgs } from './stages/connection/connectionSlice';
+import { setConnectionArgs, selectConnectionArgs, selectConnectionPassword } from './stages/connection/connectionSlice';
 import { setZoweCLIVersion } from './configuration-wizard/wizardSlice';
-import { useAppDispatch } from '../hooks';
-
+import { useAppDispatch, useAppSelector } from '../hooks';
+import { Tooltip } from '@mui/material';
+import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import installationImg from '../assets/installation.png'
 import installationDryImg from '../assets/installation-dry-run.png'
+import eventDispatcher from "../../utils/eventDispatcher";
+import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from './stages/progress/activeStepSlice';
+import { selectConnectionStatus} from './stages/progress/progressSlice';
+import { selectActiveStepDate} from './stages/progress/activeStepSlice';
+import  HorizontalLinearStepper  from './common/Stepper';
+import Wizard from './configuration-wizard/Wizard'
 
 // REVIEW: Get rid of routing
 
@@ -76,8 +83,18 @@ const makeCard = (card: ICard) => {
 const Home = () => {
 
   const dispatch = useAppDispatch();
+  const activeStepIndex = useAppSelector(selectActiveStepIndex);
+  const isSubStep = useAppSelector(selectIsSubstep);
+  const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
+  const connectionStatus = useAppSelector(selectConnectionStatus);
+  const lastActiveDate = useAppSelector(selectActiveStepDate);
+  const connectionPassword = useAppSelector(selectConnectionPassword);
+
+  const [showWizard, setShowWizard] = useState(false);
+  const stages: any = [];
 
   useEffect(() => {
+    eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));
     window.electron.ipcRenderer.checkZoweCLI().then((res: IResponse) => {
       if (res.status) {
         dispatch(setZoweCLIVersion(res.details));
@@ -91,20 +108,63 @@ const Home = () => {
         console.log(JSON.stringify(connectionStore['ftp-details'],null,2));
         const connectionArgs: IIpcConnectionArgs = {
           ...connectionStore["ftp-details"],
-          password: '',
+          password: connectionPassword,
           connectionType: 'ftp'}; 
         dispatch(setConnectionArgs(connectionArgs));
       } else {
         // TODO: Add support for other types
         console.warn('Connection types other than FTP are not supported yet');
       }
-    }); 
+    });
+    return () => {
+      eventDispatcher.off('saveAndCloseEvent', () => setShowWizard(true));
+    };
   }, []);
 
+  const resumeProgress = () => {
+    setShowWizard(true);
+    eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
+  }
+
   return (
-    <div className="home-container">
-      {cards.map(card => makeCard(card))}
-    </div>
+    <>
+      {!showWizard && <div className="home-container" style={{ display: 'flex', flexDirection: 'column' }}>
+
+        <div style={{ position: 'absolute', left: '-9999px' }}>
+          <HorizontalLinearStepper stages={stages} />
+        </div>
+
+        {!connectionStatus && <div style={{marginBottom: '50px'}}></div>}
+
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginLeft: '8%' }}>
+          {cards.map(card => makeCard(card))}
+        </div>
+
+        {connectionStatus && <div style={{marginBottom: '1px',marginTop: '120px',background: 'white', fontSize: 'small',marginLeft: 'calc(8% + 10px)', padding: '15px 0 15px 15px',width: 'calc(80% + 5px)', boxShadow: '1px 1px 3px #a6a6a6'}}>
+          <Box sx={{display: 'flex', flexDirection: 'column'}}>
+
+            <div style={{paddingBottom: '10px', color: 'black'}}>
+             <Typography variant="subtitle1" component="div">Saved Installation</Typography>
+            </div>
+
+            <Box sx={{display: 'flex', flexDirection: 'row', marginTop: '10px'}}>
+              <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {lastActiveDate}</div>
+              <div style={{marginBottom: '1px', marginTop: '-5px'}}>
+                <Tooltip title="Continue to Last Active Stage" arrow>
+                  <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '9px', padding: '4px'}} onClick={resumeProgress}>
+                    Resume Progress
+                  </Button>
+                </Tooltip>
+              </div>
+            </Box>
+
+          </Box>
+
+        </div>}
+      </div>
+    }
+    {showWizard && <Wizard initialization={false}/>}
+   </>
   );
 };
 

@@ -12,7 +12,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
 
 interface InstallationState {
-  installationStatus: boolean;
   installationArgs: {
     installationDir: string;
     workspaceDir: string;
@@ -39,7 +38,6 @@ interface InstallationState {
 }
 
 const initialState: InstallationState = {
-  installationStatus: false,
   installationArgs: {
     installationDir: '',
     workspaceDir: '',
@@ -72,9 +70,6 @@ export const installationSlice = createSlice({
     setInstallationArgs: (state, action: PayloadAction<any>) => {
       state.installationArgs = action.payload;
     },
-    setInstallationStatus: (state, action: PayloadAction<boolean>) => {
-      state.installationStatus = action.payload;
-    },
     setZoweVersion: (state, action: PayloadAction<string>) => {
       state.zoweVersion = action.payload;
     },
@@ -93,11 +88,10 @@ export const installationSlice = createSlice({
   }
 });
 
-export const { setInstallationArgs, setInstallationStatus, setZoweVersion, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid} = installationSlice.actions;
+export const { setInstallationArgs, setZoweVersion, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid} = installationSlice.actions;
 
 export const selectInstallationArgs = (state: RootState) => state.installation.installationArgs;
 export const selectZoweVersion = (state: RootState) => state.installation.zoweVersion;
-export const selectInstallationStatus = (state: RootState) => state.installation.installationStatus;
 export const selectInstallationType = (state: RootState) => state.installation.installationArgs.installationType;
 export const selectSmpeDir = (state: RootState) => state.installation.installationArgs.smpeDir;
 export const selectLicenseAgreement = (state: RootState) => state.installation.licenseAgreement;
