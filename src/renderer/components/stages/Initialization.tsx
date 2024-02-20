@@ -9,12 +9,25 @@
  */
 
 import React, {useEffect} from "react";
+import { useAppDispatch } from '../../hooks';
 import Button from '@mui/material/Button';
 import ProgressCard from '../common/ProgressCard';
 import ContainerCard from '../common/ContainerCard';
+import { setActiveStep } from "./progress/activeStepSlice";
 
 const Initialization = () => {
 
+  const STAGE_ID = 3;
+  const SUB_STAGES = true;
+
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+    }
+  }, []);
+  
   return (
     <ContainerCard title="Initialization" description="Validate the configuration and run Zowe intialization"> 
       

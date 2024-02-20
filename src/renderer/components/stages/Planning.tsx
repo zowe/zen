@@ -19,7 +19,7 @@ import ContainerCard from '../common/ContainerCard';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { setYaml, setSchema, setNextStepEnabled, setLoading, selectYaml } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs, setConnectionArgs } from './connection/connectionSlice';
-import { setPlanningStatus, selectPlanningStatus } from './progressSlice';
+import { setPlanningStatus, selectPlanningStatus } from './progress/progressSlice';
 import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from './installation/installationSlice';
 import { setJobStatement, setJobStatementValid, setJobStatementValidMsg, setLocationValidationDetails, selectJobStatement, selectJobStatementValid, selectJobStatementValidMsg, selectLocValidationDetails } from "./PlanningSlice";
 import { useAppDispatch, useAppSelector } from '../../hooks';
@@ -27,7 +27,13 @@ import { IResponse } from '../../../types/interfaces';
 import Alert from "@mui/material/Alert";
 import { alertEmitter } from "../Header";
 import { Checkbox, FormControlLabel } from "@mui/material";
+import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
+import { getStageDetails } from "../stages/progress/progressStore";
+
+// TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
+// This is all I want to manually test for now. Future work can min/max this harder
+const JCL_UNIX_SCRIPT_CHARS = 55;
 
 const serverSchema = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
@@ -128,6 +134,11 @@ const serverSchema = {
 
 const Planning = () => {
 
+  const stageLabel = 'Planning';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+
   const dispatch = useAppDispatch();
 
   const connectionArgs = useAppSelector(selectConnectionArgs);
@@ -166,6 +177,12 @@ const Planning = () => {
     }
     setEditorVisible(!editorVisible);
   };
+
+  useEffect(() => {
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+    }
+  })
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
@@ -223,7 +240,8 @@ const Planning = () => {
         }); 
       }
     })
-  }, []);  
+
+  }, []); 
 
   useEffect(() => {
     dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
@@ -479,7 +497,8 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Run-time Directory (or installation location)"
                 variant="standard"
-                value={localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir}
+                value={installationArgs.installationDir || localYaml?.zowe?.runtimeDirectory}
+                inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, installationDir: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
@@ -503,6 +522,7 @@ Please customize the job statement below to match your system requirements.
                 label="Workspace Directory"
                 variant="standard"
                 value={localYaml?.zowe?.workspaceDirectory ?? ''}
+                inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, workspaceDir: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
@@ -525,7 +545,8 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Log Directory"
                 variant="standard"
-                value={localYaml?.zowe?.logDirectory || installationArgs.logDir}
+                value={installationArgs.logDir || localYaml?.zowe?.logDirectory}
+                inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, logDir: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
@@ -548,7 +569,8 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Extensions Directory"
                 variant="standard"
-                value={localYaml?.zowe?.extensionDirectory || installationArgs.extensionDir}
+                value={installationArgs.extensionDir || localYaml?.zowe?.extensionDirectory}
+                inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, extensionDir: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
@@ -571,7 +593,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Rbac Profile Identifier"
                 variant="standard"
-                value={localYaml?.zowe?.rbacProfileIdentifier || installationArgs.rbacProfile}
+                value={installationArgs.rbacProfile || localYaml?.zowe?.rbacProfileIdentifier}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, rbacProfile: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
@@ -596,7 +618,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Job Name"
                 variant="standard"
-                value={localYaml?.zowe?.job?.name || installationArgs.jobName}
+                value={installationArgs.jobName || localYaml?.zowe?.job?.name}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, jobName: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
@@ -619,7 +641,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Job Prefix"
                 variant="standard"
-                value={localYaml?.zowe?.job?.prefix || installationArgs.jobPrefix}
+                value={installationArgs.jobPrefix || localYaml?.zowe?.job?.prefix}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, jobPrefix: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
@@ -642,7 +664,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Cookie Identifier"
                 variant="standard"
-                value={localYaml?.zowe?.cookieIdentifier || installationArgs.cookieId}
+                value={installationArgs.cookieId || localYaml?.zowe?.cookieIdentifier}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, cookieId: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
@@ -665,7 +687,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Java location"
                 variant="standard"
-                value={localYaml?.java?.home || installationArgs.javaHome}
+                value={installationArgs.javaHome || localYaml?.java?.home}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, javaHome: e.target.value}));
                   setLocalYaml((prevYaml: { java: any; }) => ({
@@ -688,7 +710,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Node.js location"
                 variant="standard"
-                value={localYaml?.node?.home || installationArgs.nodeHome}
+                value={installationArgs.nodeHome || localYaml?.node?.home}
                 onChange={(e) => {
                   dispatch(setInstallationArgs({...installationArgs, nodeHome: e.target.value}));
                   setLocalYaml((prevYaml: { node: any; }) => ({
@@ -729,7 +751,7 @@ Please customize the job statement below to match your system requirements.
                       style={{marginLeft: 0}}
                       label="z/OSMF Host"
                       variant="standard"
-                      value={localYaml?.zOSMF?.host || connectionArgs.host}
+                      value={connectionArgs.host || localYaml?.zOSMF?.host}
                       onChange={(e) => {
                         dispatch(setInstallationArgs({...installationArgs, zosmfHost: e.target.value}));
                         setLocalYaml((prevYaml: any) => ({
@@ -753,7 +775,7 @@ Please customize the job statement below to match your system requirements.
                       label="z/OSMF Port"
                       variant="standard"
                       type="number"
-                      value={localYaml?.zOSMF?.port || installationArgs.zosmfPort}
+                      value={installationArgs.zosmfPort || localYaml?.zOSMF?.port}
                       onChange={(e) => {
                         dispatch(setInstallationArgs({...installationArgs, zosmfPort: e.target.value}));
                         setLocalYaml((prevYaml: any) => ({
@@ -778,7 +800,7 @@ Please customize the job statement below to match your system requirements.
                       style={{marginLeft: 0}}
                       label="z/OSMF Application Id"
                       variant="standard"
-                      value={localYaml?.zOSMF?.applId || installationArgs.zosmfApplId}
+                      value={installationArgs.zosmfApplId || localYaml?.zOSMF?.applId}
                       onChange={(e) => {
                         dispatch(setInstallationArgs({...installationArgs, zosmfApplId: e.target.value}));
                         setLocalYaml((prevYaml: { zOSMF: any; }) => ({

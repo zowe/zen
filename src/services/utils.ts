@@ -13,6 +13,10 @@ import Header from "../renderer/components/Header"
 import { AlertColor } from "@mui/material/Alert";
 import zos from 'zos-node-accessor';
 
+export const JCL_UNIX_SCRIPT_CHARS = 70;
+
+export const JCL_JOBNAME_DEFAULT = "ZENJOB";
+
 export async function connectFTPServer(config: IIpcConnectionArgs): Promise<any> {
 
   const client = new zos();
@@ -47,4 +51,42 @@ export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<
   } finally {
     client.close();
   }
+}
+
+// This adds a "\n" inside Unix commands separated by ";" if char limit reached
+export function parseUnixScriptByNumOfChars(script: string, charCount: number = JCL_UNIX_SCRIPT_CHARS): string {
+  const parts: string[] = [];
+  let currentPart = '';
+  let counter = 0;
+
+  for (let i = 0; i < script.length; i++) {
+      if (counter >= charCount) {
+          const lastSpaceIndex = currentPart.lastIndexOf(' ');
+
+          if (lastSpaceIndex !== -1) {
+              // If there's a space within the character limit, backtrack to the last encountered space
+              const backtrackedPart = currentPart.substring(0, lastSpaceIndex);
+              parts.push(backtrackedPart);
+              currentPart = currentPart.substring(lastSpaceIndex + 1);
+          }
+          if (currentPart.length > 0) {
+              // Add the current part and reset the counter
+              parts.push('\n');
+              counter = 0;
+          }
+      }
+      currentPart += script[i];
+      counter++;
+  }
+  if (currentPart.length > 0) {
+      parts.push(currentPart);
+  }
+  return parts.join('');
+}
+
+export function startBPXBATCHAndShellSession(jobName: string = JCL_JOBNAME_DEFAULT): string {
+  return `//${jobName}    EXEC PGM=BPXBATCH,REGION=0M
+//STDOUT DD SYSOUT=*
+//STDPARM      DD *
+sh set -x;`;
 }
