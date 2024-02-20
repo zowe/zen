@@ -25,6 +25,7 @@ import { alertEmitter } from "../Header";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore"; 
+import { JCL_UNIX_SCRIPT_OK } from "../../../services/utils";
 
 const InitApfAuth = () => {
 
@@ -108,8 +109,9 @@ const InitApfAuth = () => {
     event.preventDefault();
     toggleProgress(true);
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
-        if(!res.status){ //False case - errors during zwe init apfauth
-          alertEmitter.emit('showAlert', res.details, 'error');
+
+        if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // Error during zwe init apfAuth
+          alertEmitter.emit('showAlert', res.details[3], 'error');
           toggleProgress(res.status);
         }
         apfAuthProceedActions(res.status);

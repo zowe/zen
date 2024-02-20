@@ -15,6 +15,9 @@ import zos from 'zos-node-accessor';
 
 export const JCL_UNIX_SCRIPT_CHARS = 70;
 
+// Note: This doesn't gaurantee command did what it was supposed to do, but rather z/OS Unix (and zwe) didn't throw an error
+export const JCL_UNIX_SCRIPT_OK = "Script finished.";
+
 export const JCL_JOBNAME_DEFAULT = "ZENJOB";
 
 export async function connectFTPServer(config: IIpcConnectionArgs): Promise<any> {
@@ -88,5 +91,5 @@ export function startBPXBATCHAndShellSession(jobName: string = JCL_JOBNAME_DEFAU
   return `//${jobName}    EXEC PGM=BPXBATCH,REGION=0M
 //STDOUT DD SYSOUT=*
 //STDPARM      DD *
-sh set -x;`;
+sh set -x &&`;
 }

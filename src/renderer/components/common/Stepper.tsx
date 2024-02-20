@@ -224,7 +224,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
                 {backgroundColor: '#E0E0E0', 
                 padding: '10px 20px 25px', 
                 position: 'relative', 
-                marginBottom: '-27px', 
+                marginBottom: '-30px', 
                 borderTopRightRadius: '7px', 
                 borderTopLeftRadius: '7px',
                 boxShadow: 'rgb(0 0 0 / 15%) 0px 6px 4px -1px inset'} : {}}>

@@ -17,8 +17,8 @@ export class CheckENV {
   public async run(connectionArgs: IIpcConnectionArgs) {
     const jcl = `${connectionArgs.jobStatement}
 ${startBPXBATCHAndShellSession("ZNCHKNV")}
-echo $JAVA_HOME;
-echo $NODE_HOME;
+echo $JAVA_HOME &&
+echo $NODE_HOME
 /* `
 
     const resp: IJobResults = await submitJcl(connectionArgs, jcl, ["STDOUT", "STDERR"]);

@@ -485,7 +485,7 @@ Please customize the job statement below to match your system requirements.
             }}
           >
           <Typography id="position-1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-            {`Now let's define some properties like z/OS Unix locations, identifiers, and z/OSMF details (optional).`}
+            {`Now let's define some properties like z/OS Unix locations, identifiers, and (optionally) z/OSMF details.`}
           </Typography>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <div style={{ flex: 1 }}>
@@ -737,7 +737,7 @@ Please customize the job statement below to match your system requirements.
                 }}
               />
             }
-            label="Set z/OSMF Attributes (optional)"
+            label="(Recommended) Define z/OSMF attributes."
           />
 
           {showZosmfAttributes && (
@@ -749,7 +749,7 @@ Please customize the job statement below to match your system requirements.
                       id="zosmf-host"
                       required
                       style={{marginLeft: 0}}
-                      label="z/OSMF Host"
+                      label="z/OSMF host"
                       variant="standard"
                       value={connectionArgs.host || localYaml?.zOSMF?.host}
                       onChange={(e) => {
@@ -772,7 +772,7 @@ Please customize the job statement below to match your system requirements.
                       id="zosmf-port"
                       required
                       style={{marginLeft: 0}}
-                      label="z/OSMF Port"
+                      label="z/OSMF port"
                       variant="standard"
                       type="number"
                       value={installationArgs.zosmfPort || localYaml?.zOSMF?.port}
@@ -798,7 +798,7 @@ Please customize the job statement below to match your system requirements.
                       id="zosmf-appl-id"
                       required
                       style={{marginLeft: 0}}
-                      label="z/OSMF Application Id"
+                      label="z/OSMF application identifer"
                       variant="standard"
                       value={installationArgs.zosmfApplId || localYaml?.zOSMF?.applId}
                       onChange={(e) => {
