@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Box, Button } from '@mui/material';
+import { Box, Button, Checkbox, FormControlLabel } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import ContainerCard from '../common/ContainerCard';
@@ -17,6 +17,65 @@ import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
+import { JsonForms } from "@jsonforms/react";
+import { materialCells, materialRenderers } from "@jsonforms/material-renderers";
+
+function PatternPropertiesForm(props: any){
+  const [formState, setFormState] = useState(props.yaml);
+  const [elements, setElements] = useState([]);
+  const [uiSchema, setUiSChema] = useState({});
+  
+  useEffect(() => {
+    const keys = Object.keys(props.schema.properties);
+
+
+    //note on this nested for loop: it will only run on keys that have "patternProperties" as a child so it shouldnt be expensive
+    let newElements = [];
+    let yamlCopy = props.yaml;
+    for (let i = 0; i < keys.length; i++) {
+      if (props.schema.properties[keys[i]].patternProperties != undefined) {
+        const patterns = Object.keys(props.schema.properties[keys[i]].patternProperties);
+        for(let j = 0; j <  patterns.length; j++){
+          const pattern = new RegExp(patterns[j]);
+          const yamlValue = props.yaml[keys[i]];
+          if(yamlValue){
+            const toMatch = Object.keys(yamlValue);
+            for(let k = 0; k < toMatch.length; k++){
+              if(pattern.test(toMatch[k])){
+                console.log('matched pattern ' + pattern + ' to ' + toMatch[k] + ' for key' + keys[i]);
+                const matchedProps = Object.keys(yamlValue[toMatch[k]]);
+                // console.log('matchedProps:', matchedProps);
+                for(let l = 0; l < matchedProps.length; l++){
+                  switch (typeof yamlValue[toMatch[k]][matchedProps[l]]){
+                    case 'boolean':
+                      console.log('boolean adding');
+                      newElements.push(      <FormControlLabel
+                        label={matchedProps[l]}
+                        control={<Checkbox checked={yamlValue[toMatch[k]][matchedProps[l]]} />}
+                      />)
+                      break;
+                    default:
+                      break;
+                  }
+                  // console.log(`#/properties/${keys[i]}/patternProperties/${patterns[j]}/properties/${matchedProps[l]}`);
+                  // groupedControls.push({
+                  //   "type": "Control",
+                  //   "scope": `#/properties/${keys[i]}/patternProperties/${patterns[j]}/properties/${matchedProps[l]}`
+                  // })
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    setElements(newElements);
+  }, [])
+
+  return <>
+    {elements}
+  </>
+}
 
 const Networking = () => {
 
@@ -25,29 +84,16 @@ const Networking = () => {
   const dispatch = useAppDispatch();
 //   const schema = useAppSelector(selectSchema);
   const schema = {
-    "$schema": "https://json-schema.org/draft/2019-09/schema",
     "$id": "https://zowe.org/schemas/v2/server-base",
     "title": "Zowe configuration file",
     "description": "Configuration file for Zowe (zowe.org) version 2.",
     "type": "object",
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "zowe": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
-          "configmgr": {
-            "type": "object",
-            "description": "Controls how configmgr will be used by zwe",
-            "required": ["validation"],
-            "properties": {
-              "validation": {
-                "type": "string",
-                "enum": ["STRICT", "COMPONENT-COMPAT"],
-                "description": "States how configmgr will do validation: Will it quit on any error (STRICT) or quit on any error except the case of a component not having a schema file (COMPONENT-COMPAT)"
-              }
-            }
-          },
           "externalDomains": {
             "type": "array",
             "description": "List of domain names of how you access Zowe from your local computer.",
@@ -86,7 +132,65 @@ const Networking = () => {
         "type": "object",
         "patternProperties": {
           "^.*$": {
-            "$ref": "#/$defs/component"
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether to enable or disable this component",
+                "default": false
+              },
+              "port": {
+                "type": "integer",
+                "description": "Whether to enable or disable this component",
+              },
+              "debug": {
+                "type": "boolean",
+                "description": "Whether to enable or disable this component",
+                "default": false
+              },
+              "certificate": {
+                "$ref": "#/$defs/certificate",
+                "description": "Certificate for current component."
+              },
+              "launcher": {
+                "type": "object",
+                "description": "Set behavior of how the Zowe launcher will handle this particular component",
+                "additionalProperties": true,
+                "properties": {
+                  "restartIntervals": {
+                    "type": "array",
+                    "description": "Intervals of seconds to wait before restarting a component if it fails before the minUptime value.",
+                    "items": {
+                      "type": "integer"  
+                    }
+                  },
+                  "minUptime": {
+                    "type": "integer",
+                    "default": 90,
+                    "description": "The minimum amount of seconds before a component is considered running and the restart counter is reset."
+                  },
+                  "shareAs": {
+                    "type": "string",
+                    "description": "Determines which SHAREAS mode should be used when starting a component",
+                    "enum": ["no", "yes", "must", ""],
+                    "default": "yes"
+                  }
+                }
+              },
+              "zowe": {
+                "type": "object",
+                "description": "Component level overrides for top level Zowe network configuration.",
+                "additionalProperties": false,
+                "properties": {
+                  "network": {
+                    "$ref": "#/$defs/networkSettings"
+                  },
+                  "job": {
+                    "$ref": "#/$defs/componentJobSettings"
+                  }
+                }
+              }
+            }
           }
         }
       },
@@ -156,7 +260,10 @@ const Networking = () => {
                 "const": "PKCS12"
               },
               "file": {
-                "$ref": "/schemas/v2/server-common#zowePath",
+                "type": "string",
+                "pattern": "^([^\\0]){1,1024}$",
+                "minLength": 1,
+                "maxLength": 1024,
                 "description": "Path to your PKCS#12 keystore."
               },
               "password": {
@@ -181,7 +288,10 @@ const Networking = () => {
                 "const": "PKCS12"
               },
               "file": {
-                "$ref": "/schemas/v2/server-common#zowePath",
+                "type": "string",
+                "pattern": "^([^\\0]){1,1024}$",
+                "minLength": 1,
+                "maxLength": 1024,
                 "description": "Path to your PKCS#12 keystore."
               },
               "password": {
@@ -197,24 +307,36 @@ const Networking = () => {
             "required": ["key", "certificate"],
             "properties": {
               "key": {
-                "$ref": "/schemas/v2/server-common#zowePath",
+                "type": "string",
+                "pattern": "^([^\\0]){1,1024}$",
+                "minLength": 1,
+                "maxLength": 1024,
                 "description": "Path to the certificate private key stored in PEM format."
               },
               "certificate": {
-                "$ref": "/schemas/v2/server-common#zowePath",
+                "type": "string",
+                "pattern": "^([^\\0]){1,1024}$",
+                "minLength": 1,
+                "maxLength": 1024,
                 "description": "Path to the certificate stored in PEM format."
               },
               "certificateAuthorities": {
                 "description": "List of paths to the certificate authorities stored in PEM format.",
                 "oneOf": [{
-                    "$ref": "/schemas/v2/server-common#zowePath",
+                    "type": "string",
+                    "pattern": "^([^\\0]){1,1024}$",
+                    "minLength": 1,
+                    "maxLength": 1024,
                     "description": "Paths to the certificate authorities stored in PEM format. You can separate multiple certificate authorities by comma."
                   },
                   {
                     "type": "array",
                     "description": "Path to the certificate authority stored in PEM format.",
                     "items": {
-                      "$ref": "/schemas/v2/server-common#zowePath"
+                      "type": "string",
+                      "pattern": "^([^\\0]){1,1024}$",
+                      "minLength": 1,
+                      "maxLength": 1024,
                     }
                   }
                 ]
@@ -424,7 +546,8 @@ const Networking = () => {
                 "type": "array",
                 "description": "The IP addresses which all of the Zowe servers will be binding on and listening to. Some servers may only support listening on the first element.",
                 "items": {
-                  "$ref": "/schemas/v2/server-common#zoweIpv4"
+                  "type": "string",
+                  "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
                 }
               },
               "vipaIp": {
@@ -468,24 +591,7 @@ const Networking = () => {
     }
   }
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  if(yaml.zowe){
-    let yamlCopy = {...yaml.zowe}
-    delete yamlCopy.setup;
-    delete yamlCopy.rbacProfileIdentifier;
-    delete yamlCopy.cookieIdentifier;
-    delete yamlCopy.job;
-    delete yamlCopy.certificate;
-    delete yamlCopy.sysMessages;
-    delete yamlCopy.verifyCertificates;
-    delete yamlCopy.useConfigmgr;
-    delete yamlCopy.runtimeDirectory;
-    delete yamlCopy.logDirectory;
-    delete yamlCopy.extensionDirectory;
-    delete yamlCopy.workspaceDirectory;
-    yaml.zowe = yamlCopy;
-  }
-  const setupSchema:any = schema ? schema.properties.zowe : "";
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe);
+  const setupSchema:any = schema ?? {};
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -502,13 +608,29 @@ const Networking = () => {
   ajv.addKeyword("$anchor");
   let validate: any;
 
-  if(schema.properties.zowe) {
-    validate = ajv.compile(schema.properties.zowe);
+  if(schema) {
+    validate = ajv.compile(schema);
   }
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
     setIsFormInit(true);
+    if(yaml.zowe){
+      let yamlCopy = {...yaml.zowe}
+      delete yamlCopy.setup;
+      delete yamlCopy.rbacProfileIdentifier;
+      delete yamlCopy.cookieIdentifier;
+      delete yamlCopy.job;
+      delete yamlCopy.certificate;
+      delete yamlCopy.sysMessages;
+      delete yamlCopy.verifyCertificates;
+      delete yamlCopy.useConfigmgr;
+      delete yamlCopy.runtimeDirectory;
+      delete yamlCopy.logDirectory;
+      delete yamlCopy.extensionDirectory;
+      delete yamlCopy.workspaceDirectory;
+      setLYaml({...yaml, zowe: yamlCopy});
+    }
   }, []);
 
   const toggleEditorVisibility = (type: any) => {
@@ -517,7 +639,7 @@ const Networking = () => {
   };
   
   const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml: data) : (data ? data : setupYaml);
+    let newData = isFormInit ? (Object.keys(yaml).length > 0 ? yaml: data) : (data ? data : yaml);
     setIsFormInit(false);
 
     if (data.externalDomains || data.externalPort || data.configmgr || data.launchScript) {
@@ -544,21 +666,22 @@ const Networking = () => {
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
-    setSetupYaml(data);
+    // setSetupYaml(data);
   } 
 
   return (
-    <div>
+    yaml && schema && <div>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View Yaml</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>Preview Job</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>Submit Job</Button>
       </Box>
-      <ContainerCard title="Configuration" description="Basic zowe.yaml configurations."> 
+      <ContainerCard title="Networking" description="Zowe networking configurations."> 
         <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
+          <JsonForm schema={schema} onChange={handleFormChange} formData={yaml}/>
+          <PatternPropertiesForm schema={schema} yaml={yaml} />
         </Box>
       </ContainerCard>
     </div>
