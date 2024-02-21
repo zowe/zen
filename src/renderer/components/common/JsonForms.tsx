@@ -24,6 +24,17 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
   const elements = properties.map((prop: any) => {
     if (schema.properties[prop].type === 'object') {
 
+      if(schema.properties[prop].patternProperties){
+        return {
+          type: 'Group',
+          label: `\n${prop}`,
+          rule: {
+            effect: "HIDE",
+            condition: {}
+          },
+        };
+      }
+
       if(schema.if) {
         const hideProperty = conditionalSchema(schema, formData, prop);
         if(hideProperty) {
@@ -43,7 +54,6 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
       let row = [];
       if(subSchema && subSchema.properties){
         const subProperties = Object.keys(subSchema?.properties);
-        subProperties.map((subProp: any) => console.log('creating control prop for ' + subProp));
         const subElements = subProperties.map((subProp: any) => ({
           type: 'Control',
           scope: `#/properties${base}${prop}/properties/${subProp}`,

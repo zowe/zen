@@ -32,10 +32,11 @@ function PatternPropertiesForm(props: any){
     //note on this nested for loop: it will only run on keys that have "patternProperties" as a child so it shouldnt be expensive
     let newElements = [];
     let yamlCopy = props.yaml;
-    for (let i = 0; i < keys.length; i++) {
-      if (props.schema.properties[keys[i]].patternProperties != undefined) {
-        const patterns = Object.keys(props.schema.properties[keys[i]].patternProperties);
-        for(let j = 0; j <  patterns.length; j++){
+    for (let i = 0; i < keys.length; i++) { //i = go through each property of the yaml
+      if (props.schema.properties[keys[i]].patternProperties != undefined) { //only for rendering patternProperties
+        newElements.push(<p style={{fontSize: "24px"}}>{keys[i]}</p>);
+        const patterns = Object.keys(props.schema.properties[keys[i]].patternProperties); //get all user defined regex patterns
+        for(let j = 0; j <  patterns.length; j++){ //j = go through each pattern
           const pattern = new RegExp(patterns[j]);
           const yamlValue = props.yaml[keys[i]];
           if(yamlValue){
@@ -44,25 +45,24 @@ function PatternPropertiesForm(props: any){
               if(pattern.test(toMatch[k])){
                 console.log('matched pattern ' + pattern + ' to ' + toMatch[k] + ' for key' + keys[i]);
                 const matchedProps = Object.keys(yamlValue[toMatch[k]]);
+                newElements.push(<span><strong>{toMatch[k]}</strong></span>)
+                newElements.push(<br />);
                 // console.log('matchedProps:', matchedProps);
                 for(let l = 0; l < matchedProps.length; l++){
                   switch (typeof yamlValue[toMatch[k]][matchedProps[l]]){
                     case 'boolean':
-                      console.log('boolean adding');
                       newElements.push(      <FormControlLabel
                         label={matchedProps[l]}
+                        key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
                         control={<Checkbox checked={yamlValue[toMatch[k]][matchedProps[l]]} />}
                       />)
+                      newElements.push(<br />);
                       break;
                     default:
                       break;
                   }
-                  // console.log(`#/properties/${keys[i]}/patternProperties/${patterns[j]}/properties/${matchedProps[l]}`);
-                  // groupedControls.push({
-                  //   "type": "Control",
-                  //   "scope": `#/properties/${keys[i]}/patternProperties/${patterns[j]}/properties/${matchedProps[l]}`
-                  // })
                 }
+                newElements.push(<br />);
               }
             }
           }
@@ -652,11 +652,6 @@ const Networking = () => {
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
-          // setTopLevelYamlConfig('zowe.externalDomains', data.externalDomains);
-          // setTopLevelYamlConfig('zowe.externalPort', data.externalPort);
-          // setTopLevelYamlConfig('zowe.configmgr', data.configmgr);
-          // setTopLevelYamlConfig('zowe.launchScript', data.launchScript);
-          // setConfiguration(section, newData, true);
           setStageConfig(true, '', newData);
         }
       }
