@@ -17,27 +17,27 @@ import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import { selectConnectionStatus } from '../stages/connection/connectionSlice';
+import { selectConnectionStatus } from '../stages/progress/progressSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from '../stages/progressSlice';
-import { selectInstallationStatus } from '../stages/installation/installationSlice';
+import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from '../stages/progress/progressSlice';
+import { selectInstallationTypeStatus } from '../stages/progress/progressSlice';
+import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progress/activeStepSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
-import Security from '../stages/Security';
 import savedInstall from '../../assets/saved-install-green.png';
-import trash from '../../assets/trash.png';
 import { createTheme } from '@mui/material/styles';
 import eventDispatcher from '../../../utils/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
+import Home from '../Home';
 
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
 
-export default function HorizontalLinearStepper(props: any) {
+export default function HorizontalLinearStepper({stages, initialization}:{stages: any, initialization?:boolean}) {
 
   const connectionStatus = useSelector(selectConnectionStatus);
 
@@ -47,7 +47,7 @@ export default function HorizontalLinearStepper(props: any) {
   const stageProgressStatus = [
     useSelector(selectConnectionStatus),
     useSelector(selectPlanningStatus),
-    useSelector(selectInstallationStatus),
+    useSelector(selectInstallationTypeStatus),
     useSelector(selectInitializationStatus),
   ];
 
@@ -57,36 +57,30 @@ export default function HorizontalLinearStepper(props: any) {
     useSelector(selectSecurityStatus),
     useSelector(selectCertificateStatus), 
   ]
-  const theme = createTheme();
   
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
   const TYPE_OUTPUT = "output";
 
-  const {stages} = props;
-  const [activeStep, setActiveStep] = useState(0);
-  const [activeSubStep, setActiveSubStep] = useState(0);
-  const [skipped, setSkipped] = useState(new Set());
+  const [activeStep, setActiveStep] =  initialization ? useState(0) : useState(useAppSelector(selectActiveStepIndex));
+  const [activeSubStep, setActiveSubStep] = initialization ? useState(0) : useState(useAppSelector(selectActiveSubStepIndex));
   const [nextText, setNextText] = useState("Continue");
   const [contentType, setContentType] = useState('output');
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState('');
-  const [currStep, setCurrStep] = useState(1);
-  const [stepComplete, setStepComplete] = useState(false);
 
   useEffect(() => {
-    const updateActiveStepListener = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
-      setActiveStep(newActiveStep);
-      const newSubStep = isSubStep ? subStepIndex : 0;
-      setActiveSubStep(newSubStep);
-      console.log("ACTING UPON THE EVENT|n");
-      // handleStepperClick(newActiveStep, isSubStep, subStepIndex);
-    };
     eventDispatcher.on('updateActiveStep', updateActiveStepListener);
     return () => {
       eventDispatcher.off('updateActiveStep', updateActiveStepListener);
     };
   }, []); 
+
+  const updateActiveStepListener = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
+    setActiveStep(newActiveStep);
+    const newSubStep = isSubStep ? subStepIndex : 0;
+    setActiveSubStep(newSubStep);
+  };
 
   const toggleEditorVisibility = (type?: any) => {
     if (type) {
@@ -169,7 +163,6 @@ export default function HorizontalLinearStepper(props: any) {
     setActiveStep(newActiveStep);
     const newSubStep = isSubStep ? subStepIndex : 0;
     setActiveSubStep(newSubStep);
-    console.log("ACTING UPON THE EVENT|n");
   };
 
   const getStepIcon = (error: any, stageId: number, isSubStep?: boolean, subStepId?: number) => {
@@ -207,6 +200,11 @@ export default function HorizontalLinearStepper(props: any) {
     }
   };
 
+  const onSaveAndClose = () => {
+    alertEmitter.emit('hideAlert');
+    eventDispatcher.emit('saveAndCloseEvent');
+  }
+
   const isNextStepEnabled = useAppSelector(selectNextStepEnabled);
 
   return (
@@ -241,7 +239,7 @@ export default function HorizontalLinearStepper(props: any) {
           );
         })}
       </Stepper>
-      {stages[activeStep].subStages &&  <Stepper className="substepper" activeStep={activeSubStep}>
+      {stages[activeStep] && stages[activeStep].subStages &&  <Stepper className="substepper" activeStep={activeSubStep}>
         {stages[activeStep].subStages.map((stage: any, index: number) => {
           const stepProps = {};
           const labelProps: {error?: boolean;} = {};
@@ -271,9 +269,9 @@ export default function HorizontalLinearStepper(props: any) {
         </React.Fragment>
       ) : (
         <React.Fragment>
-          <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: stages[activeStep].subStages ? 'calc(100vh - 250px)' : 'calc(100vh - 200px)'}}>
-            {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].component : stages[activeStep].component}
-          </div>
+          {stages[activeStep] && <div style={{flexGrow: 1, display: 'flex', overflow: 'auto', height: stages[activeStep].subStages ? 'calc(100vh - 250px)' : 'calc(100vh - 200px)'}}>
+            { stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].component : stages[activeStep].component}
+          </div> }
           <Box sx={{ display: 'flex', flexDirection: 'row', p: "8px 8px 0 8px", borderTop: 'solid 1px lightgray', justifyContent: 'flex-end'}}>
             {/* TODO: This needs a confirmation modal */}
             <Link style={{margin: 0}} to="/">
@@ -281,7 +279,7 @@ export default function HorizontalLinearStepper(props: any) {
                 color="success"
                 variant="outlined"
                 sx={{ textTransform: 'none', mr: 1 }}
-                onClick={() => alertEmitter.emit('hideAlert')}>
+                onClick={onSaveAndClose}>
                 <img style={{width: '16px', height: '20px', paddingRight: '8px'}} src={savedInstall} alt="save and close"/>
                 Save & close
               </Button>
@@ -293,14 +291,14 @@ export default function HorizontalLinearStepper(props: any) {
               sx={{ textTransform: 'none', mr: 1 }}>
               Previous step
             </Button>
-            {stages[activeStep].isSkippable &&
+            {stages[activeStep] && stages[activeStep].isSkippable &&
               <Button 
                 disabled={isNextStepEnabled}
                 variant="contained" 
                 sx={{ textTransform: 'none', mr: 1 }} 
                 onClick={() => handleSkip()}
               >
-                Skip {stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].label : stages[activeStep].label}
+                Skip {stages[activeStep] && stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].label : stages[activeStep]? stages[activeStep].label: ''}
               </Button>
             }
             <Button 
@@ -309,7 +307,7 @@ export default function HorizontalLinearStepper(props: any) {
               sx={{ textTransform: 'none', mr: 1 }}
               onClick={() => handleNext()}
             >
-              {(stages[activeStep].subStages && activeSubStep < stages[activeStep].subStages.length - 1) ? stages[activeStep].subStages[activeSubStep].nextButton : stages[activeStep].nextButton}
+              {(stages[activeStep] && stages[activeStep].subStages && activeSubStep < stages[activeStep].subStages.length - 1) ? stages[activeStep].subStages[activeSubStep].nextButton : stages[activeStep] ? stages[activeStep].nextButton : ''}
             </Button>
           </Box>
         </React.Fragment>
