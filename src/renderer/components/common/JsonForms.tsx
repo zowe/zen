@@ -39,25 +39,26 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
       }
 
       const subSchema = schema.properties[prop];
-      const subProperties = Object.keys(subSchema?.properties);
-
-      const subElements = subProperties.map((subProp: any) => ({
-        type: 'Control',
-        scope: `#/properties${base}${prop}/properties/${subProp}`,
-      }));
-
       const groupedControls = [];
       let row = [];
+      if(subSchema && subSchema.properties){
+        const subProperties = Object.keys(subSchema?.properties);
+        subProperties.map((subProp: any) => console.log('creating control prop for ' + subProp));
+        const subElements = subProperties.map((subProp: any) => ({
+          type: 'Control',
+          scope: `#/properties${base}${prop}/properties/${subProp}`,
+        }));
 
-      for (let i = 0; i < subElements.length; i++) {
-        row.push(subElements[i]);
+        for (let i = 0; i < subElements.length; i++) {
+          row.push(subElements[i]);
 
-        if (row.length === 2 || (row.length === 1 && i === subElements.length - 1)) {
-          groupedControls.push({
-            type: 'HorizontalLayout',
-            elements: row,
-          });
-          row = [];
+          if (row.length === 2 || (row.length === 1 && i === subElements.length - 1)) {
+            groupedControls.push({
+              type: 'HorizontalLayout',
+              elements: row,
+            });
+            row = [];
+          }
         }
       }
 
@@ -86,16 +87,19 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
 
 // To handle the "if", "else", and "then" in the schema
 const conditionalSchema = (schema: any, formData: any, prop: any): boolean=> {
-  const ifProp = Object.keys(schema.if.properties)[0];
-  const ifPropValue = schema.if.properties[ifProp].const.toLowerCase();
-  const thenProp = schema.then.required[0].toLowerCase();
-  const elseProp = schema.else.required[0].toLowerCase();
+  if(schema.if && schema.then && schema.else){
+    const ifProp = Object.keys(schema.if.properties)[0];
+    const ifPropValue = schema.if.properties[ifProp].const.toLowerCase();
+    const thenProp = schema.then.required[0].toLowerCase();
+    const elseProp = schema.else.required[0].toLowerCase();
 
-  if(formData && formData[ifProp]) {
-    const formDataPropValue = formData[ifProp].toLowerCase();
-    if( (formDataPropValue == ifPropValue && prop == elseProp) || (formDataPropValue != ifPropValue && prop == thenProp) ) {
-      return true;
+    if(formData && formData[ifProp]) {
+      const formDataPropValue = formData[ifProp].toLowerCase();
+      if( (formDataPropValue == ifPropValue && prop == elseProp) || (formDataPropValue != ifPropValue && prop == thenProp) ) {
+        return true;
+      }
     }
+    return false;
   }
   return false;
 }
@@ -116,7 +120,7 @@ export default function JsonForm(props: any) {
     if (schema && schema.properties) {
       const defaultFormData = { ...formData };
       Object.keys(schema.properties).forEach((property) => {
-        if (schema.properties[property].default !== undefined || schema.properties[property].type === 'object') {
+        if (schema.properties[property].type && schema.properties[property].default !== undefined || schema.properties[property].type === 'object') {
           // If the property is an object, recursively set default values
           if (schema.properties[property].type === 'object') {
             defaultFormData[property] = getDefaultFormData(
