@@ -11,7 +11,7 @@
 import React, {useEffect, useState} from "react";
 import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectOutput, selectSchema, setNextStepEnabled, setLoading, setOutput } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { setApfAuthStatus, setInitializationStatus, selectApfAuthStatus, selectInitializationStatus } from './progress/progressSlice';
 import { IResponse } from '../../../types/interfaces';
@@ -25,8 +25,7 @@ import { alertEmitter } from "../Header";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore"; 
-
-export const JCL_UNIX_SCRIPT_OK = "Script finished.";
+import { JCL_UNIX_SCRIPT_OK } from "../common/Utils";
 
 const InitApfAuth = () => {
 
@@ -44,15 +43,18 @@ const InitApfAuth = () => {
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
+  const output = useAppSelector(selectOutput);
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
+  const [setupOutput, setSetupOutput] = useState('');
   const [showProgress, toggleProgress] = useState(false);
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
+  const [editorContent, setEditorContent] = useState('');
   const [apfProgress, setApfProgress] = useState({
     writeYaml: false,
     uploadYaml: false,
@@ -113,6 +115,13 @@ const InitApfAuth = () => {
 
         if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // Error during zwe init apfAuth
           alertEmitter.emit('showAlert', res.details[3], 'error');
+          setEditorContent(res.details['*']);
+          setSetupOutput(res.details[3]);
+          dispatch(setOutput(res.details[3]));
+          setContentType('output');
+          toggleEditorVisibility("output")
+          // setEditorContent(res.details['*']);
+          // setContentType('output');
           toggleProgress(false);
           apfAuthProceedActions(false);
           stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;

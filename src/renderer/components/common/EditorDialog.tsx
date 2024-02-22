@@ -11,7 +11,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectOutput, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import Ajv2019 from "ajv/dist/2019"
 import MonacoEditorComponent from "../common/MonacoEditor";
 import draft7MetaSchema from "ajv/dist/refs/json-schema-draft-07.json";
@@ -34,6 +34,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const [setupYaml, setSetupYaml] = useState(useAppSelector(selectYaml));
+  const [setupOutput, setSetupOutput] = useState(useAppSelector(selectOutput));
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState(content ? content : '');
   const [isSchemaValid, setIsSchemaValid] = useState(true);
@@ -50,7 +51,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
         setEditorContent(test_jcl);
       }
       if(contentType == 'output') {
-        setEditorContent(test_op);
+        setEditorContent(stringify(setupOutput));
       }
     }
   }, [isEditorVisible])
