@@ -28,6 +28,9 @@ contextBridge.exposeInMainWorld('electron', {
     getConfig() {
       return ipcRenderer.invoke("get-config");
     },
+    getConfigByKey(key: string, value: any) {
+      return ipcRenderer.invoke("get-config-by-key", key);
+    },
     setConfig(completeZoweYamlObj: any) {
       return ipcRenderer.invoke("set-config", completeZoweYamlObj);
     },
