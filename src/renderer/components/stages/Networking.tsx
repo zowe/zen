@@ -9,21 +9,19 @@
  */
 
 import { useState, useEffect } from "react";
-import { Box, Button, Checkbox, FormControlLabel } from '@mui/material';
+import { Box, Button, Checkbox, FormControlLabel, TextField } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { selectYaml, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
-import { JsonForms } from "@jsonforms/react";
-import { materialCells, materialRenderers } from "@jsonforms/material-renderers";
 
 function PatternPropertiesForm(props: any){
-  const [formState, setFormState] = useState(props.yaml);
   const [elements, setElements] = useState([]);
-  const [uiSchema, setUiSChema] = useState({});
+  const [yaml, setLYaml] = useState(props.yaml);
+  const dispatch = useAppDispatch();
   
   useEffect(() => {
     const keys = Object.keys(props.schema.properties);
@@ -31,33 +29,50 @@ function PatternPropertiesForm(props: any){
 
     //note on this nested for loop: it will only run on keys that have "patternProperties" as a child so it shouldnt be expensive
     let newElements = [];
-    let yamlCopy = props.yaml;
-    for (let i = 0; i < keys.length; i++) { //i = go through each property of the yaml
+    const LOOP_LIMIT = 1024;
+    for (let i = 0; i < keys.length && i < LOOP_LIMIT; i++) { //i = go through each property of the yaml
       if (props.schema.properties[keys[i]].patternProperties != undefined) { //only for rendering patternProperties
         newElements.push(<p style={{fontSize: "24px"}}>{keys[i]}</p>);
         const patterns = Object.keys(props.schema.properties[keys[i]].patternProperties); //get all user defined regex patterns
-        for(let j = 0; j <  patterns.length; j++){ //j = go through each pattern
+        for(let j = 0; j <  patterns.length && j < LOOP_LIMIT; j++){ //j = go through each pattern
           const pattern = new RegExp(patterns[j]);
-          const yamlValue = props.yaml[keys[i]];
+          const yamlValue = yaml[keys[i]];
           if(yamlValue){
             const toMatch = Object.keys(yamlValue);
-            for(let k = 0; k < toMatch.length; k++){
+            for(let k = 0; k < toMatch.length && k < LOOP_LIMIT; k++){
               if(pattern.test(toMatch[k])){
-                console.log('matched pattern ' + pattern + ' to ' + toMatch[k] + ' for key' + keys[i]);
+                // console.log('matched pattern ' + pattern + ' to ' + toMatch[k] + ' for key' + keys[i]);
                 const matchedProps = Object.keys(yamlValue[toMatch[k]]);
                 newElements.push(<span><strong>{toMatch[k]}</strong></span>)
                 newElements.push(<br />);
                 // console.log('matchedProps:', matchedProps);
-                for(let l = 0; l < matchedProps.length; l++){
+                for(let l = 0; l < matchedProps.length && l < LOOP_LIMIT; l++){
+                  // pattern = patterns[j] = current regex pattern from patternProperties
+                  // keys[i] = parent object that contains pattern properties (likely components or haInstances)
+                  // toMatch[k] = regex matched child of keys[i], likely a component name such as app-server, gateway, etc
+                  // matchedProps[l] = properties of toMatch[k]
                   switch (typeof yamlValue[toMatch[k]][matchedProps[l]]){
                     case 'boolean':
-                      newElements.push(      <FormControlLabel
+                      newElements.push(<FormControlLabel
                         label={matchedProps[l]}
                         key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
-                        control={<Checkbox checked={yamlValue[toMatch[k]][matchedProps[l]]} />}
+                        control={<Checkbox checked={yaml[keys[i]][toMatch[k]][matchedProps[l]]} onChange={async (e) => {
+                          let elemsCopy = [...elements];
+                          // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !e.target.checked}}}));
+                          const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !e.target.checked}}};
+                          setLYaml(newYaml);
+                          await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, !e.target.checked)
+                          dispatch(setYaml(newYaml));
+                        }}/>}
                       />)
                       newElements.push(<br />);
                       break;
+                    case 'number':
+                        newElements.push(<TextField
+                          label={matchedProps[l]}
+                          variant="standard"
+                          defaultValue={yamlValue[toMatch[k]][matchedProps[l]]}
+                        />)
                     default:
                       break;
                   }
@@ -70,7 +85,7 @@ function PatternPropertiesForm(props: any){
       }
     }
     setElements(newElements);
-  }, [])
+  }, [yaml])
 
   return <>
     {elements}
@@ -108,23 +123,6 @@ const Networking = () => {
             "minimum": 0,
             "maximum": 65535,
             "description": "Port number of how you access Zowe APIML Gateway from your local computer."
-          },
-          "launchScript": {
-            "type": "object",
-            "description": "Customize Zowe launch scripts (zwe commands) behavior.",
-            "properties": {
-              "logLevel": {
-                "type": "string",
-                "description": "Log level for Zowe launch scripts.",
-                "enum": ["", "info", "debug", "trace"]
-              },
-              "onComponentConfigureFail": {
-                "type": "string",
-                "description": "Chooses how 'zwe start' behaves if a component configure script fails",
-                "enum": ["warn", "exit"],
-                "default": "warn"
-              }
-            }
           }
         }
       },
@@ -141,11 +139,11 @@ const Networking = () => {
               },
               "port": {
                 "type": "integer",
-                "description": "Whether to enable or disable this component",
+                "description": "Optional, port number for component if applicable.",
               },
               "debug": {
                 "type": "boolean",
-                "description": "Whether to enable or disable this component",
+                "description": "Whether to enable or disable debug tracing for this component",
                 "default": false
               },
               "certificate": {
@@ -591,14 +589,32 @@ const Networking = () => {
     }
   }
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const setupSchema:any = schema ?? {};
+  const createModdedYaml = (yaml: any) => {
+    if(yaml.zowe){
+      let yamlCopy = {...yaml.zowe}
+      delete yamlCopy.setup;
+      delete yamlCopy.rbacProfileIdentifier;
+      delete yamlCopy.cookieIdentifier;
+      delete yamlCopy.job;
+      delete yamlCopy.certificate;
+      delete yamlCopy.sysMessages;
+      delete yamlCopy.verifyCertificates;
+      delete yamlCopy.useConfigmgr;
+      delete yamlCopy.runtimeDirectory;
+      delete yamlCopy.logDirectory;
+      delete yamlCopy.extensionDirectory;
+      delete yamlCopy.workspaceDirectory;
+      delete yamlCopy.launchScript;
+      return {...yaml, zowe: yamlCopy};
+    }
+    return yaml;
+  }
+  const [moddedYaml, setModdedYaml] = useState(createModdedYaml(yaml));
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
-
-//   const section = 'setup';
 
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
@@ -615,22 +631,6 @@ const Networking = () => {
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
     setIsFormInit(true);
-    if(yaml.zowe){
-      let yamlCopy = {...yaml.zowe}
-      delete yamlCopy.setup;
-      delete yamlCopy.rbacProfileIdentifier;
-      delete yamlCopy.cookieIdentifier;
-      delete yamlCopy.job;
-      delete yamlCopy.certificate;
-      delete yamlCopy.sysMessages;
-      delete yamlCopy.verifyCertificates;
-      delete yamlCopy.useConfigmgr;
-      delete yamlCopy.runtimeDirectory;
-      delete yamlCopy.logDirectory;
-      delete yamlCopy.extensionDirectory;
-      delete yamlCopy.workspaceDirectory;
-      setLYaml({...yaml, zowe: yamlCopy});
-    }
   }, []);
 
   const toggleEditorVisibility = (type: any) => {
@@ -638,21 +638,27 @@ const Networking = () => {
     setEditorVisible(!editorVisible);
   };
   
-  const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    let newData = isFormInit ? (Object.keys(yaml).length > 0 ? yaml: data) : (data ? data : yaml);
+  const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
+    // console.log('form change data:', JSON.stringify(data));
+    let updatedData = isFormInit ? (Object.keys(moddedYaml).length > 0 ? moddedYaml : data.zowe) : (data.zowe ? data.zowe : data);
     setIsFormInit(false);
 
-    if (data.externalDomains || data.externalPort || data.configmgr || data.launchScript) {
-      newData = isYamlUpdated ? data.zowe : newData;
+    if (updatedData.externalDomains || updatedData.externalPort) {
 
       if(validate) {
-        validate(newData);
+        validate(updatedData);
         if(validate.errors) {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
-          setStageConfig(false, errPath+' '+errMsg, newData);
+          setStageConfig(false, errPath+' '+errMsg, data.zowe);
+
         } else {
-          setStageConfig(true, '', newData);
+          const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: updatedData.externalDomains, externalPort: updatedData.externalPort}};
+          // console.log("new yaml", JSON.stringify(newYaml));
+          window.electron.ipcRenderer.setConfig(newYaml)
+          // createAndSetModdedYaml(newYaml);
+          setStageConfig(true, '', newYaml);
+          dispatch(setYaml(newYaml));
         }
       }
     }
@@ -661,6 +667,7 @@ const Networking = () => {
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
+    setModdedYaml(data);
     // setSetupYaml(data);
   } 
 
@@ -672,11 +679,11 @@ const Networking = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>Submit Job</Button>
       </Box>
       <ContainerCard title="Networking" description="Zowe networking configurations."> 
-        <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
-        <Box sx={{ width: '60vw' }}>
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={schema} onChange={handleFormChange} formData={yaml}/>
-          <PatternPropertiesForm schema={schema} yaml={yaml} />
+          <JsonForm schema={schema} onChange={handleFormChange} formData={moddedYaml}/>
+          <PatternPropertiesForm schema={schema} yaml={yaml} setYaml={setLYaml}/>
         </Box>
       </ContainerCard>
     </div>
