@@ -9,11 +9,10 @@
  */
 
 import { useState, useEffect } from "react";
-import { Box, Button, Checkbox, FormControlLabel, TextField } from '@mui/material';
+import { Box, Button, Checkbox, FormControlLabel, IconButton, SvgIcon, SvgIconProps, TextField } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import ContainerCard from '../common/ContainerCard';
-import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
@@ -57,12 +56,12 @@ function PatternPropertiesForm(props: any){
                         label={matchedProps[l]}
                         key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
                         control={<Checkbox checked={yaml[keys[i]][toMatch[k]][matchedProps[l]]} onChange={async (e) => {
-                          let elemsCopy = [...elements];
-                          // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !e.target.checked}}}));
-                          const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !e.target.checked}}};
+                          // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
+                          const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}};
                           setLYaml(newYaml);
-                          await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, !e.target.checked)
-                          dispatch(setYaml(newYaml));
+                          props.setYaml(newYaml);
+                          await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, !yaml[keys[i]][toMatch[k]][matchedProps[l]])
+                          // dispatch(setYaml(newYaml));
                         }}/>}
                       />)
                       newElements.push(<br />);
@@ -72,6 +71,13 @@ function PatternPropertiesForm(props: any){
                           label={matchedProps[l]}
                           variant="standard"
                           defaultValue={yamlValue[toMatch[k]][matchedProps[l]]}
+                          onChange={async (e) => {
+                            const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
+                            setLYaml(newYaml);
+                            // props.setYaml(newYaml);
+                            await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
+                            // dispatch(setYaml(newYaml));
+                          }}
                         />)
                     default:
                       break;
@@ -85,11 +91,27 @@ function PatternPropertiesForm(props: any){
       }
     }
     setElements(newElements);
-  }, [yaml])
+  }, [yaml, props.yaml])
 
   return <>
     {elements}
   </>
+}
+
+function AddIcon(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+    </SvgIcon>
+  );
+}
+
+function DeleteIcon(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
+    </SvgIcon>
+  );
 }
 
 const Networking = () => {
@@ -591,7 +613,7 @@ const Networking = () => {
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const createModdedYaml = (yaml: any) => {
     if(yaml.zowe){
-      let yamlCopy = {...yaml.zowe}
+      let yamlCopy = JSON.parse(JSON.stringify(yaml.zowe));
       delete yamlCopy.setup;
       delete yamlCopy.rbacProfileIdentifier;
       delete yamlCopy.cookieIdentifier;
@@ -628,6 +650,11 @@ const Networking = () => {
     validate = ajv.compile(schema);
   }
 
+  // useEffect(() => {
+  //   // dispatch(setYaml(yaml));
+  //   setModdedYaml(createModdedYaml(yaml));
+  // }, [yaml]); 
+
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
     setIsFormInit(true);
@@ -656,9 +683,7 @@ const Networking = () => {
           const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: updatedData.externalDomains, externalPort: updatedData.externalPort}};
           // console.log("new yaml", JSON.stringify(newYaml));
           window.electron.ipcRenderer.setConfig(newYaml)
-          // createAndSetModdedYaml(newYaml);
           setStageConfig(true, '', newYaml);
-          dispatch(setYaml(newYaml));
         }
       }
     }
@@ -667,8 +692,7 @@ const Networking = () => {
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
-    setModdedYaml(data);
-    // setSetupYaml(data);
+    setLYaml(data);
   } 
 
   return (
@@ -682,7 +706,50 @@ const Networking = () => {
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={schema} onChange={handleFormChange} formData={moddedYaml}/>
+          <p style={{fontSize: "24px"}}>External Domains <IconButton onClick={(e) => {
+            let domains = [...yaml.zowe?.externalDomains, ""];
+            const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
+            window.electron.ipcRenderer.setConfig(newYaml )
+            dispatch(setYaml(newYaml))
+            setLYaml(newYaml);
+          }}><AddIcon /></IconButton></p>
+          {yaml.zowe.externalDomains.map((domain: string, index: number) => <Box sx={{display: "flex", flexDirection: "row"}}><TextField
+            variant="standard"
+            defaultValue={domain}
+            onChange={async (e) => {
+              let domains = [...yaml.zowe?.externalDomains];
+              domains[index] = e.target.value;
+              const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
+              console.log(domains);
+              window.electron.ipcRenderer.setConfig(newYaml )
+              dispatch(setYaml(newYaml))
+              setLYaml(newYaml);
+            }}
+          /><IconButton onClick={(e) => {
+            let domains = [...yaml.zowe?.externalDomains];
+            domains.splice(index, 1);
+            const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
+            window.electron.ipcRenderer.setConfig(newYaml )
+            dispatch(setYaml(newYaml))
+            setLYaml(newYaml);
+          }}><DeleteIcon /></IconButton></Box>)}
+          <br />
+          <TextField
+            label={"External Port"}
+            variant="standard"
+            type="number"
+            helperText={schema.properties.zowe.properties.externalPort.description}
+            defaultValue={yaml.zowe.externalPort}
+            onChange={async (e) => {
+              const newYaml = {...yaml, zowe: {...yaml.zowe, externalPort: Number(e.target.value)}};
+              window.electron.ipcRenderer.setConfig(newYaml)
+              dispatch(setYaml(newYaml))
+              // setLYaml(newYaml);
+              // // props.setYaml(newYaml);
+              // await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
+              // // dispatch(setYaml(newYaml));
+            }}
+          />
           <PatternPropertiesForm schema={schema} yaml={yaml} setYaml={setLYaml}/>
         </Box>
       </ContainerCard>
