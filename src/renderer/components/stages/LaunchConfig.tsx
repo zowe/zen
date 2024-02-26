@@ -11,7 +11,7 @@
 import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -30,26 +30,23 @@ const LaunchConfig = () => {
     "title": "Zowe configuration file",
     "description": "Configuration file for Zowe (zowe.org) version 2.",
     "type": "object",
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "zowe": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
-          "externalDomains": {
-            "type": "array",
-            "description": "List of domain names of how you access Zowe from your local computer.",
-            "minItems": 1,
-            "uniqueItems": true,
-            "items": {
-              "type": ["string"]
+          "configmgr": {
+            "type": "object",
+            "description": "Controls how configmgr will be used by zwe",
+            "required": ["validation"],
+            "properties": {
+              "validation": {
+                "type": "string",
+                "enum": ["STRICT", "COMPONENT-COMPAT"],
+                "description": "States how configmgr will do validation: Will it quit on any error (STRICT) or quit on any error except the case of a component not having a schema file (COMPONENT-COMPAT)"
+              }
             }
-          },
-          "externalPort": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 65535,
-            "description": "Port number of how you access Zowe APIML Gateway from your local computer."
           },
           "launchScript": {
             "type": "object",
@@ -70,42 +67,6 @@ const LaunchConfig = () => {
           }
         }
       },
-      "components": {
-        "type": "object",
-        "patternProperties": {
-          "^.*$": {
-            "$ref": "#/$defs/component"
-          }
-        }
-      },
-      "haInstances": {
-        "type": "object",
-        "patternProperties": {
-          "^.*$": {
-            "type": "object",
-            "description": "Configuration of Zowe high availability instance.",
-            "required": ["hostname", "sysname"],
-            "properties": {
-              "hostname": {
-                "type": "string",
-                "description": "Host name of the Zowe high availability instance. This is hostname for internal communications."
-              },
-              "sysname": {
-                "type": "string",
-                "description": "z/OS system name of the Zowe high availability instance. Some JES command will be routed to this system name."
-              },
-              "components": {
-                "type": "object",
-                "patternProperties": {
-                  "^.*$": {
-                    "$ref": "#/$defs/component"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
     },
     "$defs": {
       "port": {
@@ -456,22 +417,6 @@ const LaunchConfig = () => {
     }
   }
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  if(yaml.zowe){
-    let yamlCopy = {...yaml.zowe}
-    delete yamlCopy.setup;
-    delete yamlCopy.rbacProfileIdentifier;
-    delete yamlCopy.cookieIdentifier;
-    delete yamlCopy.job;
-    delete yamlCopy.certificate;
-    delete yamlCopy.sysMessages;
-    delete yamlCopy.verifyCertificates;
-    delete yamlCopy.useConfigmgr;
-    delete yamlCopy.runtimeDirectory;
-    delete yamlCopy.logDirectory;
-    delete yamlCopy.extensionDirectory;
-    delete yamlCopy.workspaceDirectory;
-    yaml.zowe = yamlCopy;
-  }
   const setupSchema:any = schema ? schema.properties.zowe : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe);
   const [isFormInit, setIsFormInit] = useState(false);
@@ -504,12 +449,11 @@ const LaunchConfig = () => {
     setEditorVisible(!editorVisible);
   };
   
-  const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml: data) : (data ? data : setupYaml);
+  const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
+    let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe) : (data.zowe ? data.zowe : data);
     setIsFormInit(false);
 
-    if (data.externalDomains || data.externalPort || data.configmgr || data.launchScript) {
-      newData = isYamlUpdated ? data.zowe : newData;
+    if (newData.configmgr || newData.launchScript) {
 
       if(validate) {
         validate(newData);
@@ -518,11 +462,13 @@ const LaunchConfig = () => {
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
-          // setTopLevelYamlConfig('zowe.externalDomains', data.externalDomains);
-          // setTopLevelYamlConfig('zowe.externalPort', data.externalPort);
-          // setTopLevelYamlConfig('zowe.configmgr', data.configmgr);
-          // setTopLevelYamlConfig('zowe.launchScript', data.launchScript);
-          // setConfiguration(section, newData, true);
+          const newYaml = {...yaml, zowe: {...yaml.zowe, configmgr: newData.configmgr, launchScript: newData.launchScript}};
+          // console.log("new data", JSON.stringify(newData));
+          // console.log("new yaml", JSON.stringify(newYaml));
+          // window.electron.ipcRenderer.setConfig(newYaml);
+          await window.electron.ipcRenderer.setConfigByKey("zowe.configmgr", newData.configmgr);
+          await window.electron.ipcRenderer.setConfigByKey("zowe.launchScript", newData.launchScript);
+          dispatch(setYaml(newYaml));
           setStageConfig(true, '', newData);
         }
       }
@@ -543,7 +489,7 @@ const LaunchConfig = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>Submit Job</Button>
       </Box>
       <ContainerCard title="Configuration" description="Basic zowe.yaml configurations."> 
-        <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
