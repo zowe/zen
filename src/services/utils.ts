@@ -13,6 +13,8 @@ import Header from "../renderer/components/Header"
 import { AlertColor } from "@mui/material/Alert";
 import zos from 'zos-node-accessor';
 
+// (GLOBAL NOTE): Due to the structure of React, there may be some needed duplication with zen\src\renderer\components\common\Utils.tsx !
+
 export const JCL_UNIX_SCRIPT_CHARS = 70;
 
 // Note: This doesn't gaurantee command did what it was supposed to do, but rather z/OS Unix (and zwe) didn't throw an error

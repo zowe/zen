@@ -9,63 +9,51 @@
  */
 
 import Store from 'electron-store';
+import { DefaultStore } from './DefaultStore';
 
 const store = new Store({cwd: 'zen-configuration-store'});
 
-export class ConfigurationStore {
-  static schema: any = {};
+const schemaKey = 'schema'
+const configKey = 'config'
+const storeDefault = {config: {}, schema: {}};
 
-  private static validateWithSchema(key: string): boolean {
-    const keys = key.split('.');
-    const schema = store.get('schema') as any;
-    let schemaPart: any = schema?.properties;
-    for (const key of keys) {
-        if (!Object.prototype.hasOwnProperty.call(schemaPart, key)) {
-            return false;
-        }
-        schemaPart = schemaPart[key].properties;        
-    }
-    return true;
-  }
+export class ConfigurationStore extends DefaultStore {
+  private static schema: any = {};
+  private static config: any = {};
 
-  public static setSchema(schema: any) {
-    store.set('schema', schema);
+  public static setSchema(value: any): boolean {
+    return this.set(schemaKey, value);
   }
 
   public static getSchema(): any {
-    return store.get('schema');
+    return this.get(schemaKey);
   }
 
   public static setConfig(value: any) {
-    store.set('config', value);
+    return this.set(configKey, value);
   }
 
-  public static getConfig() {
-    return store.get(`config`);
+  public static getConfig(): any {
+    return this.get(configKey);
   }
 
   public static getConfigByKey(key: string): any {
-    return store.get(`config.${key}`);
-  }
-
-  public static getAll(): any {
-    return store.store;
+    return this.get(`${configKey}.${key}`);
   }
 
   public static setConfigByKey(key: string, value: string | Array<string>): boolean {
     if (this.validateWithSchema(key)) {
-      store.set(`config.${key}`, value);
-      return true;
+      return this.set(`${configKey}.${key}`, value);
     }
-    console.warn(`failed validate against schema config.${key}`);
+    console.warn(`failed validate against schema ${configKey}.${key}`);
     return false;
   }
 
   public static deleteConfigByKey(key: any): void {
-    store.delete(`config.${key}`);
+    this.delete(`${configKey}.${key}`);
   }
 
   public static deleteAll(): void {
-    store.store = {config: {}, schema: {}};
+    store.store = storeDefault;
   }
 }

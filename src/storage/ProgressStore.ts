@@ -9,6 +9,7 @@
  */
 
 import Store from 'electron-store';
+import { DefaultStore } from './DefaultStore';
 
 // TODO: Store overall progress and restore up to last successful step
 
@@ -36,15 +37,7 @@ const storeDefault = {
 const store = new Store({cwd: 'zen-progress-store'});
 store.set(storeDefault);
 
-export class ProgressStore {
-
-  public static getAll(): any {
-    return store.store;
-  }
-
-  public static set(key: string, value: string | boolean) {
-    store.set(key, value);
-  }
+export class ProgressStore extends DefaultStore {
 
   public static deleteAll(): void {
     store.store = storeDefault;

@@ -9,6 +9,7 @@
  */
 
 import Store from 'electron-store';
+import { DefaultStore } from './DefaultStore';
 
 const storeSchema = {
   "connection-type": {
@@ -103,26 +104,10 @@ const validateWithSchema = (key: string): boolean => {
 const store = new Store({cwd: 'zen-connection-store', schema: storeSchema});
 store.set({...storeDefault, ...store.store});
 
-export class ConnectionStore {
-
-  public static get(key: string): any {
-    return store.get(key);
-  }
-
-  public static getAll(): any {
-    return store.store;
-  }
+export class ConnectionStore extends DefaultStore {
 
   public static set(key: string, value: any): boolean {
-    if (validateWithSchema(key)) {
-      store.set(key, value);
-      return true;
-    }
-    return false;
-  }
-
-  public static delete(key: any): void {
-    store.delete(key);
+    return this.setAndValidate(key, value);
   }
 
   public static deleteAll(): void {
