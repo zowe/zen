@@ -217,10 +217,11 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
           labelProps.error = stageProgressStatus[index] ? false : true;
 
-          // To exclude the "Finish Installation" stage in the stepper
+          // To exclude the "Finish Installation" stage from the stepper
           if(index == stages.length-1) {
             return;
           }
+
           return (
             // This adds shadow to the "filing cabinet" top-slip UI
             <Step key={stage.id} {...stepProps}>
