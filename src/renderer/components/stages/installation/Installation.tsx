@@ -27,6 +27,7 @@ import { stages } from "../../configuration-wizard/Wizard";
 import { bool } from "prop-types";
 import { setActiveStep } from "../progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../progress/progressStore"; 
+import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT } from "../../common/Utils";
 
 const Installation = () => {
 
@@ -67,13 +68,6 @@ const Installation = () => {
   const installationArgs = useAppSelector(selectInstallationArgs);
   const version = useAppSelector(selectZoweVersion);
   let timer: any;
-
-  const section = 'dataset';
-  // const initConfig = getConfiguration(section);
-
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");

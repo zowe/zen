@@ -16,6 +16,9 @@ import zos from 'zos-node-accessor';
 // (GLOBAL NOTE): Due to the structure of React, there may be some needed duplication with zen\src\renderer\components\common\Utils.tsx !
 
 export const JCL_UNIX_SCRIPT_CHARS = 70;
+export const TYPE_YAML = "yaml";
+export const TYPE_JCL = "jcl";
+export const TYPE_OUTPUT = "output";
 
 // Note: This doesn't gaurantee command did what it was supposed to do, but rather z/OS Unix (and zwe) didn't throw an error
 export const JCL_UNIX_SCRIPT_OK = "Script finished.";

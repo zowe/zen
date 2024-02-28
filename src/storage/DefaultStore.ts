@@ -10,7 +10,7 @@
 
 import Store from 'electron-store';
 
-const store = new Store({cwd: 'zen-configuration-store'});
+const store = new Store({cwd: 'zen-default-store'});
 
 // Note: This class is for other Stores to inherit (this is not a Store for "defaults")
 export class DefaultStore {

@@ -28,6 +28,7 @@ import progressSlice from "./progress/progressSlice";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
+import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT } from "../common/Utils";
 
 const Security = () => {
   const theme = createTheme();
@@ -60,10 +61,6 @@ const Security = () => {
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
 
   const ajv = new Ajv();
   let securitySchema;
