@@ -16,6 +16,7 @@ import Security from "../stages/Security";
 import Certificates from "../stages/Certificates";
 import Initialization from "../stages/Initialization";
 import ReviewInstallation from '../stages/ReviewInstallation';
+import FinishInstallation from '../stages/FinishInstallation';
 import spock from '../../assets/spock.svg'
 import InstallationType from '../stages/installation/InstallTypeSelection';
 import { selectLoading } from './wizardSlice';
@@ -33,7 +34,8 @@ export const stages = [
     {id: 2, label: 'Security', component: <Security/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Certificates Setup'},
     {id: 3, label: 'Certificates', component: <Certificates/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Instance Setup'},
   ], nextButton: 'Review'},
-  {id: 4, label: 'Review Installation', component: <ReviewInstallation/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Finish Installation'},
+  {id: 4, label: 'ReviewInstallation', component: <ReviewInstallation/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Finish Installation'},
+  {id: 5, label: 'FinishInstallation', component: <FinishInstallation/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1},
 ]
 
 const Wizard = ({initialization}: {initialization: boolean}) => {

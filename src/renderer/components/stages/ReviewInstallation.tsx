@@ -20,10 +20,8 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import eventDispatcher from '../../../utils/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
-import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from './progress/progressSlice';
+import { selectConnectionStatus, selectPlanningStatus, selectInstallationTypeStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, setReviewStatus } from './progress/progressSlice';
 import { setActiveStep } from './progress/activeStepSlice';
-import { selectConnectionStatus } from "./progress/progressSlice";
-import { selectInstallationTypeStatus } from "./progress/progressSlice";
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
 
@@ -64,11 +62,14 @@ const ReviewInstallation = () => {
   const TYPE_OUTPUT = "output";
 
   useEffect(() => {
+
     if(selectConnectionStatus && selectPlanningStatus && selectInstallationTypeStatus && selectInitializationStatus) {
-      setNextStepEnabled(true);
+      dispatch(setNextStepEnabled(true));
     } else {
-      setNextStepEnabled(false);
+      dispatch(setNextStepEnabled(false));
     }
+
+    dispatch(setReviewStatus(true));
 
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
