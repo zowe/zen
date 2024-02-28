@@ -217,6 +217,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
           labelProps.error = stageProgressStatus[index] ? false : true;
 
+          // To exclude the "Finish Installation" stage in the stepper
           if(index == stages.length-1) {
             return;
           }
