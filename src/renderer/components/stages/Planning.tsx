@@ -443,17 +443,19 @@ const Planning = () => {
       setInstArgs({...installationArgs, installationDir: value});
     }
 
-    try {
-      await window.electron.ipcRenderer.setConfigByKey(key, value);
+    const keys = key.split('.');
+    let updatedYaml: any = { ...localYaml };
 
-      const res = await window.electron.ipcRenderer.getConfig();
-      if (res.status) {
-        dispatch(setYaml(res.details.config));
-        setLocalYaml(res.details.config);
-      }
-    } catch (error) {
-      console.error("Error while setting or getting config:", error);
+    let nestedObject = updatedYaml;
+    for (let i = 0; i < keys.length - 1; i++) {
+        const k = keys[i];
+        nestedObject[k] = { ...(nestedObject[k] || {}) };
+        nestedObject = nestedObject[k];
     }
+    nestedObject[keys[keys.length - 1]] = value;
+
+    dispatch(setYaml(updatedYaml));
+    setLocalYaml(updatedYaml);
   }
 
   return (
@@ -656,11 +658,6 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.zowe?.cookieIdentifier || installationArgs.cookieId}
                 onChange={(e) => {
                   formChangeHandler("zowe.cookieIdentifier", "cookieId", e.target.value);
-                  dispatch(setInstallationArgs({...installationArgs, cookieId: e.target.value}));
-                  setLocalYaml((prevYaml: { zowe: any; }) => ({
-                    ...prevYaml,
-                    zowe: {...prevYaml.zowe, cookieIdentifier: e.target.value}
-                  }))
                   window.electron.ipcRenderer.setConfigByKey('zowe.cookieIdentifier', e.target.value).then((res: any) => {
                     // console.log('updated zowe.cookieIdentifier')
                   })
