@@ -30,7 +30,6 @@ import { Checkbox, FormControlLabel } from "@mui/material";
 import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
 import { getStageDetails } from "../stages/progress/progressStore";
-import { ConfigurationStore } from "../../../storage/ConfigurationStore";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -426,7 +425,7 @@ const Planning = () => {
     setStep(0);
   }
 
-  const formChangeHandler = async(key?: string, installationArg?: string, value?: string) => {
+  const formChangeHandler = (key?: string, installationArg?: string, value?: string) => {
     setIsLocationsUpdated(true);
     setPlanningStatus(false);
     setLocationsValidated(false);
@@ -444,7 +443,7 @@ const Planning = () => {
     }
 
     const keys = key.split('.');
-    let updatedYaml: any = { ...localYaml };
+    const updatedYaml: any = { ...localYaml };
 
     let nestedObject = updatedYaml;
     for (let i = 0; i < keys.length - 1; i++) {
