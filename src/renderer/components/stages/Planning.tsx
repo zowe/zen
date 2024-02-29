@@ -440,7 +440,7 @@ const Planning = () => {
 
     if(installationArg) {
       dispatch(setInstallationArgs({...installationArgs, [installationArg]: value}));
-      setInstArgs({...installationArgs, installationDir: value});
+      setInstArgs({...installationArgs, [installationArg]: value});
     }
 
     const keys = key.split('.');
