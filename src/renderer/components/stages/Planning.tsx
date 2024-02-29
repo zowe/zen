@@ -30,6 +30,7 @@ import { Checkbox, FormControlLabel } from "@mui/material";
 import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
 import { getStageDetails } from "../stages/progress/progressStore";
+import { ConfigurationStore } from "../../../storage/ConfigurationStore";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -425,7 +426,7 @@ const Planning = () => {
     setStep(0);
   }
 
-  const formChangeHandler = (value?: string, key?: string, subKey?:string, installationArg?: string, nestedKey?: string) => {
+  const formChangeHandler = async(key?: string, installationArg?: string, value?: string) => {
     setIsLocationsUpdated(true);
     setPlanningStatus(false);
     setLocationsValidated(false);
@@ -433,51 +434,26 @@ const Planning = () => {
     dispatch(setNextStepEnabled(false));
     setStep(1);
 
-    if(!key) {
+    if (!key || !value) {
       return;
     }
 
-    dispatch(setInstallationArgs({...installationArgs, [installationArg]: value}));
-    setInstArgs({...installationArgs, installationDir: value});
-
-    if(nestedKey) {
-      dispatch(setYaml({
-        ...localYaml,
-        [key]: {
-          ...localYaml[key],
-          [subKey]: {
-            ...localYaml[key][subKey],
-            [nestedKey]: value
-          }
-        }
-      }));
-      setLocalYaml({
-        ...localYaml,
-        [key]: {
-          ...localYaml[key],
-          [subKey]: {
-            ...localYaml[key][subKey],
-            [nestedKey]: value
-          }
-        }
-      });
-    } else {
-      dispatch(setYaml({
-        ...localYaml,
-        [key]: {
-          ...localYaml[key],
-          [subKey]: value
-        }
-      }));
-      setLocalYaml({
-        ...localYaml,
-        [key]: {
-          ...localYaml[key],
-          [subKey]: value
-        }
-      });
+    if(installationArg) {
+      dispatch(setInstallationArgs({...installationArgs, [installationArg]: value}));
+      setInstArgs({...installationArgs, installationDir: value});
     }
 
+    try {
+      await window.electron.ipcRenderer.setConfigByKey(key, value);
+
+      const res = await window.electron.ipcRenderer.getConfig();
+      if (res.status) {
+        dispatch(setYaml(res.details.config));
+        setLocalYaml(res.details.config);
+      }
+    } catch (error) {
+      console.error("Error while setting or getting config:", error);
+    }
   }
 
   return (
@@ -541,7 +517,7 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir}
                 inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
-                  formChangeHandler(e.target.value, "zowe", "runtimeDirectory", "installationDir");
+                  formChangeHandler("zowe.runtimeDirectory", "installationDir", e.target.value);
                   window.electron.ipcRenderer.setConfigByKey('zowe.runtimeDirectory', e.target.value).then((res: any) => {
                     // console.log('updated zowe.runtimeDirectory')
                   })
@@ -561,7 +537,7 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.zowe?.workspaceDirectory || installationArgs.workspaceDir}
                 inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
-                  formChangeHandler(e.target.value, "zowe", "workspaceDirectory", "workspaceDir");
+                  formChangeHandler("zowe.workspaceDirectory", "workspaceDir", e.target.value);
                   window.electron.ipcRenderer.setConfigByKey('zowe.workspaceDirectory', e.target.value).then((res: any) => {
                     // console.log('updated zowe.workspaceDirectory')
                   })
@@ -581,7 +557,7 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.zowe?.logDirectory || installationArgs.logDir}
                 inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
-                  formChangeHandler(e.target.value, "zowe", "logDirectory", "logDir");
+                  formChangeHandler("zowe.logDirectory", "logDir", e.target.value);
                   window.electron.ipcRenderer.setConfigByKey('zowe.logDirectory', e.target.value).then((res: any) => {
                     // console.log('updated zowe.logDirectory')
                   })
@@ -601,7 +577,7 @@ Please customize the job statement below to match your system requirements.
                 value={localYaml?.zowe?.extensionDirectory || installationArgs.extensionDir}
                 inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
-                  formChangeHandler(e.target.value, "zowe", "extensionDirectory", "extensionDir");
+                  formChangeHandler("zowe.extensionDirectory", "extensionDir", e.target.value);
                   window.electron.ipcRenderer.setConfigByKey('zowe.extensionDirectory', e.target.value).then((res: any) => {
                     // console.log('updated zowe.extensionDirectory')
                   })
@@ -620,7 +596,7 @@ Please customize the job statement below to match your system requirements.
                 variant="standard"
                 value={localYaml?.zowe?.rbacProfileIdentifier || installationArgs.rbacProfile}
                 onChange={(e) => {
-                  formChangeHandler(e.target.value, "zowe", "rbacProfileIdentifier", "rbacProfile");
+                  formChangeHandler("zowe.rbacProfileIdentifier", "rbacProfile", e.target.value);
                   window.electron.ipcRenderer.setConfigByKey('zowe.rbacProfileIdentifier', e.target.value).then((res: any) => {
                     // console.log('updated zowe.rbacProfileIdentifier')
                   })
@@ -641,7 +617,7 @@ Please customize the job statement below to match your system requirements.
                 variant="standard"
                 value={localYaml?.zowe?.job?.name || installationArgs.jobName}
                 onChange={(e) => {
-                  formChangeHandler(e.target.value, "zowe", "job", "jobName", "name");
+                  formChangeHandler("zowe.job.name", "jobName", e.target.value);
                   window.electron.ipcRenderer.setConfigByKey('zowe.job.name', e.target.value).then((res: any) => {
                     // console.log('updated zowe.job.name')
                   })
@@ -660,7 +636,7 @@ Please customize the job statement below to match your system requirements.
                 variant="standard"
                 value={localYaml?.zowe?.job?.prefix || installationArgs.jobPrefix}
                 onChange={(e) => {
-                  formChangeHandler(e.target.value, "zowe", "job", "jobName", "prefix");
+                  formChangeHandler("zowe.job.prefix", "jobName", e.target.value);
                   window.electron.ipcRenderer.setConfigByKey('zowe.job.prefix', e.target.value).then((res: any) => {
                     // console.log('updated zowe.job.prefi')
                   })
@@ -679,7 +655,7 @@ Please customize the job statement below to match your system requirements.
                 variant="standard"
                 value={localYaml?.zowe?.cookieIdentifier || installationArgs.cookieId}
                 onChange={(e) => {
-                  formChangeHandler(e.target.value, "zowe", "cookieIdentifier", "cookieId");
+                  formChangeHandler("zowe.cookieIdentifier", "cookieId", e.target.value);
                   dispatch(setInstallationArgs({...installationArgs, cookieId: e.target.value}));
                   setLocalYaml((prevYaml: { zowe: any; }) => ({
                     ...prevYaml,
@@ -703,7 +679,7 @@ Please customize the job statement below to match your system requirements.
                 variant="standard"
                 value={localYaml?.java?.home || installationArgs.javaHome}
                 onChange={(e) => {
-                  formChangeHandler(e.target.value, "java", "home", "javaHome");
+                  formChangeHandler("java.home", "javaHome", e.target.value);
                   window.electron.ipcRenderer.setConfigByKey('java.home', e.target.value).then((res: any) => {
                     // console.log('updated zowe.java.home')
                   })
@@ -722,7 +698,7 @@ Please customize the job statement below to match your system requirements.
                 variant="standard"
                 value={localYaml?.node?.home || installationArgs.nodeHome}
                 onChange={(e) => {
-                  formChangeHandler(e.target.value, "node", "home", "nodeHome");
+                  formChangeHandler("node.home", "nodeHome", e.target.value);
                   window.electron.ipcRenderer.setConfigByKey('node.home', e.target.value).then((res: any) => {
                     // console.log('updated zowe.node.home')
                   })
@@ -759,7 +735,7 @@ Please customize the job statement below to match your system requirements.
                       variant="standard"
                       value={localYaml?.zOSMF?.host || installationArgs.zosmfHost}
                       onChange={(e) => {
-                        formChangeHandler(e.target.value, "zOSMF", "host", "zosmfHost");
+                        formChangeHandler("zOSMF.host", "zosmfHost", e.target.value);
                         window.electron.ipcRenderer.setConfigByKey('zOSMF.host', e.target.value).then((res: any) => {
                           // console.log('updated zowe.zOSMF.host')
                         })
@@ -779,7 +755,7 @@ Please customize the job statement below to match your system requirements.
                       type="number"
                       value={localYaml?.zOSMF?.port || installationArgs.zosmfPort}
                       onChange={(e) => {
-                        formChangeHandler(e.target.value, "zOSMF", "port", "zosmfPort");
+                        formChangeHandler("zOSMF.port", "zosmfPort", e.target.value);
                         window.electron.ipcRenderer.setConfigByKey('zOSMF.port', Number(e.target.value)).then((res: any) => {
                           // console.log('updated zowe.zOSMF.port')
                         })
@@ -800,7 +776,7 @@ Please customize the job statement below to match your system requirements.
                       variant="standard"
                       value={localYaml?.zOSMF?.applId || installationArgs.zosmfApplId}
                       onChange={(e) => {
-                        formChangeHandler(e.target.value, "zOSMF", "applId", "zosmfApplId");
+                        formChangeHandler("zOSMF.applId", "zosmfApplId", e.target.value);
                         window.electron.ipcRenderer.setConfigByKey('zOSMF.applId', e.target.value).then((res: any) => {
                           // console.log('updated zowe.zOSMF.applId')
                         })
