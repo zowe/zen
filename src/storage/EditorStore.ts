@@ -40,6 +40,7 @@ export class EditorStore extends DefaultStore {
   }
 
   public static setStandardOutput(output: string): boolean {
+    console.log("\n\n\n RRRRRRRRRRRRRRRRRRRRRRRRRRRreceived standard output", output)
     return this.set(TYPE_OUTPUT, output);
   }
 

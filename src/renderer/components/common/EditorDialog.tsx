@@ -16,6 +16,7 @@ import Ajv2019 from "ajv/dist/2019"
 import MonacoEditorComponent from "../common/MonacoEditor";
 import draft7MetaSchema from "ajv/dist/refs/json-schema-draft-07.json";
 import { parse, stringify } from "yaml";
+import { IResponse } from "../../../types/interfaces";
 
 const test_jcl = `
 //MYJOB   JOB (ACCT), 'My Job Description',
@@ -51,6 +52,9 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
         setEditorContent(test_jcl);
       }
       if(contentType == 'output') {
+        window.electron.ipcRenderer.getStandardOutput().then((res: IResponse) => {
+          setEditorContent(res)
+        });
         //setEditorContent(EditorStore.getStandardOutput());
         // setEditorContent(stringify(setupOutput));
       }

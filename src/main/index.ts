@@ -18,6 +18,7 @@ import { IIpcConnectionArgs } from '../types/interfaces';
 import { ProgressStore } from "../storage/ProgressStore";
 import { checkDirExists } from '../services/utils';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
+import { EditorStore } from '../storage/EditorStore';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -72,7 +73,6 @@ const createWindow = (): void => {
   });
 
   ipcMain.handle('check-connection', async (_event, args: IIpcConnectionArgs) => {
-    console.log("\n\n\nARE WE GETTING HERE AT LEAST?\n\n\n")
     const res = await connectionActions.checkConnectionData(args);
     return res;
   });
@@ -99,6 +99,36 @@ const createWindow = (): void => {
 
   ipcMain.handle('set-config-by-key', async (_event, key: string, value) => {
     const res = await PlanningActions.setConfigByKeyAndValidate(key, value);
+    return res;
+  });
+
+  ipcMain.handle('get-jcl-output', async (event) => {
+    const res: any = await EditorStore.getJCLOutput();
+    return res;
+  });
+
+  ipcMain.handle('set-jcl-output', async (event, value) => {
+    const res: any = await EditorStore.setJCLOutput(value);
+    return res;
+  });
+
+  ipcMain.handle('get-standard-output', async (event) => {
+    const res: any = await EditorStore.getStandardOutput();
+    return res;
+  });
+
+  ipcMain.handle('set-standard-output', async (event, value) => {
+    const res: any = await EditorStore.setStandardOutput(value);
+    return res;
+  });
+
+  ipcMain.handle('get-yaml-output', async (event) => {
+    const res: any = await EditorStore.getYAMLOutput();
+    return res;
+  });
+
+  ipcMain.handle('set-yaml-output', async (event, value) => {
+    const res: any = await EditorStore.setYAMLOutput(value);
     return res;
   });
 

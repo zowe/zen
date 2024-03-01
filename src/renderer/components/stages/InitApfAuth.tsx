@@ -114,7 +114,7 @@ const InitApfAuth = () => {
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
 
         if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // Error during zwe init apfAuth
-          alertEmitter.emit('showAlert', res.details[3], 'error');
+          alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
           // setEditorContent(res.details['*']);
           // setSetupOutput(res.details[3]);
           // dispatch(setOutput(res.details[3]));
@@ -122,8 +122,13 @@ const InitApfAuth = () => {
           // toggleEditorVisibility("output")
           // setEditorContent(res.details['*']);
           // setContentType('output');
-          setEditorContent(res.details[3]);
-          setContentType('output');
+          // EditorStore.setStandardOutput(res.details['*']);
+          // setSetupOutput(res.details['*']);
+          // setEditorContent(res.details[3]);
+          window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
+            setContentType('output');
+            toggleEditorVisibility("output")
+          })
           toggleProgress(false);
           apfAuthProceedActions(false);
           stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;

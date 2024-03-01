@@ -27,7 +27,6 @@ export class FTPConnection extends Connection {
       status: false,
       details: ""
     };
-    console.log("\n\n\nARE WE GETTING A CONFIG?\n\n\n", config)
     try {
       const client = await connectFTPServer(config);
       response.status = client.connected;
