@@ -112,22 +112,10 @@ const InitApfAuth = () => {
     event.preventDefault();
     toggleProgress(true);
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
-
-        if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // Error during zwe init apfAuth
+        if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe init apfAuth
           alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
-          // setEditorContent(res.details['*']);
-          // setSetupOutput(res.details[3]);
-          // dispatch(setOutput(res.details[3]));
-          // setContentType('output');
-          // toggleEditorVisibility("output")
-          // setEditorContent(res.details['*']);
-          // setContentType('output');
-          // EditorStore.setStandardOutput(res.details['*']);
-          // setSetupOutput(res.details['*']);
-          // setEditorContent(res.details[3]);
           window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
-            setContentType('output');
-            toggleEditorVisibility("output")
+            toggleEditorVisibility("output");
           })
           toggleProgress(false);
           apfAuthProceedActions(false);
@@ -246,7 +234,7 @@ const InitApfAuth = () => {
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="apf-progress">
         {!showProgress ? null :
           <React.Fragment>
-            <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfProgress.writeYaml}/>
+            <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfProgress?.writeYaml || false}/> {/* we do || false to prevent run-time issue with not filled out data */}
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={apfProgress.uploadYaml}/>
             <ProgressCard label={`Run zwe init apfauth command`} id="upload-progress-card" status={apfProgress.success}/>
           </React.Fragment>

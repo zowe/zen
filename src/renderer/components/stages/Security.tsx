@@ -28,7 +28,7 @@ import progressSlice from "./progress/progressSlice";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Utils';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK } from '../common/Utils';
 
 const Security = () => {
   const theme = createTheme();
@@ -108,13 +108,20 @@ const Security = () => {
     event.preventDefault();
     toggleProgress(true);
     window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml).then((res: IResponse) => {
-        if(!res.status){ //False case - errors during zwe init apfauth
-          alertEmitter.emit('showAlert', res.details, 'error');
-          toggleProgress(res.status);
+        if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe init security
+          alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
+          window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
+            toggleEditorVisibility("output");
+          })
+          toggleProgress(false);
+          securityProceedActions(false);
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+          clearInterval(timer);
+        } else {
+          securityProceedActions(res.status);
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+          clearInterval(timer);
         }
-        securityProceedActions(res.status);
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
-        clearInterval(timer);
       }).catch((err: any) => {
         // TODO: Test this
         //alertEmitter.emit('showAlert', err.toString(), 'error');
@@ -179,7 +186,7 @@ const Security = () => {
           <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="init-progress">
           {!showProgress ? null :
           <React.Fragment>
-            <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={initProgress.writeYaml}/>
+            <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={initProgress?.writeYaml || false}/> {/* we do || false to prevent run-time issue with not filled out data  */}
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={initProgress.uploadYaml}/>
             <ProgressCard label={`Run zwe init security`} id="success-progress-card" status={initProgress.success}/>
           </React.Fragment>

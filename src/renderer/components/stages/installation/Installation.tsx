@@ -27,7 +27,7 @@ import { stages } from "../../configuration-wizard/Wizard";
 import { bool } from "prop-types";
 import { setActiveStep } from "../progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../progress/progressStore"; 
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../../common/Utils';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK } from '../../common/Utils';
 
 const Installation = () => {
 
@@ -42,6 +42,7 @@ const Installation = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
+  // TODO: Why are there two sets of stageId/STAGE_ID's?
   const stageId = 3;
   const subStageId = 0;
   const dispatch = useAppDispatch();
@@ -128,12 +129,20 @@ const Installation = () => {
 
         const config = (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml;
         window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
-          if(!res.status){ //False case - errors during zwe install
-            alertEmitter.emit('showAlert', res.details, 'error');
-            toggleProgress(res.status);
+          if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe install
+            alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
+            window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
+              toggleEditorVisibility("output");
+            })
+            toggleProgress(false);
+            installProceedActions(false);
+            stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+            clearInterval(timer);
+          } else {
+            installProceedActions(res.status);
+            stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+            clearInterval(timer);
           }
-          installProceedActions(res.status);
-          clearInterval(timer);
         }).catch((err: any) => {
           clearInterval(timer);
           installProceedActions(false);

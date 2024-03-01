@@ -23,10 +23,13 @@ echo $NODE_HOME
 
     const resp: IJobResults = await submitJcl(connectionArgs, jcl, ["STDOUT", "STDERR"]);
     // REVIEW: Need to find better parsing option
-    if (resp.rc === 0 && resp.jobOutput && resp.jobOutput["3"]) {
-      return {status: true, details: resp.jobOutput["3"]};
-    } else {
-      return {status: false, details: `${resp.rc}: ${resp.jobOutput}`};
+    if (resp.rc === 0 && resp.jobOutput) { // Success case
+      if (resp.jobOutput["3"]) {
+        return {status: true, details: resp.jobOutput["3"]};
+      }
+    } else if (resp.jobOutput["2"]) { // Failure case, but do we have relevant info?
+      return {status: false, details: resp.jobOutput["2"]};
     }
+    return {status: false, details: `${resp.rc}: ${resp.jobOutput}`}; // Failure case, just send whatever you can I suppose
   }
 }
