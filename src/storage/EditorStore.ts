@@ -12,22 +12,19 @@ import Store from 'electron-store';
 import { DefaultStore } from './DefaultStore';
 import { TYPE_JCL, TYPE_OUTPUT, TYPE_YAML } from '../renderer/components/common/Utils';
 
-const storeDefault = {
-  [TYPE_OUTPUT]: {
-  },
-  [TYPE_JCL]: {
-  },
-  [TYPE_YAML]: {
-  }
+const STORE_DEFAULT = {
+  [TYPE_OUTPUT]: "",
+  [TYPE_JCL]: "",
+  [TYPE_YAML]: ""
 };
-
-const store = new Store({cwd: 'zen-editor-store'});
-store.set(storeDefault);
+const STORE_NAME = 'zen-editor-store';
 
 export class EditorStore extends DefaultStore {
 
+  public static store: any = new Store({cwd: STORE_NAME});
+
   public static deleteAll(): void {
-    store.store = storeDefault;
+    this.store.store = STORE_DEFAULT;
   }
 
   public static getJCLOutput(): any {

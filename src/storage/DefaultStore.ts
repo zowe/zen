@@ -12,7 +12,7 @@ import Store from 'electron-store';
 
 const STORE_NAME = 'zen-default-store';
 
-// Note: This class is for other Stores to inherit (this is not a Store for "defaults")
+// Note: This default class is for other Stores to inherit (this is not a Store for "defaults")
 export class DefaultStore {
 
   public static store: any = new Store({cwd: STORE_NAME});

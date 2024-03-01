@@ -13,7 +13,7 @@ import { DefaultStore } from './DefaultStore';
 
 // TODO: Store overall progress and restore up to last successful step
 
-const storeDefault = {
+const STORE_DEFAULT = {
   "installation": {
     "uploadYaml": false,
     "download": false,
@@ -33,13 +33,13 @@ const storeDefault = {
     "success": false
   }
 };
-
-const store = new Store({cwd: 'zen-progress-store'});
-store.set(storeDefault);
+const STORE_NAME = 'zen-editor-store';
 
 export class ProgressStore extends DefaultStore {
 
+  public static store: any = new Store({cwd: STORE_NAME});
+
   public static deleteAll(): void {
-    store.store = storeDefault;
+    this.store.store = STORE_DEFAULT;
   }
 }
