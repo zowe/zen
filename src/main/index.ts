@@ -72,6 +72,7 @@ const createWindow = (): void => {
   });
 
   ipcMain.handle('check-connection', async (_event, args: IIpcConnectionArgs) => {
+    console.log("\n\n\nARE WE GETTING HERE AT LEAST?\n\n\n")
     const res = await connectionActions.checkConnectionData(args);
     return res;
   });
@@ -97,7 +98,7 @@ const createWindow = (): void => {
   });
 
   ipcMain.handle('set-config-by-key', async (_event, key: string, value) => {
-    const res = await PlanningActions.setConfigByKey(key, value);
+    const res = await PlanningActions.setConfigByKeyAndValidate(key, value);
     return res;
   });
 

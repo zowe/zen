@@ -51,7 +51,8 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
         setEditorContent(test_jcl);
       }
       if(contentType == 'output') {
-        setEditorContent(stringify(setupOutput));
+        //setEditorContent(EditorStore.getStandardOutput());
+        // setEditorContent(stringify(setupOutput));
       }
     }
   }, [isEditorVisible])

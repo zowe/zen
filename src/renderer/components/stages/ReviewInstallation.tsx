@@ -26,6 +26,7 @@ import { selectConnectionStatus } from "./progress/progressSlice";
 import { selectInstallationTypeStatus } from "./progress/progressSlice";
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Utils';
 
 import '../../styles/ReviewInstallation.css';
 
@@ -58,10 +59,6 @@ const ReviewInstallation = () => {
     useSelector(selectSecurityStatus),
     useSelector(selectCertificateStatus), 
   ];
-
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
 
   useEffect(() => {
     if(selectConnectionStatus && selectPlanningStatus && selectInstallationTypeStatus && selectInitializationStatus) {

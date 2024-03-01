@@ -27,6 +27,7 @@ export class FTPConnection extends Connection {
       status: false,
       details: ""
     };
+    console.log("\n\n\nARE WE GETTING A CONFIG?\n\n\n", config)
     try {
       const client = await connectFTPServer(config);
       response.status = client.connected;
@@ -46,14 +47,14 @@ export class FTPConnection extends Connection {
     const details = Object.keys(args).reduce((acc: string, k: keyof IIpcConnectionArgs) => {
       
       const value = (typeof args[k] == 'number') ? args[k].toString() : args[k]; 
-      const status = ConnectionStore.set(`ftp-details.${k}`, value);
+      const status = ConnectionStore.setAndValidate(`ftp-details.${k}`, value);
       return acc + status ? '' : `\n Can't set ftp-details.${k}, check the store schema`;
     }, "");
   return {status: true, details}
   }
 
   saveJobStatement(jobStatement: string): IResponse {
-    const status = ConnectionStore.set("ftp-details.jobStatement", jobStatement);
+    const status = ConnectionStore.setAndValidate("ftp-details.jobStatement", jobStatement);
     return {status, details: ''};
   }
 

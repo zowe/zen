@@ -11,7 +11,7 @@
 import React, {useEffect, useState} from "react";
 import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectOutput, selectSchema, setNextStepEnabled, setLoading, setOutput } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectOutput, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { setApfAuthStatus, setInitializationStatus, selectApfAuthStatus, selectInitializationStatus } from './progress/progressSlice';
 import { IResponse } from '../../../types/interfaces';
@@ -115,13 +115,15 @@ const InitApfAuth = () => {
 
         if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // Error during zwe init apfAuth
           alertEmitter.emit('showAlert', res.details[3], 'error');
-          setEditorContent(res.details['*']);
-          setSetupOutput(res.details[3]);
-          dispatch(setOutput(res.details[3]));
-          setContentType('output');
-          toggleEditorVisibility("output")
+          // setEditorContent(res.details['*']);
+          // setSetupOutput(res.details[3]);
+          // dispatch(setOutput(res.details[3]));
+          // setContentType('output');
+          // toggleEditorVisibility("output")
           // setEditorContent(res.details['*']);
           // setContentType('output');
+          setEditorContent(res.details[3]);
+          setContentType('output');
           toggleProgress(false);
           apfAuthProceedActions(false);
           stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;

@@ -10,15 +10,16 @@
 
 import Store from 'electron-store';
 
-const store = new Store({cwd: 'zen-configuration-store'});
+const STORE_NAME = 'zen-default-store';
 
 // Note: This class is for other Stores to inherit (this is not a Store for "defaults")
 export class DefaultStore {
 
-  public static validateWithSchema(key: string): boolean {
+  public static store: any = new Store({cwd: STORE_NAME});
+
+  public static validateWithSchema(key: string, schema: any): boolean {
     const keys = key.split('.');
-    const schema = store.get('schema') as any;
-    let schemaPart: any = schema?.properties;
+    let schemaPart = schema;
     for (const key of keys) {
         if (!Object.prototype.hasOwnProperty.call(schemaPart, key)) {
             return false;
@@ -29,16 +30,16 @@ export class DefaultStore {
   }
 
   public static get(key: string): any {
-    return store.get(key);
+    return this.store.get(key);
   }
 
   public static getAll(): any {
-    return store.store;
+    return this.store.store;
   }
 
   public static set(key: string, value: any): boolean {
     try {
-      store.set(key, value);
+      this.store.set(key, value);
       return true;
     } catch (err) {
       console.warn(`failed to add ${key} error: `, err);
@@ -46,8 +47,8 @@ export class DefaultStore {
     }
   }
 
-  public static setAndValidate(key: string, value: any): boolean {
-    if (this.validateWithSchema(key)) {
+  public static setAndValidate(key: string, value: any, schema: any): boolean {
+    if (this.validateWithSchema(key, schema)) {
       return this.set(key, value);
     }
     console.warn(`failed validate against schema config.${key}`);
@@ -55,10 +56,10 @@ export class DefaultStore {
   }
 
   public static delete(key: any): void {
-    store.delete(key);
+    this.store.delete(key);
   }
 
   public static deleteAll(): void {
-    store.clear();
+    this.store.clear();
   }
 }

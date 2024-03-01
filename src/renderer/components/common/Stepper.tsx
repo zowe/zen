@@ -31,6 +31,7 @@ import eventDispatcher from '../../../utils/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import Home from '../Home';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Utils';
 
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
@@ -57,10 +58,6 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     useSelector(selectSecurityStatus),
     useSelector(selectCertificateStatus), 
   ]
-  
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
 
   const [activeStep, setActiveStep] =  initialization ? useState(0) : useState(useAppSelector(selectActiveStepIndex));
   const [activeSubStep, setActiveSubStep] = initialization ? useState(0) : useState(useAppSelector(selectActiveSubStepIndex));

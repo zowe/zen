@@ -505,7 +505,7 @@ Please customize the job statement below to match your system requirements.
                     ...prevYaml,
                     zowe: {...prevYaml.zowe, runtimeDirectory: e.target.value}
                   }))
-                  window.electron.ipcRenderer.setConfigByKey('zowe.runtimeDirectory', e.target.value).then((res: any) => {
+                  window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.runtimeDirectory', e.target.value).then((res: any) => {
                     // console.log('updated zowe.runtimeDirectory')
                   })
                 }}
@@ -529,7 +529,7 @@ Please customize the job statement below to match your system requirements.
                     ...prevYaml,
                     zowe: {...prevYaml.zowe, workspaceDirectory: e.target.value}
                   }))
-                  window.electron.ipcRenderer.setConfigByKey('zowe.workspaceDirectory', e.target.value).then((res: any) => {
+                  window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.workspaceDirectory', e.target.value).then((res: any) => {
                     // console.log('updated zowe.workspaceDirectory')
                   })
                 }}
@@ -553,7 +553,7 @@ Please customize the job statement below to match your system requirements.
                     ...prevYaml,
                     zowe: {...prevYaml.zowe, logDirectory: e.target.value}
                   }))
-                  window.electron.ipcRenderer.setConfigByKey('zowe.logDirectory', e.target.value).then((res: any) => {
+                  window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.logDirectory', e.target.value).then((res: any) => {
                     // console.log('updated zowe.logDirectory')
                   })
                 }}
@@ -577,7 +577,7 @@ Please customize the job statement below to match your system requirements.
                     ...prevYaml,
                     zowe: {...prevYaml.zowe, extensionDirectory: e.target.value}
                   }))
-                  window.electron.ipcRenderer.setConfigByKey('zowe.extensionDirectory', e.target.value).then((res: any) => {
+                  window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.extensionDirectory', e.target.value).then((res: any) => {
                     // console.log('updated zowe.extensionDirectory')
                   })
                 }}
@@ -600,7 +600,7 @@ Please customize the job statement below to match your system requirements.
                     ...prevYaml,
                     zowe: {...prevYaml.zowe, rbacProfileIdentifier: e.target.value}
                   }))
-                  window.electron.ipcRenderer.setConfigByKey('zowe.rbacProfileIdentifier', e.target.value).then((res: any) => {
+                  window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.rbacProfileIdentifier', e.target.value).then((res: any) => {
                     // console.log('updated zowe.rbacProfileIdentifier')
                   })
                 }}
@@ -625,7 +625,7 @@ Please customize the job statement below to match your system requirements.
                     ...prevYaml,
                     zowe: {...prevYaml.zowe, job: {...prevYaml.zowe.job, name: e.target.value}}
                   }))
-                  window.electron.ipcRenderer.setConfigByKey('zowe.job.name', e.target.value).then((res: any) => {
+                  window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.job.name', e.target.value).then((res: any) => {
                     // console.log('updated zowe.job.name')
                   })
                 }}
@@ -648,7 +648,7 @@ Please customize the job statement below to match your system requirements.
                     ...prevYaml,
                     zowe: {...prevYaml.zowe, job: {...prevYaml.zowe.job, prefix: e.target.value}}
                   }))
-                  window.electron.ipcRenderer.setConfigByKey('zowe.job.prefix', e.target.value).then((res: any) => {
+                  window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.job.prefix', e.target.value).then((res: any) => {
                     // console.log('updated zowe.job.prefi')
                   })
                 }}
@@ -671,7 +671,7 @@ Please customize the job statement below to match your system requirements.
                     ...prevYaml,
                     zowe: {...prevYaml.zowe, cookieIdentifier: e.target.value}
                   }))
-                  window.electron.ipcRenderer.setConfigByKey('zowe.cookieIdentifier', e.target.value).then((res: any) => {
+                  window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.cookieIdentifier', e.target.value).then((res: any) => {
                     // console.log('updated zowe.cookieIdentifier')
                   })
                 }}
@@ -694,7 +694,7 @@ Please customize the job statement below to match your system requirements.
                     ...prevYaml,
                     java: {...prevYaml.java, home: e.target.value}
                   }))
-                  window.electron.ipcRenderer.setConfigByKey('java.home', e.target.value).then((res: any) => {
+                  window.electron.ipcRenderer.setConfigByKeyAndValidate('java.home', e.target.value).then((res: any) => {
                     // console.log('updated zowe.java.home')
                   })
                 }}
@@ -717,7 +717,7 @@ Please customize the job statement below to match your system requirements.
                     ...prevYaml,
                     node: {...prevYaml.node, home: e.target.value}
                   }))
-                  window.electron.ipcRenderer.setConfigByKey('node.home', e.target.value).then((res: any) => {
+                  window.electron.ipcRenderer.setConfigByKeyAndValidate('node.home', e.target.value).then((res: any) => {
                     // console.log('updated zowe.node.home')
                   })
                 }}
@@ -758,7 +758,7 @@ Please customize the job statement below to match your system requirements.
                           ...prevYaml,
                           zOSMF: {...prevYaml.zOSMF, host: e.target.value}
                         }))
-                        window.electron.ipcRenderer.setConfigByKey('zOSMF.host', e.target.value).then((res: any) => {
+                        window.electron.ipcRenderer.setConfigByKeyAndValidate('zOSMF.host', e.target.value).then((res: any) => {
                           // console.log('updated zowe.zOSMF.host')
                         })
                       }}
@@ -782,7 +782,7 @@ Please customize the job statement below to match your system requirements.
                           ...prevYaml,
                           zOSMF: {...prevYaml.zOSMF, port: Number( e.target.value)}
                         }))
-                        window.electron.ipcRenderer.setConfigByKey('zOSMF.port', Number(e.target.value)).then((res: any) => {
+                        window.electron.ipcRenderer.setConfigByKeyAndValidate('zOSMF.port', Number(e.target.value)).then((res: any) => {
                           // console.log('updated zowe.zOSMF.port')
                         })
                       }}
@@ -807,7 +807,7 @@ Please customize the job statement below to match your system requirements.
                           ...prevYaml,
                           zOSMF: {...prevYaml.zOSMF, applId: e.target.value}
                         }))
-                        window.electron.ipcRenderer.setConfigByKey('zOSMF.applId', e.target.value).then((res: any) => {
+                        window.electron.ipcRenderer.setConfigByKeyAndValidate('zOSMF.applId', e.target.value).then((res: any) => {
                           // console.log('updated zowe.zOSMF.applId')
                         })
                       }}

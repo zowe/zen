@@ -11,3 +11,7 @@
 
 // Note: This doesn't gaurantee command did what it was supposed to do, but rather z/OS Unix (and zwe) didn't throw an error
 export const JCL_UNIX_SCRIPT_OK = "Script finished.";
+
+export const TYPE_YAML = "yaml";
+export const TYPE_JCL = "jcl";
+export const TYPE_OUTPUT = "output";

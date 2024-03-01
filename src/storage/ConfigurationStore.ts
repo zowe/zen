@@ -11,49 +11,48 @@
 import Store from 'electron-store';
 import { DefaultStore } from './DefaultStore';
 
-const store = new Store({cwd: 'zen-configuration-store'});
-
-const schemaKey = 'schema'
-const configKey = 'config'
-const storeDefault = {config: {}, schema: {}};
+const STORE_NAME = 'zen-configuration-store';
+const KEY_SCHEMA = 'schema'
+const KEY_CONFIG = 'config'
+const STORE_DEFAULT = {config: {}, schema: {}};
 
 export class ConfigurationStore extends DefaultStore {
-  private static schema: any = {};
-  private static config: any = {};
+
+  public static store = new Store({cwd: STORE_NAME});
 
   public static setSchema(value: any): boolean {
-    return this.set(schemaKey, value);
+    return this.set(KEY_SCHEMA, value);
   }
 
   public static getSchema(): any {
-    return this.get(schemaKey);
+    return this.get(KEY_SCHEMA);
   }
 
   public static setConfig(value: any) {
-    return this.set(configKey, value);
+    return this.set(KEY_CONFIG, value);
   }
 
   public static getConfig(): any {
-    return this.get(configKey);
+    return this.get(KEY_CONFIG);
   }
 
   public static getConfigByKey(key: string): any {
-    return this.get(`${configKey}.${key}`);
+    return this.get(`${KEY_CONFIG}.${key}`);
   }
 
-  public static setConfigByKey(key: string, value: string | Array<string>): boolean {
-    if (this.validateWithSchema(key)) {
-      return this.set(`${configKey}.${key}`, value);
+  public static setConfigByKeyAndValidate(key: string, value: string | Array<string>, schema?: any): boolean {
+    if (!schema) {
+      schema = this.getSchema();
     }
-    console.warn(`failed validate against schema ${configKey}.${key}`);
-    return false;
+    let schemaPart: any = schema?.properties;
+    return this.setAndValidate(key, value, schemaPart);
   }
 
   public static deleteConfigByKey(key: any): void {
-    this.delete(`${configKey}.${key}`);
+    this.delete(`${KEY_CONFIG}.${key}`);
   }
 
   public static deleteAll(): void {
-    store.store = storeDefault;
+    this.store.store = STORE_DEFAULT;
   }
 }

@@ -132,8 +132,8 @@ export class PlanningActions {
     });
   }
 
-public static async setConfigByKey(key: string, value: string | Array<string>): Promise<IResponse> {
-    const status = ConfigurationStore.setConfigByKey(key, value);
+public static async setConfigByKeyAndValidate(key: string, value: string | Array<string>): Promise<IResponse> {
+    const status = ConfigurationStore.setConfigByKeyAndValidate(key, value);
     return {status, details: ''};
   }
 

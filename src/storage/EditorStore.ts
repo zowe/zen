@@ -21,7 +21,7 @@ const storeDefault = {
   }
 };
 
-const store = new Store({cwd: 'zen-progress-store'});
+const store = new Store({cwd: 'zen-editor-store'});
 store.set(storeDefault);
 
 export class EditorStore extends DefaultStore {

@@ -23,7 +23,7 @@ export class HomeActions {
       //        and check ssh commands are operational to verify it set up correctly.
       try {
         const { stdout } = await execFile('zowe', ['--version']);
-        const status = ConnectionStore.set('zowe-cli-version', stdout);
+        const status = ConnectionStore.setAndValidate('zowe-cli-version', stdout);
         return {status, details: stdout};
       } catch (err) {
         console.info('Failed to detect Zowe CLI version', err);
