@@ -67,7 +67,7 @@ contextBridge.exposeInMainWorld('electron', {
     installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, version: string, zoweConfig: any) {
       return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version, zoweConfig);
     },
-    apfAuthButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
+    apfAuthButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, zoweConfig: any) {
       return ipcRenderer.invoke("init-apf", connectionArgs, installationArgs, zoweConfig);
     },
     getApfAuthProgress(){
@@ -76,7 +76,7 @@ contextBridge.exposeInMainWorld('electron', {
     getInstallationProgress() {
       return ipcRenderer.invoke("get-installation-progress");
     },
-    initSecurityButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
+    initSecurityButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, zoweConfig: any) {
       return ipcRenderer.invoke("init-security", connectionArgs, installationArgs, zoweConfig);
     },
     getInitSecurityProgress(){
