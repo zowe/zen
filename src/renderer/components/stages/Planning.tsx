@@ -298,8 +298,8 @@ const Planning = () => {
         if (!res.status) { // Failure case
           dispatch(setJobStatementValidMsg(res.details));
           console.warn('Failed to verify job statement', res.details);
-          // TODO: This more detailed reason, coming from res.details, should be opened in an Editor
-          alertEmitter.emit('showAlert', 'Failed to verify job statement', 'error');
+          // TODO: This more detailed reason, for why Job submission failed, may be large and should be opened in an Editor
+          alertEmitter.emit('showAlert', 'Failed to verify job statement ' + res.details, 'error');
         } else { // Success JCL case
           dispatch(setJobStatementValid(true));
           alertEmitter.emit('hideAlert');

@@ -17,7 +17,7 @@ import ContainerCard from '../common/ContainerCard';
 import {stages} from "../configuration-wizard/Wizard";
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import eventDispatcher from '../../../utils/eventDispatcher';
+import eventDispatcher from '../../../services/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
 import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from './progress/progressSlice';

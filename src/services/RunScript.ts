@@ -10,7 +10,8 @@
 
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
-import {JCL_UNIX_SCRIPT_OK, parseUnixScriptByNumOfChars, startBPXBATCHAndShellSession} from "./utils";
+import { parseUnixScriptByNumOfChars, startBPXBATCHAndShellSession } from "./ServiceUtils";
+import { JCL_UNIX_SCRIPT_OK } from "../renderer/components/common/Utils";
 
 export class Script {
 

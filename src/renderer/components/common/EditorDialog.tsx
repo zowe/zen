@@ -44,7 +44,8 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
 
   useEffect(() => {
     setEditorVisible(isEditorVisible);
-    if(isEditorVisible) {
+    /* TODO: All of these should use the Editor store (from ipcRenderer) */
+    if(isEditorVisible) { 
        if(contentType == 'yaml') {
         setEditorContent(stringify(setupYaml));
       }
@@ -55,8 +56,6 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
         window.electron.ipcRenderer.getStandardOutput().then((res: IResponse) => {
           setEditorContent(res)
         });
-        //setEditorContent(EditorStore.getStandardOutput());
-        // setEditorContent(stringify(setupOutput));
       }
     }
   }, [isEditorVisible])

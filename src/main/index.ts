@@ -16,7 +16,7 @@ import { InstallActions } from "../actions/InstallActions";
 import { PlanningActions } from "../actions/PlanningActions";
 import { IIpcConnectionArgs } from '../types/interfaces';
 import { ProgressStore } from "../storage/ProgressStore";
-import { checkDirExists } from '../services/utils';
+import { checkDirExists } from '../services/ServiceUtils';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { EditorStore } from '../storage/EditorStore';
 
@@ -35,7 +35,7 @@ const installActions = new InstallActions();
 // TODO: Add inline help for inputs, components, etc
 // TODO: Make separate component for validation button - button / icon / error details
 // REVIEW: services/FileTransfer.ts SubmitJcl.ts CheckHLQ.ts
-// REVIEW: merge all services to utils.ts file?
+// REVIEW: merge all services to ServiceUtils.ts file?
 
 const createWindow = (): void => {
 

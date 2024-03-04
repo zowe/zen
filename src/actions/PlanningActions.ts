@@ -16,7 +16,7 @@ import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ConfigurationStore } from "../storage/ConfigurationStore";
 import { parse } from 'yaml';
 import * as https from 'https';
-import { checkDirExists, makeDir } from '../services/utils'
+import { checkDirExists, makeDir } from '../services/ServiceUtils'
 
 export class PlanningActions {
 

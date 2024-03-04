@@ -27,7 +27,7 @@ import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
 import savedInstall from '../../assets/saved-install-green.png';
 import { createTheme } from '@mui/material/styles';
-import eventDispatcher from '../../../utils/eventDispatcher';
+import eventDispatcher from '../../../services/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import Home from '../Home';

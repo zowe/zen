@@ -10,7 +10,7 @@
 
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
-import {startBPXBATCHAndShellSession} from "./utils";
+import {startBPXBATCHAndShellSession} from "./ServiceUtils";
 
 export class CheckENV {
 
