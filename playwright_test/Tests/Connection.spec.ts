@@ -1,6 +1,8 @@
 import { test, ElectronApplication, expect, _electron as electron } from '@playwright/test';
 import ConnectionPage from '../Pages/connection.page';
 import TitlePage from '../Pages/title.page';
+import path from 'path';
+import { spawn } from 'child_process';
 
 let electronApp: ElectronApplication
 
