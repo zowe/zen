@@ -201,7 +201,7 @@ const InitApfAuth = () => {
                 label="Dataset Prefix"
                 multiline
                 maxRows={6}
-                value={setupYaml.prefix}
+                value={setupYaml.prefix ?? ""}
                 variant="filled"
                 disabled
             />
@@ -212,7 +212,7 @@ const InitApfAuth = () => {
                 label="APF Authorized Load Library"
                 multiline
                 maxRows={6}
-                value={setupYaml.authLoadlib}
+                value={setupYaml.authLoadlib ?? ""}
                 variant="filled"
                 disabled
             />
@@ -223,7 +223,7 @@ const InitApfAuth = () => {
                 label="Zowe ZIS Plugins Load Library"
                 multiline
                 maxRows={6}
-                value={setupYaml.authPluginLib}
+                value={setupYaml.authPluginLib ?? ""}
                 variant="filled"
                 disabled
             />
