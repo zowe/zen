@@ -12,7 +12,7 @@ let page: Page;
 
 let electronApp: ElectronApplication
 const CERTIFICATE_TITLE = 'Certificates'
-const RUNTIME_DIR = process.env.ROOT_PATH + '/'+ process.env.ZOWE_ROOT_DIR;
+const RUNTIME_DIR = process.env.ROOT_PATH + process.env.ZOWE_ROOT_DIR;
 
 test.describe('securityTab', () => {
     let connectionPage: ConnectionPage;
