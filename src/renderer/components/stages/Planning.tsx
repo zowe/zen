@@ -686,7 +686,7 @@ Please customize the job statement below to match your system requirements.
                 id="java-home-input"
                 required
                 style={{marginLeft: 0}}
-                label="Java location"
+                label="Java Location"
                 variant="standard"
                 value={installationArgs.javaHome || localYaml?.java?.home}
                 onChange={(e) => {
@@ -709,7 +709,7 @@ Please customize the job statement below to match your system requirements.
                 id="node-home-input"
                 required
                 style={{marginLeft: 0}}
-                label="Node.js location"
+                label="Node.js Location"
                 variant="standard"
                 value={installationArgs.nodeHome || localYaml?.node?.home}
                 onChange={(e) => {
@@ -750,7 +750,7 @@ Please customize the job statement below to match your system requirements.
                       id="zosmf-host"
                       required
                       style={{marginLeft: 0}}
-                      label="z/OSMF host"
+                      label="z/OSMF Host"
                       variant="standard"
                       value={connectionArgs.host || localYaml?.zOSMF?.host}
                       onChange={(e) => {
@@ -773,7 +773,7 @@ Please customize the job statement below to match your system requirements.
                       id="zosmf-port"
                       required
                       style={{marginLeft: 0}}
-                      label="z/OSMF port"
+                      label="z/OSMF Port"
                       variant="standard"
                       type="number"
                       value={installationArgs.zosmfPort || localYaml?.zOSMF?.port}
@@ -799,7 +799,7 @@ Please customize the job statement below to match your system requirements.
                       id="zosmf-appl-id"
                       required
                       style={{marginLeft: 0}}
-                      label="z/OSMF application identifer"
+                      label="z/OSMF Application Identifer"
                       variant="standard"
                       value={installationArgs.zosmfApplId || localYaml?.zOSMF?.applId}
                       onChange={(e) => {

@@ -22,7 +22,7 @@ echo $NODE_HOME
 /* `
 
     const resp: IJobResults = await submitJcl(connectionArgs, jcl, ["STDOUT", "STDERR"]);
-    // REVIEW: Need to find better parsing option
+    // REVIEW: Need to find better parsing option. For some responses, relevant info is in 4th element (3) or some in 3rd element (2)
     if (resp.rc === 0 && resp.jobOutput) { // Success case
       if (resp.jobOutput["3"]) {
         return {status: true, details: resp.jobOutput["3"]};

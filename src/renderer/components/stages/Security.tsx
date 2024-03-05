@@ -130,7 +130,11 @@ const Security = () => {
         securityProceedActions(false);
         stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
         stages[STAGE_ID].isSkipped = true;
-        console.warn('zwe init security failed', err);
+        if (typeof err === "string") {
+          console.warn('zwe init security failed', err);
+        } else {
+          console.warn('zwe init security failed', err?.toString()); // toString() throws run-time error on undefined or null
+        }
       });
   }
 

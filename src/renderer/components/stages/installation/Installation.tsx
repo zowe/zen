@@ -24,7 +24,6 @@ import Ajv from "ajv";
 import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
 import { stages } from "../../configuration-wizard/Wizard";
-import { bool } from "prop-types";
 import { setActiveStep } from "../progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../progress/progressStore"; 
 import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK } from '../../common/Utils';
@@ -148,7 +147,11 @@ const Installation = () => {
           installProceedActions(false);
           stages[stageId].subStages[subStageId].isSkipped = true;
           stages[stageId].isSkipped = true;
-          console.warn('Installation failed', err);
+          if (typeof err === "string") {
+            console.warn('Installation failed', err);
+          } else {
+            console.warn('Installation failed', err?.toString()); // toString() throws run-time error on undefined or null
+          }
         });
       }
     })
