@@ -67,7 +67,6 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
     }
 
     if(newCode && (newCode == "\n" || newCode == "")) {
-      // setZoweConfig("");
       return;
     }
 

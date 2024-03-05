@@ -14,7 +14,7 @@ import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
 import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
-import { setDatasetInstallationStatus, setInitializationStatus ,selectDatasetInstallationStatus, selectInitializationStatus } from "../progressSlice";
+import { setDatasetInstallationStatus, setInitializationStatus ,selectDatasetInstallationStatus, selectInitializationStatus } from "../progress/progressSlice";
 import { IResponse } from '../../../../types/interfaces';
 import ProgressCard from '../../common/ProgressCard';
 import ContainerCard from '../../common/ContainerCard';
@@ -24,8 +24,17 @@ import Ajv from "ajv";
 import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
+import { setActiveStep } from "../progress/activeStepSlice";
+import { getStageDetails, getSubStageDetails } from "../progress/progressStore"; 
 
 const Installation = () => {
+
+  const stageLabel = 'Initialization';
+  const subStageLabel = 'Installation';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
 
   const theme = createTheme();
 
@@ -85,6 +94,10 @@ const Installation = () => {
     stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
     stages[stageId].isSkipped = isInitializationSkipped;
     setIsFormInit(true);
+
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
+    }
   }, []);
 
   useEffect(() => {
@@ -200,7 +213,7 @@ const Installation = () => {
           <React.Fragment>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={installationProgress.uploadYaml}/>
             <ProgressCard label="Download convenience build pax locally" id="download-progress-card" status={installationProgress.download}/>
-            <ProgressCard label={`Upload to pax file to ${installationArgs.installationDir}`} id="upload-progress-card" status={installationProgress.upload}/>
+            <ProgressCard label={`Upload pax file to ${installationArgs.installationDir}`} id="upload-progress-card" status={installationProgress.upload}/>
             <ProgressCard label="Unpax installation files" id="unpax-progress-card" status={installationProgress.unpax}/>
             <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={installationProgress.install}/>
             <ProgressCard label="Run MVS dataset initialization script (zwe init mvs)" id="install-progress-card" status={installationProgress.initMVS}/>

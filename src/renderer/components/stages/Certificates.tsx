@@ -11,8 +11,8 @@
 import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
+import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progress/progressSlice';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
-import { selectCertificateStatus, selectInitializationStatus, setCertificateStatus } from './progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -23,14 +23,21 @@ import { IResponse } from "../../../../src/types/interfaces";
 import React from "react";
 import ProgressCard from "../common/ProgressCard";
 import { createTheme } from '@mui/material/styles';
-import {stages} from "../configuration-wizard/Wizard";
+import { stages } from "../configuration-wizard/Wizard";
+import { setActiveStep } from "./progress/activeStepSlice";
+import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
 
 const Certificates = () => {
 
   const theme = createTheme();
 
-  const stageId = 3;
-  const subStageId = 3;
+  const stageLabel = 'Initialization';
+  const subStageLabel = 'Certificates';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
+
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
@@ -82,9 +89,12 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
-    stages[stageId].isSkipped = isInitializationSkipped
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = isStepSkipped;
+    stages[STAGE_ID].isSkipped = isInitializationSkipped
     setIsFormInit(true);
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
+    }
   }, []);
 
   useEffect(() => {
@@ -103,7 +113,7 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
   };
   
   const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.certificate) : (data.zowe?.setup?.certificate ? data.zowe.setup.certificate : data);
+    const newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.certificate) : (data.zowe?.setup?.certificate ? data.zowe.setup.certificate : data);
     setIsFormInit(false);
 
     if (newData) {
@@ -174,7 +184,7 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
             window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml).then((res: IResponse) => {
               dispatch(setNextStepEnabled(true));
               dispatch(setCertificateStatus(res.status));
-              stages[stageId].subStages[subStageId].isSkipped = !res.status;
+              stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
               clearInterval(timer);
             }).catch(() => {
               clearInterval(timer);
