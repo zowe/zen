@@ -11,25 +11,31 @@
 import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { setConfiguration, getConfiguration } from '../../../services/ConfigService';
-import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progressSlice';
+import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progress/progressSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
-import {stages} from "../configuration-wizard/Wizard";
+import { stages } from "../configuration-wizard/Wizard";
+import { setActiveStep } from "./progress/activeStepSlice";
+import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
 
 const Certificates = () => {
 
   const theme = createTheme();
 
-  const stageId = 3;
-  const subStageId = 3;
+  const stageLabel = 'Initialization';
+  const subStageLabel = 'Certificates';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
+
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
-  const yaml = useAppSelector(selectYaml);
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
   const [isFormInit, setIsFormInit] = useState(false);
@@ -39,7 +45,6 @@ const Certificates = () => {
   const [contentType, setContentType] = useState('');
 
   const section = 'certificate';
-  const initConfig: any = getConfiguration(section);
 
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
@@ -62,12 +67,12 @@ const Certificates = () => {
 
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
-    stages[stageId].isSkipped = isInitializationSkipped
-    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
-      setSetupYaml(initConfig);
-    }
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = isStepSkipped;
+    stages[STAGE_ID].isSkipped = isInitializationSkipped
     setIsFormInit(true);
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
+    }
   }, []);
 
   const toggleEditorVisibility = (type: any) => {
@@ -76,28 +81,10 @@ const Certificates = () => {
   };
   
   const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    let newData = isFormInit ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    const newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.certificate) : (data.zowe?.setup?.certificate ? data.zowe.setup.certificate : data);
     setIsFormInit(false);
 
     if (newData) {
-      newData = isYamlUpdated ? data.certificate : newData;
-
-      if(setupSchema.if) {
-        const ifProp = Object.keys(setupSchema.if.properties)[0];
-        const ifPropValue = setupSchema.if.properties[ifProp].const.toLowerCase();
-        const thenProp = setupSchema.then.required[0].toLowerCase();
-        const elseProp = setupSchema.else.required[0].toLowerCase();
-
-        if(newData && newData[ifProp]) {
-          const newDataPropValue = newData[ifProp].toLowerCase();
-          if( newDataPropValue == ifPropValue && newData[elseProp] ) {
-            delete newData[elseProp];
-          }
-          if(newDataPropValue != ifPropValue && newData[thenProp]) {
-            delete newData[thenProp];
-          }
-        }
-      }
 
       if(validate) {
         validate(newData);
@@ -105,8 +92,14 @@ const Certificates = () => {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
         } else {
-          setConfiguration(section, newData, true);
+          // setConfiguration(section, newData, true);
+          // setLYaml((prevYaml: any) => ({
+          //   ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}
+          // }))
+          // dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}}))
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
           setStageConfig(true, '', newData);
         }
       }
@@ -127,8 +120,8 @@ const Certificates = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Certificates" description="Configure Zowe Certificates."> 
-        <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>
-        <Box sx={{ width: '60vw' }}>
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>

@@ -13,25 +13,31 @@ import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
-import { setApfAuthStatus, setInitializationStatus, selectApfAuthStatus, selectInitializationStatus } from './progressSlice';
+import { setApfAuthStatus, setInitializationStatus, selectApfAuthStatus, selectInitializationStatus } from './progress/progressSlice';
 import { IResponse } from '../../../types/interfaces';
-import { setConfiguration, getConfiguration, getZoweConfig } from '../../../services/ConfigService';
 import ProgressCard from '../common/ProgressCard';
 import ContainerCard from '../common/ContainerCard';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
 import { createTheme } from '@mui/material/styles';
-import {stages} from "../configuration-wizard/Wizard";
+import { stages } from "../configuration-wizard/Wizard";
+import { setActiveStep } from "./progress/activeStepSlice";
+import { getStageDetails, getSubStageDetails } from "./progress/progressStore"; 
 
 const InitApfAuth = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
+  const stageLabel = 'Initialization';
+  const subStageLabel = 'APFAuth';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
+
   const theme = createTheme();
 
-  const stageId = 3;
-  const subStageId = 1;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
@@ -54,7 +60,6 @@ const InitApfAuth = () => {
   let timer: any;
 
   const section = 'dataset';
-  const initConfig = getConfiguration(section);
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -73,12 +78,13 @@ const InitApfAuth = () => {
   
   useEffect(() => {
     dispatch(setNextStepEnabled(false));
-    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
-    stages[stageId].isSkipped = isInitializationSkipped;
-    if(Object.keys(initConfig) && Object.keys(initConfig).length != 0) {
-      setSetupYaml(initConfig);
-    }
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = isStepSkipped;
+    stages[STAGE_ID].isSkipped = isInitializationSkipped;
     setInit(true);
+
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
+    }
   }, []);
 
   useEffect(() => {
@@ -100,25 +106,25 @@ const InitApfAuth = () => {
   const process = (event: any) => {
     event.preventDefault();
     toggleProgress(true);
-    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, getZoweConfig()).then((res: IResponse) => {
+    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
         dispatch(setNextStepEnabled(res.status));
         dispatch(setApfAuthStatus(res.status));
         dispatch(setInitializationStatus(res.status));
-        stages[stageId].subStages[subStageId].isSkipped = !res.status;
+        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
         dispatch(setNextStepEnabled(false));
         dispatch(setInitializationStatus(false));
         dispatch(setApfAuthStatus(false));
-        stages[stageId].subStages[subStageId].isSkipped = true;
-        stages[stageId].isSkipped = true;
+        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+        stages[STAGE_ID].isSkipped = true;
         console.warn('zwe init apfauth failed');
       });
   }
 
   const editHLQ = (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = init ? (Object.keys(initConfig).length > 0 ? initConfig: data) : (data ? data : initConfig);
+    let updatedData = init ? (Object.keys(yaml?.zowe.setup.dataset).length > 0 ? yaml?.zowe.setup.dataset : data) : (data ? data : yaml?.zowe.setup.datasetg);
     
     setInit(false);
 
@@ -140,7 +146,7 @@ const InitApfAuth = () => {
         const errMsg = validate.errors[0].message;
         setStageConfig(false, errPath+' '+errMsg, updatedData, false);
       } else {
-        setConfiguration(section, updatedData, true);
+        // setConfiguration(section, updatedData, true);
         setStageConfig(true, '', updatedData, true);
       }
     }
@@ -173,7 +179,7 @@ const InitApfAuth = () => {
                 label="Dataset Prefix"
                 multiline
                 maxRows={6}
-                value={setupYaml.prefix}
+                value={setupYaml.prefix ?? ""}
                 variant="filled"
                 disabled
             />
@@ -184,7 +190,7 @@ const InitApfAuth = () => {
                 label="APF Authorized Load Library"
                 multiline
                 maxRows={6}
-                value={setupYaml.authLoadlib}
+                value={setupYaml.authLoadlib ?? ""}
                 variant="filled"
                 disabled
             />
@@ -195,7 +201,7 @@ const InitApfAuth = () => {
                 label="Zowe ZIS Plugins Load Library"
                 multiline
                 maxRows={6}
-                value={setupYaml.authPluginLib}
+                value={setupYaml.authPluginLib ?? ""}
                 variant="filled"
                 disabled
             />
