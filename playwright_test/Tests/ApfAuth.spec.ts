@@ -12,6 +12,7 @@ let page: Page;
 let electronApp: ElectronApplication
 const INSTALLATION_TITLE = 'Installation'
 const SECURITY_TITLE = 'Security'
+const RUNTIME_DIR = process.env.ROOT_PATH + process.env.ZOWE_ROOT_DIR;
 
 test.describe('ApfAuthTab', () => {
     let connectionPage: ConnectionPage;
@@ -54,8 +55,8 @@ test.describe('ApfAuthTab', () => {
       connectionPage.clickContinueButton()
       planningPage.clickSaveValidate()
       await page.waitForTimeout(50000);
-      console.log(process.env.ZOWE_WORKSPACE_DIR,process.env.ROOT_PATH + process.env.ZOWE_ROOT_DIR)
-      planningPage.fillPlanningPage(process.env.ROOT_PATH + process.env.ZOWE_ROOT_DIR, process.env.ZOWE_WORKSPACE_DIR,process.env.ZOWE_EXTENSION_DIR,process.env.ZOWE_LOG_DIR,'1',process.env.JOB_NAME,process.env.JOB_PREFIX,process.env.JAVA_HOME,process.env.NODE_HOME,process.env.ZOSMF_APP_ID)
+      console.log(process.env.ZOWE_WORKSPACE_DIR,RUNTIME_DIR)
+      planningPage.fillPlanningPage(RUNTIME_DIR, process.env.ZOWE_WORKSPACE_DIR,process.env.ZOWE_EXTENSION_DIR,process.env.ZOWE_LOG_DIR,'1',process.env.JOB_NAME,process.env.JOB_PREFIX,process.env.JAVA_HOME,process.env.NODE_HOME,process.env.ZOSMF_APP_ID)
       planningPage.clickValidateLocations()
       await page.waitForTimeout(50000);
       planningPage.continueInstallation()
