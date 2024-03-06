@@ -12,9 +12,6 @@ let page: Page;
 let electronApp: ElectronApplication
 const INSTALLATION_TITLE = 'Installation'
 const SECURITY_TITLE = 'Security'
-const DATASET_PREFIX = 'IBMUSER.ZWEV1'
-const AUTH_LOAD_LIB = 'IBMUSER.ZWEV1.ZWEAUTH'
-const AUTH_PLUGIN_LIB = 'IBMUSER.ZWEV1.CUST.ZWESAPL'
 const RUNTIME_DIR = process.env.ROOT_PATH + process.env.ZOWE_ROOT_DIR;
 
 test.describe('ApfAuthTab', () => {
@@ -74,7 +71,7 @@ test.describe('ApfAuthTab', () => {
 //
 //     test('Verify title', async ({ page }) => {
 //       await page.waitForTimeout(5000);
-//       apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
+//       apfAuthPage.fillApfDetails(process.env.DATASET_PREFIX,process.env.AUTH_LOAD_LIB,process.env.AUTH_PLUGIN_LIB)
 //       await page.waitForTimeout(5000);
 //       apfAuthPage.movetoApfAuthPage()
 //       await page.waitForTimeout(5000);
@@ -106,7 +103,7 @@ test.describe('ApfAuthTab', () => {
 //     })
     test('test apfAuth with valid data', async ({ page }) => {
       await page.waitForTimeout(5000);
-      apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
+      apfAuthPage.fillApfDetails(process.env.DATASET_PREFIX,process.env.AUTH_LOAD_LIB,process.env.AUTH_PLUGIN_LIB)
       await page.waitForTimeout(5000);
       apfAuthPage.movetoApfAuthPage()
       await page.waitForTimeout(5000);
@@ -187,7 +184,7 @@ test.describe('ApfAuthTab', () => {
 
     test('Test save and close', async ({ page }) => {
      await page.waitForTimeout(5000);
-     apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
+     apfAuthPage.fillApfDetails(process.env.DATASET_PREFIX,process.env.AUTH_LOAD_LIB,process.env.AUTH_PLUGIN_LIB)
      await page.waitForTimeout(5000);
      apfAuthPage.movetoApfAuthPage()
      await page.waitForTimeout(5000);
@@ -205,8 +202,8 @@ test.describe('ApfAuthTab', () => {
      const datatsetPrefixValue = await apfAuthPage.get_datasetPrefix_value();
      const authPluginLibValue = await apfAuthPage.get_authPluginLib_value();
      const authLoadLibValue = await apfAuthPage.get_authLoadLib_value();
-     expect(datatsetPrefixValue).toBe(DATASET_PREFIX);
-     expect(authLoadLibValue).toBe(AUTH_LOAD_LIB);
-     expect(authPluginLibValue).toBe(AUTH_PLUGIN_LIB);
+     expect(datatsetPrefixValue).toBe(process.env.DATASET_PREFIX);
+     expect(authLoadLibValue).toBe(process.env.AUTH_LOAD_LIB);
+     expect(authPluginLibValue).toBe(process.env.AUTH_PLUGIN_LIB);
     })
 })
