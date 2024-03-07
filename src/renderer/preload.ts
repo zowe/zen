@@ -68,7 +68,7 @@ contextBridge.exposeInMainWorld('electron', {
       return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version, zoweConfig, skipDownload);
     },
     initCertsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
-      return ipcRenderer.invoke("zwe-init-certificates", connectionArgs, installationArgs, zoweConfig);
+      return ipcRenderer.invoke("init-certificates", connectionArgs, installationArgs, zoweConfig);
     },
     apfAuthButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
       return ipcRenderer.invoke("init-apf", connectionArgs, installationArgs, zoweConfig);

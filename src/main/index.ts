@@ -141,7 +141,7 @@ const createWindow = (): void => {
     return res;
   });
 
-  ipcMain.handle('zwe-init-certificates', async (event, connectionArgs, installationArgs, zoweConfig) => {
+  ipcMain.handle('init-certificates', async (event, connectionArgs, installationArgs, zoweConfig) => {
     const res = await installActions.runInitCertificates(connectionArgs, installationArgs, zoweConfig);
     return res;
   });
