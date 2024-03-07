@@ -713,7 +713,7 @@ const Networking = () => {
             dispatch(setYaml(newYaml))
             setLYaml(newYaml);
           }}><AddIcon /></IconButton></p>
-          {yaml.zowe.externalDomains.map((domain: string, index: number) => <Box sx={{display: "flex", flexDirection: "row"}}><TextField
+          {yaml.zowe.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box sx={{display: "flex", flexDirection: "row"}}><TextField
             variant="standard"
             defaultValue={domain}
             onChange={async (e) => {
