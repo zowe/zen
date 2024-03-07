@@ -166,6 +166,28 @@ class Installation {
       return {status: result.rc === 0, details: result.jobOutput}
   }
 
+  async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, zoweConfig: any){
+    console.log('writing current yaml to disk');
+    const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
+    await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
+      if (err) {
+          console.warn("Can't save configuration to zowe.yaml");
+          return ProgressStore.set('certificate.writeYaml', false);
+      } 
+    });
+    ProgressStore.set('certificate.writeYaml', true);
+    console.log("uploading yaml...");
+    const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
+    if(!uploadYaml.status){
+      return ProgressStore.set('certificate.uploadYaml', false);;
+    }
+    ProgressStore.set('certificate.uploadYaml', uploadYaml.status);
+    const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.smpeDir + '/bin' : installationArgs.installationDir + '/runtime/bin'} && ./zwe init certificate --update-config -c ${installationArgs.installationDir}/zowe.yaml`;
+    const result = await new Script().run(connectionArgs, script);
+    ProgressStore.set('certificate.zweInitCertificate', result.rc === 0);
+    return {status: result.rc === 0, details: result.jobOutput}
+  }
+
   async generateYamlFile(zoweConfig: object): Promise<IResponse> {
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
     await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
@@ -205,6 +227,7 @@ class Installation {
   async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
     return {status: false, details: 'Method not implemented.'}
   }
+  
 }
 
 export class FTPInstallation extends Installation {
@@ -252,28 +275,6 @@ export class FTPInstallation extends Installation {
   async install(connectionArgs: IIpcConnectionArgs, installDir: string) {
     const script = `cd ${installDir}/runtime/bin;./zwe install -c ${installDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);
-    return {status: result.rc === 0, details: result.jobOutput}
-  }
-
-  async initCertificates(connectionArgs: IIpcConnectionArgs, installDir: string, zoweConfig: any){
-    console.log('writing current yaml to disk');
-    const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-    await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
-      if (err) {
-          console.warn("Can't save configuration to zowe.yaml");
-          return ProgressStore.set('certificate.writeYaml', false);
-      } 
-    });
-    ProgressStore.set('certificate.writeYaml', true);
-    console.log("uploading yaml...");
-    const uploadYaml = await this.uploadYaml(connectionArgs, installDir);
-    if(!uploadYaml.status){
-      return ProgressStore.set('certificate.uploadYaml', false);;
-    }
-    ProgressStore.set('certificate.uploadYaml', uploadYaml.status);
-    const script = `cd ${installDir}/runtime/bin;\n./zwe init certificate --update-config -c ${installDir}/zowe.yaml`;
-    const result = await new Script().run(connectionArgs, script);
-    ProgressStore.set('certificate.zweInitCertificate', result.rc === 0);
     return {status: result.rc === 0, details: result.jobOutput}
   }
   

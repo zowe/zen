@@ -35,9 +35,9 @@ export class InstallActions {
     }
   }
 
-  runZweInitCertificates(connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string}, zoweConfig: any){
-      return new FTPInstallation().initCertificates(connectionArgs, installationArgs.installationDir, zoweConfig)
+  runInitCertificates(connectionArgs: IIpcConnectionArgs,
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, zoweConfig: any){
+      return this.strategy.initCertificates(connectionArgs, installationArgs, zoweConfig)
   }
 
   runInstallation (
