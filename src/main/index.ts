@@ -136,8 +136,13 @@ const createWindow = (): void => {
     return res;
   })
 
-  ipcMain.handle('install-mvs', async (_event, connectionArgs, installationArgs, version, zoweConfig) => {
-    const res = await installActions.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
+  ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs, version, zoweConfig, skipDownload) => {
+    const res = await installActions.runInstallation(connectionArgs, installationArgs, version, zoweConfig, skipDownload);
+    return res;
+  });
+
+  ipcMain.handle('init-certificates', async (event, connectionArgs, installationArgs, zoweConfig) => {
+    const res = await installActions.runInitCertificates(connectionArgs, installationArgs, zoweConfig);
     return res;
   });
 
@@ -158,7 +163,12 @@ const createWindow = (): void => {
     return res;
   });
 
-  ipcMain.handle('init-security', async (_event, connectionArgs, installationArgs, zoweConfig) => {
+  ipcMain.handle('get-certificate-progress', async (event) => {
+    const res = ProgressStore.getAll()['certificate'];
+    return res;
+  });
+
+  ipcMain.handle('init-security', async (event, connectionArgs, installationArgs, zoweConfig) => {
     const res = await installActions.initSecurity(connectionArgs, installationArgs, zoweConfig);
     return res;
   });
