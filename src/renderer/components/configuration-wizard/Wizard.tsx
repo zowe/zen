@@ -27,7 +27,7 @@ import { initProgress } from '../stages/progress/progressStore';
 export const stages = [
   {id: 0, label: 'Connection', component: <Connection/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1, nextButton: 'Continue'},
   {id: 1, label: 'Planning', component: <Planning/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: true, steps: 3, nextButton: 'Continue to Installation Options'},
-  {id: 2, label: 'InstallationType', component: <InstallationType/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1, nextButton: 'Continue to Components Installation'},
+  {id: 2, label: 'Installation Type', component: <InstallationType/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1, nextButton: 'Continue to Components Installation'},
   {id: 3, label: 'Initialization', component: <Initialization/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, subStages: [
     {id: 0, label: 'Installation', component: <Installation/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to APF Auth Setup'},
     {id: 1, label: 'APFAuth', component: <InitApfAuth/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Security Setup'},
