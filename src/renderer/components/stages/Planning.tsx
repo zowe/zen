@@ -30,6 +30,7 @@ import { Checkbox, FormControlLabel } from "@mui/material";
 import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
 import { getStageDetails } from "../stages/progress/progressStore";
+import { StateStore } from "../../../storage/StateStore";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -1476,6 +1477,13 @@ const Planning = () => {
           alertEmitter.emit('showAlert', 'Failed to verify job statement', 'error');
         } else { // Success JCL case
           dispatch(setJobStatementValid(true));
+          // const key1 = "rs28_ts3800";
+          const key1 = "instance";
+          StateStore.set("instance", { "jobStatementValidation": true });
+          const key2 = "rs20_ts4200";
+          // StateStore.set(key1, { "jobStatementValidation": false });
+          // const obj1 = StateStore.get(key1);
+          // const obj2 = StateStore.get(key2);
           alertEmitter.emit('hideAlert');
           if(locationsValidated) {
             dispatch(setPlanningStatus(true));
