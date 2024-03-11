@@ -10,7 +10,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
-import { setProgress } from './progressStore';
+import { setProgress } from '../../../../utils/stageDetails';
 
 export interface progressState {
   connectionStatus: boolean;

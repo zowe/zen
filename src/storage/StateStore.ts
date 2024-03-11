@@ -10,43 +10,18 @@
 
 import Store from 'electron-store';
 
-const storeSchema2 = {
-  "patternProperties": {
-    "^([^_]+_[^_]+)$": { // Regular expression to match keys with host and username separated by underscore
-      "description": "Zowe Instance",
-      "type": "object",
-      "properties": {
-        "jobStatementValidation": { "type": "boolean" },
-        "locationValidation": { "type": "boolean" },
-        "installationType": { "type": "string" },
-        "installationLocation": { "type": "string" },
-        "installation": { "type": "string" }
-      }
-    }
-  }
-}
-
-const storeSchema3 = {
-  "patternProperties": {
-    "^([^_]+_[^_]+)$": { // Regular expression to match keys with host and username separated by underscore
-      "description": "Zowe Instance",
-      "type": "object",
-      "properties": {
-        "jobStatementValidation": { "type": "boolean" },
-      }
-    }
-  }
-}
-
 const storeSchema = {
-    "instance": { // Regular expression to match keys with host and username separated by underscore
-      "description": "Zowe Instance",
-      "type": "object",
-      "properties": {
-        "jobStatementValidation": { "type": "boolean" },
-      }
-    }
+  "jobStatementValidation": { "type": "boolean" },
+  // "locationValidation": { "type": "boolean" },
+  // "installationType": { "type": "string" },
+  // "installationLocation": { "type": "string" },
+  // "installation": { "type": "string" }
 }
+
+const storeDefault = {
+  "jobStatementValidation": false,
+}
+
 
 const validateWithSchema = (key: string): boolean => {
   const keys = key.split('.');
@@ -60,12 +35,15 @@ const validateWithSchema = (key: string): boolean => {
   return true;
 }
 
+const getKey = (host: string, username: string) => `${host}_${username}`;
+
 const store = new Store({cwd: 'zen-state-store'});
-store.set({...store.store});
+store.set({...storeDefault, ...store.store});
 
 export class StateStore {
 
-  public static get(key: string): any {
+  public static get(host: string, username: string): any {
+    const key = getKey(host, username);
     return store.get(key);
   }
   
@@ -73,15 +51,17 @@ export class StateStore {
     return store.store;
   }
   
-  public static set(key: string, value: any): boolean {
-  // if (validateWithSchema(key)) {
-    store.set(key, value);
-    return true;
-  // }
-  return false;
+  public static set(host: string, username: string, value: any): boolean {
+    const key = getKey(host, username);
+    if (validateWithSchema(key)) {
+      store.set(key, value);
+      return true;
+    }
+    return false;
   }
   
-  public static delete(key: any): void {
+  public static delete(host: string, username: string): void {
+    const key = getKey(host, username);
     store.delete(key);
   }
   

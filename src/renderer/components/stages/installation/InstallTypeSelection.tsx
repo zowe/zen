@@ -23,7 +23,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
-import { getStageDetails } from "../progress/progressStore"; 
+import { getStageDetails } from "../../../../utils/stageDetails"; 
 
 const InstallationType = () => {
 
