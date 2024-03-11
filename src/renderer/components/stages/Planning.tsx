@@ -1323,6 +1323,9 @@ const Planning = () => {
         dispatch(setYaml(EXAMPLE_YAML));
         setLocalYaml((EXAMPLE_YAML));
         dispatch(setSchema(YAML_SCHEMA));
+        window.electron.ipcRenderer.setSchema(YAML_SCHEMA).then((res: IResponse) => {
+          // schema response
+        });
       }
     })
 
