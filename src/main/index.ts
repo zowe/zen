@@ -96,6 +96,12 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('set-schema', async (event, schema: any) => {
+    const res: any = await ConfigurationStore.setSchema(schema);
+    return res;
+  });
+
+
   ipcMain.handle('get-config-by-key', async (_event, key: string) => {
     const res = await ConfigurationStore.getConfigByKey(key);
     return res;
