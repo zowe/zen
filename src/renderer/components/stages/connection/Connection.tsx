@@ -37,7 +37,7 @@ import { setActiveStep } from '../progress/activeStepSlice';
 import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from '../progress/activeStepSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
-import { getStageDetails } from "../progress/progressStore";
+import { getStageDetails } from "../../../../utils/StageDetails";
 
 const Connection = () => {
 

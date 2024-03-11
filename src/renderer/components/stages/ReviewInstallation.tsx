@@ -25,7 +25,7 @@ import { setActiveStep } from './progress/activeStepSlice';
 import { selectConnectionStatus } from "./progress/progressSlice";
 import { selectInstallationTypeStatus } from "./progress/progressSlice";
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
+import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
 
 import '../../styles/ReviewInstallation.css';
 

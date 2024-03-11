@@ -25,7 +25,7 @@ import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
-import { getStageDetails, getSubStageDetails } from "../progress/progressStore"; 
+import { getStageDetails, getSubStageDetails } from "../../../../utils/StageDetails"; 
 
 const Installation = () => {
 
