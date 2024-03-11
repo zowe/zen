@@ -13,19 +13,18 @@ import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
 import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
-import { setConnectionArgs, selectConnectionArgs, selectConnectionPassword } from './stages/connection/connectionSlice';
+import { setConnectionArgs, selectConnectionPassword } from './stages/connection/connectionSlice';
 import { setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { Tooltip } from '@mui/material';
-import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import installationImg from '../assets/installation.png'
 import installationDryImg from '../assets/installation-dry-run.png'
 import eventDispatcher from "../../utils/eventDispatcher";
-import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from './stages/progress/activeStepSlice';
+import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex, selectActiveStepDate} from './stages/progress/activeStepSlice';
 import { selectConnectionStatus} from './stages/progress/progressSlice';
-import { selectActiveStepDate} from './stages/progress/activeStepSlice';
 import  HorizontalLinearStepper  from './common/Stepper';
-import Wizard from './configuration-wizard/Wizard'
+import Wizard from './configuration-wizard/Wizard';
+import { setJobStatement } from './stages/PlanningSlice';
 
 // REVIEW: Get rid of routing
 
@@ -109,8 +108,9 @@ const Home = () => {
         const connectionArgs: IIpcConnectionArgs = {
           ...connectionStore["ftp-details"],
           password: connectionPassword,
-          connectionType: 'ftp'}; 
+          connectionType: 'ftp'};
         dispatch(setConnectionArgs(connectionArgs));
+        dispatch(setJobStatement(connectionArgs.jobStatement));
       } else {
         // TODO: Add support for other types
         console.warn('Connection types other than FTP are not supported yet');
