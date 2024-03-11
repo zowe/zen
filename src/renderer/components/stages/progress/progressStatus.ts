@@ -31,6 +31,11 @@ const activeState: activeStep = {
   activeSubStepIndex: 0,
 };
 
+const instance = {
+  progressStatus: progressStatus,
+  activeState: activeState
+}
+
 export const getStageDetails = (stageLabel: string) => {
   const stage = stages.find(stage => stage.label === stageLabel);
   return stage;
@@ -105,5 +110,3 @@ export const getActiveStage = () : activeStep => {
     return activeState;
   }
 }
-
-

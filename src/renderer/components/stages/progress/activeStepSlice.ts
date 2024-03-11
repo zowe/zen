@@ -10,7 +10,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
-import { setActiveStage } from './progressStore'
+import { setActiveStage } from './progressStatus';
 
 export interface activeStep {
   activeStepIndex: number,
