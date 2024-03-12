@@ -629,19 +629,19 @@ var YAML_SCHEMA: any = {
           }
         },
         "runtimeDirectory": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "#/$defs/zowePath",
           "description": "Path to where you installed Zowe."
         },
         "logDirectory": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "#/$defs/zowePath",
           "description": "Path to where you want to store Zowe log files."
         },
         "workspaceDirectory": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "#/$defs/zowePath",
           "description": "Path to where you want to store Zowe workspace files. Zowe workspace are used by Zowe component runtime to store temporary files."
         },
         "extensionDirectory": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "#/$defs/zowePath",
           "description": "Path to where you want to store Zowe extensions. \"zwe components install\" will install new extensions into this directory."
         },
         "job": {
@@ -793,7 +793,7 @@ var YAML_SCHEMA: any = {
       "type": "object",
       "properties": {
         "home": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "#/$defs/zowePath",
           "description": "Path to Java home directory."
         }
       }
@@ -802,7 +802,7 @@ var YAML_SCHEMA: any = {
       "type": "object",
       "properties": {
         "home": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "#/$defs/zowePath",
           "description": "Path to node.js home directory."
         }
       }
@@ -903,7 +903,7 @@ var YAML_SCHEMA: any = {
               "const": "PKCS12"
             },
             "file": {
-              "$ref": "/schemas/v2/server-common#zowePath",
+              "$ref": "#/$defs/zowePath",
               "description": "Path to your PKCS#12 keystore."
             },
             "password": {
@@ -928,7 +928,7 @@ var YAML_SCHEMA: any = {
               "const": "PKCS12"
             },
             "file": {
-              "$ref": "/schemas/v2/server-common#zowePath",
+              "$ref": "#/$defs/zowePath",
               "description": "Path to your PKCS#12 keystore."
             },
             "password": {
@@ -944,24 +944,24 @@ var YAML_SCHEMA: any = {
           "required": ["key", "certificate"],
           "properties": {
             "key": {
-              "$ref": "/schemas/v2/server-common#zowePath",
+              "$ref": "#/$defs/zowePath",
               "description": "Path to the certificate private key stored in PEM format."
             },
             "certificate": {
-              "$ref": "/schemas/v2/server-common#zowePath",
+              "$ref": "#/$defs/zowePath",
               "description": "Path to the certificate stored in PEM format."
             },
             "certificateAuthorities": {
               "description": "List of paths to the certificate authorities stored in PEM format.",
               "oneOf": [{
-                  "$ref": "/schemas/v2/server-common#zowePath",
+                  "$ref": "#/$defs/zowePath",
                   "description": "Paths to the certificate authorities stored in PEM format. You can separate multiple certificate authorities by comma."
                 },
                 {
                   "type": "array",
                   "description": "Path to the certificate authority stored in PEM format.",
                   "items": {
-                    "$ref": "/schemas/v2/server-common#zowePath"
+                    "$ref": "#/$defs/zowePath"
                   }
                 }
               ]
@@ -1207,11 +1207,18 @@ var YAML_SCHEMA: any = {
           "description": "The location of the default registry for this handler. It could be a URL, path, dataset, whatever this handler supports"
         },
         "path": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "#/$defs/zowePath",
           "description": "Unix file path to the configmgr-compatible JS file which implements the handler API"
         }
       }
-    }
+    },
+    "zowePath": {
+      "$anchor": "zowePath",
+      "type": "string",
+      "pattern": "^([^\\0]){1,1024}$",
+      "minLength": 1,
+      "maxLength": 1024
+    },
   }
 }
 
