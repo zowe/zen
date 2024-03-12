@@ -30,7 +30,7 @@ const InitApfAuth = () => {
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
   const stageLabel = 'Initialization';
-  const subStageLabel = 'APFAuth';
+  const subStageLabel = 'APF Auth';
 
   const STAGE_ID = getStageDetails(stageLabel).id;
   const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
