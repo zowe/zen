@@ -71,6 +71,12 @@ const createWindow = (): void => {
     return res;
   });
 
+
+  ipcMain.handle('get-job-header', async (_event, jobStatement: string) => {
+    const res = connectionActions.getJobStatement();
+    return res;
+  });
+
   ipcMain.handle('check-connection', async (_event, args: IIpcConnectionArgs) => {
     const res = await connectionActions.checkConnectionData(args);
     return res;
