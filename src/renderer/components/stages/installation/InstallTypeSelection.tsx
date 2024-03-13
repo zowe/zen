@@ -9,21 +9,18 @@
  */
 
 import React, {useEffect, useRef, useState} from "react";
-import { Box, Button, FormControl, FormControlLabel, FormLabel, Link, Radio, RadioGroup, TextField, Typography } from '@mui/material';
+import { Box, Button, FormControl, FormControlLabel, Link, Radio, RadioGroup, TextField, Typography } from '@mui/material';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
-import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid, selectInstallationType, selectSmpeDir, selectLicenseAgreement, selectSmpeDirValid } from './installationSlice';
+import { setNextStepEnabled } from '../../configuration-wizard/wizardSlice';
+import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid, selectInstallationType, selectSmpeDir, selectLicenseAgreement, selectSmpeDirValid, setUserUploadedPaxPath } from './installationSlice';
 import { setInstallationTypeStatus } from "../progress/progressSlice"; 
 import { selectConnectionArgs } from '../connection/connectionSlice';
-import JsonForm from '../../common/JsonForms';
-import { IResponse } from '../../../../types/interfaces';
-import ProgressCard from '../../common/ProgressCard';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
-import { getStageDetails } from "../../../../utils/StageDetails"; 
+import { getStageDetails } from "../../../../utils/StageDetails";
+import { getInstallationTypeStatus } from "../progress/StageProgressStatus";
 
 const InstallationType = () => {
 
@@ -36,12 +33,12 @@ const InstallationType = () => {
 
   const dispatch = useAppDispatch();
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const [installValue, setInstallValue] = useState(useAppSelector(selectInstallationType));
-  const [paxPath, setPaxPath] = useState("");
-  const [smpePath, setSmpePath] = useState(useAppSelector(selectSmpeDir));
-  const [smpePathValidated, setSmpePathValidated] = useState(useAppSelector(selectSmpeDirValid));
+  const [installValue, setInstallValue] = useState(getInstallationTypeStatus().installationType);
+  const [paxPath, setPaxPath] = useState(getInstallationTypeStatus().userUploadedPaxPath);
+  const [smpePath, setSmpePath] = useState(getInstallationTypeStatus().smpeDir);
+  const [smpePathValidated, setSmpePathValidated] = useState(getInstallationTypeStatus().smpeDirValid);
   const [showLicense, setShowLicense] = useState(false);
-  const [agreeLicense, setAgreeLicense] = useState(useAppSelector(selectLicenseAgreement));
+  const [agreeLicense, setAgreeLicense] = useState(getInstallationTypeStatus().licenseAgreement);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   const version = useAppSelector(selectZoweVersion);
@@ -81,6 +78,9 @@ const InstallationType = () => {
 
   const installTypeChangeHandler = (type: string) => {
     dispatch(setInstallationType(type));
+    if(type != 'download') {
+      dispatch(setLicenseAgreement(false));
+    }
     setInstallValue(type);
     dispatch(setInstallationTypeStatus(false))
   }
@@ -166,10 +166,10 @@ const InstallationType = () => {
         window.electron.ipcRenderer.uploadPax().then((res: any) => {
           if(res.filePaths && res.filePaths[0] != undefined){
             setPaxPath(res.filePaths[0]);
-            dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: res.filePaths[0]}));
+            dispatch(setUserUploadedPaxPath(res.filePaths[0]));
           } else {
             setPaxPath("");
-            dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: ''}));
+            dispatch(setUserUploadedPaxPath(""));
           }
         });
       }}>Upload PAX</Button>

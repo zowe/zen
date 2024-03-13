@@ -21,6 +21,22 @@ export interface Job {
   jobStatement: string;
 }
 
+export interface InstallationType {
+  installationType: string;
+  licenseAgreement: boolean;
+  userUploadedPaxPath: string;
+  smpeDir: string;
+  smpeDirValid: boolean;
+}
+
+const installationTypeStatus: InstallationType = {
+  installationType: 'download',
+  licenseAgreement: false,
+  userUploadedPaxPath: '',
+  smpeDir: '',
+  smpeDirValid: false
+} 
+
 const progressStatus: ProgressState = {
   connectionStatus: false,
   planningStatus: false,
@@ -52,12 +68,14 @@ let progressStateKey = 'stage_progress';
 let activeStateKey = 'active_state';
 let planningStateKey = 'planning_stage';
 let jobKey = 'job';
+let installationTypeKey = 'installation_type';
 
 const setKeys = (id: string) => {
   progressStateKey = `${progressStateKey}_${id}`;
   activeStateKey = `${activeStateKey}_${id}`;
   planningStateKey = `${planningStateKey}_${id}`;
   jobKey = `${jobKey}_${id}`;
+  installationTypeKey = `${installationTypeKey}_${id}`
 }
 
 export const initializeProgress = (host: string, user: string) => {
@@ -66,40 +84,62 @@ export const initializeProgress = (host: string, user: string) => {
 
   const progress = localStorage.getItem(progressStateKey);
   if(!progress) {
-    const flattenedProgress = flatten(progressStatus);
-    localStorage.setItem(progressStateKey, JSON.stringify(flattenedProgress));
+    const flattenedData = flatten(progressStatus);
+    localStorage.setItem(progressStateKey, JSON.stringify(flattenedData));
   }
 
   const activeStage = localStorage.getItem(activeStateKey);
   if(!activeStage) {
-    const flattenedActiveStage = flatten(activeStatus);
-    localStorage.setItem(activeStateKey, JSON.stringify(flattenedActiveStage));
+    const flattenedData = flatten(activeStatus);
+    localStorage.setItem(activeStateKey, JSON.stringify(flattenedData));
   }
 
   const planningState = localStorage.getItem(planningStateKey);
   if(!planningState) {
-    const flattenedPlanningState = flatten(planningStageStatus);
-    localStorage.setItem(planningStateKey, JSON.stringify(flattenedPlanningState));
+    const flattenedData = flatten(planningStageStatus);
+    localStorage.setItem(planningStateKey, JSON.stringify(flattenedData));
   }
 
   const jobState = localStorage.getItem(jobKey);
   if(!jobState) {
-    const flattenedJobState = flatten(jobStatus);
-    localStorage.setItem(jobKey, JSON.stringify(flattenedJobState));
+    const flattenedData = flatten(jobStatus);
+    localStorage.setItem(jobKey, JSON.stringify(flattenedData));
+  }
+
+  const installationTypeState = localStorage.getItem(installationTypeKey);
+  if(!installationTypeState) {
+    const flattenedData = flatten(installationTypeStatus);
+    localStorage.setItem(installationTypeKey, JSON.stringify(flattenedData));
+  }
+}
+
+export const setInstallationTypeStatus = <K extends keyof InstallationType>(key: K, newValue: InstallationType[K]): void => {
+  installationTypeStatus[key] = newValue;
+  const flattenedData = flatten(installationTypeStatus);
+  localStorage.setItem(installationTypeKey, JSON.stringify(flattenedData));
+}
+
+export const getInstallationTypeStatus = (): InstallationType => {
+  const installationTypeState = localStorage.getItem(installationTypeKey);
+  if(installationTypeStatus) {
+    const flattenedData = JSON.parse(installationTypeState);
+    return unflatten(flattenedData)
+  } else {
+    return installationTypeStatus;
   }
 }
 
 export const setPlanningStageStatus = (key: keyof PlanningState, newValue: boolean): void => {
   planningStageStatus[key] = newValue;
-  const flattenedPlanningState = flatten(planningStageStatus);
-  localStorage.setItem(planningStateKey, JSON.stringify(flattenedPlanningState));
+  const flattenedData = flatten(planningStageStatus);
+  localStorage.setItem(planningStateKey, JSON.stringify(flattenedData));
 }
 
-export const getPlanningStageStatus = (): any => {
+export const getPlanningStageStatus = (): PlanningState => {
   const planningStatus = localStorage.getItem(planningStateKey);
   if(planningStatus) {
-    const flattenedPlanningState = JSON.parse(planningStatus);
-    return unflatten(flattenedPlanningState)
+    const flattenedData = JSON.parse(planningStatus);
+    return unflatten(flattenedData);
   } else {
     return planningStageStatus;
   }
@@ -108,8 +148,8 @@ export const getPlanningStageStatus = (): any => {
 export const getIsJobStatementValid = (): boolean => {
   const planningStatus = localStorage.getItem(planningStateKey);
   if(planningStatus) {
-    const flattenedPlanningState = JSON.parse(planningStatus);
-    const unflattenPlanningStage = unflatten(flattenedPlanningState) as PlanningState;
+    const flattenedData = JSON.parse(planningStatus);
+    const unflattenPlanningStage = unflatten(flattenedData) as PlanningState;
     return unflattenPlanningStage.isJobStatementValid;
   } else {
     return planningStageStatus.isJobStatementValid;
@@ -118,15 +158,15 @@ export const getIsJobStatementValid = (): boolean => {
 
 export const setJobState = (key: keyof Job, newValue: string): void => {
   jobStatus[key] = newValue;
-  const flattenedJobState = flatten(jobStatus);
-  localStorage.setItem(jobKey, JSON.stringify(flattenedJobState));
+  const flattenedData = flatten(jobStatus);
+  localStorage.setItem(jobKey, JSON.stringify(flattenedData));
 }
 
-export const getJobState = (): any => {
+export const getJobState = (): Job => {
   const jobState = localStorage.getItem(jobKey);
   if(jobState) {
-    const flattenedJobState = JSON.parse(jobState);
-    return unflatten(flattenedJobState);
+    const flattenedData = JSON.parse(jobState);
+    return unflatten(flattenedData);
   } else {
     return jobStatus;
   }
@@ -134,16 +174,16 @@ export const getJobState = (): any => {
 
 export const setProgress = (key: keyof ProgressState, newValue: boolean): void => {
   progressStatus[key] = newValue;
-  const flattenedProgress = flatten(progressStatus);
-  localStorage.setItem(progressStateKey, JSON.stringify(flattenedProgress));
+  const flattenedData = flatten(progressStatus);
+  localStorage.setItem(progressStateKey, JSON.stringify(flattenedData));
 }
 
 export const getProgress = (key: keyof ProgressState): boolean => {
   const progress = localStorage.getItem(progressStateKey);
   if(progress) {
-    const flattenedProgress = JSON.parse(progress);
-    const unflattenedProgress = unflatten(flattenedProgress) as ProgressState;
-    return unflattenedProgress[key];
+    const flattenedData = JSON.parse(progress);
+    const unFlattenedData = unflatten(flattenedData) as ProgressState;
+    return unFlattenedData[key];
   } else {
     return progressStatus[key];
   }
@@ -152,8 +192,8 @@ export const getProgress = (key: keyof ProgressState): boolean => {
 export const getCompleteProgress = () : ProgressState => {
   const progress = localStorage.getItem(progressStateKey);
   if(progress) {
-    const flattenedProgress =  JSON.parse(progress);
-    return unflatten(flattenedProgress);
+    const flattenedData =  JSON.parse(progress);
+    return unflatten(flattenedData);
   } else {
     return progressStatus;
   }
@@ -170,15 +210,15 @@ export const setActiveStage = (stageId: number, isSubStage: boolean, date: strin
     activeStatus.activeSubStepIndex = subStageId;
   }
   
-  const flattenedProgress = flatten(activeStatus);
-  localStorage.setItem(activeStateKey, JSON.stringify(flattenedProgress));
+  const flattenedData = flatten(activeStatus);
+  localStorage.setItem(activeStateKey, JSON.stringify(flattenedData));
 }
 
 export const getActiveStage = () : ActiveState => {
   const activeStage = localStorage.getItem(activeStateKey);
   if(activeStage) {
-    const flattenedStage = JSON.parse(activeStage);
-    return unflatten(flattenedStage);
+    const flattenedData = JSON.parse(activeStage);
+    return unflatten(flattenedData);
   } else {
     return activeStatus;
   }

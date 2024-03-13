@@ -10,6 +10,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
+import { setInstallationTypeStatus, getInstallationTypeStatus } from '../progress/StageProgressStatus'; 
 
 interface InstallationState {
   installationArgs: {
@@ -75,24 +76,33 @@ export const installationSlice = createSlice({
     },
     setInstallationType: (state, action: PayloadAction<string>) => {
       state.installationArgs.installationType = action.payload;
+      setInstallationTypeStatus('installationType', action.payload)
+    },
+    setUserUploadedPaxPath: (state, action: PayloadAction<string>) => {
+      state.installationArgs.userUploadedPaxPath = action.payload;
+      setInstallationTypeStatus('userUploadedPaxPath', action.payload)
     },
     setSmpeDir: (state, action: PayloadAction<string>) => {
       state.installationArgs.smpeDir = action.payload;
+      setInstallationTypeStatus('smpeDir', action.payload)
     },
     setLicenseAgreement: (state, action: PayloadAction<boolean>) => {
       state.licenseAgreement = action.payload;
+      setInstallationTypeStatus('licenseAgreement', action.payload)
     },
     setSmpeDirValid: (state, action: PayloadAction<boolean>) => {
       state.smpeDirValid = action.payload;
+      setInstallationTypeStatus('smpeDirValid', action.payload)
     },
   }
 });
 
-export const { setInstallationArgs, setZoweVersion, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid} = installationSlice.actions;
+export const { setInstallationArgs, setZoweVersion, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid, setUserUploadedPaxPath} = installationSlice.actions;
 
 export const selectInstallationArgs = (state: RootState) => state.installation.installationArgs;
 export const selectZoweVersion = (state: RootState) => state.installation.zoweVersion;
 export const selectInstallationType = (state: RootState) => state.installation.installationArgs.installationType;
+export const selectUserUploadedPaxPath = (state: RootState) => state.installation.installationArgs.userUploadedPaxPath;
 export const selectSmpeDir = (state: RootState) => state.installation.installationArgs.smpeDir;
 export const selectLicenseAgreement = (state: RootState) => state.installation.licenseAgreement;
 export const selectSmpeDirValid = (state: RootState) => state.installation.smpeDirValid;
