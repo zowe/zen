@@ -25,7 +25,7 @@ function PatternPropertiesForm(props: any){
   useEffect(() => {
     if(yaml){
       const keys = Object.keys(props.schema.properties);
-      
+
       //note on this nested for loop: it will only run on keys that have "patternProperties" as a child so it shouldnt be expensive
       let newElements = [];
       const LOOP_LIMIT = 1024;
@@ -77,7 +77,6 @@ function PatternPropertiesForm(props: any){
                                   const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
                                   setLYaml(newYaml);
                                   await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
-                                  console.log(`\n\nsetting ${keys[i]}.${toMatch[k]}.${matchedProps[l]}" `, e.target.value);
                                   dispatch(setYaml(newYaml));
                                 }}
                               />)
@@ -701,7 +700,7 @@ const Networking = () => {
               let domains = [...yaml.zowe?.externalDomains];
               domains[index] = e.target.value;
               const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
-              console.log(domains);
+              // console.log(domains);
               window.electron.ipcRenderer.setConfig(newYaml )
               dispatch(setYaml(newYaml))
               setLYaml(newYaml);
