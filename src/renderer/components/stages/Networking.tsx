@@ -19,7 +19,6 @@ import { createTheme } from '@mui/material/styles';
 
 function PatternPropertiesForm(props: any){
   const [elements, setElements] = useState([]);
-  const [yaml, setLYaml] = useState(props.yaml);
   const dispatch = useAppDispatch();
   
   useEffect(() => {
@@ -31,12 +30,12 @@ function PatternPropertiesForm(props: any){
     const LOOP_LIMIT = 1024;
     for (let i = 0; i < keys.length && i < LOOP_LIMIT; i++) { //i = go through each property of the yaml
       if (props.schema.properties[keys[i]].patternProperties != undefined) { //only for rendering patternProperties
-        if(typeof yaml[keys[i]] === "object" && Object.keys(yaml[keys[i]]).length > 0) {
+        if(typeof props.yaml[keys[i]] === "object" && Object.keys(props.yaml[keys[i]]).length > 0) {
           newElements.push(<p style={{fontSize: "24px"}}>{keys[i]}</p>);
           const patterns = Object.keys(props.schema.properties[keys[i]].patternProperties); //get all user defined regex patterns
           for(let j = 0; j <  patterns.length && j < LOOP_LIMIT; j++){ //j = go through each pattern
             const pattern = new RegExp(patterns[j]);
-            const yamlValue = yaml[keys[i]];
+            const yamlValue = props.yaml[keys[i]];
             if(yamlValue){
               const toMatch = Object.keys(yamlValue);
               for(let k = 0; k < toMatch.length && k < LOOP_LIMIT; k++){
@@ -57,12 +56,12 @@ function PatternPropertiesForm(props: any){
                           newElements.push(<FormControlLabel
                             label={matchedProps[l]}
                             key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
-                            control={<Checkbox checked={yaml[keys[i]][toMatch[k]][matchedProps[l]]} onChange={async (e) => {
+                            control={<Checkbox checked={props.yaml[keys[i]][toMatch[k]][matchedProps[l]]} onChange={async (e) => {
                               // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
-                              const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}};
-                              setLYaml(newYaml);
+                              const newYaml = {...props.yaml, [keys[i]]: {...props.yaml[keys[i]], [toMatch[k]]: {...props.yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !props.yaml[keys[i]][toMatch[k]][matchedProps[l]]}}};
+                              // setLYaml(newYaml);
                               props.setYaml(newYaml);
-                              await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, !yaml[keys[i]][toMatch[k]][matchedProps[l]])
+                              await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, !props.yaml[keys[i]][toMatch[k]][matchedProps[l]])
                               // dispatch(setYaml(newYaml));
                             }}/>}
                           />)
@@ -72,11 +71,11 @@ function PatternPropertiesForm(props: any){
                             newElements.push(<TextField
                               label={matchedProps[l]}
                               variant="standard"
-                              value={yamlValue[toMatch[k]][matchedProps[l]]}
+                              value={props.yaml[keys[i]][toMatch[k]][matchedProps[l]]}
                               onChange={async (e) => {
-                                const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
-                                setLYaml(newYaml);
-                                // props.setYaml(newYaml);
+                                const newYaml = {...props.yaml, [keys[i]]: {...props.yaml[keys[i]], [toMatch[k]]: {...props.yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
+                                // setLYaml(newYaml);
+                                props.setYaml(newYaml);
                                 await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
                                 // dispatch(setYaml(newYaml));
                               }}
@@ -95,7 +94,7 @@ function PatternPropertiesForm(props: any){
       }
     }
     setElements(newElements);
-  }, [yaml, props.yaml])
+  }, [props.yaml])
 
   return <>
     {elements}
@@ -615,27 +614,6 @@ const Networking = () => {
     }
   }
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const createModdedYaml = (yaml: any) => {
-    if(yaml.zowe){
-      let yamlCopy = JSON.parse(JSON.stringify(yaml.zowe));
-      delete yamlCopy.setup;
-      delete yamlCopy.rbacProfileIdentifier;
-      delete yamlCopy.cookieIdentifier;
-      delete yamlCopy.job;
-      delete yamlCopy.certificate;
-      delete yamlCopy.sysMessages;
-      delete yamlCopy.verifyCertificates;
-      delete yamlCopy.useConfigmgr;
-      delete yamlCopy.runtimeDirectory;
-      delete yamlCopy.logDirectory;
-      delete yamlCopy.extensionDirectory;
-      delete yamlCopy.workspaceDirectory;
-      delete yamlCopy.launchScript;
-      return {...yaml, zowe: yamlCopy};
-    }
-    return yaml;
-  }
-  const [moddedYaml, setModdedYaml] = useState(createModdedYaml(yaml));
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
