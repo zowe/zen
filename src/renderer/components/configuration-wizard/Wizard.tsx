@@ -21,8 +21,6 @@ import InstallationType from '../stages/installation/InstallTypeSelection';
 import { selectLoading } from './wizardSlice';
 import { useAppSelector } from '../../hooks';
 import InitApfAuth from '../stages/InitApfAuth';
-import { initializeProgress } from '../stages/progress/StageProgressStatus';
-import { selectConnectionArgs } from '../stages/connection/connectionSlice';
 
 export const stages = [
   {id: 0, label: 'Connection', component: <Connection/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1, nextButton: 'Continue'},
@@ -38,9 +36,6 @@ export const stages = [
 ]
 
 const Wizard = ({initialization}: {initialization: boolean}) => {
-  const connectionArgs = useAppSelector(selectConnectionArgs);
-  console.log('FROM WIZARD: ', connectionArgs.host, connectionArgs.user);
-  initializeProgress(connectionArgs.host, connectionArgs.user);
   return (
       <div className="wizard-container" >
         {useAppSelector(selectLoading) ? <Overlay/> : null}

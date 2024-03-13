@@ -38,6 +38,7 @@ import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from 
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { getStageDetails } from "../../../../utils/StageDetails";
+import { initializeProgress } from "../progress/StageProgressStatus";
 
 const Connection = () => {
 
@@ -153,6 +154,7 @@ const FTPConnectionForm = () => {
         dispatch(setConnectionStatus(res.status));
         if(res.status) {
           dispatch(setNextStepEnabled(true));
+          initializeProgress(connectionArgs.host, connectionArgs.user);
         }
         toggleFormProcessed(true);
         setValidationDetails(res.details);

@@ -31,35 +31,33 @@ const activeState: ActiveStep = {
   activeSubStepIndex: 0,
 };
 
-export const getStageDetails = (stageLabel: string) => {
-  const stage = stages.find(stage => stage.label === stageLabel);
-  return stage;
-}
+let progressStateKey = 'stage_progress';
+let activeStateKey = 'active_state';
 
-export const getSubStageDetails = (stageId: number, subStageLabel: string) => {
- const stage = stages[stageId];
- if (stage && stage.subStages) {
-  return stage.subStages.find(subStage => subStage.label === subStageLabel);
- }
- return null;
+const setKeys = (id: string) => {
+  progressStateKey = `stage_progress_${id}`;
+  activeStateKey = `active_state_${id}`;
 }
 
 export const initializeProgress = (host: string, user: string) => {
-  const progress = localStorage.getItem('stage-progress');
+  const id = `${host}_${user}`;
+  setKeys(id);
+  console.log('ABOUT TO USE KEY: ', progressStateKey);
+  const progress = localStorage.getItem(progressStateKey);
   if(!progress) {
     const flattenedProgress = flatten(progressStatus);
-    localStorage.setItem('stage-progress', JSON.stringify(flattenedProgress));
+    localStorage.setItem(progressStateKey, JSON.stringify(flattenedProgress));
   } 
 }
 
 export const setProgress = (key: keyof ProgressState, newValue: boolean): void => {
   progressStatus[key] = newValue;
   const flattenedProgress = flatten(progressStatus);
-  localStorage.setItem('stage-progress', JSON.stringify(flattenedProgress));
+  localStorage.setItem(progressStateKey, JSON.stringify(flattenedProgress));
 }
 
 export const getProgress = (key: keyof ProgressState): boolean => {
-  const progress = localStorage.getItem('stage-progress');
+  const progress = localStorage.getItem(progressStateKey);
   if(progress) {
     const flattenedProgress = JSON.parse(progress);
     const unflattenedProgress = unflatten(flattenedProgress) as ProgressState;
@@ -71,7 +69,7 @@ export const getProgress = (key: keyof ProgressState): boolean => {
 
 export const getCompleteProgress = () : ProgressState => {
   let flattenedProgress;
-  const progress = localStorage.getItem('stage-progress');
+  const progress = localStorage.getItem(progressStateKey);
   if(progress) {
     flattenedProgress = progress ? JSON.parse(progress) : {};
     return unflatten(flattenedProgress);
@@ -92,12 +90,12 @@ export const setActiveStage = (stageId: number, isSubStage: boolean, date: strin
   }
   
   const flattenedProgress = flatten(activeState);
-  localStorage.setItem('active-stage', JSON.stringify(flattenedProgress));
+  localStorage.setItem(activeStateKey, JSON.stringify(flattenedProgress));
 }
 
 export const getActiveStage = () : ActiveStep => {
   let flattenedStage;
-  const activeStage = localStorage.getItem('active-stage');
+  const activeStage = localStorage.getItem(activeStateKey);
   if(activeStage) {
     flattenedStage = activeStage ? JSON.parse(activeStage) : {};
     return unflatten(flattenedStage);
