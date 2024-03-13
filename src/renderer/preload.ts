@@ -28,11 +28,17 @@ contextBridge.exposeInMainWorld('electron', {
     getConfig() {
       return ipcRenderer.invoke("get-config");
     },
+    getConfigByKey(key: string, value: any) {
+      return ipcRenderer.invoke("get-config-by-key", key);
+    },
     setConfig(completeZoweYamlObj: any) {
       return ipcRenderer.invoke("set-config", completeZoweYamlObj);
     },
     setConfigByKey(key: string, value: any) {
       return ipcRenderer.invoke("set-config-by-key", key, value);
+    },
+    setSchema(schema: any) {
+      return ipcRenderer.invoke("set-schema", schema);
     },
     checkZoweCLI() {
       return ipcRenderer.invoke("check-zowe-cli");

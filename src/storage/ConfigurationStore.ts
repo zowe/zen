@@ -18,12 +18,19 @@ export class ConfigurationStore {
   private static validateWithSchema(key: string): boolean {
     const keys = key.split('.');
     const schema = store.get('schema') as any;
-    let schemaPart: any = schema?.properties;
-    for (const key of keys) {
-        if (!Object.prototype.hasOwnProperty.call(schemaPart, key)) {
+    if(schema && schema.properties){
+      let schemaPart: any = schema?.properties || undefined;
+      for (const key of keys) {
+        if (schemaPart != undefined && !Object.prototype.hasOwnProperty.call(schemaPart, key)) {
             return false;
         }
-        schemaPart = schemaPart[key].properties;        
+        if(schemaPart[key].properties){
+          schemaPart = schemaPart[key]?.properties || undefined;
+        } else {
+          return true;
+        }
+      }
+      return true;
     }
     return true;
   }
