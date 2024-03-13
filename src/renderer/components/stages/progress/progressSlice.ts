@@ -12,7 +12,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
 import { setProgress } from './StageProgressStatus';
 
-export interface progressState {
+export interface ProgressState {
   connectionStatus: boolean;
   planningStatus: boolean;
   installationTypeStatus: boolean;
@@ -24,7 +24,7 @@ export interface progressState {
   reviewStatus: boolean;
 }
 
-const initialState: progressState = {
+const initialState: ProgressState = {
   connectionStatus: false,
   planningStatus: false,
   installationTypeStatus: false,

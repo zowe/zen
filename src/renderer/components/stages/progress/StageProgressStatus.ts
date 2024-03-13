@@ -9,11 +9,11 @@
  */
 
 import { flatten, unflatten } from 'flat';
-import { progressState } from "./progressSlice"; 
+import { ProgressState } from "./progressSlice"; 
 import { activeStep } from './activeStepSlice'
 import { stages } from '../../configuration-wizard/Wizard';
 
-const progressStatus: progressState = {
+const progressStatus: ProgressState = {
   connectionStatus: false,
   planningStatus: false,
   installationTypeStatus: false,
@@ -52,24 +52,24 @@ export const initProgress = () => {
   } 
 }
 
-export const setProgress = (key: keyof progressState, newValue: boolean): void => {
+export const setProgress = (key: keyof ProgressState, newValue: boolean): void => {
   progressStatus[key] = newValue;
   const flattenedProgress = flatten(progressStatus);
   localStorage.setItem('stage-progress', JSON.stringify(flattenedProgress));
 }
 
-export const getProgress = (key: keyof progressState): boolean => {
+export const getProgress = (key: keyof ProgressState): boolean => {
   const progress = localStorage.getItem('stage-progress');
   if(progress) {
     const flattenedProgress = JSON.parse(progress);
-    const unflattenedProgress = unflatten(flattenedProgress) as progressState;
+    const unflattenedProgress = unflatten(flattenedProgress) as ProgressState;
     return unflattenedProgress[key];
   } else {
     return progressStatus[key];
   }
 }
 
-export const getCompleteProgress = () : progressState => {
+export const getCompleteProgress = () : ProgressState => {
   let flattenedProgress;
   const progress = localStorage.getItem('stage-progress');
   if(progress) {
