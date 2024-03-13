@@ -14,7 +14,6 @@ import { materialRenderers, materialCells } from '@jsonforms/material-renderers'
 import { ThemeProvider } from '@mui/material/styles';
 import jsonFormTheme from '../../jsonFormsTheme';
 
-// This function dynamically creates UI elements based on the structure and conditions defined in the JSON schema.
 const makeUISchema = (schema: any, base: string, formData: any): any => {
   if (!schema || !formData) {
     return "";
