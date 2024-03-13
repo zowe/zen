@@ -30,6 +30,7 @@ import { Checkbox, FormControlLabel } from "@mui/material";
 import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
 import { getStageDetails } from "../../../utils/StageDetails";
+import { getIsJobStatementValid, getJobState } from "./progress/StageProgressStatus";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -1333,7 +1334,8 @@ const Planning = () => {
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const [localYaml, setLocalYaml] = useState(useAppSelector(selectYaml));
 
-  const jobStatementValid = useAppSelector(selectJobStatementValid);
+  // const jobStatementValid = useAppSelector(selectJobStatementValid);
+  const [jobStatementValid, setJobStatementValidation] = useState(getIsJobStatementValid());
   const jobStatementValidMsg = useAppSelector(selectJobStatementValidMsg);
 
   const locationValidationDetails = useAppSelector(selectLocValidationDetails);
@@ -1344,7 +1346,8 @@ const Planning = () => {
 
   const [jobHeaderSaved, setJobHeaderSaved] = useState(false);
   const [isJobStatementUpdated, setIsJobStatementUpdated] = useState(false);
-  const [jobStatementValue, setJobStatementValue] = useState(useAppSelector(selectJobStatement));
+  // const [jobStatementValue, setJobStatementValue] = useState(useAppSelector(selectJobStatement));
+  const [jobStatementValue, setJobStatementValue] = useState(getJobState().jobStatement);
   
   const [locationsValidated, setLocationsValidated] = useState(false);
   const [isLocationsUpdated, setIsLocationsUpdated] = useState(false);
@@ -1368,6 +1371,9 @@ const Planning = () => {
   };
 
   useEffect(() => {
+    if(jobStatementValid && !isJobStatementUpdated) {
+      saveJobHeader(null);
+    }
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     }
@@ -1595,8 +1601,10 @@ const Planning = () => {
     setJobStatementValue(newJobStatement);
     setJobHeaderSaved(false);
     setPlanningStatus(false);
+    setJobStatementValidation(false);
     dispatch(setJobStatement(newJobStatement));
-    dispatch(setPlanningStatus(false))
+    dispatch(setJobStatementValid(false));
+    dispatch(setPlanningStatus(false));
     setStep(0);
   }
 

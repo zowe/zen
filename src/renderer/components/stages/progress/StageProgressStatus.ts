@@ -17,6 +17,10 @@ export interface PlanningState {
   isLocationValid: boolean;
 }
 
+export interface Job {
+  jobStatement: string;
+}
+
 const progressStatus: ProgressState = {
   connectionStatus: false,
   planningStatus: false,
@@ -35,23 +39,97 @@ const activeStatus: ActiveState = {
   activeSubStepIndex: 0,
 };
 
+const planningStageStatus: PlanningState = {
+  isJobStatementValid: false,
+  isLocationValid: false
+}
+
+const jobStatus: Job = {
+  jobStatement: ''
+}
+
 let progressStateKey = 'stage_progress';
 let activeStateKey = 'active_state';
+let planningStateKey = 'planning_stage';
+let jobKey = 'job';
 
 const setKeys = (id: string) => {
-  progressStateKey = `stage_progress_${id}`;
-  activeStateKey = `active_state_${id}`;
+  progressStateKey = `${progressStateKey}_${id}`;
+  activeStateKey = `${activeStateKey}_${id}`;
+  planningStateKey = `${planningStateKey}_${id}`;
+  jobKey = `${jobKey}_${id}`;
 }
 
 export const initializeProgress = (host: string, user: string) => {
   const id = `${host}_${user}`;
   setKeys(id);
-  console.log('ABOUT TO USE KEY: ', progressStateKey);
+
   const progress = localStorage.getItem(progressStateKey);
   if(!progress) {
     const flattenedProgress = flatten(progressStatus);
     localStorage.setItem(progressStateKey, JSON.stringify(flattenedProgress));
-  } 
+  }
+
+  const activeStage = localStorage.getItem(activeStateKey);
+  if(!activeStage) {
+    const flattenedActiveStage = flatten(activeStatus);
+    localStorage.setItem(activeStateKey, JSON.stringify(flattenedActiveStage));
+  }
+
+  const planningState = localStorage.getItem(planningStateKey);
+  if(!planningState) {
+    const flattenedPlanningState = flatten(planningStageStatus);
+    localStorage.setItem(planningStateKey, JSON.stringify(flattenedPlanningState));
+  }
+
+  const jobState = localStorage.getItem(jobKey);
+  if(!jobState) {
+    const flattenedJobState = flatten(jobStatus);
+    localStorage.setItem(jobKey, JSON.stringify(flattenedJobState));
+  }
+}
+
+export const setPlanningStageStatus = (key: keyof PlanningState, newValue: boolean): void => {
+  planningStageStatus[key] = newValue;
+  const flattenedPlanningState = flatten(planningStageStatus);
+  localStorage.setItem(planningStateKey, JSON.stringify(flattenedPlanningState));
+}
+
+export const getPlanningStageStatus = (): any => {
+  const planningStatus = localStorage.getItem(planningStateKey);
+  if(planningStatus) {
+    const flattenedPlanningState = JSON.parse(planningStatus);
+    return unflatten(flattenedPlanningState)
+  } else {
+    return planningStageStatus;
+  }
+}
+
+export const getIsJobStatementValid = (): boolean => {
+  const planningStatus = localStorage.getItem(planningStateKey);
+  if(planningStatus) {
+    const flattenedPlanningState = JSON.parse(planningStatus);
+    const unflattenPlanningStage = unflatten(flattenedPlanningState) as PlanningState;
+    return unflattenPlanningStage.isJobStatementValid;
+  } else {
+    return planningStageStatus.isJobStatementValid;
+  }
+}
+
+export const setJobState = (key: keyof Job, newValue: string): void => {
+  jobStatus[key] = newValue;
+  const flattenedJobState = flatten(jobStatus);
+  localStorage.setItem(jobKey, JSON.stringify(flattenedJobState));
+}
+
+export const getJobState = (): any => {
+  const jobState = localStorage.getItem(jobKey);
+  if(jobState) {
+    const flattenedJobState = JSON.parse(jobState);
+    return unflatten(flattenedJobState);
+  } else {
+    return jobStatus;
+  }
 }
 
 export const setProgress = (key: keyof ProgressState, newValue: boolean): void => {
@@ -72,10 +150,9 @@ export const getProgress = (key: keyof ProgressState): boolean => {
 }
 
 export const getCompleteProgress = () : ProgressState => {
-  let flattenedProgress;
   const progress = localStorage.getItem(progressStateKey);
   if(progress) {
-    flattenedProgress = progress ? JSON.parse(progress) : {};
+    const flattenedProgress =  JSON.parse(progress);
     return unflatten(flattenedProgress);
   } else {
     return progressStatus;
@@ -98,10 +175,9 @@ export const setActiveStage = (stageId: number, isSubStage: boolean, date: strin
 }
 
 export const getActiveStage = () : ActiveState => {
-  let flattenedStage;
   const activeStage = localStorage.getItem(activeStateKey);
   if(activeStage) {
-    flattenedStage = activeStage ? JSON.parse(activeStage) : {};
+    const flattenedStage = JSON.parse(activeStage);
     return unflatten(flattenedStage);
   } else {
     return activeStatus;

@@ -10,6 +10,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
+import { setPlanningStageStatus, getPlanningStageStatus, setJobState, getJobState } from './progress/StageProgressStatus';
 
 export interface jobValidation {
   jobStatement: string;
@@ -23,13 +24,13 @@ export interface locationValidation {
 }
 
 const initialState: jobValidation = {
-  jobStatement: '',
-  isJobStatementValid: false,
+  jobStatement: getJobState()?.jobStatement || '',
+  isJobStatementValid: getPlanningStageStatus()?.isJobStatementValid || false,
   jobStatementValidMsg: ''
 }
 
 const locValidationInitialState: locationValidation = {
-  isLocationValid: false,
+  isLocationValid: getPlanningStageStatus()?.isLocationValid || false,
   locValidationDetails: {}
 }
 
@@ -39,9 +40,11 @@ export const planningSlice = createSlice({
   reducers: {
     setJobStatement: (state, action: PayloadAction<string>) => {
         state.jobStatement = action.payload;
+        setJobState('jobStatement', action.payload);
     },
     setJobStatementValid: (state, action: PayloadAction<boolean>) => {
         state.isJobStatementValid = action.payload;
+        setPlanningStageStatus('isJobStatementValid', action.payload);
     },
     setJobStatementValidMsg: (state, action: PayloadAction<string>) => {
         state.jobStatementValidMsg = action.payload;
@@ -55,6 +58,7 @@ export const locationValidationSlice = createSlice({
   reducers: {
     setIsLocationValid: (state, action: PayloadAction<boolean>) => {
       state.isLocationValid = action.payload;
+      setPlanningStageStatus('isLocationValid', action.payload);
     },
     setLocationValidationDetails: (state, action: PayloadAction<any>) => {
       state.locValidationDetails = action.payload;
