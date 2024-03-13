@@ -44,7 +44,7 @@ export const getSubStageDetails = (stageId: number, subStageLabel: string) => {
  return null;
 }
 
-export const initializeProgress = () => {
+export const initializeProgress = (host: string, user: string) => {
   const progress = localStorage.getItem('stage-progress');
   if(!progress) {
     const flattenedProgress = flatten(progressStatus);
