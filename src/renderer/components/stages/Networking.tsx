@@ -746,7 +746,7 @@ const Networking = () => {
               const newYaml = {...yaml, zowe: {...yaml.zowe, externalPort: Number(e.target.value)}};
               window.electron.ipcRenderer.setConfig(newYaml)
               dispatch(setYaml(newYaml))
-              // setLYaml(newYaml);
+              setLYaml(newYaml);
               // // props.setYaml(newYaml);
               // await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
               // // dispatch(setYaml(newYaml));
