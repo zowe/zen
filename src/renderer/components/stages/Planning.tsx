@@ -30,7 +30,7 @@ import { Checkbox, FormControlLabel } from "@mui/material";
 import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
 import { getStageDetails } from "../../../utils/StageDetails";
-import { getIsJobStatementValid, getJobState } from "./progress/StageProgressStatus";
+import { getPlanningStageStatus } from "./progress/StageProgressStatus";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -1245,7 +1245,7 @@ const Planning = () => {
   const [localYaml, setLocalYaml] = useState(useAppSelector(selectYaml));
 
   // const jobStatementValid = useAppSelector(selectJobStatementValid);
-  const [jobStatementValid, setJobStatementValidation] = useState(getIsJobStatementValid());
+  const [jobStatementValid, setJobStatementValidation] = useState(getPlanningStageStatus()?.isJobStatementValid);
   const jobStatementValidMsg = useAppSelector(selectJobStatementValidMsg);
 
   const locationValidationDetails = useAppSelector(selectLocValidationDetails);
@@ -1257,7 +1257,7 @@ const Planning = () => {
   const [jobHeaderSaved, setJobHeaderSaved] = useState(false);
   const [isJobStatementUpdated, setIsJobStatementUpdated] = useState(false);
   // const [jobStatementValue, setJobStatementValue] = useState(useAppSelector(selectJobStatement));
-  const [jobStatementValue, setJobStatementValue] = useState(getJobState().jobStatement);
+  const [jobStatementValue, setJobStatementValue] = useState(getPlanningStageStatus()?.jobStatement);
   
   const [locationsValidated, setLocationsValidated] = useState(false);
   const [isLocationsUpdated, setIsLocationsUpdated] = useState(false);
@@ -1290,7 +1290,8 @@ const Planning = () => {
   })
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    // dispatch(setNextStepEnabled(false));
+    dispatch(setNextStepEnabled(true));
     // FIXME: Add a popup warning in case failed to get config files
     // FIXME: Save yaml and schema on disk to not to pull it each time?
     // REVIEW: Replace JobStatement text area with set of text fields?
@@ -1338,8 +1339,8 @@ const Planning = () => {
   }, []); 
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
-    // dispatch(setNextStepEnabled(true));
+    // dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
+    dispatch(setNextStepEnabled(true));
   }, [jobHeaderSaved, locationsValidated]);
 
   useEffect(() => {
