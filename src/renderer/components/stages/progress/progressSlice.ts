@@ -57,7 +57,6 @@ export const progressSlice = createSlice({
   reducers: {
     setConnectionStatus: (state, action: PayloadAction<boolean>) => {
       state.connectionStatus = action.payload;
-      setProgress('connectionStatus', action.payload);
     },
     setPlanningStatus: (state, action: PayloadAction<boolean>) => {
       state.planningStatus = action.payload;
