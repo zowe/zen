@@ -279,8 +279,11 @@ var YAML_SCHEMA: any = {
                   "description": "Holds Zowe PARMLIB members for plugins",
                   "properties": {
                     "zis": {
-                      "$ref": "/schemas/v2/server-common#zoweDatasetMember",
-                      "description": "PARMLIB member used by ZIS"
+                      "description": "PARMLIB member used by ZIS",
+                      "type": "string",
+                      "pattern": "^([A-Z$#@]){1}([A-Z0-9$#@]){0,7}$",
+                      "minLength": 1,
+                      "maxLength": 8
                     }
                   }
                 },
@@ -431,8 +434,11 @@ var YAML_SCHEMA: any = {
                   "description": "PKCS#12 keystore settings",
                   "properties": {
                     "directory": {
-                      "$ref": "/schemas/v2/server-common#zowePath",
-                      "description": "Keystore directory"
+                      "description": "Keystore directory",
+                      "type": "string",
+                      "pattern": "^([^\\0]){1,1024}$",
+                      "minLength": 1,
+                      "maxLength": 1024
                     },
                     "name": {
                       "type": "string",
@@ -1171,7 +1177,8 @@ var YAML_SCHEMA: any = {
               "type": "array",
               "description": "The IP addresses which all of the Zowe servers will be binding on and listening to. Some servers may only support listening on the first element.",
               "items": {
-                "$ref": "/schemas/v2/server-common#zoweIpv4"
+                "type": "string",
+                "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
               }
             },
             "vipaIp": {
@@ -1222,102 +1229,7 @@ var YAML_SCHEMA: any = {
   }
 }
 
-const serverSchema = {
-  "$schema": "https://json-schema.org/draft/2019-09/schema",
-  "$id": "https://zowe.org/schemas/v2/server-common",
-  "title": "Common types",
-  "description": "Configuration types that are common in Zowe and may be referenced by multiple components",
-  "$defs": {
-    "semverVersion": {
-      "$anchor": "zoweSemverVersion",
-      "type": "string",
-      "description": "A semantic version, see https://semver.org/",
-      "pattern": "^[0-9]*\\.[0-9]*\\.[0-9]*(-*[a-zA-Z][0-9a-zA-Z\\-\\.]*)?(\\+[0-9a-zA-Z\\-\\.]*)?$"
-    },
-    "semverRange": {
-      "$anchor": "zoweSemverRange",
-      "type": "string",
-      "description": "A semantic version, see https://semver.org/",
-      "pattern": "^(([\\^\\~\\>\\<]?)|(>=?)|(<=?))[0-9]*\\.[0-9]*\\.[0-9]*(-*[a-zA-Z][0-9a-zA-Z\\-\\.]*)?(\\+[0-9a-zA-Z\\-\\.]*)?$"
-    },
-    "dataset": {
-      "$anchor": "zoweDataset",
-      "type": "string",
-      "description": "A 44-char all caps dotted ZOS name",
-      "pattern": "^([A-Z\\$\\#\\@]){1}([A-Z0-9\\$\\#\\@\\-]){0,7}(\\.([A-Z\\$\\#\\@]){1}([A-Z0-9\\$\\#\\@\\-]){0,7}){0,11}$",
-      "minLength": 3,
-      "maxLength": 44
-    },
-    "datasetMember": {
-      "$anchor": "zoweDatasetMember",
-      "type": "string",
-      "description": "A 1-8-char all caps dataset member name",
-      "pattern": "^([A-Z$#@]){1}([A-Z0-9$#@]){0,7}$",
-      "minLength": 1,
-      "maxLength": 8
-    },
-    "jobname": {
-      "$anchor": "zoweJobname",
-      "type": "string",
-      "pattern": "^([A-Z\\$\\#\\@]){1}([A-Z0-9\\$\\#\\@]){0,7}$",
-      "minLength": 3,
-      "maxLength": 8
-    },
-    "user": {
-      "$anchor": "zoweUser",
-      "type": "string",
-      "pattern": "^([A-Z0-9$#@]){1,8}$",
-      "minLength": 1,
-      "maxLength": 8
-    },
-    "token": {
-      "$anchor": "zoweToken",
-      "type": "string",
-      "pattern": "^([A-Z0-9$#@.]){1,32}$",
-      "minLength": 1,
-      "maxLength": 32
-    },
-    "path": {
-      "$anchor": "zowePath",
-      "type": "string",
-      "pattern": "^([^\\0]){1,1024}$",
-      "minLength": 1,
-      "maxLength": 1024
-    },
-    "file": {
-      "$anchor": "zoweFile",
-      "type": "string",
-      "pattern": "^([^\\\\0]){1,256}$",
-      "minLength": 1,
-      "maxLength": 256
-    },
-    "reverseDomainNotation": {
-      "$anchor": "zoweReverseDomainNotation",
-      "type": "string",
-      "pattern": "^[A-Za-z]{2,6}(\\.[A-Za-z0-9-]{1,62}[A-Za-z0-9])+$"
-    },
-    "ipv4": {
-      "$anchor": "zoweIpv4",
-      "type": "string",
-      "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-    },
-    "tcpPort": {
-      "$anchor": "zoweTcpPort",
-      "type": "integer",
-      "description": "TCP network port",
-      "minimum": 1024,
-      "maximum": 65535
-    },
-    "reservedTcpPort": {
-      "$anchor": "zoweReservedTcpPort",
-      "type": "integer",
-      "description": "Reserved TCP network ports. Can be used but discouraged due to their standardized use by common programs",
-      "deprecated": true,
-      "minimum": 1,
-      "maximum": 1023
-    }
-  }
-}
+
 
 const Planning = () => {
 
@@ -1389,14 +1301,15 @@ const Planning = () => {
         dispatch(setYaml(res.details.config));
         setLocalYaml(res.details.config);
         const schema = res.details.schema;
+        // Leaving this as a comment because the note about setting $ref properly is still valid i think
         // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
-        schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
-        schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
-        schema.$id = serverSchema.$id;
-        if(schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
-          delete schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
-          schema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverSchema.$defs.ipv4
-        }
+        // schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
+        // schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
+        // schema.$id = serverSchema.$id;
+        // if(schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
+        //   delete schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
+        //   schema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverSchema.$defs.ipv4
+        // }
         dispatch(setSchema(schema));
         let installationDir = '';
         if (res.details.config?.zowe?.runtimeDirectory && res.details.config?.zowe?.workspaceDirectory) {
@@ -1409,13 +1322,6 @@ const Planning = () => {
       } else {
         dispatch(setYaml(EXAMPLE_YAML));
         setLocalYaml((EXAMPLE_YAML));
-        YAML_SCHEMA.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
-        YAML_SCHEMA.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
-        YAML_SCHEMA.$id = serverSchema.$id;
-        if(YAML_SCHEMA.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
-          delete YAML_SCHEMA.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
-          YAML_SCHEMA.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverSchema.$defs.ipv4
-        }
         dispatch(setSchema(YAML_SCHEMA));
         window.electron.ipcRenderer.setSchema(YAML_SCHEMA).then((res: IResponse) => {
           // schema response
