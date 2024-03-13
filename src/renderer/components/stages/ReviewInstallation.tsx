@@ -33,7 +33,7 @@ const ReviewInstallation = () => {
 
   const dispatch = useAppDispatch();
 
-  const stageLabel = 'ReviewInstallation';
+  const stageLabel = 'Review Installation';
 
   const STAGE_ID = getStageDetails(stageLabel).id;
   const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
