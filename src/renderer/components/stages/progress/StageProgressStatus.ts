@@ -10,7 +10,7 @@
 
 import { flatten, unflatten } from 'flat';
 import { ProgressState } from "./progressSlice"; 
-import { activeStep } from './activeStepSlice'
+import { ActiveStep } from './activeStepSlice'
 import { stages } from '../../configuration-wizard/Wizard';
 
 const progressStatus: ProgressState = {
@@ -25,7 +25,7 @@ const progressStatus: ProgressState = {
   reviewStatus: false,
 }
 
-const activeState: activeStep = {
+const activeState: ActiveStep = {
   activeStepIndex: 0,
   isSubStep: false,
   activeSubStepIndex: 0,
@@ -95,7 +95,7 @@ export const setActiveStage = (stageId: number, isSubStage: boolean, date: strin
   localStorage.setItem('active-stage', JSON.stringify(flattenedProgress));
 }
 
-export const getActiveStage = () : activeStep => {
+export const getActiveStage = () : ActiveStep => {
   let flattenedStage;
   const activeStage = localStorage.getItem('active-stage');
   if(activeStage) {
