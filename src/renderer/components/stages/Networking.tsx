@@ -19,72 +19,74 @@ import { createTheme } from '@mui/material/styles';
 
 function PatternPropertiesForm(props: any){
   const [elements, setElements] = useState([]);
+  const [yaml, setLYaml] = useState(props.yaml);
   const dispatch = useAppDispatch();
   
   useEffect(() => {
-    const keys = Object.keys(props.schema.properties);
-
-
-    //note on this nested for loop: it will only run on keys that have "patternProperties" as a child so it shouldnt be expensive
-    let newElements = [];
-    const LOOP_LIMIT = 1024;
-    for (let i = 0; i < keys.length && i < LOOP_LIMIT; i++) { //i = go through each property of the yaml
-      if (props.schema.properties[keys[i]].patternProperties != undefined) { //only for rendering patternProperties
-        if(typeof props.yaml[keys[i]] === "object" && Object.keys(props.yaml[keys[i]]).length > 0) {
-          newElements.push(<p style={{fontSize: "24px"}}>{keys[i]}</p>);
-          const patterns = Object.keys(props.schema.properties[keys[i]].patternProperties); //get all user defined regex patterns
-          for(let j = 0; j <  patterns.length && j < LOOP_LIMIT; j++){ //j = go through each pattern
-            const pattern = new RegExp(patterns[j]);
-            const yamlValue = props.yaml[keys[i]];
-            if(yamlValue){
-              const toMatch = Object.keys(yamlValue);
-              for(let k = 0; k < toMatch.length && k < LOOP_LIMIT; k++){
-                if(pattern.test(toMatch[k])){
-                  // console.log('matched pattern ' + pattern + ' to ' + toMatch[k] + ' for key' + keys[i]);
-                  const matchedProps = Object.keys(yamlValue[toMatch[k]]);
-                  if(matchedProps.length > 0) {
-                    newElements.push(<span><strong>{toMatch[k]}</strong></span>)
-                    newElements.push(<br />);
-                    // console.log('matchedProps:', matchedProps);
-                    for(let l = 0; l < matchedProps.length && l < LOOP_LIMIT; l++){
-                      // pattern = patterns[j] = current regex pattern from patternProperties
-                      // keys[i] = parent object that contains pattern properties (likely components or haInstances)
-                      // toMatch[k] = regex matched child of keys[i], likely a component name such as app-server, gateway, etc
-                      // matchedProps[l] = properties of toMatch[k]
-                      switch (typeof yamlValue[toMatch[k]][matchedProps[l]]){
-                        case 'boolean':
-                          newElements.push(<FormControlLabel
-                            label={matchedProps[l]}
-                            key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
-                            control={<Checkbox checked={props.yaml[keys[i]][toMatch[k]][matchedProps[l]]} onChange={async (e) => {
-                              // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
-                              const newYaml = {...props.yaml, [keys[i]]: {...props.yaml[keys[i]], [toMatch[k]]: {...props.yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !props.yaml[keys[i]][toMatch[k]][matchedProps[l]]}}};
-                              // setLYaml(newYaml);
-                              props.setYaml(newYaml);
-                              await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, !props.yaml[keys[i]][toMatch[k]][matchedProps[l]])
-                              // dispatch(setYaml(newYaml));
-                            }}/>}
-                          />)
-                          newElements.push(<br />);
-                          break;
-                        case 'number':
-                            newElements.push(<TextField
+    if(yaml){
+      const keys = Object.keys(props.schema.properties);
+      
+      //note on this nested for loop: it will only run on keys that have "patternProperties" as a child so it shouldnt be expensive
+      let newElements = [];
+      const LOOP_LIMIT = 1024;
+      for (let i = 0; i < keys.length && i < LOOP_LIMIT; i++) { //i = go through each property of the yaml
+        if (props.schema.properties[keys[i]].patternProperties != undefined) { //only for rendering patternProperties
+          if(typeof yaml[keys[i]] === "object" && Object.keys(yaml[keys[i]]).length > 0) {
+            newElements.push(<p key={keys[i]} style={{fontSize: "24px"}}>{keys[i]}</p>);
+            const patterns = Object.keys(props.schema.properties[keys[i]].patternProperties); //get all user defined regex patterns
+            for(let j = 0; j <  patterns.length && j < LOOP_LIMIT; j++){ //j = go through each pattern
+              const pattern = new RegExp(patterns[j]);
+              const yamlValue = yaml[keys[i]];
+              if(yamlValue){
+                const toMatch = Object.keys(yamlValue);
+                for(let k = 0; k < toMatch.length && k < LOOP_LIMIT; k++){
+                  if(pattern.test(toMatch[k])){
+                    // console.log('matched pattern ' + pattern + ' to ' + toMatch[k] + ' for key' + keys[i]);
+                    const matchedProps = Object.keys(yamlValue[toMatch[k]]);
+                    if(matchedProps.length > 0) {
+                      newElements.push(<span><strong>{toMatch[k]}</strong></span>)
+                      newElements.push(<br />);
+                      // console.log('matchedProps:', matchedProps);
+                      for(let l = 0; l < matchedProps.length && l < LOOP_LIMIT; l++){
+                        // pattern = patterns[j] = current regex pattern from patternProperties
+                        // keys[i] = parent object that contains pattern properties (likely components or haInstances)
+                        // toMatch[k] = regex matched child of keys[i], likely a component name such as app-server, gateway, etc
+                        // matchedProps[l] = properties of toMatch[k]
+                        switch (typeof yamlValue[toMatch[k]][matchedProps[l]]){
+                          case 'boolean':
+                            newElements.push(<FormControlLabel
                               label={matchedProps[l]}
-                              variant="standard"
-                              value={props.yaml[keys[i]][toMatch[k]][matchedProps[l]]}
-                              onChange={async (e) => {
-                                const newYaml = {...props.yaml, [keys[i]]: {...props.yaml[keys[i]], [toMatch[k]]: {...props.yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
-                                // setLYaml(newYaml);
-                                props.setYaml(newYaml);
-                                await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
-                                // dispatch(setYaml(newYaml));
-                              }}
+                              key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
+                              control={<Checkbox checked={yaml[keys[i]][toMatch[k]][matchedProps[l]]} onChange={async (e) => {
+                                // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
+                                const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}};
+                                setLYaml(newYaml);
+                                await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, !yaml[keys[i]][toMatch[k]][matchedProps[l]])
+                                dispatch(setYaml(newYaml));
+                              }}/>}
                             />)
-                        default:
-                          break;
+                            newElements.push(<br />);
+                            break;
+                          case 'number':
+                              newElements.push(<TextField
+                                label={matchedProps[l]}
+                                variant="standard"
+                                key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l] + '.'  + yaml[keys[i]][toMatch[k]][matchedProps[l]]}
+                                value={yaml[keys[i]][toMatch[k]][matchedProps[l]]}
+                                onChange={async (e) => {
+                                  const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
+                                  setLYaml(newYaml);
+                                  await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
+                                  console.log(`\n\nsetting ${keys[i]}.${toMatch[k]}.${matchedProps[l]}" `, e.target.value);
+                                  dispatch(setYaml(newYaml));
+                                }}
+                              />)
+                          default:
+                            break;
+                        }
                       }
+                      newElements.push(<br />);
                     }
-                    newElements.push(<br />);
                   }
                 }
               }
@@ -92,13 +94,13 @@ function PatternPropertiesForm(props: any){
           }
         }
       }
+      setElements(newElements);
     }
-    setElements(newElements);
-  }, [props.yaml])
+  }, [yaml])
 
-  return <>
+  return <div key={JSON.stringify(props.yaml.components || {})}>
     {elements}
-  </>
+  </div>
 }
 
 function AddIcon(props: SvgIconProps) {
@@ -648,20 +650,19 @@ const Networking = () => {
   };
   
   const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = data.zowe;
 
-    if (updatedData.externalDomains || updatedData.externalPort) {
+    if (data.zowe.externalDomains || data.zowe.externalPort || data.components) {
 
       if(validate) {
-        validate(updatedData);
+        validate(data);
         if(validate.errors) {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, data.zowe);
 
         } else {
-          const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: updatedData.externalDomains, externalPort: updatedData.externalPort}};
-          console.log("new yaml", JSON.stringify(newYaml));
+          const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: data.zowe.externalDomains, externalPort: data.zowe.externalPort}, components: data.components};
+          // console.log("new yaml", JSON.stringify(newYaml));
           window.electron.ipcRenderer.setConfig(newYaml)
           setStageConfig(true, '', newYaml);
         }
