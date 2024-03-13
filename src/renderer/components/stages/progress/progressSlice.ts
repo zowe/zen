@@ -98,7 +98,7 @@ export const progressSlice = createSlice({
       setProgress('certificateStatus', action.payload);
     },
     setReviewStatus: (state, action: PayloadAction<boolean>) => {
-      state.certificateStatus = action.payload;
+      state.reviewStatus = action.payload;
       setProgress('reviewStatus', action.payload);
     },
   }

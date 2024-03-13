@@ -1,0 +1,183 @@
+zowe:
+  setup:
+    dataset:
+      prefix: TS6330.ZENTEST3
+      proclib: ROCKET.USER.PROCLIB
+      parmlib: TS6330.ZENTEST3.PARMLIB
+      parmlibMembers:
+        zis: ZWESIP00
+      jcllib: TS6330.ZENTEST3.JCLLIB
+      loadlib: TS6330.ZENTEST3.SZWELOAD
+      authLoadlib: TS6330.ZENTEST3.SZWEAUTH
+      authPluginLib: TS6330.ZENTEST3.ZWESAPL
+    security:
+      product: RACF
+      groups:
+        admin: MVDUSER
+        stc: MVDUSER
+        sysProg: MUVDSER
+      users:
+        zowe: TS6330
+        zis: TS6330
+      stcs:
+        zowe: ZWESLSTC
+        zis: ZWESISTC
+        aux: ZWESASTC
+    certificate:
+      type: PKCS12
+      pkcs12:
+        directory: /var/zowe/keystore
+    vsam:
+      mode: NONRLS
+      volume: TS6330.NONRLS.VSAM
+      storageClass: ''
+  runtimeDirectory: /u/ts6330/zen-install
+  logDirectory: /u/ts6330/zen-install/l
+  workspaceDirectory: /u/ts6330/zen-install/w
+  extensionDirectory: /u/ts6330/zen-install/e
+  useConfigmgr: true
+  configmgr:
+    validation: COMPONENT-COMPAT
+  job:
+    name: ZWEMVDTG
+    prefix: ZWE1
+  rbacProfileIdentifier: '1'
+  cookieIdentifier: '1'
+  externalDomains:
+    - rs28.rocketsoftware.com
+  externalPort: 28754
+  launchScript:
+    logLevel: trace
+    onComponentConfigureFail: warn
+  certificate:
+    keystore:
+      type: JCERACFKS
+      file: safkeyring:////ZWESMVD/ZoweKeyring
+      password: password
+      alias: ZWEMVDJS
+    truststore:
+      type: JCERACFKS
+      file: safkeyring:////ZWESMVD/ZoweKeyring
+      password: password
+  verifyCertificates: DISABLED
+java:
+  home: /rsusr/java/IBM/J8.0_64.sr7fp10
+node:
+  home: /proj/mvd/node/installs/node-v16.14.2-os390-s390x-202204191412
+zOSMF:
+  host: rs28.rocketsoftware.com
+  port: 11443
+  applId: IZUDFLT
+components:
+  gateway:
+    enabled: true
+    port: 28754
+    http:
+      port: 28754
+    debug: true
+    apiml:
+      security:
+        auth:
+          provider: zosmf
+          zosmf:
+            jwtAutoconfiguration: auto
+            serviceId: zosmf
+        authorization:
+          endpoint:
+            enabled: false
+          provider: ''
+        x509:
+          enabled: false
+    spring:
+      profiles:
+        active: >-
+          ${{ () => { return components.gateway.zowe?.network?.attls ? 'attls' :
+          undefined }() }}
+    server:
+      internal:
+        enabled: false
+        port: 7550
+        ssl:
+          enabled: false
+      ssl:
+        enabled: ${{ () => { return !components.gateway.zowe?.network?.attls }() }}
+  metrics-service:
+    enabled: false
+    port: 7551
+    debug: false
+  cloud-gateway:
+    enabled: false
+    port: 7563
+    debug: false
+  api-catalog:
+    enabled: true
+    port: 28752
+    debug: false
+  discovery:
+    enabled: true
+    port: 28753
+    debug: true
+  caching-service:
+    enabled: false
+    port: 7955
+    debug: false
+    storage:
+      evictionStrategy: reject
+      mode: inMemory
+      size: 10000
+      vsam:
+        name: ''
+      infinispan:
+        jgroups:
+          port: 7600
+  app-server:
+    enabled: true
+    port: 28744
+  zss:
+    enabled: true
+    port: 28743
+    crossMemoryServerName: ZWESISTG
+    logLevels:
+      _zss:
+        traceLevel: 5
+        fileTrace: 5
+        socketTrace: 5
+        httpParseTrace: 5
+        httpDispatchTrace: 5
+        httpHeadersTrace: 5
+        httpSocketTrace: 5
+        httpCloseConversationTrace: 5
+        httpAuthTrace: 5
+        httpserver: 5
+      _zsf:
+        bootstrap: 5
+        auth: 5
+        static: 5
+        child: 5
+        utils: 5
+        proxy: 5
+        install: 5
+        apiml: 5
+        routing: 5
+        network: 5
+    agent:
+      jwt:
+        fallback: true
+  jobs-api:
+    enabled: false
+    debug: false
+    port: 7558
+  files-api:
+    enabled: false
+    debug: false
+    port: 7559
+  explorer-jes:
+    enabled: true
+  explorer-mvs:
+    enabled: true
+  explorer-uss:
+    enabled: true
+  file-manager:
+    enabled: true
+  process-manager:
+    enabled: true
