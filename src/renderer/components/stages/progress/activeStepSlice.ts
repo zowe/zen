@@ -12,14 +12,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
 import { setActiveStage } from './StageProgressStatus'
 
-export interface ActiveStep {
+export interface ActiveState {
   activeStepIndex: number,
   isSubStep: boolean,
   activeSubStepIndex: number,
   date?: string
 }
 
-const initialState: ActiveStep = {
+const initialState: ActiveState = {
   activeStepIndex: 0,
   isSubStep: false,
   activeSubStepIndex: 0
@@ -35,7 +35,7 @@ export const activeStepSlice = createSlice({
   name: 'activeStage',
   initialState,
   reducers: {
-    setActiveStep: (state, action: PayloadAction<ActiveStep>) => {
+    setActiveStep: (state, action: PayloadAction<ActiveState>) => {
       state.activeStepIndex = action.payload.activeStepIndex;
       state.isSubStep = action.payload.isSubStep;
       state.activeSubStepIndex = action.payload.activeSubStepIndex;

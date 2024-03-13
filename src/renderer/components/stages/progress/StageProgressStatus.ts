@@ -10,8 +10,12 @@
 
 import { flatten, unflatten } from 'flat';
 import { ProgressState } from "./progressSlice"; 
-import { ActiveStep } from './activeStepSlice'
-import { stages } from '../../configuration-wizard/Wizard';
+import { ActiveState } from './activeStepSlice'
+
+export interface PlanningState {
+  isJobStatementValid: boolean;
+  isLocationValid: boolean;
+}
 
 const progressStatus: ProgressState = {
   connectionStatus: false,
@@ -25,7 +29,7 @@ const progressStatus: ProgressState = {
   reviewStatus: false,
 }
 
-const activeState: ActiveStep = {
+const activeStatus: ActiveState = {
   activeStepIndex: 0,
   isSubStep: false,
   activeSubStepIndex: 0,
@@ -79,28 +83,28 @@ export const getCompleteProgress = () : ProgressState => {
 }
 
 export const setActiveStage = (stageId: number, isSubStage: boolean, date: string, subStageId?: number): void => {
-  activeState.activeStepIndex = stageId;
-  activeState.isSubStep = isSubStage;
-  activeState.date = date;
+  activeStatus.activeStepIndex = stageId;
+  activeStatus.isSubStep = isSubStage;
+  activeStatus.date = date;
 
   if(!isSubStage) {
-    activeState.activeSubStepIndex = 0;
+    activeStatus.activeSubStepIndex = 0;
   } else {
-    activeState.activeSubStepIndex = subStageId;
+    activeStatus.activeSubStepIndex = subStageId;
   }
   
-  const flattenedProgress = flatten(activeState);
+  const flattenedProgress = flatten(activeStatus);
   localStorage.setItem(activeStateKey, JSON.stringify(flattenedProgress));
 }
 
-export const getActiveStage = () : ActiveStep => {
+export const getActiveStage = () : ActiveState => {
   let flattenedStage;
   const activeStage = localStorage.getItem(activeStateKey);
   if(activeStage) {
     flattenedStage = activeStage ? JSON.parse(activeStage) : {};
     return unflatten(flattenedStage);
   } else {
-    return activeState;
+    return activeStatus;
   }
 }
 

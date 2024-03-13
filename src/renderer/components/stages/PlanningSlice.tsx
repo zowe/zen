@@ -13,21 +13,23 @@ import { RootState } from '../../store';
 
 export interface jobValidation {
   jobStatement: string;
-  jobStatementValid: boolean;
+  isJobStatementValid: boolean;
   jobStatementValidMsg: string;
 }
 
 export interface locationValidation {
+  isLocationValid: boolean;
   locValidationDetails: any;
 }
 
 const initialState: jobValidation = {
   jobStatement: '',
-  jobStatementValid: false,
+  isJobStatementValid: false,
   jobStatementValidMsg: ''
 }
 
 const locValidationInitialState: locationValidation = {
+  isLocationValid: false,
   locValidationDetails: {}
 }
 
@@ -39,7 +41,7 @@ export const planningSlice = createSlice({
         state.jobStatement = action.payload;
     },
     setJobStatementValid: (state, action: PayloadAction<boolean>) => {
-        state.jobStatementValid = action.payload;
+        state.isJobStatementValid = action.payload;
     },
     setJobStatementValidMsg: (state, action: PayloadAction<string>) => {
         state.jobStatementValidMsg = action.payload;
@@ -48,20 +50,23 @@ export const planningSlice = createSlice({
 })
 
 export const locationValidationSlice = createSlice({
-    name: 'locationValidation',
-    initialState: locValidationInitialState,
-    reducers: {
-      setLocationValidationDetails: (state, action: PayloadAction<any>) => {
-          state.locValidationDetails = action.payload;
-      }
+  name: 'locationValidation',
+  initialState: locValidationInitialState,
+  reducers: {
+    setIsLocationValid: (state, action: PayloadAction<boolean>) => {
+      state.isLocationValid = action.payload;
+    },
+    setLocationValidationDetails: (state, action: PayloadAction<any>) => {
+      state.locValidationDetails = action.payload;
     }
-  })
+  }
+})
 
 export const { setJobStatementValid, setJobStatementValidMsg, setJobStatement } = planningSlice.actions;
 export const { setLocationValidationDetails } = locationValidationSlice.actions
 
 export const selectJobStatement = (state: RootState) => state.planning.jobStatement;
-export const selectJobStatementValid = (state: RootState) => state.planning.jobStatementValid;
+export const selectJobStatementValid = (state: RootState) => state.planning.isJobStatementValid;
 export const selectJobStatementValidMsg = (state: RootState) => state.planning.jobStatementValidMsg;
 export const selectLocValidationDetails = (state: RootState) => state.locationValidation.locValidationDetails;
 
