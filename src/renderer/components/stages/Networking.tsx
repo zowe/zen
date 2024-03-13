@@ -72,7 +72,7 @@ function PatternPropertiesForm(props: any){
                             newElements.push(<TextField
                               label={matchedProps[l]}
                               variant="standard"
-                              defaultValue={yamlValue[toMatch[k]][matchedProps[l]]}
+                              value={yamlValue[toMatch[k]][matchedProps[l]]}
                               onChange={async (e) => {
                                 const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
                                 setLYaml(newYaml);
@@ -670,9 +670,7 @@ const Networking = () => {
   };
   
   const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
-    // console.log('form change data:', JSON.stringify(data));
-    let updatedData = isFormInit ? (Object.keys(moddedYaml).length > 0 ? moddedYaml : data.zowe) : (data.zowe ? data.zowe : data);
-    setIsFormInit(false);
+    let updatedData = data.zowe;
 
     if (updatedData.externalDomains || updatedData.externalPort) {
 
@@ -685,7 +683,7 @@ const Networking = () => {
 
         } else {
           const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: updatedData.externalDomains, externalPort: updatedData.externalPort}};
-          // console.log("new yaml", JSON.stringify(newYaml));
+          console.log("new yaml", JSON.stringify(newYaml));
           window.electron.ipcRenderer.setConfig(newYaml)
           setStageConfig(true, '', newYaml);
         }
@@ -702,9 +700,9 @@ const Networking = () => {
   return (
     yaml && schema && <div>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>Preview Job</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Networking" description="Zowe networking configurations."> 
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
@@ -719,7 +717,7 @@ const Networking = () => {
           }}><AddIcon /></IconButton></p>
           {yaml.zowe.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box sx={{display: "flex", flexDirection: "row"}}><TextField
             variant="standard"
-            defaultValue={domain}
+            value={domain}
             onChange={async (e) => {
               let domains = [...yaml.zowe?.externalDomains];
               domains[index] = e.target.value;
@@ -743,7 +741,7 @@ const Networking = () => {
             variant="standard"
             type="number"
             helperText={schema.properties.zowe.properties.externalPort.description}
-            defaultValue={yaml.zowe.externalPort}
+            value={yaml.zowe.externalPort}
             onChange={async (e) => {
               const newYaml = {...yaml, zowe: {...yaml.zowe, externalPort: Number(e.target.value)}};
               window.electron.ipcRenderer.setConfig(newYaml)
