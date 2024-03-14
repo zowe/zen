@@ -21,10 +21,9 @@ import { setYaml, setSchema, setNextStepEnabled, setLoading, selectYaml } from '
 import { selectConnectionArgs, setConnectionArgs } from './connection/connectionSlice';
 import { setPlanningStatus, selectPlanningStatus } from './progress/progressSlice';
 import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from './installation/installationSlice';
-import { setJobStatement, setJobStatementValid, setJobStatementValidMsg, setLocationValidationDetails, selectJobStatement, selectJobStatementValid, selectJobStatementValidMsg, selectLocValidationDetails } from "./PlanningSlice";
+import { setJobStatement, setJobStatementValid, setJobStatementValidMsg, setLocationValidationDetails, setIsLocationValid, selectJobStatement, selectJobStatementValid, selectJobStatementValidMsg, selectLocValidationDetails } from "./PlanningSlice";
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { IResponse } from '../../../types/interfaces';
-import Alert from "@mui/material/Alert";
 import { alertEmitter } from "../Header";
 import { Checkbox, FormControlLabel } from "@mui/material";
 import { setActiveStep } from './progress/activeStepSlice';
@@ -1426,6 +1425,7 @@ const Planning = () => {
       setValidationDetails(locationValidationDetails);
       setEditorContent(jobStatementValidMsg);
       setContentType('output');
+      dispatch(setIsLocationValid(true));
       dispatch(setNextStepEnabled(true));
       setStep(2);
       return;
@@ -1502,6 +1502,7 @@ const Planning = () => {
       if (!details.error) {
         alertEmitter.emit('hideAlert');
         setLocationsValidated(true);
+        dispatch(setIsLocationValid(true));
         dispatch(setPlanningStatus(true));
         setStep(2);
       } else {
@@ -1526,6 +1527,7 @@ const Planning = () => {
     setIsLocationsUpdated(true);
     setPlanningStatus(false);
     setLocationsValidated(false);
+    dispatch(setIsLocationValid(false));
     dispatch(setPlanningStatus(false));
     dispatch(setNextStepEnabled(false));
     setStep(1);

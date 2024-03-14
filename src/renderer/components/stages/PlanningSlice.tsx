@@ -67,7 +67,7 @@ export const locationValidationSlice = createSlice({
 })
 
 export const { setJobStatementValid, setJobStatementValidMsg, setJobStatement } = planningSlice.actions;
-export const { setLocationValidationDetails } = locationValidationSlice.actions
+export const { setIsLocationValid, setLocationValidationDetails } = locationValidationSlice.actions
 
 export const selectJobStatement = (state: RootState) => state.planning.jobStatement;
 export const selectJobStatementValid = (state: RootState) => state.planning.isJobStatementValid;

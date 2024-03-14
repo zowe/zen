@@ -184,7 +184,6 @@ const InstallationType = () => {
             dispatch(setUserUploadedPaxPath(res.filePaths[0]));
           } else {
             setPaxPath("");
-            dispatch(setUserUploadedPaxPath(""));
           }
         });
       }}>Upload PAX</Button>
