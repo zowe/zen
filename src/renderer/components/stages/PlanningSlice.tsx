@@ -39,15 +39,15 @@ export const planningSlice = createSlice({
   initialState,
   reducers: {
     setJobStatement: (state, action: PayloadAction<string>) => {
-        state.jobStatement = action.payload;
-        setPlanningStageStatus('jobStatement', action.payload);
+      state.jobStatement = action.payload;
+      setPlanningStageStatus('jobStatement', action.payload);
     },
     setJobStatementValid: (state, action: PayloadAction<boolean>) => {
-        state.isJobStatementValid = action.payload;
-        setPlanningStageStatus('isJobStatementValid', action.payload);
+      state.isJobStatementValid = action.payload;
+      setPlanningStageStatus('isJobStatementValid', action.payload);
     },
     setJobStatementValidMsg: (state, action: PayloadAction<string>) => {
-        state.jobStatementValidMsg = action.payload;
+      state.jobStatementValidMsg = action.payload;
     },
   }
 })
