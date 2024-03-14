@@ -21,6 +21,7 @@ import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
 import { getStageDetails } from "../../../../utils/StageDetails";
 import { getInstallationTypeStatus } from "../progress/StageProgressStatus";
+import { connect } from "http2";
 
 const InstallationType = () => {
 
@@ -93,6 +94,15 @@ const InstallationType = () => {
     dispatch(setInstallationTypeStatus(false))
   }
 
+  const validateSmpePath = async(e: any, connectionArgs: any, smpePath: string) => {
+    e.preventDefault();
+    window.electron.ipcRenderer.checkDirExists(connectionArgs, smpePath).then((res: boolean) => {
+      setSmpePathValidated(res);
+      dispatch(setSmpeDirValid(res));
+      dispatch(setInstallationTypeStatus(res))
+    })
+  }
+
   return (
     <ContainerCard title="Installation Type" description="Please select the desired install method."> 
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
@@ -124,7 +134,7 @@ const InstallationType = () => {
             label="Runtime Directory"
             variant="standard"
             helperText="Absolute path of the Zowe 'runtime' directory from SMPE installation process."
-            value={installationArgs.smpeDir}
+            value={smpePath}
             onChange={(e) => {
                 dispatch(setInstallationArgs({...installationArgs, smpeDir: e.target.value}));
                 setSmpePath(e.target.value);
@@ -132,16 +142,21 @@ const InstallationType = () => {
             }}
         />
     </FormControl>}
-    {installValue === "smpe" && <FormControl sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-        <Button sx={{boxShadow: 'none', mr: '12px'}} type={"submit"} variant="text" onClick={async e => {
-            e.preventDefault();
-            window.electron.ipcRenderer.checkDirExists(connectionArgs, smpePath).then((res: boolean) => {
-                setSmpePathValidated(res);
-                dispatch(setSmpeDirValid(true))
-            })
-        }}>Validate location</Button>
-        {smpePathValidated ? <CheckCircle sx={{ color: 'green', fontSize: '1rem', marginTop: '15px', marginLeft: '11px'}} /> : <Typography sx={{color: "gray"}}>{'Enter a valid path.'}</Typography> }
-    </FormControl>}
+
+    {installValue === "smpe" &&
+      <FormControl sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <Button
+          sx={{boxShadow: 'none', mr: '12px'}}
+          type={"submit"} variant="text"
+          onClick={async e => validateSmpePath(e, connectionArgs, smpePath)}
+        >
+          Validate location
+        </Button>
+
+      {smpePathValidated ? <CheckCircle sx={{ color: 'green', fontSize: '1rem', marginTop: '15px', marginLeft: '11px'}} /> : <Typography sx={{color: "gray"}}>{'Enter a valid path.'}</Typography> }
+      </FormControl>
+    }
+
     {installValue === "download" &&
       <div>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
