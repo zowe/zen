@@ -97,6 +97,17 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('set-schema', async (event, schema: any) => {
+    const res: any = await ConfigurationStore.setSchema(schema);
+    return res;
+  });
+
+
+  ipcMain.handle('get-config-by-key', async (_event, key: string) => {
+    const res = await ConfigurationStore.getConfigByKey(key);
+    return res;
+  });
+
   ipcMain.handle('set-config-by-key', async (_event, key: string, value) => {
     const res = await PlanningActions.setConfigByKeyAndValidate(key, value);
     return res;
@@ -167,8 +178,13 @@ const createWindow = (): void => {
     return res;
   })
 
-  ipcMain.handle('install-mvs', async (_event, connectionArgs, installationArgs, version, zoweConfig) => {
-    const res = await installActions.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
+  ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs, version, zoweConfig, skipDownload) => {
+    const res = await installActions.runInstallation(connectionArgs, installationArgs, version, zoweConfig, skipDownload);
+    return res;
+  });
+
+  ipcMain.handle('init-certificates', async (event, connectionArgs, installationArgs, zoweConfig) => {
+    const res = await installActions.runInitCertificates(connectionArgs, installationArgs, zoweConfig);
     return res;
   });
 
@@ -194,6 +210,10 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('get-certificate-progress', async (event) => {
+    const res = ProgressStore.getAll()['certificate'];
+    return res;
+  });
 
   ipcMain.handle('get-init-security-progress', async () => {
     const res = ProgressStore.getAll()['initSecurity'];

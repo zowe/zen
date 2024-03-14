@@ -110,7 +110,7 @@ const Installation = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const process = (event: any) => {
+  const process = (event: any, skipDownload?: boolean) => {
     event.preventDefault();
     dispatch(setLoading(true));
     const {javaHome, nodeHome, installationDir, installationType, smpeDir} = installationArgs;
@@ -127,7 +127,7 @@ const Installation = () => {
         toggleProgress(true);
 
         const config = (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml;
-        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
+        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
           if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe install
             alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
             window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
@@ -214,6 +214,7 @@ const Installation = () => {
         </Box>  
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'Install MVS datasets'}</Button>
+          {/* <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e, true)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'SKIP DOWNLOAD and Install MVS datasets'}</Button> */}
         </FormControl> : null}
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="installation-progress">
         {!showProgress ? null :

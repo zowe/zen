@@ -23,7 +23,8 @@ class Installation {
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
     version: string,
-    zoweConfig: object
+    zoweConfig: any,
+    skipDownload: boolean
   ): Promise<IResponse> {
     const savingResult = await this.generateYamlFile(zoweConfig);
     if (!savingResult.status) {
@@ -39,43 +40,46 @@ class Installation {
         return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
 
-      let download;
-      if(installationArgs.installationType === "download"){
-        console.log("downloading...", version);
-        download = await this.downloadPax(version);
-        ProgressStore.set('installation.download', download.status);
+      let download, upload, unpax;
+      if(!skipDownload){
+        if(installationArgs.installationType === "download"){
+          console.log("downloading...", version);
+          download = await this.downloadPax(version);
+          ProgressStore.set('installation.download', download.status);
+        } else {
+          //if the user has selected an SMPE or opted to upload their own pax, we simply set this status to true as no download is required
+          download = {status: true, details: ''}
+          ProgressStore.set('installation.download', true);
+        }
+
+        if(!download.status){
+          return {status: false, details: `Error downloading pax: ${download.details}`};
+        }
+
+        console.log("uploading...");
+        if(installationArgs.installationType === "upload"){
+          //upload the PAX the user selected in the "Install Type" stage to the installation dir (from the planning stage)
+          console.log('Uploading user selected pax')
+          upload = await new FileTransfer().upload(connectionArgs, installationArgs.userUploadedPaxPath, path.join(installationArgs.installationDir, "zowe.pax"), DataType.BINARY)
+        } else if (installationArgs.installationType === "download"){
+          console.log('Uploading pax downloaded from jfrog')
+          upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);
+        }
+        ProgressStore.set('installation.upload', upload.status);
+
+        if(!upload.status){
+          return {status: false, details: `Error uploading pax: ${upload.details}`};
+        }
+
+        console.log("unpaxing...");
+        unpax = await this.unpax(connectionArgs, installationArgs.installationDir); 
+        ProgressStore.set('installation.unpax', unpax.status);
+
+        if(!unpax.status){
+          return {status: false, details: `Error unpaxing Zowe archive: ${unpax.details}`};
+        }
       } else {
-        //if the user has selected an SMPE or opted to upload their own pax, we simply set this status to true as no download is required
-        download = {status: true, details: ''}
-        ProgressStore.set('installation.download', true);
-      }
-
-      if(!download.status){
-        return {status: false, details: `Error downloading pax: ${download.details}`};
-      }
-
-      console.log("uploading...");
-      let upload;
-      if(installationArgs.installationType === "upload"){
-        //upload the PAX the user selected in the "Install Type" stage to the installation dir (from the planning stage)
-        console.log('Uploading user selected pax')
-        upload = await new FileTransfer().upload(connectionArgs, installationArgs.userUploadedPaxPath, path.join(installationArgs.installationDir, "zowe.pax"), DataType.BINARY)
-      } else if (installationArgs.installationType === "download"){
-        console.log('Uploading pax downloaded from jfrog')
-        upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);
-      }
-      ProgressStore.set('installation.upload', upload.status);
-
-      if(!upload.status){
-        return {status: false, details: `Error uploading pax: ${upload.details}`};
-      }
-
-      console.log("unpaxing...");
-      const unpax = await this.unpax(connectionArgs, installationArgs.installationDir); 
-      ProgressStore.set('installation.unpax', unpax.status);
-
-      if(!unpax.status){
-        return {status: false, details: `Error unpaxing Zowe archive: ${unpax.details}`};
+        download = upload = unpax = {status: true, details : ''}
       }
 
       let installation;
@@ -162,6 +166,28 @@ class Installation {
       return {status: result.rc === 0, details: result.jobOutput}
   }
 
+  async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, zoweConfig: any){
+    console.log('writing current yaml to disk');
+    const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
+    await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
+      if (err) {
+          console.warn("Can't save configuration to zowe.yaml");
+          return ProgressStore.set('certificate.writeYaml', false);
+      } 
+    });
+    ProgressStore.set('certificate.writeYaml', true);
+    console.log("uploading yaml...");
+    const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
+    if(!uploadYaml.status){
+      return ProgressStore.set('certificate.uploadYaml', false);;
+    }
+    ProgressStore.set('certificate.uploadYaml', uploadYaml.status);
+    const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.smpeDir + '/bin' : installationArgs.installationDir + '/runtime/bin'} && ./zwe init certificate --update-config -c ${installationArgs.installationDir}/zowe.yaml`;
+    const result = await new Script().run(connectionArgs, script);
+    ProgressStore.set('certificate.zweInitCertificate', result.rc === 0);
+    return {status: result.rc === 0, details: result.jobOutput}
+  }
+
   async generateYamlFile(zoweConfig: object): Promise<IResponse> {
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
     await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
@@ -201,6 +227,7 @@ class Installation {
   async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
     return {status: false, details: 'Method not implemented.'}
   }
+  
 }
 
 export class FTPInstallation extends Installation {
@@ -250,7 +277,7 @@ export class FTPInstallation extends Installation {
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
-
+  
   async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string) {
     const script = `cd ${installDir}/runtime/bin && ./zwe init mvs -c ${installDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);

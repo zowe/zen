@@ -31,6 +31,11 @@ const STORE_DEFAULT = {
     "writeYaml": false,
     "uploadYaml": false,
     "success": false
+  },
+  "certificate": {
+    "writeYaml": false,
+    "uploadYaml": false,
+    "zweInitCertificate": false,
   }
 };
 const STORE_NAME = 'zen-editor-store';

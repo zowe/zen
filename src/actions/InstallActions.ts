@@ -35,11 +35,16 @@ export class InstallActions {
     }
   }
 
+  runInitCertificates(connectionArgs: IIpcConnectionArgs,
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, zoweConfig: any){
+      return this.strategy.initCertificates(connectionArgs, installationArgs, zoweConfig)
+  }
+
   runInstallation (
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
-    version: string, zoweConfig: object): Promise<IResponse> {
-    return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
+    version: string, zoweConfig: any, skipDownload: boolean): Promise<IResponse> {
+    return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig, skipDownload);
   }
 
   runInitSecurity(connectionArgs: IIpcConnectionArgs,

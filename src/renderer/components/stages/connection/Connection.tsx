@@ -162,9 +162,10 @@ const FTPConnectionForm = () => {
   };
 
   return (
-    <Box 
-      onSubmit={(e: SyntheticEvent) => e.preventDefault()} 
+    <Box
+      onSubmit={(e: SyntheticEvent) => {e.preventDefault(); processForm();}} 
       onChange={() => toggleFormProcessed(false)}
+      onKeyDown={(e) => e.key === 'Enter' && processForm()}
     >
       <FormControl>
         <TextField

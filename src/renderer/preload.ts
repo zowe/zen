@@ -28,6 +28,9 @@ contextBridge.exposeInMainWorld('electron', {
     getConfig() {
       return ipcRenderer.invoke("get-config");
     },
+    getConfigByKey(key: string, value: any) {
+      return ipcRenderer.invoke("get-config-by-key", key);
+    },
     setConfig(completeZoweYamlObj: any) {
       return ipcRenderer.invoke("set-config", completeZoweYamlObj);
     },
@@ -51,6 +54,9 @@ contextBridge.exposeInMainWorld('electron', {
     },
     setStandardOutput(value: any) {
       return ipcRenderer.invoke("set-standard-output", value);
+    },
+    setSchema(schema: any) {
+      return ipcRenderer.invoke("set-schema", schema);
     },
     checkZoweCLI() {
       return ipcRenderer.invoke("check-zowe-cli");
@@ -82,8 +88,11 @@ contextBridge.exposeInMainWorld('electron', {
     checkDirOrCreate(connectionArgs: IIpcConnectionArgs, location: string) {
       return ipcRenderer.invoke("check-dir-or-create", connectionArgs, location);
     },
-    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, version: string, zoweConfig: any) {
-      return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version, zoweConfig);
+    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, version: string, zoweConfig: any, skipDownload: boolean) {
+      return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version, zoweConfig, skipDownload);
+    },
+    initCertsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
+      return ipcRenderer.invoke("init-certificates", connectionArgs, installationArgs, zoweConfig);
     },
     apfAuthButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
       return ipcRenderer.invoke("init-apf", connectionArgs, installationArgs, zoweConfig);
@@ -93,6 +102,9 @@ contextBridge.exposeInMainWorld('electron', {
     },
     getInstallationProgress() {
       return ipcRenderer.invoke("get-installation-progress");
+    },
+    getCertificateProgress() {
+      return ipcRenderer.invoke("get-certificate-progress");
     },
     initSecurityButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
       return ipcRenderer.invoke("init-security", connectionArgs, installationArgs, zoweConfig);
