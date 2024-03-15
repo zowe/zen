@@ -12,7 +12,24 @@ let page: Page;
 let electronApp: ElectronApplication
 const INSTALLATION_TITLE = 'Installation'
 const SECURITY_TITLE = 'Security'
+const DATASET_PREFIX = 'IBMUSER.ZWEV1'
+const AUTH_LOAD_LIB = 'IBMUSER.ZWEV1.ZWEAUTH'
+const AUTH_PLUGIN_LIB = 'IBMUSER.ZWEV1.CUST.ZWESAPL'
 const RUNTIME_DIR = process.env.ROOT_PATH + process.env.ZOWE_ROOT_DIR;
+const SSH_HOST = process.env.SSH_HOST;
+const SSH_PASSWD =  process.env.SSH_PASSWD;
+const SSH_PORT = process.env.SSH_PORT;
+const SSH_USER = process.env.SSH_USER;
+const ZOWE_EXTENSION_DIR= process.env.ZOWE_EXTENSION_DIR;
+const ZOWE_LOG_DIR=process.env.ZOWE_LOG_DIR;
+const ZOWE_ROOT_DIR=process.env.ZOWE_ROOT_DIR;
+const ZOWE_WORKSPACE_DIR=process.env.ZOWE_WORKSPACE_DIR;
+const JOB_NAME= process.env.JOB_NAME;
+const JOB_PREFIX=process.env.JOB_PREFIX;
+const  JAVA_HOME=process.env.JAVA_HOME;
+const  NODE_HOME=process.env.NODE_HOME;
+const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
+
 
 test.describe('ApfAuthTab', () => {
     let connectionPage: ConnectionPage;
@@ -49,14 +66,13 @@ test.describe('ApfAuthTab', () => {
       planningPage = new PlanningPage(page)
       apfAuthPage = new ApfAuthPage(page);
       titlePage.navigateToConnectionTab()
-      connectionPage.fillConnectionDetails(process.env.SSH_HOST,process.env.SSH_PORT,process.env.SSH_USER,process.env.SSH_PASSWD)
+      connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
       connectionPage.SubmitValidateCredential()
       await page.waitForTimeout(5000);
       connectionPage.clickContinueButton()
       planningPage.clickSaveValidate()
       await page.waitForTimeout(50000);
-      console.log(process.env.ZOWE_WORKSPACE_DIR,RUNTIME_DIR)
-      planningPage.fillPlanningPage(RUNTIME_DIR, process.env.ZOWE_WORKSPACE_DIR,process.env.ZOWE_EXTENSION_DIR,process.env.ZOWE_LOG_DIR,'1',process.env.JOB_NAME,process.env.JOB_PREFIX,process.env.JAVA_HOME,process.env.NODE_HOME,process.env.ZOSMF_APP_ID)
+      planningPage.fillPlanningPage(RUNTIME_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
       planningPage.clickValidateLocations()
       await page.waitForTimeout(50000);
       planningPage.continueInstallation()
@@ -71,7 +87,7 @@ test.describe('ApfAuthTab', () => {
 //
 //     test('Verify title', async ({ page }) => {
 //       await page.waitForTimeout(5000);
-//       apfAuthPage.fillApfDetails(process.env.DATASET_PREFIX,process.env.AUTH_LOAD_LIB,process.env.AUTH_PLUGIN_LIB)
+//       apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
 //       await page.waitForTimeout(5000);
 //       apfAuthPage.movetoApfAuthPage()
 //       await page.waitForTimeout(5000);
@@ -103,7 +119,7 @@ test.describe('ApfAuthTab', () => {
 //     })
     test('test apfAuth with valid data', async ({ page }) => {
       await page.waitForTimeout(5000);
-      apfAuthPage.fillApfDetails(process.env.DATASET_PREFIX,process.env.AUTH_LOAD_LIB,process.env.AUTH_PLUGIN_LIB)
+      apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
       await page.waitForTimeout(5000);
       apfAuthPage.movetoApfAuthPage()
       await page.waitForTimeout(5000);
@@ -184,7 +200,7 @@ test.describe('ApfAuthTab', () => {
 
     test('Test save and close', async ({ page }) => {
      await page.waitForTimeout(5000);
-     apfAuthPage.fillApfDetails(process.env.DATASET_PREFIX,process.env.AUTH_LOAD_LIB,process.env.AUTH_PLUGIN_LIB)
+     apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
      await page.waitForTimeout(5000);
      apfAuthPage.movetoApfAuthPage()
      await page.waitForTimeout(5000);
@@ -202,8 +218,8 @@ test.describe('ApfAuthTab', () => {
      const datatsetPrefixValue = await apfAuthPage.get_datasetPrefix_value();
      const authPluginLibValue = await apfAuthPage.get_authPluginLib_value();
      const authLoadLibValue = await apfAuthPage.get_authLoadLib_value();
-     expect(datatsetPrefixValue).toBe(process.env.DATASET_PREFIX);
-     expect(authLoadLibValue).toBe(process.env.AUTH_LOAD_LIB);
-     expect(authPluginLibValue).toBe(process.env.AUTH_PLUGIN_LIB);
+     expect(datatsetPrefixValue).toBe(DATASET_PREFIX);
+     expect(authLoadLibValue).toBe(AUTH_LOAD_LIB);
+     expect(authPluginLibValue).toBe(AUTH_PLUGIN_LIB);
     })
 })

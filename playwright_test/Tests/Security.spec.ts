@@ -13,6 +13,28 @@ let page: Page;
 let electronApp: ElectronApplication
 const CERTIFICATE_TITLE = 'Certificates'
 const RUNTIME_DIR = process.env.ROOT_PATH + process.env.ZOWE_ROOT_DIR;
+const SSH_HOST = process.env.SSH_HOST;
+const SSH_PASSWD =  process.env.SSH_PASSWD;
+const SSH_PORT = process.env.SSH_PORT;
+const SSH_USER = process.env.SSH_USER;
+const ZOWE_EXTENSION_DIR= process.env.ZOWE_EXTENSION_DIR;
+const ZOWE_LOG_DIR=process.env.ZOWE_LOG_DIR;
+const ZOWE_ROOT_DIR=process.env.ZOWE_ROOT_DIR;
+const ZOWE_WORKSPACE_DIR=process.env.ZOWE_WORKSPACE_DIR;
+const JOB_NAME= process.env.JOB_NAME;
+const JOB_PREFIX=process.env.JOB_PREFIX;
+const  JAVA_HOME=process.env.JAVA_HOME;
+const  NODE_HOME=process.env.NODE_HOME;
+const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
+const SECURITY_ADMIN= process.env.SECURITY_ADMIN;
+const SECURITY_STC = process.env.SECURITY_STC;
+const SECURITY_SYSPROG = process.env.SECURITY_SYSPROG;
+const SECURITY_USER_ZIS = process.env.SECURITY_USER_ZIS;
+const SECURITY_USER_ZOWE = process.env.SECURITY_USER_ZOWE;
+const SECURITY_AUX = process.env.SECURITY_AUX;
+const SECURITY_STC_ZOWE = process.env.SECURITY_STC_ZOWE;
+const SECURITY_STC_ZIS = process.env.SECURITY_STC_ZIS;
+
 
 test.describe('securityTab', () => {
     let connectionPage: ConnectionPage;
@@ -51,13 +73,13 @@ test.describe('securityTab', () => {
       apfAuthPage = new ApfAuthPage(page);
       securityPage = new SecurityPage(page);
       titlePage.navigateToConnectionTab()
-      connectionPage.fillConnectionDetails(process.env.SSH_HOST,process.env.SSH_PORT,process.env.SSH_USER,process.env.SSH_PASSWD)
+      connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
       connectionPage.SubmitValidateCredential()
       await page.waitForTimeout(5000);
       connectionPage.clickContinueButton()
       planningPage.clickSaveValidate()
       await page.waitForTimeout(20000);
-      planningPage.fillPlanningPage(RUNTIME_DIR, process.env.ZOWE_WORKSPACE_DIR,process.env.ZOWE_EXTENSION_DIR,process.env.ZOWE_LOG_DIR,'1',process.env.JOB_NAME,process.env.JOB_PREFIX,process.env.JAVA_HOME,process.env.NODE_HOME,process.env.ZOSMF_APP_ID)
+      planningPage.fillPlanningPage(RUNTIME_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
       planningPage.clickValidateLocations()
       await page.waitForTimeout(20000);
       planningPage.continueInstallation()
@@ -105,7 +127,7 @@ test.describe('securityTab', () => {
     })
     test('test security with valid data', async ({ page }) => {
       await page.waitForTimeout(5000);
-      securityPage.fillSecurityDetails('RACF',process.env.SECURITY_ADMIN,process.env.SECURITY_STC,process.env.SECURITY_SYSPROG,process.env.SECURITY_USER_ZIS,process.env.SECURITY_USER_ZOWE,process.env.SECURITY_AUX,process.env.SECURITY_STC_ZOWE,process.env.SECURITY_STC_ZIS)
+      securityPage.fillSecurityDetails('RACF',SECURITY_ADMIN,SECURITY_STC,SECURITY_SYSPROG,SECURITY_USER_ZIS,SECURITY_USER_ZOWE,SECURITY_AUX,SECURITY_STC_ZOWE,SECURITY_STC_ZIS)
       await page.waitForTimeout(5000);
       securityPage.initializeSecurity()
       await page.waitForTimeout(5000);
@@ -183,7 +205,7 @@ test.describe('securityTab', () => {
 
     test('Test save and close', async ({ page }) => {
      await page.waitForTimeout(5000);
-     securityPage.fillSecurityDetails('RACF',process.env.SECURITY_ADMIN,process.env.SECURITY_STC,process.env.SECURITY_SYSPROG,process.env.SECURITY_USER_ZIS,process.env.SECURITY_USER_ZOWE,process.env.SECURITY_AUX,process.env.SECURITY_STC_ZOWE,process.env.SECURITY_STC_ZIS)
+     securityPage.fillSecurityDetails('RACF',SECURITY_ADMIN,SECURITY_STC,SECURITY_SYSPROG,SECURITY_USER_ZIS,SECURITY_USER_ZOWE,SECURITY_AUX,SECURITY_STC_ZOWE,SECURITY_STC_ZIS)
      await page.waitForTimeout(5000);
      securityPage.click_saveAndClose()
      await page.waitForTimeout(5000);

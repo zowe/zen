@@ -5,6 +5,10 @@ import path from 'path';
 import { spawn } from 'child_process';
 
 let electronApp: ElectronApplication
+const SSH_HOST = process.env.SSH_HOST;
+const SSH_PASSWD =  process.env.SSH_PASSWD;
+const SSH_PORT = process.env.SSH_PORT;
+const SSH_USER = process.env.SSH_USER;
 
 test.describe('ConnectionTab', () => {
     let connectionPage: ConnectionPage;
@@ -40,7 +44,7 @@ test.describe('ConnectionTab', () => {
 
     test('test invalid credentials', async ({ page }) => {
       titlePage.navigateToConnectionTab()
-      connectionPage.fillConnectionDetails(process.env.SSH_HOST,process.env.SSH_PORT,process.env.SSH_USER,process.env.SSH_PASSWD)
+      connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
       connectionPage.SubmitValidateCredential()
       await page.waitForTimeout(2000);
       const isGreenIconHidden = await connectionPage.isGreenCheckIconVisible();
@@ -51,7 +55,7 @@ test.describe('ConnectionTab', () => {
 
     test('test valid credentials', async ({ page }) => {
       titlePage.navigateToConnectionTab()
-      connectionPage.fillConnectionDetails(process.env.SSH_HOST,process.env.SSH_PORT,process.env.SSH_USER,process.env.SSH_PASSWD)
+      connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
       connectionPage.SubmitValidateCredential()
       await page.waitForTimeout(8000);
       const isGreenIconHidden = await connectionPage.isGreenCheckIconVisible();
