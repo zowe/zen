@@ -74,127 +74,127 @@ test.describe('PlanningTab', () => {
       expect (planning_title).toBe(PLANNING_TITLE);
     });
 
-    // test('Test all required fields on Planning Tab', async () => {
-    //   expect(planningPage.planningPageTitle).toBeTruthy();
-    //   expect(planningPage.zoweInstallationLink).toBeTruthy();
-    //   expect(planningPage.jobStatement).toBeTruthy();
-    //   expect(planningPage.saveAndValidate).toBeTruthy();
-    // })
+    test('Test all required fields on Planning Tab', async () => {
+      expect(planningPage.planningPageTitle).toBeTruthy();
+      expect(planningPage.zoweInstallationLink).toBeTruthy();
+      expect(planningPage.jobStatement).toBeTruthy();
+      expect(planningPage.saveAndValidate).toBeTruthy();
+    })
 
-    // test('Test Valid Job Statement and Save Validate', async () => {
-    //   planningPage.enterJobStatement(JOB_STATEMENT);
-    //   planningPage.clickSaveAndValidate();
-    //   expect(planningPage.isSaveAndValidateGreenCheckVisible).toBe(true);
-    // })
+    test('Test Valid Job Statement and Save Validate', async () => {
+      planningPage.enterJobStatement(JOB_STATEMENT);
+      planningPage.clickSaveAndValidate();
+      expect(planningPage.isSaveAndValidateGreenCheckVisible).toBe(true);
+    })
 
-    // test('Test Invalid Job Statement and Save Validate', async () => {
-    //   planningPage.enterJobStatement(INVALID_JOB_STATEMENT);
-    //   planningPage.clickSaveAndValidate();
-    //   expect(planningPage.isSaveAndValidateGreenCheckVisible).toBe(false);
-    // })
+    test('Test Invalid Job Statement and Save Validate', async () => {
+      planningPage.enterJobStatement(INVALID_JOB_STATEMENT);
+      planningPage.clickSaveAndValidate();
+      expect(planningPage.isSaveAndValidateGreenCheckVisible).toBe(false);
+    })
   
-    // test('Test Empty Job Statement and Save Validate', async () => {
-    //   planningPage.enterJobStatement('');
-    //   planningPage.clickSaveAndValidate();
-    //   expect(planningPage.isSaveAndValidateGreenCheckVisible).toBe(false);
-    // })
+    test('Test Empty Job Statement and Save Validate', async () => {
+      planningPage.enterJobStatement('');
+      planningPage.clickSaveAndValidate();
+      expect(planningPage.isSaveAndValidateGreenCheckVisible).toBe(false);
+    })
   
-    // test('Test all required fields on Planning Tab After Job Validation', async () => {
-    //   planningPage.enterJobStatement(JOB_STATEMENT);
-    //   planningPage.clickSaveAndValidate();
-    //   expect(planningPage.runtimeDir).toBeTruthy();
-    //   expect(planningPage.workspaceDir).toBeTruthy();
-    //   expect(planningPage.logsDir).toBeTruthy();
-    //   expect(planningPage.extensionsDir).toBeTruthy();
-    //   expect(planningPage.rbacProfileIdentifier).toBeTruthy();
-    //   expect(planningPage.jobName).toBeTruthy();
-    //   expect(planningPage.jobPrefix).toBeTruthy();
-    //   expect(planningPage.cookieIdentifier).toBeTruthy();
-    //   expect(planningPage.javaLocation).toBeTruthy();
-    //   expect(planningPage.nodeJsLocation).toBeTruthy();
-    //   expect(planningPage.setZosmf).toBeTruthy();
-    //   expect(planningPage.zosmfHost).toBeTruthy();
-    //   expect(planningPage.zosmfPort).toBeTruthy();
-    //   expect(planningPage.zosmfApplicationId).toBeTruthy();
-    //   expect(planningPage.validateLocations).toBeTruthy();
-    //   expect(planningPage.saveAndClose).toBeTruthy();
-    //   expect(planningPage.previousStep).toBeTruthy();
-    //   expect(planningPage.continueInstallationOptions).toBeTruthy();
-    //   expect(planningPage.isContinueToInstallationDisabled).toBe(true);
-    // })
+    test('Test all required fields on Planning Tab After Job Validation', async () => {
+      planningPage.enterJobStatement(JOB_STATEMENT);
+      planningPage.clickSaveAndValidate();
+      expect(planningPage.runtimeDir).toBeTruthy();
+      expect(planningPage.workspaceDir).toBeTruthy();
+      expect(planningPage.logsDir).toBeTruthy();
+      expect(planningPage.extensionsDir).toBeTruthy();
+      expect(planningPage.rbacProfileIdentifier).toBeTruthy();
+      expect(planningPage.jobName).toBeTruthy();
+      expect(planningPage.jobPrefix).toBeTruthy();
+      expect(planningPage.cookieIdentifier).toBeTruthy();
+      expect(planningPage.javaLocation).toBeTruthy();
+      expect(planningPage.nodeJsLocation).toBeTruthy();
+      expect(planningPage.setZosmf).toBeTruthy();
+      expect(planningPage.zosmfHost).toBeTruthy();
+      expect(planningPage.zosmfPort).toBeTruthy();
+      expect(planningPage.zosmfApplicationId).toBeTruthy();
+      expect(planningPage.validateLocations).toBeTruthy();
+      expect(planningPage.saveAndClose).toBeTruthy();
+      expect(planningPage.previousStep).toBeTruthy();
+      expect(planningPage.continueInstallationOptions).toBeTruthy();
+      expect(planningPage.isContinueToInstallationDisabled).toBe(true);
+    })
   
-    // test('Test Validate Locations with Valid Data', async () => {
-    //   planningPage.enterJobStatement(JOB_STATEMENT);
-    //   planningPage.clickSaveAndValidate();
-    //   planningPage.enterRuntimeDir(RUNTIME_DIR);
-    //   planningPage.enterWorkspaceDir(WORKSPACE_DIR);
-    //   planningPage.enterLogsDir(LOG_DIR);
-    //   planningPage.enterExtensionsDir(EXTENSIONS_DIR);
-    //   planningPage.enterRbacProfileIdentifier(RBAC_IDENTIFIER);
-    //   planningPage.enterJobName(JOB_NAME);
-    //   planningPage.enterJobPrefix(JOB_PREFIX);
-    //   planningPage.enterCookieIdentifier(COOKIE_IDENTIFIER);
-    //   planningPage.enterJavaLocation(JAVA_LOCATION);
-    //   planningPage.enterNodeJsLocation(NODEJS_LOCATION);
-    //   planningPage.checkSetZosmfAttribute();
-    //   planningPage.enterZosmfHost(ZOSMF_HOST);
-    //   planningPage.enterZosmfPort(ZOSMF_PORT);     
-    //   planningPage.enterZosmfApplicationId(ZOSMF_APPID);
-    //   planningPage.clickValidateLocations();
-    //   expect(planningPage.isValidateLocationsGreenCheckVisible).toBe(true)
-    //   expect(planningPage.isContinueToInstallationEnabled).toBe(true)
-    //   planningPage.clickContinueToInstallation();
-    //   const installationType_title = installationTypePage.getInstallationTypePageTitle()
-    //   expect (installationType_title).toBe(INSTALLATION_TYPE_TITLE);     
-    // })
+    test('Test Validate Locations with Valid Data', async () => {
+      planningPage.enterJobStatement(JOB_STATEMENT);
+      planningPage.clickSaveAndValidate();
+      planningPage.enterRuntimeDir(RUNTIME_DIR);
+      planningPage.enterWorkspaceDir(WORKSPACE_DIR);
+      planningPage.enterLogsDir(LOG_DIR);
+      planningPage.enterExtensionsDir(EXTENSIONS_DIR);
+      planningPage.enterRbacProfileIdentifier(RBAC_IDENTIFIER);
+      planningPage.enterJobName(JOB_NAME);
+      planningPage.enterJobPrefix(JOB_PREFIX);
+      planningPage.enterCookieIdentifier(COOKIE_IDENTIFIER);
+      planningPage.enterJavaLocation(JAVA_LOCATION);
+      planningPage.enterNodeJsLocation(NODEJS_LOCATION);
+      planningPage.checkSetZosmfAttribute();
+      planningPage.enterZosmfHost(ZOSMF_HOST);
+      planningPage.enterZosmfPort(ZOSMF_PORT);     
+      planningPage.enterZosmfApplicationId(ZOSMF_APPID);
+      planningPage.clickValidateLocations();
+      expect(planningPage.isValidateLocationsGreenCheckVisible).toBe(true)
+      expect(planningPage.isContinueToInstallationEnabled).toBe(true)
+      planningPage.clickContinueToInstallation();
+      const installationType_title = installationTypePage.getInstallationTypePageTitle()
+      expect (installationType_title).toBe(INSTALLATION_TYPE_TITLE);     
+    })
 
-    // test('Test Validate Locations with Invalid Data', async () => {
-    //   planningPage.enterJobStatement(JOB_STATEMENT);
-    //   planningPage.clickSaveAndValidate();
-    //   planningPage.enterRuntimeDir('Test/DIR');
-    //   planningPage.enterWorkspaceDir('Workspace Dir');
-    //   planningPage.enterLogsDir(LOG_DIR);
-    //   planningPage.enterExtensionsDir(EXTENSIONS_DIR);
-    //   planningPage.enterRbacProfileIdentifier(22);
-    //   planningPage.enterJobName(JOB_NAME);
-    //   planningPage.enterJobPrefix(JOB_PREFIX);
-    //   planningPage.enterCookieIdentifier(99999);
-    //   planningPage.enterJavaLocation('/');
-    //   planningPage.enterNodeJsLocation(NODEJS_LOCATION);
-    //   planningPage.checkSetZosmfAttribute();
-    //   planningPage.enterZosmfHost(ZOSMF_HOST);
-    //   planningPage.enterZosmfPort(987776);     
-    //   planningPage.enterZosmfApplicationId('ABCDDDETT');
-    //   planningPage.clickValidateLocations();
-    //   expect(planningPage.isValidateLocationsGreenCheckVisible).toBe(false)
-    //   expect(planningPage.isContinueToInstallationEnabled).toBe(false)
-    // })
+    test('Test Validate Locations with Invalid Data', async () => {
+      planningPage.enterJobStatement(JOB_STATEMENT);
+      planningPage.clickSaveAndValidate();
+      planningPage.enterRuntimeDir('Test/DIR');
+      planningPage.enterWorkspaceDir('Workspace Dir');
+      planningPage.enterLogsDir(LOG_DIR);
+      planningPage.enterExtensionsDir(EXTENSIONS_DIR);
+      planningPage.enterRbacProfileIdentifier(22);
+      planningPage.enterJobName(JOB_NAME);
+      planningPage.enterJobPrefix(JOB_PREFIX);
+      planningPage.enterCookieIdentifier(99999);
+      planningPage.enterJavaLocation('/');
+      planningPage.enterNodeJsLocation(NODEJS_LOCATION);
+      planningPage.checkSetZosmfAttribute();
+      planningPage.enterZosmfHost(ZOSMF_HOST);
+      planningPage.enterZosmfPort(987776);     
+      planningPage.enterZosmfApplicationId('ABCDDDETT');
+      planningPage.clickValidateLocations();
+      expect(planningPage.isValidateLocationsGreenCheckVisible).toBe(false)
+      expect(planningPage.isContinueToInstallationEnabled).toBe(false)
+    })
 
-    // test('Test Previous step', async ({ page }) => {
-    //   await page.waitForTimeout(5000);
-    //   planningPage.clickPreviousStep();
-    //   const title = await connectionPage.getConnectionPageTitle();
-    //   expect(title).toBe(CONNECTION_PAGE_TITLE);
-    //  })
+    test('Test Previous step', async ({ page }) => {
+      await page.waitForTimeout(5000);
+      planningPage.clickPreviousStep();
+      const title = await connectionPage.getConnectionPageTitle();
+      expect(title).toBe(CONNECTION_PAGE_TITLE);
+     })
 
-    //  test('Test Save and Close and Resume Progress', async () => {
-    //   planningPage.enterJobStatement(JOB_STATEMENT);
-    //   planningPage.clickSaveAndValidate();
-    //   planningPage.enterRuntimeDir(RUNTIME_DIR);
-    //   planningPage.enterWorkspaceDir(WORKSPACE_DIR);
-    //   planningPage.enterLogsDir(LOG_DIR);
-    //   planningPage.enterExtensionsDir(EXTENSIONS_DIR);
-    //   planningPage.enterRbacProfileIdentifier(RBAC_IDENTIFIER);
-    //   planningPage.enterJobName(JOB_NAME);
-    //   planningPage.enterJobPrefix(JOB_PREFIX);
-    //   planningPage.enterCookieIdentifier(COOKIE_IDENTIFIER);
-    //   planningPage.enterJavaLocation(JAVA_LOCATION);
-    //   planningPage.enterNodeJsLocation(NODEJS_LOCATION);
-    //   planningPage.clickValidateLocations();
-    //   await page.waitForTimeout(5000);
-    //   planningPage.clickSaveAndClose();
-    //   titlePage.clickOnResumeProgress();
-    //   expect(planningPage.isValidateLocationsGreenCheckVisible).toBe(true)
-    //   expect(planningPage.isContinueToInstallationEnabled).toBe(true)
-    // }) 
+     test('Test Save and Close and Resume Progress', async () => {
+      planningPage.enterJobStatement(JOB_STATEMENT);
+      planningPage.clickSaveAndValidate();
+      planningPage.enterRuntimeDir(RUNTIME_DIR);
+      planningPage.enterWorkspaceDir(WORKSPACE_DIR);
+      planningPage.enterLogsDir(LOG_DIR);
+      planningPage.enterExtensionsDir(EXTENSIONS_DIR);
+      planningPage.enterRbacProfileIdentifier(RBAC_IDENTIFIER);
+      planningPage.enterJobName(JOB_NAME);
+      planningPage.enterJobPrefix(JOB_PREFIX);
+      planningPage.enterCookieIdentifier(COOKIE_IDENTIFIER);
+      planningPage.enterJavaLocation(JAVA_LOCATION);
+      planningPage.enterNodeJsLocation(NODEJS_LOCATION);
+      planningPage.clickValidateLocations();
+      await page.waitForTimeout(5000);
+      planningPage.clickSaveAndClose();
+      titlePage.clickOnResumeProgress();
+      expect(planningPage.isValidateLocationsGreenCheckVisible).toBe(true)
+      expect(planningPage.isContinueToInstallationEnabled).toBe(true)
+    }) 
   })
