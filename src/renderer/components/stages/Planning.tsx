@@ -18,7 +18,7 @@ import Button from '@mui/material/Button';
 import ContainerCard from '../common/ContainerCard';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { setYaml, setSchema, setNextStepEnabled, setLoading, selectYaml } from '../configuration-wizard/wizardSlice';
-import { selectConnectionArgs, setConnectionArgs } from './connection/connectionSlice';
+import { selectConnectionArgs, setConnectionArgs, setJobStatementVal } from './connection/connectionSlice';
 import { setPlanningStatus, selectPlanningStatus } from './progress/progressSlice';
 import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from './installation/installationSlice';
 import { setJobStatement, setJobStatementValid, setJobStatementValidMsg, setLocationValidationDetails, setIsLocationValid, selectJobStatement, selectJobStatementValid, selectJobStatementValidMsg, selectLocValidationDetails } from "./PlanningSlice";
@@ -1258,7 +1258,7 @@ const Planning = () => {
   // const [jobStatementValue, setJobStatementValue] = useState(useAppSelector(selectJobStatement));
   const [jobStatementValue, setJobStatementValue] = useState(getPlanningStageStatus()?.jobStatement);
   
-  const [locationsValidated, setLocationsValidated] = useState(false);
+  const [locationsValidated, setLocationsValidated] = useState(getPlanningStageStatus()?.isLocationValid || false);
   const [isLocationsUpdated, setIsLocationsUpdated] = useState(false);
   const [validationDetails, setValidationDetails] = useState({javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''});
   const [showZosmfAttributes, setShowZosmfAttributes] = useState(true);
@@ -1280,9 +1280,6 @@ const Planning = () => {
   };
 
   useEffect(() => {
-    if(jobStatementValid && !isJobStatementUpdated) {
-      saveJobHeader(null);
-    }
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     }
@@ -1295,10 +1292,7 @@ const Planning = () => {
     // FIXME: Save yaml and schema on disk to not to pull it each time?
     // REVIEW: Replace JobStatement text area with set of text fields?
 
-    if(jobStatementValid && !isJobStatementUpdated) {
-      saveJobHeader(null);
-      return;
-    }
+    dispatch(setJobStatementVal(jobStatementValue));
 
     window.electron.ipcRenderer.getZoweVersion().then((res: IResponse) => dispatch(setZoweVersion(res.status ? res.details : '' )));
 
