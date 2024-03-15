@@ -1332,8 +1332,8 @@ const Planning = () => {
   }, []); 
 
   useEffect(() => {
-    // dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
-    dispatch(setNextStepEnabled(true));
+    dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
+    dispatch(setPlanningStatus(jobHeaderSaved && locationsValidated));
   }, [jobHeaderSaved, locationsValidated]);
 
   useEffect(() => {
