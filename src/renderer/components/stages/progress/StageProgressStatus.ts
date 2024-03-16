@@ -9,22 +9,7 @@
  */
 
 import { flatten, unflatten } from 'flat';
-import { ProgressState } from "./progressSlice"; 
-import { ActiveState } from './activeStepSlice'
-
-export interface PlanningState {
-  jobStatement: string;
-  isJobStatementValid: boolean;
-  isLocationValid: boolean;
-}
-
-export interface InstallationType {
-  installationType: string;
-  licenseAgreement: boolean;
-  userUploadedPaxPath: string;
-  smpeDir: string;
-  smpeDirValid: boolean;
-}
+import { ProgressState, PlanningState, InstallationType, ActiveState} from '../../../../types/stateInterfaces';
 
 const installationTypeStatus: InstallationType = {
   installationType: 'download',

@@ -115,6 +115,15 @@ const Installation = () => {
     setEditorVisible(!editorVisible);
   };
 
+  const resetStageStatus = () => {
+    setIsFormValid(false);
+    dispatch(setNextStepEnabled(false));
+    dispatch(setInitializationStatus(false));
+    dispatch(setDatasetInstallationStatus(false));
+    stages[stageId].subStages[subStageId].isSkipped = true;
+    stages[stageId].isSkipped = true;
+  }
+
   const process = (event: any, skipDownload?: boolean) => {
     event.preventDefault();
     dispatch(setLoading(true));
@@ -139,17 +148,12 @@ const Installation = () => {
             alertEmitter.emit('showAlert', res.details, 'error');
           }
           dispatch(setNextStepEnabled(res.status));
-          dispatch(setDatasetInstallationStatus(res.status));
           dispatch(setDatasetInstallationStatus(true));
           dispatch(setInitializationStatus(true));
           clearInterval(timer);
         }).catch(() => {
           clearInterval(timer);
-          dispatch(setNextStepEnabled(false));
-          dispatch(setInitializationStatus(false));
-          dispatch(setDatasetInstallationStatus(false));
-          stages[stageId].subStages[subStageId].isSkipped = true;
-          stages[stageId].isSkipped = true;
+          resetStageStatus();
           console.warn('Installation failed');
         });
       }
@@ -159,9 +163,10 @@ const Installation = () => {
   const debouncedChange = useCallback(
     debounce((state: any)=>{handleFormChange(state)}, 1000),
     []
-)
+  )
 
   const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
+    resetStageStatus();
     let updatedData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.dataset) : (data.zowe?.setup?.dataset ? data.zowe.setup.dataset : data);
     
     setIsFormInit(false);
@@ -179,7 +184,6 @@ const Installation = () => {
       }
     }
   }
-
 
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
@@ -201,7 +205,7 @@ const Installation = () => {
         </Typography>
 
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
-          {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
+          {!isFormValid && formError && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>  
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
