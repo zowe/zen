@@ -9,7 +9,7 @@
  */
 
 import { flatten, unflatten } from 'flat';
-import { ProgressState, PlanningState, InstallationType, ActiveState} from '../../../../types/stateInterfaces';
+import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState} from '../../../../types/stateInterfaces';
 
 const installationTypeStatus: InstallationType = {
   installationType: 'download',
@@ -43,16 +43,27 @@ const planningStageStatus: PlanningState = {
   isLocationValid: false
 }
 
+const datasetInstallationStatus: DatasetInstallationState = {
+  uploadYaml: false,
+  download: false,
+  upload: false,
+  unpax: false,
+  install: false,
+  initMVS: false
+}
+
 let progressStateKey = 'stage_progress';
 let activeStateKey = 'active_state';
 let planningStateKey = 'planning_stage';
 let installationTypeKey = 'installation_type';
+let datasetInstallationKey = 'dataset_installation';
 
 const setKeys = (id: string) => {
   progressStateKey = `${progressStateKey}_${id}`;
   activeStateKey = `${activeStateKey}_${id}`;
   planningStateKey = `${planningStateKey}_${id}`;
-  installationTypeKey = `${installationTypeKey}_${id}`
+  installationTypeKey = `${installationTypeKey}_${id}`;
+  datasetInstallationKey = `${datasetInstallationKey}_${id}`;
 }
 
 export const initializeProgress = (host: string, user: string) => {
@@ -81,6 +92,31 @@ export const initializeProgress = (host: string, user: string) => {
   if(!installationTypeState) {
     const flattenedData = flatten(installationTypeStatus);
     localStorage.setItem(installationTypeKey, JSON.stringify(flattenedData));
+  }
+
+  const datasetInstallationState = localStorage.getItem(datasetInstallationKey);
+  if(!datasetInstallationState) {
+    const flattenedData = flatten(datasetInstallationStatus);
+    localStorage.setItem(datasetInstallationKey, JSON.stringify(flattenedData));
+  }
+}
+
+export const setDatasetInstallationState = (dsInstallSteps: DatasetInstallationState): void => {
+  for (const key of Object.keys(dsInstallSteps)) {
+    if (dsInstallSteps.hasOwnProperty(key)) {
+      datasetInstallationStatus[key as keyof DatasetInstallationState] = dsInstallSteps[key as keyof DatasetInstallationState];
+    }
+  }
+  localStorage.setItem(datasetInstallationKey, JSON.stringify(datasetInstallationStatus));
+}
+
+export const getDatasetInstallationState = (): DatasetInstallationState => {
+  const datasetInstallationState = localStorage.getItem(datasetInstallationKey);
+  if(datasetInstallationState) {
+    const flattenedData = JSON.parse(datasetInstallationState);
+    return unflatten(flattenedData)
+  } else {
+    return datasetInstallationStatus;
   }
 }
 

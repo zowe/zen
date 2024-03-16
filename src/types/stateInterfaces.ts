@@ -9,15 +9,15 @@
  */
 
 export interface ProgressState {
-    connectionStatus: boolean;
-    planningStatus: boolean;
-    installationTypeStatus: boolean;
-    initializationStatus: boolean;
-    datasetInstallationStatus: boolean;
-    apfAuthStatus: boolean;
-    securityStatus: boolean;
-    certificateStatus: boolean;
-    reviewStatus: boolean;
+  connectionStatus: boolean;
+  planningStatus: boolean;
+  installationTypeStatus: boolean;
+  initializationStatus: boolean;
+  datasetInstallationStatus: boolean;
+  apfAuthStatus: boolean;
+  securityStatus: boolean;
+  certificateStatus: boolean;
+  reviewStatus: boolean;
 }
 
 export interface PlanningState {
@@ -32,14 +32,23 @@ export interface InstallationType {
   userUploadedPaxPath: string;
   smpeDir: string;
   smpeDirValid: boolean;
-  }
+}
 
-  export interface ActiveState {
-    activeStepIndex: number,
-    isSubStep: boolean,
-    activeSubStepIndex: number,
-    date?: string
-  }
+export interface ActiveState {
+  activeStepIndex: number,
+  isSubStep: boolean,
+  activeSubStepIndex: number,
+  date?: string
+}
+
+export interface DatasetInstallationState {
+  uploadYaml: boolean,
+  download: boolean,
+  upload: boolean,
+  unpax: boolean,
+  install: boolean,
+  initMVS: boolean
+}
 
 
 

@@ -24,13 +24,13 @@ export interface locationValidation {
 }
 
 const initialState: jobValidation = {
-  jobStatement: '',
-  isJobStatementValid: false,
+  jobStatement: getPlanningStageStatus()?.jobStatement || '',
+  isJobStatementValid: getPlanningStageStatus()?.isJobStatementValid || false,
   jobStatementValidMsg: ''
 }
 
 const locValidationInitialState: locationValidation = {
-  isLocationValid: false,
+  isLocationValid: getPlanningStageStatus()?.isLocationValid || false,
   locValidationDetails: {}
 }
 

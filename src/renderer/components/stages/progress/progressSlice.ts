@@ -10,35 +10,20 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
-import { setProgress } from './StageProgressStatus';
+import { setProgress, getProgress } from './StageProgressStatus';
 import { ProgressState } from '../../../../types/stateInterfaces';
 
 const initialState: ProgressState = {
-  connectionStatus: false,
-  planningStatus: false,
-  installationTypeStatus: false,
-  initializationStatus: false,
-  datasetInstallationStatus: false,
-  apfAuthStatus: false,
-  securityStatus: false,
-  certificateStatus: false,
-  reviewStatus: false,
+  connectionStatus: getProgress('connectionStatus') || false,
+  planningStatus: getProgress('planningStatus') || false,
+  installationTypeStatus: getProgress('installationTypeStatus') || false,
+  initializationStatus: getProgress('initializationStatus') || false,
+  datasetInstallationStatus: getProgress('datasetInstallationStatus') || false,
+  apfAuthStatus: getProgress('apfAuthStatus') || false,
+  securityStatus: getProgress('securityStatus') || false,
+  certificateStatus: getProgress('certificateStatus') || false,
+  reviewStatus: getProgress('reviewStatus') || false
 }
-
-
-// TO do: Initialization when we add the logic to maintain the state of the stage.
-
-// const initialState: progressState = {
-//   connectionStatus: getProgress('connectionStatus'),
-//   planningStatus: getProgress('planningStatus'),
-//   installationTypeStatus: getProgress('installationTypeStatus'),
-//   initializationStatus: getProgress('initializationStatus'),
-//   datasetInstallationStatus: getProgress('datasetInstallationStatus'),
-//   apfAuthStatus: getProgress('apfAuthStatus'),
-//   securityStatus: getProgress('securityStatus'),
-//   certificateStatus: getProgress('certificateStatus'),
-//   reviewStatus: getProgress('reviewStatus')
-// }
 
 export const progressSlice = createSlice({
   name: 'progress',

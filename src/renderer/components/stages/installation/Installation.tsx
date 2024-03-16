@@ -26,6 +26,7 @@ import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../../utils/StageDetails"; 
+import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState } from "../progress/StageProgressStatus";
 
 const Installation = () => {
 
@@ -48,25 +49,19 @@ const Installation = () => {
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
-  const [showProgress, toggleProgress] = useState(false);
+  const [showProgress, toggleProgress] = useState(getProgress('datasetInstallationStatus'));
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
-  const [installationProgress, setInstallationProgress] = useState({
-    uploadYaml: false,
-    download: false,
-    upload: false,
-    unpax: false,
-    install: false,
-    initMVS: false
-  });
+  const [installationProgress, setInstallationProgress] = useState(getDatasetInstallationState());
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   const version = useAppSelector(selectZoweVersion);
   let timer: any;
 
+  console.log("--SHOW PROGRESS: ", showProgress);
   const section = 'dataset';
   // const initConfig = getConfiguration(section);
 
@@ -90,7 +85,8 @@ const Installation = () => {
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
   
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    dispatch(setNextStepEnabled(getProgress('datasetInstallationStatus')));
+    toggleProgress(getProgress('datasetInstallationStatus'));
     stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
     stages[stageId].isSkipped = isInitializationSkipped;
     setIsFormInit(true);
@@ -103,7 +99,8 @@ const Installation = () => {
   useEffect(() => {
     timer = setInterval(() => {
       window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
-        setInstallationProgress(res);
+        // setInstallationProgress(res);
+        // setDatasetInstallationState(res);
       })
     }, 3000);
     const nextPosition = document.getElementById('installation-progress');
@@ -116,7 +113,9 @@ const Installation = () => {
   };
 
   const resetStageStatus = () => {
+    console.log("--RESTE STAGE SET PROGRESS FALSE");
     setIsFormValid(false);
+    toggleProgress(false);
     dispatch(setNextStepEnabled(false));
     dispatch(setInitializationStatus(false));
     dispatch(setDatasetInstallationStatus(false));
@@ -125,6 +124,7 @@ const Installation = () => {
   }
 
   const process = (event: any, skipDownload?: boolean) => {
+    resetStageStatus();
     event.preventDefault();
     dispatch(setLoading(true));
     const {javaHome, nodeHome, installationDir, installationType, smpeDir} = installationArgs;
@@ -150,10 +150,12 @@ const Installation = () => {
           dispatch(setNextStepEnabled(res.status));
           dispatch(setDatasetInstallationStatus(true));
           dispatch(setInitializationStatus(true));
+          toggleProgress(true);
           clearInterval(timer);
         }).catch(() => {
           clearInterval(timer);
           resetStageStatus();
+          console.log("--CALLING RESET");
           console.warn('Installation failed');
         });
       }
@@ -166,7 +168,7 @@ const Installation = () => {
   )
 
   const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
-    resetStageStatus();
+    console.log("--HANDLE FORM CHANGE INSTALLATION");
     let updatedData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.dataset) : (data.zowe?.setup?.dataset ? data.zowe.setup.dataset : data);
     
     setIsFormInit(false);
@@ -221,6 +223,7 @@ const Installation = () => {
             <ProgressCard label="Unpax installation files" id="unpax-progress-card" status={installationProgress.unpax}/>
             <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={installationProgress.install}/>
             <ProgressCard label="Run MVS dataset initialization script (zwe init mvs)" id="install-progress-card" status={installationProgress.initMVS}/>
+            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'Reinstall MVS datasets'}</Button>
           </React.Fragment>
         }
         </Box> 

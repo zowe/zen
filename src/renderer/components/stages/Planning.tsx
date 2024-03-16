@@ -1407,6 +1407,7 @@ const Planning = () => {
         console.warn(err);
         dispatch(setJobStatementValidMsg(err.message));
         dispatch(setJobStatementValid(false));
+        console.log("--CATCH BLOCK: JOBSTATEMENTINVALID");
         alertEmitter.emit('showAlert', err.message, 'error');
         dispatch(setLoading(false));
       });    
@@ -1506,6 +1507,7 @@ const Planning = () => {
   }
 
   const onJobStatementChange = (newJobStatement: string) => {
+    console.log("--JOB STATEMENT CHANGE");
     setIsJobStatementUpdated(true);
     setJobStatementValue(newJobStatement);
     setJobHeaderSaved(false);
@@ -1518,6 +1520,7 @@ const Planning = () => {
   }
 
   const formChangeHandler = (key?: string, value?: string, installationArg?: string) => {
+    console.log("--FORMCHANGE HANDLER PLANNING STAGE\n");
     setIsLocationsUpdated(true);
     setPlanningStatus(false);
     setLocationsValidated(false);

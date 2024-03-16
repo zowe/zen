@@ -44,9 +44,9 @@ const initialState: InstallationState = {
     workspaceDir: '',
     logDir:'',
     extensionDir:'',
-    installationType: 'download',
-    userUploadedPaxPath: '',
-    smpeDir: '',
+    installationType: getInstallationTypeStatus()?.installationType || 'download',
+    userUploadedPaxPath: getInstallationTypeStatus()?.userUploadedPaxPath || '',
+    smpeDir: getInstallationTypeStatus()?.smpeDir || '',
     downloadDir: '',
     javaHome: '',
     nodeHome: '',
@@ -60,8 +60,8 @@ const initialState: InstallationState = {
     zosmfApplId: 'IZUDFLT'
   },
   zoweVersion: '',
-  licenseAgreement: false,
-  smpeDirValid: false,
+  licenseAgreement: getInstallationTypeStatus()?.licenseAgreement || false,
+  smpeDirValid: getInstallationTypeStatus()?.smpeDirValid || false,
 };
 
 export const installationSlice = createSlice({
