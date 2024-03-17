@@ -20,7 +20,7 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import eventDispatcher from '../../../utils/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
-import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from './progress/progressSlice';
+import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus } from './progress/progressSlice';
 import { setActiveStep } from './progress/activeStepSlice';
 import { selectConnectionStatus } from "./progress/progressSlice";
 import { selectInstallationTypeStatus } from "./progress/progressSlice";
@@ -54,9 +54,11 @@ const ReviewInstallation = () => {
   
   const subStageProgressStatus = [
     useSelector(selectDatasetInstallationStatus),
+    useSelector(selectNetworkingStatus),
     useSelector(selectApfAuthStatus),
     useSelector(selectSecurityStatus),
     useSelector(selectCertificateStatus), 
+    useSelector(selectLaunchConfigStatus),
   ];
 
   const TYPE_YAML = "yaml";
