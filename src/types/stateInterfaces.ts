@@ -14,9 +14,11 @@ export interface ProgressState {
   installationTypeStatus: boolean;
   initializationStatus: boolean;
   datasetInstallationStatus: boolean;
+  networkingStatus: boolean;
   apfAuthStatus: boolean;
   securityStatus: boolean;
   certificateStatus: boolean;
+  launchConfigStatus: boolean;
   reviewStatus: boolean;
 }
 
