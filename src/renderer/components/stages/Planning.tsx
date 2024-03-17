@@ -29,7 +29,7 @@ import { Checkbox, FormControlLabel } from "@mui/material";
 import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
 import { getStageDetails } from "../../../utils/StageDetails";
-import { getPlanningStageStatus } from "./progress/StageProgressStatus";
+import { getProgress, getPlanningStageStatus } from "./progress/StageProgressStatus";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -1266,7 +1266,6 @@ const Planning = () => {
   const zoweVersion = useAppSelector(selectZoweVersion);
   const [installationArgs, setInstArgs] = useState(useAppSelector(selectInstallationArgs));
   const [requiredSpace, setRequiredSpace] = useState(1300); //in megabytes
-  // let localYaml: any = getZoweConfig();
 
   const [contentType, setContentType] = useState('output');
   const [editorVisible, setEditorVisible] = useState(false);
@@ -1286,8 +1285,7 @@ const Planning = () => {
   })
 
   useEffect(() => {
-    // dispatch(setNextStepEnabled(false));
-    dispatch(setNextStepEnabled(true));
+    setPlanningState(getProgress('planningStatus'));
     // FIXME: Add a popup warning in case failed to get config files
     // FIXME: Save yaml and schema on disk to not to pull it each time?
     // REVIEW: Replace JobStatement text area with set of text fields?
@@ -1332,14 +1330,28 @@ const Planning = () => {
   }, []); 
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
-    dispatch(setPlanningStatus(jobHeaderSaved && locationsValidated));
+    setPlanningState(jobHeaderSaved && locationsValidated);
   }, [jobHeaderSaved, locationsValidated]);
 
   useEffect(() => {
     const nextPosition = document.getElementById(`position-${step}`);
     nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [step]);
+
+  const setPlanningState = (status: boolean): void => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setPlanningStatus(status));
+  }
+
+  const setLocValidations = (status: boolean): void => {
+    setLocationsValidated(status);
+    dispatch(setIsLocationValid(status));
+  }
+
+  const setEditorContentAndType = (content: any, type: string): void => {
+    setEditorContent(content);
+    setContentType(type);
+  }
 
   const getENVVars = () => {
     return window.electron.ipcRenderer.getENVVars(connectionArgs).then((res: IResponse) => {
@@ -1366,8 +1378,7 @@ const Planning = () => {
     
     if(jobStatementValid && !isJobStatementUpdated) {
       setJobHeaderSaved(true);
-      setEditorContent(jobStatementValidMsg);
-      setContentType('output');
+      setEditorContentAndType(jobStatementValidMsg, 'output');
       if (step < 1) {
         setStep(1);
       }
@@ -1381,8 +1392,7 @@ const Planning = () => {
     window.electron.ipcRenderer.saveJobHeader(jobStatementValue)
       .then(() => getENVVars())
       .then((res: IResponse) => {
-        setEditorContent(res.details);
-        setContentType('output');
+        setEditorContentAndType(res.details, 'output');
         if (!res.status) { // Failure case
           dispatch(setJobStatementValidMsg(res.details));
           console.warn('Failed to verify job statement');
@@ -1391,8 +1401,7 @@ const Planning = () => {
           dispatch(setJobStatementValid(true));
           alertEmitter.emit('hideAlert');
           if(locationsValidated) {
-            dispatch(setPlanningStatus(true));
-            dispatch(setNextStepEnabled(true));
+            setPlanningState(true);
             setStep(2);
           } else if (step < 1) {
             setStep(1);
@@ -1402,8 +1411,7 @@ const Planning = () => {
         dispatch(setLoading(false));
       })
       .catch((err: Error) => {
-        setEditorContent(err.message);
-        setContentType('output');
+        setEditorContentAndType(err.message, 'output');
         console.warn(err);
         dispatch(setJobStatementValidMsg(err.message));
         dispatch(setJobStatementValid(false));
@@ -1416,12 +1424,10 @@ const Planning = () => {
   const validateLocations = (e: any, click?: boolean) => {
    
     if(planningStatus && !isLocationsUpdated && !click) {
-      setLocationsValidated(true);
+      setLocValidations(true);
+      setPlanningState(true);
       setValidationDetails(locationValidationDetails);
-      setEditorContent(jobStatementValidMsg);
-      setContentType('output');
-      dispatch(setIsLocationValid(true));
-      dispatch(setNextStepEnabled(true));
+      setEditorContentAndType(jobStatementValidMsg, 'output');
       setStep(2);
       return;
     }
@@ -1496,9 +1502,8 @@ const Planning = () => {
       dispatch(setLoading(false));
       if (!details.error) {
         alertEmitter.emit('hideAlert');
-        setLocationsValidated(true);
-        dispatch(setIsLocationValid(true));
-        dispatch(setPlanningStatus(true));
+        setLocValidations(true);
+        setPlanningState(true);
         setStep(2);
       } else {
         alertEmitter.emit('showAlert', details.error, 'error');
@@ -1507,26 +1512,19 @@ const Planning = () => {
   }
 
   const onJobStatementChange = (newJobStatement: string) => {
-    console.log("--JOB STATEMENT CHANGE");
     setIsJobStatementUpdated(true);
     setJobStatementValue(newJobStatement);
     setJobHeaderSaved(false);
-    setPlanningStatus(false);
     setJobStatementValidation(false);
     dispatch(setJobStatement(newJobStatement));
     dispatch(setJobStatementValid(false));
-    dispatch(setPlanningStatus(false));
+    setPlanningState(false);
     setStep(0);
   }
 
   const formChangeHandler = (key?: string, value?: string, installationArg?: string) => {
-    console.log("--FORMCHANGE HANDLER PLANNING STAGE\n");
     setIsLocationsUpdated(true);
-    setPlanningStatus(false);
-    setLocationsValidated(false);
-    dispatch(setIsLocationValid(false));
-    dispatch(setPlanningStatus(false));
-    dispatch(setNextStepEnabled(false));
+    setLocValidations(false);
     setStep(1);
 
     if (!key || !value) {

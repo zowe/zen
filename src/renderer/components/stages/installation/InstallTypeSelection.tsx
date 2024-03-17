@@ -55,13 +55,17 @@ const InstallationType = () => {
 
   useEffect(() => {
     if((installValue === "download" && agreeLicense == false) || (installValue === "upload" && paxPath == "") || installValue === "smpe" && (smpePath === "" || !smpePathValidated)){
-        dispatch(setNextStepEnabled(false));
+      updateProgress(false);
     } else {
-        dispatch(setInstallationTypeStatus(true))
-        dispatch(setNextStepEnabled(true));
+      updateProgress(true);
     }
     
   }, [installValue, paxPath, installationArgs, agreeLicense, smpePathValidated]);
+
+  const updateProgress = (status: boolean): void => {
+    dispatch(setInstallationTypeStatus(status))
+    dispatch(setNextStepEnabled(status));
+  }
 
   const showLicenseAgreement = () => {
     setShowLicense(true);
@@ -83,7 +87,7 @@ const InstallationType = () => {
       dispatch(setLicenseAgreement(false));
     }
     setInstallValue(type);
-    dispatch(setInstallationTypeStatus(false))
+    updateProgress(false);
   }
 
   const onSmpePathChange = (path: string) => {
@@ -91,7 +95,7 @@ const InstallationType = () => {
     setSmpePath(path);
     dispatch(setSmpeDirValid(false));
     setSmpePathValidated(false);
-    dispatch(setInstallationTypeStatus(false))
+    updateProgress(false);
   }
 
   const validateSmpePath = async(e: any, connectionArgs: any, smpePath: string) => {
@@ -99,7 +103,7 @@ const InstallationType = () => {
     window.electron.ipcRenderer.checkDirExists(connectionArgs, smpePath).then((res: boolean) => {
       setSmpePathValidated(res);
       dispatch(setSmpeDirValid(res));
-      dispatch(setInstallationTypeStatus(res))
+      updateProgress(res);
     })
   }
 

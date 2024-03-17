@@ -85,10 +85,7 @@ const Installation = () => {
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
   
   useEffect(() => {
-    dispatch(setNextStepEnabled(getProgress('datasetInstallationStatus')));
-    toggleProgress(getProgress('datasetInstallationStatus'));
-    stages[stageId].subStages[subStageId].isSkipped = isStepSkipped;
-    stages[stageId].isSkipped = isInitializationSkipped;
+    updateProgress(getProgress('datasetInstallationStatus'));
     setIsFormInit(true);
 
     return () => {
@@ -96,11 +93,20 @@ const Installation = () => {
     }
   }, []);
 
+  const updateProgress = (status: boolean) => {
+    toggleProgress(status);
+    stages[stageId].subStages[subStageId].isSkipped = !status;
+    stages[stageId].isSkipped = !status;
+    dispatch(setNextStepEnabled(status));
+    dispatch(setInitializationStatus(status));
+    dispatch(setDatasetInstallationStatus(status));
+  }
+
   useEffect(() => {
     timer = setInterval(() => {
       window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
-        // setInstallationProgress(res);
-        // setDatasetInstallationState(res);
+        setInstallationProgress(res);
+        setDatasetInstallationState(res);
       })
     }, 3000);
     const nextPosition = document.getElementById('installation-progress');
@@ -112,19 +118,8 @@ const Installation = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const resetStageStatus = () => {
-    console.log("--RESTE STAGE SET PROGRESS FALSE");
-    setIsFormValid(false);
-    toggleProgress(false);
-    dispatch(setNextStepEnabled(false));
-    dispatch(setInitializationStatus(false));
-    dispatch(setDatasetInstallationStatus(false));
-    stages[stageId].subStages[subStageId].isSkipped = true;
-    stages[stageId].isSkipped = true;
-  }
-
   const process = (event: any, skipDownload?: boolean) => {
-    resetStageStatus();
+    updateProgress(false);
     event.preventDefault();
     dispatch(setLoading(true));
     const {javaHome, nodeHome, installationDir, installationType, smpeDir} = installationArgs;
@@ -134,9 +129,7 @@ const Installation = () => {
       window.electron.ipcRenderer.setConfigByKey('zowe.setup.dataset', setupYaml),
     ]).then(async () => {
       if(installationType === 'smpe'){
-        dispatch(setNextStepEnabled(true));
-        dispatch(setDatasetInstallationStatus(true));
-        dispatch(setInitializationStatus(true));
+        updateProgress(true);
         dispatch(setLoading(false));
       } else {
         setYaml(window.electron.ipcRenderer.getConfig());
@@ -147,16 +140,11 @@ const Installation = () => {
           if(!res.status){ //errors during runInstallation()
             alertEmitter.emit('showAlert', res.details, 'error');
           }
-          dispatch(setNextStepEnabled(res.status));
-          dispatch(setDatasetInstallationStatus(true));
-          dispatch(setInitializationStatus(true));
-          toggleProgress(true);
+          updateProgress(true);
           clearInterval(timer);
         }).catch(() => {
           clearInterval(timer);
-          resetStageStatus();
-          console.log("--CALLING RESET");
-          console.warn('Installation failed');
+          updateProgress(false);
         });
       }
     })
