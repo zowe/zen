@@ -20,7 +20,7 @@ import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/progress/progressSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectReviewStatus } from '../stages/progress/progressSlice';
+import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, selectReviewStatus } from '../stages/progress/progressSlice';
 import { selectInstallationTypeStatus } from '../stages/progress/progressSlice';
 import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progress/activeStepSlice';
 import { alertEmitter } from '../Header';
@@ -53,9 +53,11 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const subStageProgressStatus = [
     useSelector(selectDatasetInstallationStatus),
+    useSelector(selectNetworkingStatus),
     useSelector(selectApfAuthStatus),
     useSelector(selectSecurityStatus),
     useSelector(selectCertificateStatus), 
+    useSelector(selectLaunchConfigStatus), 
   ]
   
   const TYPE_YAML = "yaml";

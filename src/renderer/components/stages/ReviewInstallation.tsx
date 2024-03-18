@@ -20,7 +20,7 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import eventDispatcher from '../../../utils/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
-import { selectConnectionStatus, selectPlanningStatus, selectInstallationTypeStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, setReviewStatus } from './progress/progressSlice';
+import { selectConnectionStatus, selectPlanningStatus, selectInstallationTypeStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, setReviewStatus } from './progress/progressSlice';
 import { setActiveStep } from './progress/activeStepSlice';
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
@@ -52,9 +52,11 @@ const ReviewInstallation = () => {
   
   const subStageProgressStatus = [
     useSelector(selectDatasetInstallationStatus),
+    useSelector(selectNetworkingStatus),
     useSelector(selectApfAuthStatus),
     useSelector(selectSecurityStatus),
-    useSelector(selectCertificateStatus), 
+    useSelector(selectCertificateStatus),
+    useSelector(selectLaunchConfigStatus),
   ];
 
   const TYPE_YAML = "yaml";
@@ -129,7 +131,7 @@ const ReviewInstallation = () => {
                 </Box>
               </Box>
             )}
-            {stage.id !== 0 && stage.id !== 4 && (
+            {stage.id !== 0 && stage.id < 4 && (
               <div>
                 <Box className="review-component-box">
                   <Typography className="review-component-text" onClick={() => updateActiveStep(stage.id, false)}>{stage.label}</Typography>
