@@ -23,19 +23,28 @@ import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import secureIcon from '../../../assets/secure.png';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
+import { Tooltip } from '@mui/material';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
-import { setConnectionArgs, setConnectionStatus, setConnectionValidationDetails, setHost, setPort,
-               setUser, setPassword, setJobStatement, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionStatus, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates} from './connectionSlice';
+import { setConnectionArgs, setConnectionValidationDetails, setHost, setPort,
+               setUser, setPassword, setJobStatement, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectConnectionPassword} from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
+import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
+import { setActiveStep } from '../progress/activeStepSlice';
+import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from '../progress/activeStepSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
+import { getStageDetails } from "../progress/progressStore";
 
 const Connection = () => {
+
+  const stageLabel = 'Connection';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
 
   const dispatch = useAppDispatch();
   const zoweCLIVersion = useAppSelector(selectZoweCLIVersion);
@@ -49,6 +58,9 @@ const Connection = () => {
 
   useEffect(() => {
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+    }
   }, []);
 
   return (
@@ -96,17 +108,33 @@ Found Zowe CLI ${zoweCLIVersion}It can be used as a provider to install Zowe Ser
 
 const FTPConnectionForm = () => {
 
+  const stageLabel = "Connection";
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+
   const dispatch = useAppDispatch();
   
   const connectionStatus = useAppSelector(selectConnectionStatus);
   const connectionArgs = useAppSelector(selectConnectionArgs);
+  const connectionPassword = useAppSelector(selectConnectionPassword);
   const connValidationDetails = useAppSelector(selectConnectionValidationDetails);
   const [isFtpConnection, setIsFtpConnection] = useState(useAppSelector(selectConnectionSecure));
   const [isCertificateAccepted, setIsCertificateAccepted] = useState(useAppSelector(selectAcceptCertificates));
 
   const [formProcessed, toggleFormProcessed] = React.useState(false);
   const [validationDetails, setValidationDetails] = React.useState('');
+
+  const activeStepIndex = useAppSelector(selectActiveStepIndex);
+  const isSubStep = useAppSelector(selectIsSubstep);
+  const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
   
+  useEffect(() => {
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+    }
+  }, [])
+
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
     dispatch(setNextStepEnabled(false));
@@ -134,9 +162,10 @@ const FTPConnectionForm = () => {
   };
 
   return (
-    <Box 
-      onSubmit={(e: SyntheticEvent) => e.preventDefault()} 
+    <Box
+      onSubmit={(e: SyntheticEvent) => {e.preventDefault(); processForm();}} 
       onChange={() => toggleFormProcessed(false)}
+      onKeyDown={(e) => e.key === 'Enter' && processForm()}
     >
       <FormControl>
         <TextField
@@ -199,7 +228,7 @@ const FTPConnectionForm = () => {
                 setIsFtpConnection(e.target.checked);
               }} 
             />}
-            label="Use FTP over TLS."
+            label="(Recommended, optional) Use FTP with TLS."
             labelPlacement="start"
           />
         </Container>
@@ -270,8 +299,15 @@ const FTPConnectionForm = () => {
       }
           
       <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row", paddingTop: '12px', paddingBottom: '12px'}}>
-        <Button sx={{boxShadow: 'none'}} type="submit" variant="text" onClick={() => processForm()}>Validate credentials</Button>
-        <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1rem', marginTop: '9px' }} />}</div>
+        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
+          <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '12px'}} 
+            onClick={processForm}
+          >
+            Validate credentials
+          </Button>
+        </Box>
+        <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div>
+
         <div style={{opacity: formProcessed ? '1' : '0'}}>
           {!connectionStatus && (validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error'))}
         </div>

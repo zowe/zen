@@ -17,6 +17,7 @@ import { PlanningActions } from "../actions/PlanningActions";
 import { IIpcConnectionArgs } from '../types/interfaces';
 import { ProgressStore } from "../storage/ProgressStore";
 import { checkDirExists } from '../services/utils';
+import { ConfigurationStore } from '../storage/ConfigurationStore';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -85,13 +86,29 @@ const createWindow = (): void => {
     return res;
   });
 
-  ipcMain.handle('get-config', async () => {
-    const res = await PlanningActions.getConfig();
+  ipcMain.handle('set-config', async (event, completeZoweYamlObj: any) => {
+    const res: any = await ConfigurationStore.setConfig(completeZoweYamlObj);
+    return res;
+  });
+
+  ipcMain.handle('get-config', async (event) => {
+    const res: any = await PlanningActions.getConfig();
+    return res;
+  });
+
+  ipcMain.handle('set-schema', async (event, schema: any) => {
+    const res: any = await ConfigurationStore.setSchema(schema);
+    return res;
+  });
+
+
+  ipcMain.handle('get-config-by-key', async (_event, key: string) => {
+    const res = await ConfigurationStore.getConfigByKey(key);
     return res;
   });
 
   ipcMain.handle('set-config-by-key', async (_event, key: string, value) => {
-    const res = await PlanningActions.setConfigByKey(key, value);
+    const res = await ConfigurationStore.setConfigByKey(key, value);
     return res;
   });
 
@@ -130,8 +147,13 @@ const createWindow = (): void => {
     return res;
   })
 
-  ipcMain.handle('install-mvs', async (_event, connectionArgs, installationArgs, version, zoweConfig) => {
-    const res = await installActions.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
+  ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs, version, zoweConfig, skipDownload) => {
+    const res = await installActions.runInstallation(connectionArgs, installationArgs, version, zoweConfig, skipDownload);
+    return res;
+  });
+
+  ipcMain.handle('init-certificates', async (event, connectionArgs, installationArgs, zoweConfig) => {
+    const res = await installActions.runInitCertificates(connectionArgs, installationArgs, zoweConfig);
     return res;
   });
 
@@ -152,7 +174,12 @@ const createWindow = (): void => {
     return res;
   });
 
-  ipcMain.handle('init-security', async (_event, connectionArgs, installationArgs, zoweConfig) => {
+  ipcMain.handle('get-certificate-progress', async (event) => {
+    const res = ProgressStore.getAll()['certificate'];
+    return res;
+  });
+
+  ipcMain.handle('init-security', async (event, connectionArgs, installationArgs, zoweConfig) => {
     const res = await installActions.initSecurity(connectionArgs, installationArgs, zoweConfig);
     return res;
   });

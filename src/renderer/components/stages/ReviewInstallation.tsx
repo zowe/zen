@@ -16,18 +16,27 @@ import WarningIcon from '@mui/icons-material/Warning';
 import ContainerCard from '../common/ContainerCard';
 import {stages} from "../configuration-wizard/Wizard";
 import { selectConnectionArgs } from './connection/connectionSlice';
-import { useAppSelector } from '../../hooks';
+import { useAppSelector, useAppDispatch } from '../../hooks';
 import eventDispatcher from '../../../utils/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
-import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from './progressSlice';
-import { selectConnectionStatus } from "./connection/connectionSlice";
-import { selectInstallationStatus } from "./installation/installationSlice";
+import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from './progress/progressSlice';
+import { setActiveStep } from './progress/activeStepSlice';
+import { selectConnectionStatus } from "./progress/progressSlice";
+import { selectInstallationTypeStatus } from "./progress/progressSlice";
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
 
 import '../../styles/ReviewInstallation.css';
 
 const ReviewInstallation = () => {
+
+  const dispatch = useAppDispatch();
+
+  const stageLabel = 'Review Installation';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
 
   const [contentType, setContentType] = useState('');
   const [editorVisible, setEditorVisible] = useState(false);
@@ -39,7 +48,7 @@ const ReviewInstallation = () => {
   const stageProgressStatus = [
     useSelector(selectConnectionStatus),
     useSelector(selectPlanningStatus),
-    useSelector(selectInstallationStatus),
+    useSelector(selectInstallationTypeStatus),
     useSelector(selectInitializationStatus),
   ];
   
@@ -55,11 +64,15 @@ const ReviewInstallation = () => {
   const TYPE_OUTPUT = "output";
 
   useEffect(() => {
-    if(selectConnectionStatus && selectPlanningStatus && selectInstallationStatus && selectInitializationStatus) {
+    if(selectConnectionStatus && selectPlanningStatus && selectInstallationTypeStatus && selectInitializationStatus) {
       setNextStepEnabled(true);
     } else {
       setNextStepEnabled(false);
-    }  
+    }
+
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+    }
   }, []);
 
   const toggleEditorVisibility = (type: any) => {

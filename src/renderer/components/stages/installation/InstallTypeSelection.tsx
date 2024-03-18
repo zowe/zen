@@ -13,7 +13,8 @@ import { Box, Button, FormControl, FormControlLabel, FormLabel, Link, Radio, Rad
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid, selectInstallationType, selectSmpeDir, selectLicenseAgreement, selectSmpeDirValid, setInstallationStatus } from './installationSlice';
+import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid, selectInstallationType, selectSmpeDir, selectLicenseAgreement, selectSmpeDirValid } from './installationSlice';
+import { setInstallationTypeStatus } from "../progress/progressSlice"; 
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import JsonForm from '../../common/JsonForms';
 import { IResponse } from '../../../../types/interfaces';
@@ -21,10 +22,17 @@ import ProgressCard from '../../common/ProgressCard';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
+import { setActiveStep } from "../progress/activeStepSlice"; 
+import { getStageDetails } from "../progress/progressStore"; 
 
 const InstallationType = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
+
+  const stageLabel = 'Installation Type';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
 
   const dispatch = useAppDispatch();
   const connectionArgs = useAppSelector(selectConnectionArgs);
@@ -42,10 +50,16 @@ const InstallationType = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+    }
+  }, []);
+
+  useEffect(() => {
     if((installValue === "download" && agreeLicense == false) || (installValue === "upload" && paxPath == "") || installValue === "smpe" && (smpePath === "" || !smpePathValidated)){
         dispatch(setNextStepEnabled(false));
     } else {
-        dispatch(setInstallationStatus(true))
+        dispatch(setInstallationTypeStatus(true))
         dispatch(setNextStepEnabled(true));
     }
     
@@ -68,7 +82,7 @@ const InstallationType = () => {
   const installTypeChangeHandler = (type: string) => {
     dispatch(setInstallationType(type));
     setInstallValue(type);
-    dispatch(setInstallationStatus(false))
+    dispatch(setInstallationTypeStatus(false))
   }
 
   const onSmpePathChange = (path: string) => {
@@ -76,7 +90,7 @@ const InstallationType = () => {
     setSmpePath(path);
     dispatch(setSmpeDirValid(false));
     setSmpePathValidated(false);
-    dispatch(setInstallationStatus(false))
+    dispatch(setInstallationTypeStatus(false))
   }
 
   return (
