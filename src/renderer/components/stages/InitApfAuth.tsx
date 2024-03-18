@@ -23,7 +23,8 @@ import { selectInstallationArgs } from "./installation/installationSlice";
 import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails"; 
+import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
+import { setProgress, getProgress, setApfAuthState, getApfAuthState } from "./progress/StageProgressStatus";
 
 const InitApfAuth = () => {
 
@@ -44,17 +45,13 @@ const InitApfAuth = () => {
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
-  const [showProgress, toggleProgress] = useState(false);
+  const [showProgress, toggleProgress] = useState(getProgress('apfAuthStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
-  const [apfProgress, setApfProgress] = useState({
-    writeYaml: false,
-    uploadYaml: false,
-    success: false,
-  });
+  const [apfProgress, setApfProgress] = useState(getApfAuthState());
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   let timer: any;
@@ -77,9 +74,7 @@ const InitApfAuth = () => {
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
   
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
-    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = isStepSkipped;
-    stages[STAGE_ID].isSkipped = isInitializationSkipped;
+    updateProgress(getProgress('apfAuthStatus'));
     setInit(true);
 
     return () => {
@@ -88,42 +83,48 @@ const InitApfAuth = () => {
   }, []);
 
   useEffect(() => {
-    timer = setInterval(() => {
-      window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
-        setApfProgress(res);
-      })
-    }, 3000);
+    if(!getProgress('apfAuthStatus')) {
+      timer = setInterval(() => {
+        window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
+          setApfProgress(res);
+          setApfAuthState(res);
+        })
+      }, 3000);
+    }
     const nextPosition = document.getElementById('apf-progress');
     nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress]);
 
 
+  const updateProgress = (status: boolean) => {
+    toggleProgress(status);
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
+    stages[STAGE_ID].isSkipped = !status;
+    dispatch(setNextStepEnabled(status));
+    dispatch(setInitializationStatus(status));
+    dispatch(setApfAuthStatus(status));
+  }
+  
   const toggleEditorVisibility = (type: any) => {
     setContentType(type);
     setEditorVisible(!editorVisible);
   };
 
   const process = (event: any) => {
+    updateProgress(true);
     event.preventDefault();
     toggleProgress(true);
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
-        dispatch(setNextStepEnabled(res.status));
-        dispatch(setApfAuthStatus(res.status));
-        dispatch(setInitializationStatus(res.status));
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+        updateProgress(res.status);
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
-        dispatch(setNextStepEnabled(false));
-        dispatch(setInitializationStatus(false));
-        dispatch(setApfAuthStatus(false));
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-        stages[STAGE_ID].isSkipped = true;
+        updateProgress(false);
         console.warn('zwe init apfauth failed');
       });
   }
 
-  const editHLQ = (data: any, isYamlUpdated?: boolean) => {
+  const formChangeHandler = (data: any, isYamlUpdated?: boolean) => {
     let updatedData = init ? (Object.keys(yaml?.zowe.setup.dataset).length > 0 ? yaml?.zowe.setup.dataset : data) : (data ? data : yaml?.zowe.setup.datasetg);
     
     setInit(false);
@@ -156,7 +157,7 @@ const InitApfAuth = () => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
-    dispatch(setNextStepEnabled(proceed));
+    updateProgress(proceed);
   }
 
   return (
@@ -167,7 +168,7 @@ const InitApfAuth = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
       <ContainerCard title="APF Authorize Load Libraries" description="Run the `zwe init apfauth` command to APF authorize load libraries.">
-      <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={editHLQ}/>
+      <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={formChangeHandler}/>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
           {`Please review the following dataset setup configuration values before pressing run.\n`}
         </Typography>
@@ -215,6 +216,7 @@ const InitApfAuth = () => {
             <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfProgress.writeYaml}/>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={apfProgress.uploadYaml}/>
             <ProgressCard label={`Run zwe init apfauth command`} id="upload-progress-card" status={apfProgress.success}/>
+            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Reinitialize APF Authorizations</Button>
           </React.Fragment>
         }
         </Box> 

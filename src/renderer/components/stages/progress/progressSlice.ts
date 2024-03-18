@@ -57,7 +57,6 @@ export const progressSlice = createSlice({
       }
     },
     setDatasetInstallationStatus: (state, action: PayloadAction<boolean>) => {
-      console.log("--SET DATASETINSTALLATION STATUS progress slice: ", action.payload);
       state.datasetInstallationStatus = action.payload;
       setProgress('datasetInstallationStatus', action.payload);
     },

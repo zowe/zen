@@ -92,7 +92,6 @@ const Installation = () => {
     // setInstallationProgress(getDatasetInstallationState());
     // dispatch(setDatasetInstallationStatus(true));
     updateProgress(getProgress('datasetInstallationStatus'));
-    console.log("--SET DATASETINSTALLATION STATUS useeffect", getProgress('datasetInstallationStatus'));
     setIsFormInit(true);
 
     return () => {
@@ -110,13 +109,15 @@ const Installation = () => {
   }
 
   useEffect(() => {
-    timer = setInterval(() => {
-      window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
-        console.log("--console.log('USEEFFECT UPDATE INSTALLATION SUB STEPS')");
-        setInstallationProgress(res);
-        setDatasetInstallationState(res);
-      })
-    }, 3000);
+    if(!getProgress('datasetInstallationStatus')) {
+      timer = setInterval(() => {
+        window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
+          setInstallationProgress(res);
+          setDatasetInstallationState(res);
+        })
+      }, 3000);
+    }
+
     const nextPosition = document.getElementById('installation-progress');
     nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress]);
@@ -127,7 +128,6 @@ const Installation = () => {
   };
 
   const process = (event: any, skipDownload?: boolean) => {
-    console.log("--SET DATASETINSTALLATION STATUS in process", false);
     updateProgress(false);
     event.preventDefault();
     dispatch(setLoading(true));
@@ -153,7 +153,6 @@ const Installation = () => {
           clearInterval(timer);
         }).catch(() => {
           clearInterval(timer);
-          console.log("--SET DATASETINSTALLATION STATUS in process catch block", false);
           updateProgress(false);
         });
       }
@@ -166,7 +165,6 @@ const Installation = () => {
   )
 
   const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
-    console.log("--HANDLE FORM CHANGE INSTALLATION");
     let updatedData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.dataset) : (data.zowe?.setup?.dataset ? data.zowe.setup.dataset : data);
     
     setIsFormInit(false);

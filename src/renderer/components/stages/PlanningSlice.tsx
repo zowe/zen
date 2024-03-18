@@ -57,7 +57,6 @@ export const locationValidationSlice = createSlice({
   initialState: locValidationInitialState,
   reducers: {
     setIsLocationValid: (state, action: PayloadAction<boolean>) => {
-      console.log("--SETISLOCATIONVALID: ", action.payload);
       state.isLocationValid = action.payload;
       setPlanningStageStatus('isLocationValid', action.payload);
     },

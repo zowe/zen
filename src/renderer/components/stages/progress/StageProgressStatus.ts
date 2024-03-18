@@ -9,7 +9,7 @@
  */
 
 import { flatten, unflatten } from 'flat';
-import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState} from '../../../../types/stateInterfaces';
+import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, ApfAuthState} from '../../../../types/stateInterfaces';
 
 const installationTypeStatus: InstallationType = {
   installationType: 'download',
@@ -54,11 +54,18 @@ const datasetInstallationStatus: DatasetInstallationState = {
   initMVS: false
 }
 
+const apfAuthStatus: ApfAuthState = {
+  writeYaml: false,
+  uploadYaml: false,
+  success: false
+}
+
 let progressStateKey = 'stage_progress';
 let activeStateKey = 'active_state';
 let planningStateKey = 'planning_stage';
 let installationTypeKey = 'installation_type';
 let datasetInstallationKey = 'dataset_installation';
+let apfAuthKey = 'apf_auth';
 
 const setKeys = (id: string) => {
   progressStateKey = `${progressStateKey}_${id}`;
@@ -66,6 +73,7 @@ const setKeys = (id: string) => {
   planningStateKey = `${planningStateKey}_${id}`;
   installationTypeKey = `${installationTypeKey}_${id}`;
   datasetInstallationKey = `${datasetInstallationKey}_${id}`;
+  apfAuthKey = `${apfAuthKey}_${id}`;
 }
 
 export const initializeProgress = (host: string, user: string) => {
@@ -101,14 +109,31 @@ export const initializeProgress = (host: string, user: string) => {
     const flattenedData = flatten(datasetInstallationStatus);
     localStorage.setItem(datasetInstallationKey, JSON.stringify(flattenedData));
   }
+
+  const apfAuthState = localStorage.getItem(apfAuthKey);
+  if(!apfAuthState) {
+    const flattenedData = flatten(apfAuthStatus);
+    localStorage.setItem(apfAuthKey, JSON.stringify(flattenedData));
+  }
+}
+
+export const setApfAuthState = (apfAuthSteps: ApfAuthState): void => {
+  Object.assign(apfAuthStatus, apfAuthSteps);
+  localStorage.setItem(apfAuthKey, JSON.stringify(apfAuthStatus));
+}
+
+export const getApfAuthState = (): ApfAuthState => {
+  const apfAuthState = localStorage.getItem(apfAuthKey);
+  if(apfAuthState) {
+    const flattenedData = JSON.parse(apfAuthState);
+    return unflatten(flattenedData)
+  } else {
+    return apfAuthStatus;
+  }
 }
 
 export const setDatasetInstallationState = (dsInstallSteps: DatasetInstallationState): void => {
-  for (const key of Object.keys(dsInstallSteps)) {
-    if (dsInstallSteps.hasOwnProperty(key)) {
-      datasetInstallationStatus[key as keyof DatasetInstallationState] = dsInstallSteps[key as keyof DatasetInstallationState];
-    }
-  }
+  Object.assign(datasetInstallationStatus, dsInstallSteps);
   localStorage.setItem(datasetInstallationKey, JSON.stringify(datasetInstallationStatus));
 }
 
@@ -123,6 +148,12 @@ export const getDatasetInstallationState = (): DatasetInstallationState => {
 }
 
 export const setInstallationTypeStatus = <K extends keyof InstallationType>(key: K, newValue: InstallationType[K]): void => {
+  const installationData = localStorage.getItem(installationTypeKey);
+  if (installationData) {
+    const flattenedData = JSON.parse(installationData);
+    const unFlattenedData = unflatten(flattenedData) as InstallationType;
+    Object.assign(installationTypeStatus, unFlattenedData);
+  }
   installationTypeStatus[key] = newValue;
   const flattenedData = flatten(installationTypeStatus);
   localStorage.setItem(installationTypeKey, JSON.stringify(flattenedData));
@@ -139,7 +170,12 @@ export const getInstallationTypeStatus = (): InstallationType => {
 }
 
 export const setPlanningStageStatus = <K extends keyof PlanningState>(key: K, newValue: PlanningState[K]): void => {
-  console.log("--SETISLOCATIONVALID STAGE PROGESS: ", newValue);
+  const planningData = localStorage.getItem(planningStateKey);
+  if (planningData) {
+    const flattenedData = JSON.parse(planningData);
+    const unFlattenedData = unflatten(flattenedData) as PlanningState;
+    Object.assign(planningStageStatus, unFlattenedData);
+  }
   planningStageStatus[key] = newValue;
   const flattenedData = flatten(planningStageStatus);
   localStorage.setItem(planningStateKey, JSON.stringify(flattenedData));
@@ -156,6 +192,12 @@ export const getPlanningStageStatus = (): PlanningState => {
 }
 
 export const setProgress = (key: keyof ProgressState, newValue: boolean): void => {
+  const progress = localStorage.getItem(progressStateKey);
+  if (progress) {
+    const flattenedData = JSON.parse(progress);
+    const unFlattenedData = unflatten(flattenedData) as ProgressState;
+    Object.assign(progressStatus, unFlattenedData);
+  }
   progressStatus[key] = newValue;
   const flattenedData = flatten(progressStatus);
   localStorage.setItem(progressStateKey, JSON.stringify(flattenedData));

@@ -1344,7 +1344,6 @@ const Planning = () => {
   }
 
   const setLocValidations = (status: boolean): void => {
-    console.log('--SET LOCATIONS VALIDATED');
     setLocationsValidated(status);
     dispatch(setIsLocationValid(status));
   }
@@ -1416,7 +1415,6 @@ const Planning = () => {
         console.warn(err);
         dispatch(setJobStatementValidMsg(err.message));
         dispatch(setJobStatementValid(false));
-        console.log("--CATCH BLOCK: JOBSTATEMENTINVALID");
         alertEmitter.emit('showAlert', err.message, 'error');
         dispatch(setLoading(false));
       });    
