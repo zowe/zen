@@ -670,7 +670,6 @@ const Networking = () => {
   };
   
   const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
-    // console.log('form change data:', JSON.stringify(data));
     let updatedData = isFormInit ? (Object.keys(moddedYaml).length > 0 ? moddedYaml : data.zowe) : (data.zowe ? data.zowe : data);
     setIsFormInit(false);
 

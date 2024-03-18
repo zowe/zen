@@ -1344,6 +1344,7 @@ const Planning = () => {
   }
 
   const setLocValidations = (status: boolean): void => {
+    console.log('--SET LOCATIONS VALIDATED');
     setLocationsValidated(status);
     dispatch(setIsLocationValid(status));
   }

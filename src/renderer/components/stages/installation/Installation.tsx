@@ -61,7 +61,6 @@ const Installation = () => {
   const version = useAppSelector(selectZoweVersion);
   let timer: any;
 
-  console.log("--SHOW PROGRESS: ", showProgress);
   const section = 'dataset';
   // const initConfig = getConfiguration(section);
 
@@ -80,12 +79,20 @@ const Installation = () => {
   if(datasetSchema) {
     validate = ajv.compile(datasetSchema);
   }
-
-  const isStepSkipped = !useAppSelector(selectDatasetInstallationStatus);
-  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
   
   useEffect(() => {
+    // setDatasetInstallationState({
+    //   uploadYaml: true,
+    //   download: true,
+    //   upload: true,
+    //   unpax: true,
+    //   install: true,
+    //   initMVS: true
+    // })
+    // setInstallationProgress(getDatasetInstallationState());
+    // dispatch(setDatasetInstallationStatus(true));
     updateProgress(getProgress('datasetInstallationStatus'));
+    console.log("--SET DATASETINSTALLATION STATUS useeffect", getProgress('datasetInstallationStatus'));
     setIsFormInit(true);
 
     return () => {
@@ -105,6 +112,7 @@ const Installation = () => {
   useEffect(() => {
     timer = setInterval(() => {
       window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
+        console.log("--console.log('USEEFFECT UPDATE INSTALLATION SUB STEPS')");
         setInstallationProgress(res);
         setDatasetInstallationState(res);
       })
@@ -119,6 +127,7 @@ const Installation = () => {
   };
 
   const process = (event: any, skipDownload?: boolean) => {
+    console.log("--SET DATASETINSTALLATION STATUS in process", false);
     updateProgress(false);
     event.preventDefault();
     dispatch(setLoading(true));
@@ -144,6 +153,7 @@ const Installation = () => {
           clearInterval(timer);
         }).catch(() => {
           clearInterval(timer);
+          console.log("--SET DATASETINSTALLATION STATUS in process catch block", false);
           updateProgress(false);
         });
       }

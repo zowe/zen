@@ -139,6 +139,7 @@ export const getInstallationTypeStatus = (): InstallationType => {
 }
 
 export const setPlanningStageStatus = <K extends keyof PlanningState>(key: K, newValue: PlanningState[K]): void => {
+  console.log("--SETISLOCATIONVALID STAGE PROGESS: ", newValue);
   planningStageStatus[key] = newValue;
   const flattenedData = flatten(planningStageStatus);
   localStorage.setItem(planningStateKey, JSON.stringify(flattenedData));
