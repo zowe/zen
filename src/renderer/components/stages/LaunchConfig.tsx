@@ -20,7 +20,7 @@ import { createTheme } from '@mui/material/styles';
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus } from "./progress/progressSlice";
-
+import { setActiveStep } from "./progress/activeStepSlice";
 
 const LaunchConfig = () => {
 
