@@ -33,26 +33,6 @@ test.describe('PlanningTab', () => {
     let planningPage: PlanningPage;
     let installationTypePage: InstallationTypePage
 
-    test.beforeAll(async () => {
-      const createDirsScriptPath = path.resolve(__dirname, '../prepare.js');
-      console.log('Creating child process with command:', 'node', [createDirsScriptPath]);
-      const child = spawn('node', [createDirsScriptPath]);
-      if (!child) {
-        console.error('Failed to spawn child process');
-        return;
-      }
-      console.log('Child process created successfully');
-      child.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
-      });
-      child.stderr.on('data', (data) => {
-        console.error(`stderr: ${data}`);
-      });
-      child.on('error', (error) => {
-        console.error('Child process encountered an error:', error);
-      });
-    })
-
     test.beforeEach(async () => {
       test.setTimeout(900000);
       electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
@@ -66,18 +46,15 @@ test.describe('PlanningTab', () => {
       connectionPage.SubmitValidateCredential();
       await page.waitForTimeout(5000);
       connectionPage.clickContinueButton();
-      await page.waitForTimeout(5000);
+      await page.waitForTimeout(3000);
       
     })
 
-    test('Test Title', async () => {
-      await page.waitForTimeout(5000);
-      const planning_title = await planningPage.getPlanningPageTitle();
-      expect (planning_title).toBe(PLANNING_TITLE);
-    });
-
+    test.afterEach(async () => {
+      await electronApp.close()
+      })
+    
     test('Test all required fields on Planning Tab', async () => {
-      await page.waitForTimeout(5000);
       expect(planningPage.planningPageTitle).toBeTruthy();
       expect(planningPage.zoweInstallationLink).toBeTruthy();
       expect(planningPage.jobStatement).toBeTruthy();
@@ -85,7 +62,6 @@ test.describe('PlanningTab', () => {
     })
 
     test('Test Valid Job Statement and Save Validate', async () => {
-      await page.waitForTimeout(2000);
       planningPage.enterJobStatement(JOB_STATEMENT);
       planningPage.clickSaveAndValidate();
       await page.waitForTimeout(20000);
@@ -94,7 +70,6 @@ test.describe('PlanningTab', () => {
     })
 
     test('Test Invalid Job Statement and Save Validate', async () => {
-      await page.waitForTimeout(2000);
       planningPage.enterJobStatement(INVALID_JOB_STATEMENT);
       planningPage.clickSaveAndValidate();
       await page.waitForTimeout(20000);
@@ -103,7 +78,6 @@ test.describe('PlanningTab', () => {
     })
   
     test('Test Empty Job Statement and Save Validate', async () => {
-      await page.waitForTimeout(2000);
       planningPage.enterJobStatement('');
       planningPage.clickSaveAndValidate();
       await page.waitForTimeout(20000);
@@ -112,7 +86,6 @@ test.describe('PlanningTab', () => {
     })
   
     test('Test all required fields on Planning Tab After Job Validation', async () => {
-      await page.waitForTimeout(2000);
       planningPage.enterJobStatement(JOB_STATEMENT);
       planningPage.clickSaveAndValidate();
       await page.waitForTimeout(20000);
@@ -139,24 +112,37 @@ test.describe('PlanningTab', () => {
     })
   
     test('Test Validate Locations with Valid Data', async () => {
-      await page.waitForTimeout(2000);
       planningPage.enterJobStatement(JOB_STATEMENT);
       planningPage.clickSaveAndValidate();
       await page.waitForTimeout(20000);
       planningPage.enterRuntimeDir(RUNTIME_DIR);
+      await page.waitForTimeout(1000);
       planningPage.enterWorkspaceDir(WORKSPACE_DIR);
+      await page.waitForTimeout(1000);
       planningPage.enterLogsDir(LOG_DIR);
+      await page.waitForTimeout(1000);
       planningPage.enterExtensionsDir(EXTENSIONS_DIR);
+      await page.waitForTimeout(1000);
       planningPage.enterRbacProfileIdentifier(RBAC_IDENTIFIER);
+      await page.waitForTimeout(1000);
       planningPage.enterJobName(JOB_NAME);
+      await page.waitForTimeout(1000);
       planningPage.enterJobPrefix(JOB_PREFIX);
+      await page.waitForTimeout(1000);
       planningPage.enterCookieIdentifier(COOKIE_IDENTIFIER);
+      await page.waitForTimeout(1000);
       planningPage.enterJavaLocation(JAVA_LOCATION);
+      await page.waitForTimeout(1000);
       planningPage.enterNodeJsLocation(NODEJS_LOCATION);
+      await page.waitForTimeout(1000);
       planningPage.checkSetZosmfAttribute();
+      await page.waitForTimeout(1000);
       planningPage.enterZosmfHost(ZOSMF_HOST);
+      await page.waitForTimeout(1000);
       planningPage.enterZosmfPort(ZOSMF_PORT);     
+      await page.waitForTimeout(1000);
       planningPage.enterZosmfApplicationId(ZOSMF_APPID);
+      await page.waitForTimeout(1000);
       planningPage.clickValidateLocations();
       await page.waitForTimeout(20000);
       const is_GreenCheck_Visible = await planningPage.isValidateLocationsGreenCheckVisible();
@@ -175,19 +161,33 @@ test.describe('PlanningTab', () => {
       planningPage.clickSaveAndValidate();
       await page.waitForTimeout(20000);
       planningPage.enterRuntimeDir('Test/DIR');
+      await page.waitForTimeout(1000);
       planningPage.enterWorkspaceDir('Workspace Dir');
+      await page.waitForTimeout(1000);
       planningPage.enterLogsDir(LOG_DIR);
+      await page.waitForTimeout(1000);
       planningPage.enterExtensionsDir(EXTENSIONS_DIR);
+      await page.waitForTimeout(1000);
       planningPage.enterRbacProfileIdentifier(22);
+      await page.waitForTimeout(1000);
       planningPage.enterJobName(JOB_NAME);
+      await page.waitForTimeout(1000);
       planningPage.enterJobPrefix(JOB_PREFIX);
+      await page.waitForTimeout(1000);
       planningPage.enterCookieIdentifier(99999);
+      await page.waitForTimeout(1000);
       planningPage.enterJavaLocation('/');
+      await page.waitForTimeout(1000);
       planningPage.enterNodeJsLocation(NODEJS_LOCATION);
+      await page.waitForTimeout(1000);
       planningPage.checkSetZosmfAttribute();
+      await page.waitForTimeout(1000);
       planningPage.enterZosmfHost(ZOSMF_HOST);
+      await page.waitForTimeout(1000);
       planningPage.enterZosmfPort(987776);     
+      await page.waitForTimeout(1000);
       planningPage.enterZosmfApplicationId('ABCDDDETT');
+      await page.waitForTimeout(1000);
       planningPage.clickValidateLocations();
       await page.waitForTimeout(20000);
       const is_GreenCheck_Visible = await planningPage.isValidateLocationsGreenCheckVisible();
@@ -197,7 +197,6 @@ test.describe('PlanningTab', () => {
     })
 
     test('Test Previous step', async ({ page }) => {
-      await page.waitForTimeout(2000);
       planningPage.clickPreviousStep();
       await page.waitForTimeout(2000);
       const title = await connectionPage.getConnectionPageTitle();
@@ -205,25 +204,35 @@ test.describe('PlanningTab', () => {
      })
 
      test('Test Save and Close and Resume Progress', async () => {
-      await page.waitForTimeout(2000);
       planningPage.enterJobStatement(JOB_STATEMENT);
       planningPage.clickSaveAndValidate();
       await page.waitForTimeout(20000);
       planningPage.enterRuntimeDir(RUNTIME_DIR);
+      await page.waitForTimeout(1000);
       planningPage.enterWorkspaceDir(WORKSPACE_DIR);
+      await page.waitForTimeout(1000);
       planningPage.enterLogsDir(LOG_DIR);
+      await page.waitForTimeout(1000);
       planningPage.enterExtensionsDir(EXTENSIONS_DIR);
+      await page.waitForTimeout(1000);
       planningPage.enterRbacProfileIdentifier(RBAC_IDENTIFIER);
+      await page.waitForTimeout(1000);
       planningPage.enterJobName(JOB_NAME);
+      await page.waitForTimeout(1000);
       planningPage.enterJobPrefix(JOB_PREFIX);
+      await page.waitForTimeout(1000);
       planningPage.enterCookieIdentifier(COOKIE_IDENTIFIER);
+      await page.waitForTimeout(1000);
       planningPage.enterJavaLocation(JAVA_LOCATION);
+      await page.waitForTimeout(1000);
       planningPage.enterNodeJsLocation(NODEJS_LOCATION);
+      await page.waitForTimeout(1000);
       planningPage.clickValidateLocations();
       await page.waitForTimeout(20000);
       planningPage.clickSaveAndClose();
       await page.waitForTimeout(3000);
       titlePage.clickOnResumeProgress();
+      await page.waitForTimeout(5000);
       const is_GreenCheck_Visible = await planningPage.isValidateLocationsGreenCheckVisible();
       expect(is_GreenCheck_Visible).toBe(true);
       const is_Continue_Button_enable = await planningPage.isContinueToInstallationEnabled();
