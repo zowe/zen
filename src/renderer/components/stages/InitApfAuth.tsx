@@ -30,7 +30,7 @@ const InitApfAuth = () => {
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
   const stageLabel = 'Initialization';
-  const subStageLabel = 'APFAuth';
+  const subStageLabel = 'APF Auth';
 
   const STAGE_ID = getStageDetails(stageLabel).id;
   const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
@@ -128,7 +128,7 @@ const InitApfAuth = () => {
     
     setInit(false);
 
-    updatedData = isYamlUpdated ? data.dataset : updatedData;
+    updatedData = isYamlUpdated ? data.zowe.setup.dataset : updatedData;
     if (updatedData && setupYaml && setupYaml.prefix !== updatedData.prefix) {
       const newPrefix = updatedData.prefix ? updatedData.prefix : '';
       const newData = Object.keys(setupYaml).reduce((acc, k) => {
@@ -207,7 +207,7 @@ const InitApfAuth = () => {
             />
         </Box>
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Run 'zwe init apfauth'</Button>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize APF Authorizations</Button>
         </FormControl> : null}
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="apf-progress">
         {!showProgress ? null :

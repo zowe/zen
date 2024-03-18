@@ -30,6 +30,11 @@ const storeDefault = {
     "writeYaml": false,
     "uploadYaml": false,
     "success": false
+  },
+  "certificate": {
+    "writeYaml": false,
+    "uploadYaml": false,
+    "zweInitCertificate": false,
   }
 };
 
