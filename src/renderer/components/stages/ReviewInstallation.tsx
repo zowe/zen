@@ -65,7 +65,10 @@ const ReviewInstallation = () => {
 
   useEffect(() => {
 
-    if(selectConnectionStatus && selectPlanningStatus && selectInstallationTypeStatus && selectInitializationStatus) {
+    const stageProgress = stageProgressStatus.every(status => status === true);
+    const subStageProgress = subStageProgressStatus.every(status => status === true);
+
+    if(stageProgress && subStageProgress) {
       dispatch(setNextStepEnabled(true));
     } else {
       dispatch(setNextStepEnabled(false));
