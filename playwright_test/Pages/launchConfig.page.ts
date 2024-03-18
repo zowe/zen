@@ -1,7 +1,7 @@
 import { Page,ElectronApplication, Locator,_electron as electron } from '@playwright/test';
 let electronApp: ElectronApplication
 
-class ConfigurationPage{
+class LaunchConfigPage{
   page: Page;
   fillValidation: Locator;
   logLevel: Locator;
@@ -190,4 +190,4 @@ class ConfigurationPage{
 
 
 }
- export default ConfigurationPage;
+ export default LaunchConfigPage;

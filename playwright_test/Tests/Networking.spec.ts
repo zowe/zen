@@ -32,7 +32,7 @@ const  JAVA_HOME=process.env.JAVA_HOME;
 const  NODE_HOME=process.env.NODE_HOME;
 const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 
-test.describe('securityTab', () => {
+test.describe('networkingTab', () => {
     let connectionPage: ConnectionPage;
     let titlePage : TitlePage;
     let securityPage : SecurityPage;

@@ -3,7 +3,7 @@ import { setup } from './setup.ts';
 import TitlePage from '../Pages/title.page';
 import ConnectionPage from '../Pages/connection.page';
 import PlanningPage from '../Pages/planning.page';
-import ConfigurationPage from '../Pages/configuration.page';
+import LaunchConfigPage from '../Pages/launchConfig.page';
 import { spawn } from 'child_process';
 import path from 'path';
 let page: Page;
@@ -29,11 +29,11 @@ const  NODE_HOME=process.env.NODE_HOME;
 const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 
 
-test.describe('securityTab', () => {
+test.describe('launchConfigTab', () => {
     let connectionPage: ConnectionPage;
     let titlePage : TitlePage;
     let planningPage : PlanningPage;
-    let configurationPage : ConfigurationPage;
+    let launchConfigPage : LaunchConfigPage;
 
     test.beforeAll(async () => {
       const createDirsScriptPath = path.resolve(__dirname, '../prepare.js');
@@ -60,7 +60,7 @@ test.describe('securityTab', () => {
       electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
       page= await electronApp.firstWindow()
       connectionPage = new ConnectionPage(page);
-      configurationPage = new ConfigurationPage(page);
+      launchConfigPage = new LaunchConfigPage(page);
       titlePage = new TitlePage(page);
       planningPage = new PlanningPage(page);
       titlePage.navigateToConnectionTab()
@@ -75,7 +75,7 @@ test.describe('securityTab', () => {
       await page.waitForTimeout(20000);
       planningPage.continueInstallation()
       await page.waitForTimeout(5000);
-      configurationPage.movetoLaunchConfigPage()
+      launchConfigPage.movetoLaunchConfigPage()
       await page.waitForTimeout(5000);
     })
 
@@ -85,15 +85,15 @@ test.describe('securityTab', () => {
 
   test('test title of page', async ({ page }) => {
    await page.waitForTimeout(5000);
-   const title = await configurationPage.returnTitleOfConfPage();
+   const title = await launchConfigPage.returnTitleOfConfPage();
    expect(title).toBe(CONFPAGE_TITLE);
    })
 
   test('test all required fields', async ({ page }) => {
     await page.waitForTimeout(5000);
-    await expect(configurationPage.validation).toBeTruthy()
-    await expect(configurationPage.logLevel).toBeTruthy()
-    await expect(configurationPage.componentConfig).toBeTruthy()
+    await expect(launchConfigPage.validation).toBeTruthy()
+    await expect(launchConfigPage.logLevel).toBeTruthy()
+    await expect(launchConfigPage.componentConfig).toBeTruthy()
     })
 
   test('test select validation level', async ({ page }) => {
@@ -102,10 +102,10 @@ test.describe('securityTab', () => {
     const values = ['STRICT', 'COMPONENT-COMPAT'];
 
     for (const value of values) {
-        await configurationPage.fillvalues(value);
+        await launchConfigPage.fillvalues(value);
         await page.waitForTimeout(5000);
 
-        const componentConfigValue = await configurationPage.get_validation_value();
+        const componentConfigValue = await launchConfigPage.get_validation_value();
         await page.waitForTimeout(5000);
         expect(componentConfigValue).toBe(value);
     }
@@ -116,9 +116,9 @@ test.describe('securityTab', () => {
     await page.waitForTimeout(5000);
     const values = ['info', 'debug', 'trace'];
     for (const value of values) {
-        await configurationPage.fillvalues_logLevel(value);
+        await launchConfigPage.fillvalues_logLevel(value);
         await page.waitForTimeout(5000);
-        const componentConfigValue = await configurationPage.get_logLevel_value();
+        const componentConfigValue = await launchConfigPage.get_logLevel_value();
         expect(componentConfigValue).toBe(value);
     }
   })
@@ -127,59 +127,59 @@ test.describe('securityTab', () => {
     await page.waitForTimeout(5000);
     const values = ['warn', 'exit'];
     for (const value of values) {
-        await configurationPage.fillvaluescomponentConfig(value);
+        await launchConfigPage.fillvaluescomponentConfig(value);
         await page.waitForTimeout(5000);
-        const componentConfigValue = await configurationPage.get_componentConfig_value();
+        const componentConfigValue = await launchConfigPage.get_componentConfig_value();
         expect(componentConfigValue).toBe(value);
     }
   })
   test('Test view yaml button', async ({ page }) => {
     await page.waitForTimeout(7000);
-    configurationPage.viewYaml()
+    launchConfigPage.viewYaml()
     await page.waitForTimeout(5000);
-    await expect(configurationPage.editor_title_element).toBeTruthy();
+    await expect(launchConfigPage.editor_title_element).toBeTruthy();
     await page.waitForTimeout(5000);
-    configurationPage.closeButton()
+    launchConfigPage.closeButton()
     await page.waitForTimeout(2000);
     })
 
   test('Test view and submit button', async ({ page }) => {
      await page.waitForTimeout(5000);
-     configurationPage.click_viewAndSubmitJob()
+     launchConfigPage.click_viewAndSubmitJob()
      await page.waitForTimeout(5000);
-     await expect(configurationPage.editor_title_element).toBeTruthy()
-     configurationPage.closeButton()
+     await expect(launchConfigPage.editor_title_element).toBeTruthy()
+     launchConfigPage.closeButton()
      await page.waitForTimeout(2000);
     })
 
 
   test('Test view job', async ({ page }) => {
      await page.waitForTimeout(5000);
-     configurationPage.click_previewJob()
+     launchConfigPage.click_previewJob()
      await page.waitForTimeout(5000);
-     await expect(configurationPage.editor_title_element).toBeTruthy()
-     configurationPage.closeButton()
+     await expect(launchConfigPage.editor_title_element).toBeTruthy()
+     launchConfigPage.closeButton()
      await page.waitForTimeout(5000);
     })
 
   test('Test save and close', async ({ page }) => {
     await page.waitForTimeout(5000);
-    configurationPage.fillvalues('STRICT')
-    configurationPage.fillvalues_logLevel('info')
-    configurationPage.fillvaluescomponentConfig('warn')
+    launchConfigPage.fillvalues('STRICT')
+    launchConfigPage.fillvalues_logLevel('info')
+    launchConfigPage.fillvaluescomponentConfig('warn')
     await page.waitForTimeout(5000);
-    configurationPage.click_saveAndClose()
+    launchConfigPage.click_saveAndClose()
     await page.waitForTimeout(5000);
     titlePage.navigateToConnectionTab()
     connectionPage.clickContinueButton()
     await page.waitForTimeout(5000);
     planningPage.continueInstallation()
     await page.waitForTimeout(5000);
-    configurationPage.movetoLaunchConfigPage()
+    launchConfigPage.movetoLaunchConfigPage()
     await page.waitForTimeout(15000);
-    const Validation_Value = await configurationPage.get_validation_value();
-    const LogLevel_Value = await configurationPage.get_logLevel_value();
-    const ComponentConfig_Value = await configurationPage.get_componentConfig_value();
+    const Validation_Value = await launchConfigPage.get_validation_value();
+    const LogLevel_Value = await launchConfigPage.get_logLevel_value();
+    const ComponentConfig_Value = await launchConfigPage.get_componentConfig_value();
     expect(Validation_Value).toBe('STRICT');
     expect(LogLevel_Value).toBe('info');
     expect(ComponentConfig_Value).toBe('warn');
@@ -187,42 +187,42 @@ test.describe('securityTab', () => {
 
   test('click Previous step button', async ({ page }) => {
      await page.waitForTimeout(5000);
-     const title = await configurationPage.returnTitleOfPrevPage();
+     const title = await launchConfigPage.returnTitleOfPrevPage();
      expect(title).toBe(CERTIFICATE_TITLE);
    })
   test('Test previous button is enabled', async ({ page }) => {
-     const is_prevButtonEnable = await configurationPage.isPreviousButtonEnable();
+     const is_prevButtonEnable = await launchConfigPage.isPreviousButtonEnable();
      expect(is_prevButtonEnable).toBe(true);
      await page.waitForTimeout(2000);
     })
 
   test('Test continue to review button is disable', async ({ page }) => {
      await page.waitForTimeout(2000);
-     const is_ContinueButtonDisable = await configurationPage.isContinueButtonDisable();
+     const is_ContinueButtonDisable = await launchConfigPage.isContinueButtonDisable();
      expect(is_ContinueButtonDisable).toBe(true);
      await page.waitForTimeout(2000);
     })
 
   test('Test Skip launch config button is enable', async ({ page }) => {
      await page.waitForTimeout(2000);
-     const isLaunchConfigEnable = await configurationPage.is_skipLaunchConfigButtonEnable();
+     const isLaunchConfigEnable = await launchConfigPage.is_skipLaunchConfigButtonEnable();
      expect(isLaunchConfigEnable).toBe(true);
      await page.waitForTimeout(2000);
    })
 
   test('Test yaml should be updated', async ({ page }) => {
     await page.waitForTimeout(5000);
-    await configurationPage.fillvalues('STRICT');
+    await launchConfigPage.fillvalues('STRICT');
     await page.waitForTimeout(5000);
-    await configurationPage.fillvalues_logLevel('info');
+    await launchConfigPage.fillvalues_logLevel('info');
     await page.waitForTimeout(5000);
-    await configurationPage.fillvaluescomponentConfig('warn');
+    await launchConfigPage.fillvaluescomponentConfig('warn');
     await page.waitForTimeout(15000);
-    await configurationPage.viewYaml();
+    await launchConfigPage.viewYaml();
     await page.waitForTimeout(10000);
-    await expect(configurationPage.editor_title_element).toBeTruthy();
+    await expect(launchConfigPage.editor_title_element).toBeTruthy();
     await page.waitForTimeout(5000);
-    const yaml = await configurationPage.read_yaml();
+    const yaml = await launchConfigPage.read_yaml();
     await page.waitForTimeout(5000);
     expect(yaml).toContain('info');
     expect(yaml).toContain('STRICT');
@@ -231,9 +231,9 @@ test.describe('securityTab', () => {
 
   test('Test keep mandatory field empty', async ({ page }) => {
     await page.waitForTimeout(5000);
-    await configurationPage.fillvalues('');
+    await launchConfigPage.fillvalues('');
     await page.waitForTimeout(5000);
-    const Errormsg = await configurationPage.get_validation_error_msg();
+    const Errormsg = await launchConfigPage.get_validation_error_msg();
     expect(Errormsg).expect(VALIDATION_ERROR_MSG);
    })
 });
