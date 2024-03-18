@@ -8,6 +8,7 @@ class ConnectionPage{
   password: Locator;
   validateCredential: Locator;
   connectionPageTitle: Locator
+  continueButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -17,6 +18,7 @@ class ConnectionPage{
     this.password = page.locator('#standard-password-input')
     this.validateCredential = page.locator("//button[contains(text(), 'Validate credentials')]")
     this.connectionPageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
+    this.continueButton = page.locator('.MuiButton-containedPrimary.MuiButton-sizeMedium')
 
   }
   async fillConnectionDetails(host: string, port: string, username: string, password: string){
@@ -31,8 +33,11 @@ class ConnectionPage{
   }
 
   async SubmitValidateCredential(){
-    await this.validateCredential.click()
-   
+    await this.validateCredential.click()  
+  }
+  
+  async clickContinueButton() {
+    return await this.continueButton.click();
   }
 
 }

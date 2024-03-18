@@ -66,59 +66,65 @@ class PlanningPage{
     return await this.planningPageTitle.textContent();
   }
 
-  async enterJobStatement(jobStatement: any){
-    await page.waitForTimeout(2000);
-    await this.jobStatement.click();
+  async enterJobStatement(jobStatement: string){
     await this.jobStatement.fill(jobStatement);
   }
 
   async clickSaveAndValidate(){
-    await page.waitForTimeout(3000);
-    await this.saveAndValidate.click();
-    await page.waitForTimeout(5000);
+    await this.saveAndValidate.click({ timeout: 5000 });
   }
 
   async isSaveAndValidateGreenCheckVisible(){
-    return await this.saveAndValidateGreenCheck.isVisible();
+    return await this.saveAndValidateGreenCheck.isVisible({ timeout: 5000 });
   }
 
   async enterRuntimeDir(runtimeDir: any){
+    await this.runtimeDir.clear({timeout: 2000})
     await this.runtimeDir.fill(runtimeDir);
   }
 
   async enterWorkspaceDir(workspaceDir: any){
+    await this.workspaceDir.clear({timeout: 2000})
     await this.workspaceDir.fill(workspaceDir);
   }
 
   async enterLogsDir(logsDir: any){
+    await this.logsDir.clear({timeout: 2000})
     await this.logsDir.fill(logsDir);
   }
 
   async enterExtensionsDir(extensionsDir: any){
+    await this.extensionsDir.clear({timeout: 2000})
     await this.extensionsDir.fill(extensionsDir);
   }
 
   async enterRbacProfileIdentifier(rbacProfileIdentifier: any){
+    await this.rbacProfileIdentifier.clear({timeout: 2000})
     await this.rbacProfileIdentifier.fill(rbacProfileIdentifier);
   }
 
   async enterJobName(jobName: any){
+    await this.jobName.clear({timeout: 2000})
     await this.jobName.fill(jobName);
   }
 
   async enterJobPrefix(jobPrefix: any){
+    await this.jobPrefix.clear({timeout: 2000})
     await this.jobPrefix.fill(jobPrefix);
   }
 
   async enterCookieIdentifier(cookieIdentifier: any){
+    await this.cookieIdentifier.clear({timeout: 2000})
     await this.cookieIdentifier.fill(cookieIdentifier);
   }
 
   async enterJavaLocation(javaLocation: any){
+    await this.javaLocation.clear({timeout: 2000})
     await this.javaLocation.fill(javaLocation);
   }
 
   async enterNodeJsLocation(nodeJsLocation: any){
+    await this.nodeJsLocation.clear({timeout: 2000})
     await this.nodeJsLocation.fill(nodeJsLocation);
   }
 
@@ -134,14 +140,17 @@ class PlanningPage{
   }
 
   async enterZosmfHost(zosmfHost: any){
+    await this.zosmfHost.clear({timeout: 2000})
     await this.zosmfHost.fill(zosmfHost);
   }
 
   async enterZosmfPort(zosmfPort: any){
+    await this.zosmfPort.clear({timeout: 2000})
     await this.zosmfPort.fill(zosmfPort);
   }
 
   async enterZosmfApplicationId(zosmfApplicationId: any){
+    await this.zosmfApplicationId.clear({timeout: 2000})
     await this.zosmfApplicationId.fill(zosmfApplicationId);
   }
 
