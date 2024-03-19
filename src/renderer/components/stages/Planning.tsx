@@ -1279,6 +1279,14 @@ const Planning = () => {
   };
 
   useEffect(() => {
+    if(getPlanningStageStatus()?.isJobStatementValid) {
+      setJobHeaderSaved(true);
+      if(getPlanningStageStatus()?.isLocationValid) {
+        setStep(2);
+      } else {
+        setStep(1);
+      }
+    }
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     }
