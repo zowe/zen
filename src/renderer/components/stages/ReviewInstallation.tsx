@@ -20,10 +20,8 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import eventDispatcher from '../../../services/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
-import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from './progress/progressSlice';
+import { selectConnectionStatus, selectPlanningStatus, selectInstallationTypeStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, setReviewStatus } from './progress/progressSlice';
 import { setActiveStep } from './progress/activeStepSlice';
-import { selectConnectionStatus } from "./progress/progressSlice";
-import { selectInstallationTypeStatus } from "./progress/progressSlice";
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
 import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Utils';
@@ -55,17 +53,25 @@ const ReviewInstallation = () => {
   
   const subStageProgressStatus = [
     useSelector(selectDatasetInstallationStatus),
+    useSelector(selectNetworkingStatus),
     useSelector(selectApfAuthStatus),
     useSelector(selectSecurityStatus),
-    useSelector(selectCertificateStatus), 
+    useSelector(selectCertificateStatus),
+    useSelector(selectLaunchConfigStatus),
   ];
 
   useEffect(() => {
-    if(selectConnectionStatus && selectPlanningStatus && selectInstallationTypeStatus && selectInitializationStatus) {
-      setNextStepEnabled(true);
+
+    const stageProgress = stageProgressStatus.every(status => status === true);
+    const subStageProgress = subStageProgressStatus.every(status => status === true);
+
+    if(stageProgress && subStageProgress) {
+      dispatch(setNextStepEnabled(true));
     } else {
-      setNextStepEnabled(false);
+      dispatch(setNextStepEnabled(false));
     }
+
+    dispatch(setReviewStatus(true));
 
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
@@ -125,7 +131,7 @@ const ReviewInstallation = () => {
                 </Box>
               </Box>
             )}
-            {stage.id !== 0 && stage.id !== 4 && (
+            {stage.id !== 0 && stage.id < 4 && (
               <div>
                 <Box className="review-component-box">
                   <Typography className="review-component-text" onClick={() => updateActiveStep(stage.id, false)}>{stage.label}</Typography>

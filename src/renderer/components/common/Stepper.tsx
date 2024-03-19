@@ -20,7 +20,7 @@ import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/progress/progressSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus } from '../stages/progress/progressSlice';
+import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, selectReviewStatus } from '../stages/progress/progressSlice';
 import { selectInstallationTypeStatus } from '../stages/progress/progressSlice';
 import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progress/activeStepSlice';
 import { alertEmitter } from '../Header';
@@ -50,13 +50,16 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     useSelector(selectPlanningStatus),
     useSelector(selectInstallationTypeStatus),
     useSelector(selectInitializationStatus),
+    useSelector(selectReviewStatus),
   ];
 
   const subStageProgressStatus = [
     useSelector(selectDatasetInstallationStatus),
+    useSelector(selectNetworkingStatus),
     useSelector(selectApfAuthStatus),
     useSelector(selectSecurityStatus),
     useSelector(selectCertificateStatus), 
+    useSelector(selectLaunchConfigStatus), 
   ]
 
   const [activeStep, setActiveStep] =  initialization ? useState(0) : useState(useAppSelector(selectActiveStepIndex));
@@ -214,6 +217,11 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
           labelProps.error = stageProgressStatus[index] ? false : true;
 
+          // To exclude the "Finish Installation" stage from the stepper
+          if(index == stages.length-1) {
+            return;
+          }
+
           return (
             // This adds shadow to the "filing cabinet" top-slip UI
             <Step key={stage.id} {...stepProps}>
@@ -272,22 +280,26 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
           <Box sx={{ display: 'flex', flexDirection: 'row', p: "8px 8px 0 8px", borderTop: 'solid 1px lightgray', justifyContent: 'flex-end'}}>
             {/* TODO: This needs a confirmation modal */}
             <Link style={{margin: 0}} to="/">
-              <Button // TODO: Not implemented
-                color="success"
-                variant="outlined"
-                sx={{ textTransform: 'none', mr: 1 }}
-                onClick={onSaveAndClose}>
-                <img style={{width: '16px', height: '20px', paddingRight: '8px'}} src={savedInstall} alt="save and close"/>
-                Save & close
-              </Button>
+              { stages[activeStep] && stages[activeStep].nextButton && 
+                <Button // TODO: Not implemented
+                  color="success"
+                  variant="outlined"
+                  sx={{ textTransform: 'none', mr: 1 }}
+                  onClick={onSaveAndClose}>
+                  <img style={{width: '16px', height: '20px', paddingRight: '8px'}} src={savedInstall} alt="save and close"/>
+                  Save & close
+                </Button>
+              }
             </Link>
-            <Button
-              variant="outlined"
-              disabled={activeStep === 0}
-              onClick={handleBack}
-              sx={{ textTransform: 'none', mr: 1 }}>
-              Previous step
-            </Button>
+            {stages[activeStep] && stages[activeStep].nextButton && 
+              <Button
+                variant="outlined"
+                disabled={activeStep === 0}
+                onClick={handleBack}
+                sx={{ textTransform: 'none', mr: 1 }}>
+                Previous step
+              </Button>
+            }
             {stages[activeStep] && stages[activeStep].isSkippable &&
               <Button 
                 disabled={isNextStepEnabled}
@@ -298,14 +310,15 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
                 Skip {stages[activeStep] && stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].label : stages[activeStep]? stages[activeStep].label: ''}
               </Button>
             }
-            <Button 
+            {stages[activeStep] && stages[activeStep].nextButton &&
+              <Button 
               disabled={!isNextStepEnabled}
               variant="contained" 
               sx={{ textTransform: 'none', mr: 1 }}
               onClick={() => handleNext()}
             >
               {(stages[activeStep] && stages[activeStep].subStages && activeSubStep < stages[activeStep].subStages.length - 1) ? stages[activeStep].subStages[activeSubStep].nextButton : stages[activeStep] ? stages[activeStep].nextButton : ''}
-            </Button>
+            </Button>}
           </Box>
         </React.Fragment>
       )}
