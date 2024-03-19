@@ -1323,6 +1323,12 @@ const Planning = () => {
         dispatch(setYaml(EXAMPLE_YAML));
         setLocalYaml((EXAMPLE_YAML));
         dispatch(setSchema(YAML_SCHEMA));
+        window.electron.ipcRenderer.setConfig(EXAMPLE_YAML).then((res: IResponse) => {
+          // yaml response
+        });
+        window.electron.ipcRenderer.setSchema(YAML_SCHEMA).then((res: IResponse) => {
+          // schema response
+        });
       }
     })
 
@@ -1594,7 +1600,11 @@ Please customize the job statement below to match your system requirements.
         </FormControl>
       </Box>
       {step > 0 
-        ? <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}}>
+        ? <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}} onBlur={async (e) => { dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? localYaml)) }} onChange={(e) => {
+            dispatch(setYaml(localYaml));
+            formChangeHandler();
+            }}
+          >
           <Typography id="position-1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
             {`Now let's define some properties like z/OS Unix locations, identifiers, and z/OSMF details (optional).`}
           </Typography>

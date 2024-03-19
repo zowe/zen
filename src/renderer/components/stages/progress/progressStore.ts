@@ -19,9 +19,11 @@ const progressStatus: progressState = {
   installationTypeStatus: false,
   initializationStatus: false,
   datasetInstallationStatus: false,
+  networkingStatus: false,
   apfAuthStatus: false,
   securityStatus: false,
   certificateStatus: false,
+  launchConfigStatus: false,
   reviewStatus: false,
 }
 
