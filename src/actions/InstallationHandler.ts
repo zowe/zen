@@ -87,7 +87,7 @@ class Installation {
       if(readPaxYamlAndSchema.details.yaml){
         // console.log("\n\nSCHEMA: ");
         // console.log(JSON.stringify(readPaxYamlAndSchema.details.yaml));
-        const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat /u/ts6330/zen-install2/runtime/example-zowe.yaml\\r\\n`)
+        const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat ${installationArgs.installationDir}/runtime/example-zowe.yaml\\r\\n`)
         if(jobOutputSplit[1]){
           const trimmedYamlSchema = jobOutputSplit[1].split(`+ echo 'Script finished.'`)[0].split(`Script finished.`);
           console.log("\n\n *** trimmedYamlSchema[0]: ", trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`));
