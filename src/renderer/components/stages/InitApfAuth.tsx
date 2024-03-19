@@ -25,6 +25,7 @@ import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
 import { setProgress, getProgress, setApfAuthState, getApfAuthState } from "./progress/StageProgressStatus";
+import { ApfAuthState } from "../../../types/stateInterfaces";
 
 const InitApfAuth = () => {
 
@@ -45,13 +46,14 @@ const InitApfAuth = () => {
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
-  const [showProgress, toggleProgress] = useState(getProgress('apfAuthStatus'));
+  const [showProgress, setShowProgress] = useState(getProgress('apfAuthStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
-  const [apfProgress, setApfProgress] = useState(getApfAuthState());
+  const [apfAuthInitProgress, setApfAuthInitProgress] = useState(getApfAuthState());
+  const [stateUpdated, setStateUpdated] = useState(false);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   let timer: any;
@@ -73,6 +75,11 @@ const InitApfAuth = () => {
   const isStepSkipped = !useAppSelector(selectApfAuthStatus);
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
   
+  const setApfAuthorizationInitProgress = (aftAuthorizationState: any) => {
+    setApfAuthInitProgress(aftAuthorizationState);
+    setApfAuthState(aftAuthorizationState);
+  }
+
   useEffect(() => {
     updateProgress(getProgress('apfAuthStatus'));
     setInit(true);
@@ -86,23 +93,29 @@ const InitApfAuth = () => {
     if(!getProgress('apfAuthStatus')) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
-          setApfProgress(res);
-          setApfAuthState(res);
+          setApfAuthorizationInitProgress(res);
         })
       }, 3000);
     }
     const nextPosition = document.getElementById('apf-progress');
     nextPosition.scrollIntoView({behavior: 'smooth'});
-  }, [showProgress]);
+  }, [showProgress, stateUpdated]);
 
 
   const updateProgress = (status: boolean) => {
-    toggleProgress(status);
+    setStateUpdated(!stateUpdated);
+    setShowProgress(true);
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
     stages[STAGE_ID].isSkipped = !status;
     dispatch(setNextStepEnabled(status));
     dispatch(setInitializationStatus(status));
     dispatch(setApfAuthStatus(status));
+    if(!status) {
+      for (let key in apfAuthInitProgress) {
+        apfAuthInitProgress[key as keyof(ApfAuthState)] = false;
+      }
+      setApfAuthorizationInitProgress(apfAuthInitProgress);
+    }
   }
   
   const toggleEditorVisibility = (type: any) => {
@@ -111,9 +124,8 @@ const InitApfAuth = () => {
   };
 
   const process = (event: any) => {
-    updateProgress(true);
+    updateProgress(false);
     event.preventDefault();
-    toggleProgress(true);
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
         updateProgress(res.status);
         clearInterval(timer);
@@ -213,9 +225,9 @@ const InitApfAuth = () => {
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="apf-progress">
         {!showProgress ? null :
           <React.Fragment>
-            <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfProgress.writeYaml}/>
-            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={apfProgress.uploadYaml}/>
-            <ProgressCard label={`Run zwe init apfauth command`} id="upload-progress-card" status={apfProgress.success}/>
+            <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfAuthInitProgress.writeYaml}/>
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={apfAuthInitProgress.uploadYaml}/>
+            <ProgressCard label={`Run zwe init apfauth command`} id="upload-progress-card" status={apfAuthInitProgress.success}/>
             <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Reinitialize APF Authorizations</Button>
           </React.Fragment>
         }
