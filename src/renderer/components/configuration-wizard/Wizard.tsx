@@ -16,6 +16,7 @@ import Security from "../stages/Security";
 import Certificates from "../stages/Certificates";
 import Initialization from "../stages/Initialization";
 import ReviewInstallation from '../stages/ReviewInstallation';
+import FinishInstallation from '../stages/FinishInstallation';
 import spock from '../../assets/spock.svg'
 import InstallationType from '../stages/installation/InstallTypeSelection';
 import { selectLoading } from './wizardSlice';
@@ -38,6 +39,7 @@ export const stages = [
     {id: 5, label: 'Launch Config', component: <LaunchConfig/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Instance Setup'},
   ], nextButton: 'Review'},
   {id: 4, label: 'Review Installation', component: <ReviewInstallation/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Finish Installation'},
+  {id: 5, label: 'Finish Installation', component: <FinishInstallation/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1},
 ]
 
 const Wizard = ({initialization}: {initialization: boolean}) => {
