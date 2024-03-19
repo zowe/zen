@@ -17,10 +17,21 @@ import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
+import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
+import { stages } from "../configuration-wizard/Wizard";
+import { selectInitializationStatus } from "./progress/progressSlice";
+import { setActiveStep } from "./progress/activeStepSlice";
 
 const LaunchConfig = () => {
 
   const theme = createTheme();
+
+  const stageLabel = 'Initialization';
+  const subStageLabel = 'Launch Config';
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
 
   const dispatch = useAppDispatch();
 //   const schema = useAppSelector(selectSchema);
@@ -439,9 +450,17 @@ const LaunchConfig = () => {
     validate = ajv.compile(schema.properties.zowe);
   }
 
+  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
+
   useEffect(() => {
     dispatch(setNextStepEnabled(true));
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = false;
+    stages[STAGE_ID].isSkipped = isInitializationSkipped;
     setIsFormInit(true);
+
+    return () => {
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
+    }
   }, []);
 
   const toggleEditorVisibility = (type: any) => {
