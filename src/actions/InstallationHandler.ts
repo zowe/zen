@@ -202,6 +202,7 @@ class Installation {
   async uploadYaml(connectionArgs: IIpcConnectionArgs, installDir: string) {
     const tempPath = path.join(app.getPath("temp"), "zowe.yaml");
     const filePath = path.join(installDir, "zowe.yaml");
+    console.log(`Getting yaml from temp path: ` + tempPath + `\nUploading to: `, filePath);
     await new FileTransfer().upload(connectionArgs, tempPath, filePath, DataType.BINARY)
     const script = `chtag -t -c ISO8859-1 ${installDir}/zowe.yaml`;
     const result = await new Script().run(connectionArgs, script);
