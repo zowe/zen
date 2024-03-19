@@ -48,18 +48,33 @@ class PlanningPage{
     await this.saveValidateButton.click();
   }
    async fillPlanningPage(runtimeDir: string, workspaceDir: string, extensionDir: string, logDir: string, profileIdentifier:string, jobPrefix:string,jobname:string, javaLocation:string,nodejsLocation:string,zOSMFAppID:string){
+    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    await wait(5000);
     await this.runtimeDir.fill(runtimeDir);
+    await wait(2000);
     await this.workspaceDir.fill(workspaceDir);
+    await wait(2000);
     await this.extensionDir.fill(extensionDir);
+    await wait(2000);
     await this.logDir.fill(logDir);
+    await wait(2000);
     await this.profileIdentifier.fill(profileIdentifier);
+    await wait(2000);
     await this.jobname.fill(jobname);
+    await wait(2000);
     await this.jobPrefix.fill(jobPrefix);
+    await wait(2000);
     await this.javaLocation.fill(javaLocation);
+    await wait(2000);
     await this.nodejsLocation.fill(nodejsLocation);
+    await wait(2000);
     await this.zOSMFAppID.fill(zOSMFAppID);
+    await wait(2000);
+
   }
   async clickValidateLocations(){
+    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    await wait(20000);
     await this.validateLocations.click();
   }
 

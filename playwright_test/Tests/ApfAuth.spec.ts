@@ -71,8 +71,8 @@ test.describe('ApfAuthTab', () => {
       await page.waitForTimeout(5000);
       connectionPage.clickContinueButton()
       planningPage.clickSaveValidate()
-      await page.waitForTimeout(50000);
       planningPage.fillPlanningPage(RUNTIME_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
+      await page.waitForTimeout(20000);
       planningPage.clickValidateLocations()
       await page.waitForTimeout(50000);
       planningPage.continueInstallation()
