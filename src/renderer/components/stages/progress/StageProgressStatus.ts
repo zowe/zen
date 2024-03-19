@@ -60,12 +60,19 @@ const apfAuthStatus: InitSubStepsState = {
   success: false
 }
 
+const securityInitStatus: InitSubStepsState = {
+  writeYaml: false,
+  uploadYaml: false,
+  success: false
+}
+
 let progressStateKey = 'stage_progress';
 let activeStateKey = 'active_state';
 let planningStateKey = 'planning_stage';
 let installationTypeKey = 'installation_type';
 let datasetInstallationKey = 'dataset_installation';
 let apfAuthKey = 'apf_auth';
+let securityKey = 'security_init';
 
 const setKeys = (id: string) => {
   progressStateKey = `${progressStateKey}_${id}`;
@@ -74,6 +81,7 @@ const setKeys = (id: string) => {
   installationTypeKey = `${installationTypeKey}_${id}`;
   datasetInstallationKey = `${datasetInstallationKey}_${id}`;
   apfAuthKey = `${apfAuthKey}_${id}`;
+  securityKey = `${securityKey}_${id}`;
 }
 
 export const initializeProgress = (host: string, user: string) => {
@@ -115,6 +123,12 @@ export const initializeProgress = (host: string, user: string) => {
     const flattenedData = flatten(apfAuthStatus);
     localStorage.setItem(apfAuthKey, JSON.stringify(flattenedData));
   }
+
+  const securityInitState = localStorage.getItem(securityKey);
+  if(!securityInitState) {
+    const flattenedData = flatten(securityInitStatus);
+    localStorage.setItem(securityKey, JSON.stringify(flattenedData));
+  }
 }
 
 export const setApfAuthState = (apfAuthSteps: InitSubStepsState): void => {
@@ -129,6 +143,21 @@ export const getApfAuthState = (): InitSubStepsState => {
     return unflatten(flattenedData)
   } else {
     return apfAuthStatus;
+  }
+}
+
+export const setSecurityInitState = (securityInitSteps: InitSubStepsState): void => {
+  Object.assign(securityInitStatus, securityInitSteps);
+  localStorage.setItem(securityKey, JSON.stringify(apfAuthStatus));
+}
+
+export const getSecurityInitState = (): InitSubStepsState => {
+  const securityInitState = localStorage.getItem(securityKey);
+  if(securityInitState) {
+    const flattenedData = JSON.parse(securityInitState);
+    return unflatten(flattenedData)
+  } else {
+    return securityInitStatus;
   }
 }
 

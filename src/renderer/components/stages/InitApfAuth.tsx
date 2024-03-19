@@ -54,6 +54,7 @@ const InitApfAuth = () => {
   const [contentType, setContentType] = useState('');
   const [apfAuthInitProgress, setApfAuthInitProgress] = useState(getApfAuthState());
   const [stateUpdated, setStateUpdated] = useState(false);
+  const [initClicked, setInitClicked] = useState(false);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   let timer: any;
@@ -90,6 +91,17 @@ const InitApfAuth = () => {
   }, []);
 
   useEffect(() => {
+    setShowProgress(initClicked || getProgress('apfAuthStatus'));
+  }, [initClicked]);
+
+  useEffect(() => {
+    const allAttributesTrue = Object.values(apfAuthInitProgress).every(value => value === true);
+    if(allAttributesTrue) {
+      setNextStepEnabled(true);
+    }
+  }, [apfAuthInitProgress]);
+
+  useEffect(() => {
     if(!getProgress('apfAuthStatus')) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
@@ -104,7 +116,6 @@ const InitApfAuth = () => {
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setShowProgress(true);
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
     stages[STAGE_ID].isSkipped = !status;
     dispatch(setNextStepEnabled(status));
@@ -124,6 +135,7 @@ const InitApfAuth = () => {
   };
 
   const process = (event: any) => {
+    setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {

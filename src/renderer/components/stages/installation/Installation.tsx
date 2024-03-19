@@ -58,6 +58,7 @@ const Installation = () => {
   const [contentType, setContentType] = useState('');
   const [mvsDatasetInitProgress, setMvsDatasetInitProgress] = useState(getDatasetInstallationState());
   const [stateUpdated, setStateUpdated] = useState(false);
+  const [initClicked, setInitClicked] = useState(false);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   const version = useAppSelector(selectZoweVersion);
@@ -101,26 +102,21 @@ const Installation = () => {
     }
   }, []);
 
-  const setMvsDatasetInitializationProgress = (aftAuthorizationState: any) => {
-    setMvsDatasetInitProgress(aftAuthorizationState);
-    setDatasetInstallationState(aftAuthorizationState);
+  const setMvsDatasetInitializationProgress = (datasetInitState: any) => {
+    setMvsDatasetInitProgress(datasetInitState);
+    setDatasetInstallationState(datasetInitState);
   }
 
-  const updateProgress = (status: boolean) => {
-    setStateUpdated(!stateUpdated);
-    setShowProgress(true);
-    stages[stageId].subStages[subStageId].isSkipped = !status;
-    stages[stageId].isSkipped = !status;
-    dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(status));
-    dispatch(setDatasetInstallationStatus(status));
-    if(!status) {
-      for (let key in mvsDatasetInitProgress) {
-        mvsDatasetInitProgress[key as keyof(DatasetInstallationState)] = false;
-      }
-      setMvsDatasetInitializationProgress(mvsDatasetInitProgress);
+  useEffect(() => {
+    setShowProgress(initClicked || getProgress('apfAuthStatus'));
+  }, [initClicked]);
+
+  useEffect(() => {
+    const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
+    if(allAttributesTrue) {
+      setNextStepEnabled(true);
     }
-  }
+  }, [mvsDatasetInitProgress]);
 
   useEffect(() => {
     if(!getProgress('datasetInstallationStatus')) {
@@ -135,12 +131,29 @@ const Installation = () => {
     nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress, stateUpdated]);
 
+  const updateProgress = (status: boolean) => {
+    setStateUpdated(!stateUpdated);
+    setInitClicked(false);
+    stages[stageId].subStages[subStageId].isSkipped = !status;
+    stages[stageId].isSkipped = !status;
+    dispatch(setNextStepEnabled(status));
+    dispatch(setInitializationStatus(status));
+    dispatch(setDatasetInstallationStatus(status));
+    if(!status) {
+      for (let key in mvsDatasetInitProgress) {
+        mvsDatasetInitProgress[key as keyof(DatasetInstallationState)] = false;
+      }
+      setMvsDatasetInitializationProgress(mvsDatasetInitProgress);
+    }
+  }
+
   const toggleEditorVisibility = (type: any) => {
     setContentType(type);
     setEditorVisible(!editorVisible);
   };
 
   const process = (event: any, skipDownload?: boolean) => {
+    setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
     dispatch(setLoading(true));
