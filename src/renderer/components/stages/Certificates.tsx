@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Box, Button } from '@mui/material';
+import { Box, Button, FormControl } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progress/progressSlice';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
@@ -26,6 +26,8 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
+import { setProgress, getProgress, setCertificateInitState, getCertificateInitState } from "./progress/StageProgressStatus";
+import { CertInitSubStepsState } from "../../../types/stateInterfaces";
 
 const Certificates = () => {
 
@@ -50,18 +52,17 @@ const Certificates = () => {
   const [isFormInit, setIsFormInit] = useState(false);
   const [initializeForm, setInitializeForm] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
-  const [showProgress, setShowProgress] = useState(false);
+  const [showProgress, setShowProgress] = useState(getProgress('certificateStatus'));
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
 
   const section = 'certificate';
 
-  const [certificateProgress, setCertificateProgress] = useState({
-    writeYaml: false,
-    uploadYaml: false,
-    zweInitCertificate: false,
-  });
+  const [certificateInitProgress, setCertificateInitProgress] = useState(getCertificateInitState());
+  const [stateUpdated, setStateUpdated] = useState(false);
+  const [initClicked, setInitClicked] = useState(false);
+
   let timer: any;
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
@@ -88,9 +89,7 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
-    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = isStepSkipped;
-    stages[STAGE_ID].isSkipped = isInitializationSkipped
+    updateProgress(getProgress('certificateStatus'));
     setIsFormInit(true);
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
@@ -98,14 +97,62 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
   }, []);
 
   useEffect(() => {
-    timer = setInterval(() => {
-      window.electron.ipcRenderer.getCertificateProgress().then((res: any) => {
-        setCertificateProgress(res);
-      })
-    }, 3000);
-    const nextPosition = document.getElementById('certificate-progress');
-    nextPosition.scrollIntoView({behavior: 'smooth'});
-  }, [showProgress]);
+    setShowProgress(initClicked || getProgress('certificateStatus'));
+  }, [initClicked]);
+
+  useEffect(() => {
+    if(!getProgress('certificateStatus')) {
+      timer = setInterval(() => {
+        window.electron.ipcRenderer.getCertificateProgress().then((res: any) => {
+          setCertificateInitializationProgress(res)
+        })
+      }, 3000);
+      const nextPosition = document.getElementById('certificate-progress');
+      nextPosition.scrollIntoView({behavior: 'smooth'});
+    }
+    
+  }, [showProgress, stateUpdated]);
+
+  useEffect(() => {
+    const allAttributesTrue = Object.values(certificateInitProgress).every(value => value === true);
+    if(allAttributesTrue) {
+      setNextStepEnabled(true);
+    }
+  }, [certificateInitProgress]);
+
+  const setCertificateInitializationProgress = (aftAuthorizationState: any) => {
+    setCertificateInitProgress(aftAuthorizationState);
+    setCertificateInitState(aftAuthorizationState);
+  }
+
+  const updateProgress = (status: boolean) => {
+    setStateUpdated(!stateUpdated);
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
+    stages[STAGE_ID].isSkipped = !status;
+    dispatch(setNextStepEnabled(status));
+    dispatch(setInitializationStatus(status));
+    dispatch(setCertificateStatus(status));
+    if(!status) {
+      for (let key in certificateInitProgress) {
+        certificateInitProgress[key as keyof(CertInitSubStepsState)] = false;
+      }
+      setCertificateInitializationProgress(certificateInitProgress);
+    }
+  }
+
+  const process = async(event: any) => {
+    setInitClicked(true);
+    updateProgress(false);
+    event.preventDefault();
+    window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml).then((res: IResponse) => {
+      updateProgress(res.status);
+      clearInterval(timer);
+      }).catch(() => {
+        clearInterval(timer);
+        updateProgress(false);
+        console.warn('zwe init certificate failed');
+      });
+  }
 
   const toggleEditorVisibility = (type: any) => {
     setContentType(type);
@@ -163,6 +210,7 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
+    updateProgress(isValid);
   } 
 
   return (
@@ -178,26 +226,17 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
           <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={async (e) => {
-            e.preventDefault();
-            setShowProgress(true);
-            window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml).then((res: IResponse) => {
-              dispatch(setNextStepEnabled(true));
-              dispatch(setCertificateStatus(res.status));
-              stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
-              clearInterval(timer);
-            }).catch(() => {
-              clearInterval(timer);
-              console.warn('zwe init certificates failed');
-            });
-          }}>Initialize Zowe Certificates</Button>
+          {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Zowe Certificates</Button>
+          </FormControl> : null}
         </Box>
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="certificate-progress">
         {!showProgress ? null :
           <React.Fragment>
-            <ProgressCard label="Write configuration file to local disk" id="download-progress-card" status={certificateProgress.writeYaml}/>
-            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={certificateProgress.uploadYaml}/>
-            <ProgressCard label="Run certificate initialization script (zwe init certifiate)" id="install-progress-card" status={certificateProgress.zweInitCertificate}/>
+            <ProgressCard label="Write configuration file to local disk" id="download-progress-card" status={certificateInitProgress.writeYaml}/>
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={certificateInitProgress.uploadYaml}/>
+            <ProgressCard label="Run certificate initialization script (zwe init certifiate)" id="install-progress-card" status={certificateInitProgress.zweInitCertificate}/>
+            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Reinitialize Zowe Certificates</Button>
           </React.Fragment>
         }
         </Box>

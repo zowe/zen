@@ -9,7 +9,7 @@
  */
 
 import { flatten, unflatten } from 'flat';
-import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState} from '../../../../types/stateInterfaces';
+import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState} from '../../../../types/stateInterfaces';
 
 const installationTypeStatus: InstallationType = {
   installationType: 'download',
@@ -66,6 +66,12 @@ const securityInitStatus: InitSubStepsState = {
   success: false
 }
 
+const certificateInitStatus: CertInitSubStepsState = {
+  writeYaml: false,
+  uploadYaml: false,
+  zweInitCertificate: false
+}
+
 let progressStateKey = 'stage_progress';
 let activeStateKey = 'active_state';
 let planningStateKey = 'planning_stage';
@@ -73,6 +79,7 @@ let installationTypeKey = 'installation_type';
 let datasetInstallationKey = 'dataset_installation';
 let apfAuthKey = 'apf_auth';
 let securityKey = 'security_init';
+let certificateKey = 'certificate_init';
 
 const setKeys = (id: string) => {
   progressStateKey = `${progressStateKey}_${id}`;
@@ -82,6 +89,7 @@ const setKeys = (id: string) => {
   datasetInstallationKey = `${datasetInstallationKey}_${id}`;
   apfAuthKey = `${apfAuthKey}_${id}`;
   securityKey = `${securityKey}_${id}`;
+  certificateKey = `${certificateKey}_${id}`;
 }
 
 export const initializeProgress = (host: string, user: string) => {
@@ -129,6 +137,12 @@ export const initializeProgress = (host: string, user: string) => {
     const flattenedData = flatten(securityInitStatus);
     localStorage.setItem(securityKey, JSON.stringify(flattenedData));
   }
+
+  const certificateInitState = localStorage.getItem(certificateKey);
+  if(!certificateInitState) {
+    const flattenedData = flatten(certificateInitStatus);
+    localStorage.setItem(certificateKey, JSON.stringify(flattenedData));
+  }
 }
 
 export const setApfAuthState = (apfAuthSteps: InitSubStepsState): void => {
@@ -148,7 +162,7 @@ export const getApfAuthState = (): InitSubStepsState => {
 
 export const setSecurityInitState = (securityInitSteps: InitSubStepsState): void => {
   Object.assign(securityInitStatus, securityInitSteps);
-  localStorage.setItem(securityKey, JSON.stringify(apfAuthStatus));
+  localStorage.setItem(securityKey, JSON.stringify(securityInitStatus));
 }
 
 export const getSecurityInitState = (): InitSubStepsState => {
@@ -158,6 +172,21 @@ export const getSecurityInitState = (): InitSubStepsState => {
     return unflatten(flattenedData)
   } else {
     return securityInitStatus;
+  }
+}
+
+export const setCertificateInitState = (certificateInitSteps: CertInitSubStepsState): void => {
+  Object.assign(certificateInitStatus, certificateInitSteps);
+  localStorage.setItem(certificateKey, JSON.stringify(certificateInitStatus));
+}
+
+export const getCertificateInitState = (): CertInitSubStepsState => {
+  const certificateInitState = localStorage.getItem(certificateKey);
+  if(certificateInitState) {
+    const flattenedData = JSON.parse(certificateInitState);
+    return unflatten(flattenedData)
+  } else {
+    return certificateInitStatus;
   }
 }
 

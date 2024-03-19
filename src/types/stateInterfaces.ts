@@ -58,6 +58,12 @@ export interface InitSubStepsState {
   success: boolean
 }
 
+export interface CertInitSubStepsState {
+  writeYaml: boolean,
+  uploadYaml: boolean,
+  zweInitCertificate: boolean
+}
+
 
 
 
