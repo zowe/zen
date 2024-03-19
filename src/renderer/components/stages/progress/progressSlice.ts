@@ -45,9 +45,11 @@ export const progressSlice = createSlice({
     setInitializationStatus: (state, action: PayloadAction<boolean>) => {
       if (
         state.datasetInstallationStatus &&
+        state.networkingStatus &&
         state.apfAuthStatus &&
         state.securityStatus &&
-        state.certificateStatus
+        state.certificateStatus &&
+        state.launchConfigStatus
       ) {
         state.initializationStatus = true;
         setProgress('initializationStatus', true);
@@ -87,7 +89,7 @@ export const progressSlice = createSlice({
   }
 });
 
-export const { setConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setInitializationStatus, setDatasetInstallationStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus, setLaunchConfigStatus ,setReviewStatus } = progressSlice.actions;
+export const { setConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setInitializationStatus, setDatasetInstallationStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus, setLaunchConfigStatus, setReviewStatus } = progressSlice.actions;
 
 export const selectConnectionStatus = (state: RootState) => state.progress.connectionStatus;
 export const selectPlanningStatus = (state: RootState) => state.progress.planningStatus;
