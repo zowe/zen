@@ -52,7 +52,7 @@ export interface DatasetInstallationState {
   initMVS: boolean
 }
 
-export interface ApfAuthState {
+export interface InitSubStepsState {
   writeYaml: boolean,
   uploadYaml: boolean,
   success: boolean

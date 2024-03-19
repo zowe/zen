@@ -25,7 +25,7 @@ import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
 import { setProgress, getProgress, setApfAuthState, getApfAuthState } from "./progress/StageProgressStatus";
-import { ApfAuthState } from "../../../types/stateInterfaces";
+import { InitSubStepsState } from "../../../types/stateInterfaces";
 
 const InitApfAuth = () => {
 
@@ -112,7 +112,7 @@ const InitApfAuth = () => {
     dispatch(setApfAuthStatus(status));
     if(!status) {
       for (let key in apfAuthInitProgress) {
-        apfAuthInitProgress[key as keyof(ApfAuthState)] = false;
+        apfAuthInitProgress[key as keyof(InitSubStepsState)] = false;
       }
       setApfAuthorizationInitProgress(apfAuthInitProgress);
     }

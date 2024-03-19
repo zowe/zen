@@ -9,7 +9,7 @@
  */
 
 import { flatten, unflatten } from 'flat';
-import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, ApfAuthState} from '../../../../types/stateInterfaces';
+import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState} from '../../../../types/stateInterfaces';
 
 const installationTypeStatus: InstallationType = {
   installationType: 'download',
@@ -54,7 +54,7 @@ const datasetInstallationStatus: DatasetInstallationState = {
   initMVS: false
 }
 
-const apfAuthStatus: ApfAuthState = {
+const apfAuthStatus: InitSubStepsState = {
   writeYaml: false,
   uploadYaml: false,
   success: false
@@ -117,12 +117,12 @@ export const initializeProgress = (host: string, user: string) => {
   }
 }
 
-export const setApfAuthState = (apfAuthSteps: ApfAuthState): void => {
+export const setApfAuthState = (apfAuthSteps: InitSubStepsState): void => {
   Object.assign(apfAuthStatus, apfAuthSteps);
   localStorage.setItem(apfAuthKey, JSON.stringify(apfAuthStatus));
 }
 
-export const getApfAuthState = (): ApfAuthState => {
+export const getApfAuthState = (): InitSubStepsState => {
   const apfAuthState = localStorage.getItem(apfAuthKey);
   if(apfAuthState) {
     const flattenedData = JSON.parse(apfAuthState);
