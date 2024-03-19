@@ -98,7 +98,9 @@ const Installation = () => {
   useEffect(() => {
     timer = setInterval(() => {
       window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
-        setInstallationProgress(res);
+        if (res) {
+          setInstallationProgress(res);
+        }
       })
     }, 3000);
     const nextPosition = document.getElementById('installation-progress');

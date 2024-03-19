@@ -92,7 +92,9 @@ const Security = () => {
   useEffect(() => {
     timer = setInterval(() => {
       window.electron.ipcRenderer.getInitSecurityProgress().then((res: any) => {
-        setInitProgress(res);
+        if (res) {
+          setInitProgress(res);
+        }
       })
     }, 3000);
     const nextPosition = document.getElementById('init-progress');

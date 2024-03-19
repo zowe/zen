@@ -38,7 +38,7 @@ const STORE_DEFAULT = {
     "zweInitCertificate": false,
   }
 };
-const STORE_NAME = 'zen-editor-store';
+const STORE_NAME = 'zen-progress-store';
 
 export class ProgressStore extends DefaultStore {
 
