@@ -82,18 +82,6 @@ class Installation {
         download = upload = unpax = {status: true, details : ''}
       }
 
-      let readPaxYamlAndSchema = await this.readExYamlAndSchema(connectionArgs, installationArgs.installationType === "smpe" ? installationArgs.smpeDir : installationArgs.installationDir + "/runtime");
-      // console.log('\n\n*** readPaxYamlAndSchema result:', JSON.stringify(readPaxYamlAndSchema.details));
-      if(readPaxYamlAndSchema.details.yaml){
-        // console.log("\n\nSCHEMA: ");
-        // console.log(JSON.stringify(readPaxYamlAndSchema.details.yaml));
-        const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat /u/ts6330/zen-install2/runtime/example-zowe.yaml\\r\\n`)
-        if(jobOutputSplit[1]){
-          const trimmedYamlSchema = jobOutputSplit[1].split(`+ echo 'Script finished.'`)[0].split(`Script finished.`);
-          console.log("\n\n *** trimmedYamlSchema[0]: ", trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`));
-        }
-      }
-
       let installation;
       if(installationArgs.installationType !== "smpe"){
         console.log("installing...");
@@ -239,9 +227,6 @@ class Installation {
   async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
     return {status: false, details: 'Method not implemented.'}
   }
-  async readExYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse>{
-    return {status: false, details: 'Method not implemented.'}
-  }
   
 }
 
@@ -297,16 +282,6 @@ export class FTPInstallation extends Installation {
     const script = `cd ${installDir}/runtime/bin;./zwe init mvs -c ${installDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
-  }
-
-  async readExYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string){
-    const catYaml = `cat ${installDir}/example-zowe.yaml`;
-    const yamlResult = await new Script().run(connectionArgs, catYaml);
-    const catYamlSchema = `cat ${installDir}/schemas/zowe-yaml-schema.json`;
-    const yamlSchemaResult = await new Script().run(connectionArgs, catYamlSchema);
-    const catCommonSchema = `cat ${installDir}/schemas/server-common.json`;
-    const commonSchemaResult = await new Script().run(connectionArgs, catCommonSchema);
-    return {status: yamlResult.rc === 0 && yamlSchemaResult.rc == 0 && commonSchemaResult.rc == 0, details: {yaml: yamlResult.jobOutput, yamlSchema: yamlSchemaResult.jobOutput, serverCommon: commonSchemaResult.jobOutput}}
   }
 
   async checkInstallData() {
