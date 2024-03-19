@@ -110,6 +110,10 @@ const Security = () => {
     event.preventDefault();
     toggleProgress(true);
     window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml).then((res: IResponse) => {
+        // Some parts of Zen pass the response as a string directly into the object
+        if (res.status == false && typeof res.details == "string") {
+          res.details = { 3: res.details };
+        }
         if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe init security
           alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
           window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {

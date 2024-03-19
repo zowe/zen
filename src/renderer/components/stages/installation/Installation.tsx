@@ -130,6 +130,10 @@ const Installation = () => {
 
         const config = (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml;
         window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
+          // Some parts of Zen pass the response as a string directly into the object
+          if (res.status == false && typeof res.details == "string") {
+            res.details = { 3: res.details };
+          }
           if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe install
             alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
             window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
@@ -207,7 +211,7 @@ const Installation = () => {
       <ContainerCard title="Installation" description="Provide installation details."> 
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
-          {installationArgs.installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
+          {installationArgs.installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install the MVS data sets, please provide the high-level qualifiers below\n`}
         </Typography>
 
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
