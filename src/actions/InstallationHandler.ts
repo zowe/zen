@@ -105,7 +105,8 @@ class Installation {
           }
         }
 
-        if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
+        const currentSchema = ConfigurationStore.getSchema();
+        if(currentSchema === undefined && readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
           const parseSchemas = function(inputString: string, catPath: string){
             const jobOutputSplit = inputString.split(`cat ${catPath}\\r\\n`)
             if(jobOutputSplit[1]){
@@ -117,8 +118,7 @@ class Installation {
           try {
             let yamlSchema = JSON.parse(parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
             const serverCommon = JSON.parse(parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
-            const currentSchema = ConfigurationStore.getSchema();
-            if(yamlSchema && serverCommon && currentSchema === undefined){
+            if(yamlSchema && serverCommon){
               // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
               yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverCommon.$defs.datasetMember;
               yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
