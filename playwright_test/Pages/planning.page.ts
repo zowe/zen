@@ -28,6 +28,7 @@ class PlanningPage{
   previousStep: Locator;
   continueInstallationOptions: Locator;
   readyToProceedMessage: Locator;
+  errorMessage: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -56,6 +57,7 @@ class PlanningPage{
     this.previousStep = page.locator("//button[contains(text(),'Previous step')]")
     this.continueInstallationOptions = page.locator("//button[contains(text(), 'Continue to Installation Options')]")
     this.readyToProceedMessage = page.locator("//div[contains(@class,'MuiBox-root css-hieomr')]/p")   
+    this.errorMessage = page.locator("//div[contains(@class,'MuiAlert-message')]")
   }
 
   async clickZoweInstallationLink(){
@@ -76,6 +78,10 @@ class PlanningPage{
 
   async isSaveAndValidateGreenCheckVisible(){
     return await this.saveAndValidateGreenCheck.isVisible({ timeout: 5000 });
+  }
+
+  async getErrorMessage(){
+    return await this.errorMessage.textContent();
   }
 
   async enterRuntimeDir(runtimeDir: any){
