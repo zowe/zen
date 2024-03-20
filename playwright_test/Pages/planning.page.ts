@@ -69,13 +69,13 @@ class PlanningPage{
     await this.nodejsLocation.fill(nodejsLocation);
     await wait(2000);
     await this.zOSMFAppID.fill(zOSMFAppID);
-    await wait(2000);
+    await wait(5000);
 
   }
   async clickValidateLocations(){
     const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-    await wait(20000);
     await this.validateLocations.click();
+    await wait(60000);
   }
 
   async continueInstallation(){
