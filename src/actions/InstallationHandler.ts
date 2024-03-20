@@ -85,10 +85,7 @@ class Installation {
 
       let zoweRuntimePath = installationArgs.installationType === "smpe" ? installationArgs.installationDir : installationArgs.installationDir + "/runtime";
       let readPaxYamlAndSchema = await this.readExYamlAndSchema(connectionArgs, zoweRuntimePath);
-      // console.log('\n\n*** readPaxYamlAndSchema result:', JSON.stringify(readPaxYamlAndSchema.details));
       if(readPaxYamlAndSchema.details.yaml){
-        // console.log("\n\nSCHEMA: ");
-        // console.log(JSON.stringify(readPaxYamlAndSchema.details.yaml));
         const parseCatCommandFromJobOutput = function(catPath: string){
           const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat ${catPath}\\r\\n`)
           if(jobOutputSplit[1]){
@@ -113,14 +110,11 @@ class Installation {
             const jobOutputSplit = inputString.split(`cat ${catPath}\\r\\n`)
             if(jobOutputSplit[1]){
               const trimmedYamlSchema = jobOutputSplit[1].split(`Script finished.`);
-              // console.log('trimmedYamlSchema[0]:', trimmedYamlSchema[0]);
-              // console.log("\n\n *** trimmedYamlSchema[0]: ", trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`).replaceAll(`\\\\"`, `\\"`));
               return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`).replaceAll(`\\\\"`, `\\"`);
             }
             return "";
           }
           try {
-            // console.log('yaml Schema:', parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
             let yamlSchema = JSON.parse(parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
             const serverCommon = JSON.parse(parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
             const currentSchema = ConfigurationStore.getSchema();
