@@ -12,10 +12,11 @@ import { app } from 'electron';
 import { DataType, FileTransfer } from "../services/FileTransfer";
 import path from "path/posix";
 import { Script } from "../services/RunScript";
-import { stringify } from 'yaml';
+import { parse, stringify } from 'yaml';
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ProgressStore } from "../storage/ProgressStore";
 import * as fs from 'fs';
+import { ConfigurationStore } from '../storage/ConfigurationStore';
 
 class Installation {
 
@@ -82,16 +83,64 @@ class Installation {
         download = upload = unpax = {status: true, details : ''}
       }
 
-      let readPaxYamlAndSchema = await this.readExYamlAndSchema(connectionArgs, installationArgs.installationType === "smpe" ? installationArgs.smpeDir : installationArgs.installationDir + "/runtime");
+      let zoweRuntimePath = installationArgs.installationType === "smpe" ? installationArgs.installationDir : installationArgs.installationDir + "/runtime";
+      let readPaxYamlAndSchema = await this.readExYamlAndSchema(connectionArgs, zoweRuntimePath);
       // console.log('\n\n*** readPaxYamlAndSchema result:', JSON.stringify(readPaxYamlAndSchema.details));
       if(readPaxYamlAndSchema.details.yaml){
         // console.log("\n\nSCHEMA: ");
         // console.log(JSON.stringify(readPaxYamlAndSchema.details.yaml));
-        const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat ${installationArgs.installationDir}/runtime/example-zowe.yaml\\r\\n`)
-        if(jobOutputSplit[1]){
-          const trimmedYamlSchema = jobOutputSplit[1].split(`+ echo 'Script finished.'`)[0].split(`Script finished.`);
-          console.log("\n\n *** trimmedYamlSchema[0]: ", trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`));
+        const parseCatCommandFromJobOutput = function(catPath: string){
+          const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat ${catPath}\\r\\n`)
+          if(jobOutputSplit[1]){
+            const trimmedYamlSchema = jobOutputSplit[1].split(`+ echo 'Script finished.'`)[0].split(`Script finished.`);
+            // console.log("\n\n *** trimmedYamlSchema[0]: ", trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`));
+            return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`);
+          }
+          return "";
         }
+        const yamlFromPax = parseCatCommandFromJobOutput(`${zoweRuntimePath}/example-zowe.yaml`);
+        const currentConfig = ConfigurationStore.getConfig();
+        if(yamlFromPax && (currentConfig == undefined || typeof currentConfig !== "object" || (typeof currentConfig !== "object" && Object.keys(currentConfig).length == 0))){
+          try {
+            ConfigurationStore.setConfig(parse(yamlFromPax));
+          } catch(e) {
+            console.log('error setting example-zowe.yaml:', e);
+          }
+        }
+
+        if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
+          const parseSchemas = function(inputString: string, catPath: string){
+            const jobOutputSplit = inputString.split(`cat ${catPath}\\r\\n`)
+            if(jobOutputSplit[1]){
+              const trimmedYamlSchema = jobOutputSplit[1].split(`Script finished.`);
+              // console.log('trimmedYamlSchema[0]:', trimmedYamlSchema[0]);
+              // console.log("\n\n *** trimmedYamlSchema[0]: ", trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`).replaceAll(`\\\\"`, `\\"`));
+              return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`).replaceAll(`\\\\"`, `\\"`);
+            }
+            return "";
+          }
+          try {
+            // console.log('yaml Schema:', parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
+            let yamlSchema = JSON.parse(parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
+            const serverCommon = JSON.parse(parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
+            const currentSchema = ConfigurationStore.getSchema();
+            if(yamlSchema && serverCommon && currentSchema === undefined){
+              // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
+              yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverCommon.$defs.datasetMember;
+              yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
+              yamlSchema.$id = serverCommon.$id;
+              if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
+                delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
+                yamlSchema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverCommon.$defs.ipv4
+              }
+              console.log('Setting schema from runtime dir:', JSON.stringify(yamlSchema));
+              ConfigurationStore.setSchema(yamlSchema);
+            }
+          } catch (e) {
+            console.log('error setting schema from pax:', e);
+          }
+        }
+        
       }
 
       let installation;
