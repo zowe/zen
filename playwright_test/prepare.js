@@ -7,6 +7,10 @@ const SSH_PASSWD = process.env.SSH_PASSWD;
 const ZOWE_ROOT_DIR = process.env.ZOWE_ROOT_DIR;
 
 async function prepare() {
+  // Extract directory name from ZOWE_ROOT_DIR
+  const lastSlashIndex = ZOWE_ROOT_DIR.lastIndexOf('/');
+  const directoryName = ZOWE_ROOT_DIR.substring(lastSlashIndex + 1);
+
   const scriptRunner = new Script({
     host: SSH_HOST,
     port: SSH_PORT,
@@ -14,7 +18,8 @@ async function prepare() {
     password: SSH_PASSWD,
   });
 
-  await scriptRunner.install(ZOWE_ROOT_DIR);
+  // Create only the `zen` directory
+  await scriptRunner.install(directoryName);
 }
 
 prepare().then(() => {
