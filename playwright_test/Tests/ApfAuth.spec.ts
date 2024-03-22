@@ -15,7 +15,6 @@ const SECURITY_TITLE = 'Security'
 const DATASET_PREFIX = 'IBMUSER.ZWEV1'
 const AUTH_LOAD_LIB = 'IBMUSER.ZWEV1.ZWEAUTH'
 const AUTH_PLUGIN_LIB = 'IBMUSER.ZWEV1.CUST.ZWESAPL'
-const RUNTIME_DIR = process.env.ROOT_PATH + process.env.ZOWE_ROOT_DIR;
 const SSH_HOST = process.env.SSH_HOST;
 const SSH_PASSWD =  process.env.SSH_PASSWD;
 const SSH_PORT = process.env.SSH_PORT;
@@ -71,7 +70,7 @@ test.describe('ApfAuthTab', () => {
       await page.waitForTimeout(5000);
       connectionPage.clickContinueButton()
       planningPage.clickSaveValidate()
-      planningPage.fillPlanningPage(RUNTIME_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
+      planningPage.fillPlanningPage(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
       await page.waitForTimeout(20000);
       planningPage.clickValidateLocations()
       await page.waitForTimeout(50000);

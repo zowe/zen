@@ -8,8 +8,8 @@ import PlanningPage from '../Pages/planning.page';
 import NetworkingPage from '../Pages/networking.page';
 import { spawn } from 'child_process';
 import path from 'path';
-let page: Page;
 
+let page: Page;
 
 let electronApp: ElectronApplication
 const NETWORKING_TITLE = 'Networking';
@@ -17,20 +17,20 @@ const APFAUTH_TITLE = 'APF Authorize Load Libraries';
 const INSTALLATION_TITLE = 'Installation';
 const DOMAIN_NAME = process.env.DOMAIN_NAME;
 const EXTERNAL_PORT = process.env.EXTERNAL_PORT;
-const RUNTIME_DIR = process.env.ROOT_PATH + process.env.ZOWE_ROOT_DIR;
+const ZOWE_ROOT_DIR = process.env.ZOWE_ROOT_DIR;
 const SSH_HOST = process.env.SSH_HOST;
 const SSH_PASSWD =  process.env.SSH_PASSWD;
 const SSH_PORT = process.env.SSH_PORT;
 const SSH_USER = process.env.SSH_USER;
 const ZOWE_EXTENSION_DIR= process.env.ZOWE_EXTENSION_DIR;
 const ZOWE_LOG_DIR=process.env.ZOWE_LOG_DIR;
-const ZOWE_ROOT_DIR=process.env.ZOWE_ROOT_DIR;
 const ZOWE_WORKSPACE_DIR=process.env.ZOWE_WORKSPACE_DIR;
 const JOB_NAME= process.env.JOB_NAME;
 const JOB_PREFIX=process.env.JOB_PREFIX;
 const  JAVA_HOME=process.env.JAVA_HOME;
 const  NODE_HOME=process.env.NODE_HOME;
 const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
+
 
 test.describe('networkingTab', () => {
     let connectionPage: ConnectionPage;
@@ -73,7 +73,7 @@ test.describe('networkingTab', () => {
       await page.waitForTimeout(5000);
       connectionPage.clickContinueButton()
       planningPage.clickSaveValidate()
-      planningPage.fillPlanningPage(RUNTIME_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
+      planningPage.fillPlanningPage(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
       await page.waitForTimeout(20000);
       planningPage.clickValidateLocations()
       await page.waitForTimeout(20000);

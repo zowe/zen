@@ -32,6 +32,8 @@ Example command:
   SECURITY_STC_ZIS=ZWESISTC \
   SECURITY_STC_ZOWE=ZWESLSTC \
   ZOSMF_APP_ID=IZUDFLT \
+  DOMAIN_NAME=domain.com \
+  EXTERNAL_PORT=7556 \
   npm run playtest
 ```
 
