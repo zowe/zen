@@ -18,7 +18,6 @@ async function prepare() {
     password: SSH_PASSWD,
   });
 
-  // Create only the `zen` directory
   await scriptRunner.install(directoryName);
 }
 
