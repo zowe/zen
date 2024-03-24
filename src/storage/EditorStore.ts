@@ -18,13 +18,14 @@ const STORE_DEFAULT = {
   [TYPE_YAML]: ""
 };
 const STORE_NAME = 'zen-editor-store';
+const STORE: any = new Store({cwd: STORE_NAME});
 
 export class EditorStore extends DefaultStore {
 
   public static store: any = new Store({cwd: STORE_NAME});
 
   public static deleteAll(): void {
-    this.store.store = STORE_DEFAULT;
+    STORE.store = STORE_DEFAULT;
   }
 
   public static getJCLOutput(): any {
