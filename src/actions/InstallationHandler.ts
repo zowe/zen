@@ -17,12 +17,13 @@ import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ProgressStore } from "../storage/ProgressStore";
 import * as fs from 'fs';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
+import { InstallationArgs } from '../renderer/components/stages/installation/installationSlice';
 
 class Installation {
 
   public async runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
+    installationArgs: InstallationArgs,
     version: string,
     zoweConfig: any,
     skipDownload: boolean
@@ -99,7 +100,47 @@ class Installation {
         const currentConfig = ConfigurationStore.getConfig();
         if(yamlFromPax && (currentConfig == undefined || typeof currentConfig !== "object" || (typeof currentConfig !== "object" && Object.keys(currentConfig).length == 0))){
           try {
-            ConfigurationStore.setConfig(parse(yamlFromPax));
+            let yamlObj = parse(yamlFromPax);
+            if (installationArgs.installationDir) {
+              yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
+            }
+            if (installationArgs.workspaceDir) {
+              yamlObj.zowe.workspaceDir = installationArgs.workspaceDir;
+            }
+            if (installationArgs.logDir) {
+              yamlObj.zowe.logDirectory = installationArgs.logDir;
+            }
+            if (installationArgs.extensionDir) {
+              yamlObj.zowe.extensionDirectory = installationArgs.extensionDir;
+            }
+            if (installationArgs.rbacProfile) {
+              yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
+            }
+            if (installationArgs.jobName) {
+              yamlObj.zowe.job.name = installationArgs.jobName;
+            }
+            if (installationArgs.jobPrefix) {
+              yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
+            }
+            if (installationArgs.cookieId) {
+              yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
+            }
+            if (installationArgs.javaHome) {
+              yamlObj.java.home = installationArgs.javaHome;
+            }
+            if (installationArgs.nodeHome) {
+              yamlObj.node.home = installationArgs.nodeHome;
+            }
+            if (installationArgs.zosmfHost) {
+              yamlObj.zOSMF.host = installationArgs.zosmfHost;
+            }
+            if (installationArgs.zosmfPort) {
+              yamlObj.zOSMF.port = installationArgs.zosmfPort;
+            }
+            if (installationArgs.zosmfApplId) {
+              yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
+            }
+            ConfigurationStore.setConfig(yamlObj);
           } catch(e) {
             console.log('error setting example-zowe.yaml:', e);
           }
