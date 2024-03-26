@@ -34,8 +34,26 @@ contextBridge.exposeInMainWorld('electron', {
     setConfig(completeZoweYamlObj: any) {
       return ipcRenderer.invoke("set-config", completeZoweYamlObj);
     },
-    setConfigByKey(key: string, value: any) {
+    setConfigByKeyAndValidate(key: string, value: any) {
       return ipcRenderer.invoke("set-config-by-key", key, value);
+    },
+    getJCLOutput() {
+      return ipcRenderer.invoke("get-jcl-output");
+    },
+    setJCLOutput(value: any) {
+      return ipcRenderer.invoke("set-jcl-output", value);
+    },
+    getYAMLOutput() {
+      return ipcRenderer.invoke("get-yaml-output");
+    },
+    setYAMLOutput(value: any) {
+      return ipcRenderer.invoke("set-yaml-output", value);
+    },
+    getStandardOutput() {
+      return ipcRenderer.invoke("get-standard-output");
+    },
+    setStandardOutput(value: any) {
+      return ipcRenderer.invoke("set-standard-output", value);
     },
     setSchema(schema: any) {
       return ipcRenderer.invoke("set-schema", schema);

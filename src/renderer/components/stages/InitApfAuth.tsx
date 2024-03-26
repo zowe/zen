@@ -11,7 +11,7 @@
 import React, {useEffect, useState} from "react";
 import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectOutput, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { setApfAuthStatus, setInitializationStatus, selectApfAuthStatus, selectInitializationStatus } from './progress/progressSlice';
 import { IResponse } from '../../../types/interfaces';
@@ -21,9 +21,11 @@ import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
 import { createTheme } from '@mui/material/styles';
+import { alertEmitter } from "../Header";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore"; 
+import { JCL_UNIX_SCRIPT_OK } from "../common/Utils";
 
 const InitApfAuth = () => {
 
@@ -41,15 +43,18 @@ const InitApfAuth = () => {
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
+  const output = useAppSelector(selectOutput);
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
+  const [setupOutput, setSetupOutput] = useState('');
   const [showProgress, toggleProgress] = useState(false);
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
+  const [editorContent, setEditorContent] = useState('');
   const [apfProgress, setApfProgress] = useState({
     writeYaml: false,
     uploadYaml: false,
@@ -107,24 +112,49 @@ const InitApfAuth = () => {
     event.preventDefault();
     toggleProgress(true);
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
-        dispatch(setNextStepEnabled(res.status));
-        dispatch(setApfAuthStatus(res.status));
-        dispatch(setInitializationStatus(res.status));
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+        // Some parts of Zen pass the response as a string directly into the object
+        if (res.status == false && typeof res.details == "string") {
+          res.details = { 3: res.details };
+        }
+        if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe init apfAuth
+          alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
+          window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
+            toggleEditorVisibility("output");
+          })
+          toggleProgress(false);
+          apfAuthProceedActions(false);
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+          clearInterval(timer);
+        } else {
+          apfAuthProceedActions(res.status);
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+          clearInterval(timer);
+        }
+      }).catch((err: any) => {
         clearInterval(timer);
-      }).catch(() => {
-        clearInterval(timer);
-        dispatch(setNextStepEnabled(false));
-        dispatch(setInitializationStatus(false));
-        dispatch(setApfAuthStatus(false));
+        apfAuthProceedActions(false);
+        toggleProgress(false);
+        // TODO: Test this
+        //alertEmitter.emit('showAlert', err.toString(), 'error');
         stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
         stages[STAGE_ID].isSkipped = true;
-        console.warn('zwe init apfauth failed');
+        if (typeof err === "string") {
+          console.warn('zwe init apfauth failed', err);
+        } else {
+          console.warn('zwe init apfauth failed', err?.toString()); // toString() throws run-time error on undefined or null
+        }
       });
   }
 
+  // True - a proceed, False - blocked
+  const apfAuthProceedActions = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setApfAuthStatus(status));
+    dispatch(setInitializationStatus(status));
+  }
+
   const editHLQ = (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = init ? (Object.keys(yaml?.zowe.setup.dataset).length > 0 ? yaml?.zowe.setup.dataset : data) : (data ? data : yaml?.zowe.setup.datasetg);
+    let updatedData = init ? (Object.keys(yaml?.zowe.setup.dataset).length > 0 ? yaml?.zowe.setup.dataset : data) : (data ? data : yaml?.zowe.setup.dataset);
     
     setInit(false);
 
@@ -169,7 +199,7 @@ const InitApfAuth = () => {
       <ContainerCard title="APF Authorize Load Libraries" description="Run the `zwe init apfauth` command to APF authorize load libraries.">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={editHLQ}/>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
-          {`Please review the following dataset setup configuration values before pressing run.\n`}
+          {`Please review the following dataset setup configuration values before pressing run. If you need to make changes, go back to the previous step.\n`}
         </Typography>
         <Box sx={{ width: '60vw' }}>
             <TextField
@@ -212,7 +242,7 @@ const InitApfAuth = () => {
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="apf-progress">
         {!showProgress ? null :
           <React.Fragment>
-            <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfProgress.writeYaml}/>
+            <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfProgress?.writeYaml || false}/> {/* we do || false to prevent run-time issue with not filled out data */}
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={apfProgress.uploadYaml}/>
             <ProgressCard label={`Run zwe init apfauth command`} id="upload-progress-card" status={apfProgress.success}/>
           </React.Fragment>

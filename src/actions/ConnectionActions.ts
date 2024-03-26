@@ -17,14 +17,14 @@ export class ConnectionActions {
 
   constructor() {
     this.mode = 'ftp'; // REVIEW: get from storage when picking strategy?
-    this.strategy = this.getStartegy();
+    this.strategy = this.getStrategy();
   }
 
   setMode(mode: IIpcConnectionArgs["connectionType"]) {
     this.mode = mode;
   }
 
-  getStartegy(): FTPConnection | CLIConnection {
+  getStrategy(): FTPConnection | CLIConnection {
     switch (this.mode) {
       case 'ftp':
         return new FTPConnection();
