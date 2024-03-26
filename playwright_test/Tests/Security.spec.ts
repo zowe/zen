@@ -34,6 +34,25 @@ const SECURITY_AUX = process.env.SECURITY_AUX;
 const SECURITY_STC_ZOWE = process.env.SECURITY_STC_ZOWE;
 const SECURITY_STC_ZIS = process.env.SECURITY_STC_ZIS;
 
+test.beforeAll(async () => {
+  const createDirsScriptPath = path.resolve(__dirname, '../prepare.js');
+  console.log('Creating child process with command:', 'node', [createDirsScriptPath]);
+  const child = spawn('node', [createDirsScriptPath]);
+  if (!child) {
+    console.error('Failed to spawn child process');
+    return;
+  }
+  console.log('Child process created successfully');
+  child.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+  });
+  child.stderr.on('data', (data) => {
+    console.error(`stderr: ${data}`);
+  });
+  child.on('error', (error) => {
+    console.error('Child process encountered an error:', error);
+  });
+});
 
 test.describe('securityTab', () => {
     let connectionPage: ConnectionPage;
@@ -42,25 +61,6 @@ test.describe('securityTab', () => {
     let planningPage : PlanningPage;
     let apfAuthPage : ApfAuthPage;
 
-    test.beforeAll(async () => {
-      const createDirsScriptPath = path.resolve(__dirname, '../prepare.js');
-      console.log('Creating child process with command:', 'node', [createDirsScriptPath]);
-      const child = spawn('node', [createDirsScriptPath]);
-      if (!child) {
-        console.error('Failed to spawn child process');
-        return;
-      }
-      console.log('Child process created successfully');
-      child.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
-      });
-      child.stderr.on('data', (data) => {
-        console.error(`stderr: ${data}`);
-      });
-      child.on('error', (error) => {
-        console.error('Child process encountered an error:', error);
-      });
-    })
 
     test.beforeEach(async ({ page }) => {
       test.setTimeout(900000);

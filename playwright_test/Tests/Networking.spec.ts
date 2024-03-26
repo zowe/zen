@@ -31,6 +31,25 @@ const  JAVA_HOME=process.env.JAVA_HOME;
 const  NODE_HOME=process.env.NODE_HOME;
 const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 
+test.beforeAll(async () => {
+  const createDirsScriptPath = path.resolve(__dirname, '../prepare.js');
+  console.log('Creating child process with command:', 'node', [createDirsScriptPath]);
+  const child = spawn('node', [createDirsScriptPath]);
+  if (!child) {
+    console.error('Failed to spawn child process');
+    return;
+  }
+  console.log('Child process created successfully');
+  child.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+  });
+  child.stderr.on('data', (data) => {
+    console.error(`stderr: ${data}`);
+  });
+  child.on('error', (error) => {
+    console.error('Child process encountered an error:', error);
+  });
+});
 
 test.describe('networkingTab', () => {
     let connectionPage: ConnectionPage;
@@ -38,26 +57,6 @@ test.describe('networkingTab', () => {
     let securityPage : SecurityPage;
     let planningPage : PlanningPage;
     let networkingPage : NetworkingPage;
-
-    test.beforeAll(async () => {
-      const createDirsScriptPath = path.resolve(__dirname, '../prepare.js');
-      console.log('Creating child process with command:', 'node', [createDirsScriptPath]);
-      const child = spawn('node', [createDirsScriptPath]);
-      if (!child) {
-        console.error('Failed to spawn child process');
-        return;
-      }
-      console.log('Child process created successfully');
-      child.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
-      });
-      child.stderr.on('data', (data) => {
-        console.error(`stderr: ${data}`);
-      });
-      child.on('error', (error) => {
-        console.error('Child process encountered an error:', error);
-      });
-    })
 
     test.beforeEach(async ({ page }) => {
       test.setTimeout(900000);
@@ -73,6 +72,7 @@ test.describe('networkingTab', () => {
       await page.waitForTimeout(5000);
       connectionPage.clickContinueButton()
       planningPage.clickSaveValidate()
+      await page.waitForTimeout(20000);
       planningPage.fillPlanningPage(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
       await page.waitForTimeout(20000);
       planningPage.clickValidateLocations()
@@ -83,9 +83,9 @@ test.describe('networkingTab', () => {
       await page.waitForTimeout(5000);
     })
 
-  test.afterEach(async () => {
-   await electronApp.close()
-   })
+    test.afterEach(async () => {
+      await electronApp.close()
+    })
 
   test('test title of page', async ({ page }) => {
    await page.waitForTimeout(5000);

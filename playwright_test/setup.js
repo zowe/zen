@@ -7,7 +7,7 @@ class Script {
   }
 
   async mkdir(installDir) {
-    const script = `mkdir ${installDir}`;
+    const script = `mkdir -p ${installDir}`;
     return this.run(script);
   }
   

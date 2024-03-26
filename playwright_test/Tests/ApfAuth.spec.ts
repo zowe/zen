@@ -29,32 +29,31 @@ const  JAVA_HOME=process.env.JAVA_HOME;
 const  NODE_HOME=process.env.NODE_HOME;
 const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 
+test.beforeAll(async () => {
+  const createDirsScriptPath = path.resolve(__dirname, '../prepare.js');
+  console.log('Creating child process with command:', 'node', [createDirsScriptPath]);
+  const child = spawn('node', [createDirsScriptPath]);
+  if (!child) {
+    console.error('Failed to spawn child process');
+    return;
+  }
+  console.log('Child process created successfully');
+  child.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+  });
+  child.stderr.on('data', (data) => {
+    console.error(`stderr: ${data}`);
+  });
+  child.on('error', (error) => {
+    console.error('Child process encountered an error:', error);
+  });
+});
 
 test.describe('ApfAuthTab', () => {
     let connectionPage: ConnectionPage;
     let titlePage : TitlePage;
     let apfAuthPage : ApfAuthPage;
     let planningPage : PlanningPage;
-
-    test.beforeAll(async () => {
-      const createDirsScriptPath = path.resolve(__dirname, '../prepare.js');
-      console.log('Creating child process with command:', 'node', [createDirsScriptPath]);
-      const child = spawn('node', [createDirsScriptPath]);
-      if (!child) {
-        console.error('Failed to spawn child process');
-        return;
-      }
-      console.log('Child process created successfully');
-      child.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
-      });
-      child.stderr.on('data', (data) => {
-        console.error(`stderr: ${data}`);
-      });
-      child.on('error', (error) => {
-        console.error('Child process encountered an error:', error);
-      });
-    })
 
     test.beforeEach(async ({ page }) => {
       test.setTimeout(900000);
@@ -70,10 +69,11 @@ test.describe('ApfAuthTab', () => {
       await page.waitForTimeout(5000);
       connectionPage.clickContinueButton()
       planningPage.clickSaveValidate()
+      await page.waitForTimeout(20000);
       planningPage.fillPlanningPage(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
       await page.waitForTimeout(20000);
       planningPage.clickValidateLocations()
-      await page.waitForTimeout(50000);
+      await page.waitForTimeout(30000);
       planningPage.continueInstallation()
       await page.waitForTimeout(5000);
       apfAuthPage.movetoInstallationPage()
@@ -117,19 +117,19 @@ test.describe('ApfAuthTab', () => {
 //       expect(isInitApf_check_visible).toBe(false);
 //     })
     test('test apfAuth with valid data', async ({ page }) => {
-      await page.waitForTimeout(5000);
-      apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
-      await page.waitForTimeout(5000);
-      apfAuthPage.movetoApfAuthPage()
-      await page.waitForTimeout(5000);
-      apfAuthPage.initializeApfauth()
-      await page.waitForTimeout(5000);
-      const isWriteConfig_check_visible = await apfAuthPage.isWriteConfigGreenCheckVisible();
-      expect(isWriteConfig_check_visible).toBe(true);
-      const isUploadConfig_check_visible = await apfAuthPage.isUploadConfig_check_visible();
-      expect(isUploadConfig_check_visible).toBe(true);
-      const isInitApf_check_visible = await apfAuthPage.isInitApf_check_visible();
-      expect(isInitApf_check_visible).toBe(true);
+     await page.waitForTimeout(5000);
+     apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
+     await page.waitForTimeout(5000);
+     apfAuthPage.movetoApfAuthPage()
+     await page.waitForTimeout(5000);
+     apfAuthPage.initializeApfauth()
+     await page.waitForTimeout(5000);
+     const isWriteConfig_check_visible = await apfAuthPage.isWriteConfigGreenCheckVisible();
+     expect(isWriteConfig_check_visible).toBe(true);
+     const isUploadConfig_check_visible = await apfAuthPage.isUploadConfig_check_visible();
+     expect(isUploadConfig_check_visible).toBe(true);
+     const isInitApf_check_visible = await apfAuthPage.isInitApf_check_visible();
+     expect(isInitApf_check_visible).toBe(true);
     })
     test('click Previous step', async ({ page }) => {
      await page.waitForTimeout(5000);
