@@ -12,16 +12,18 @@ import { app } from 'electron';
 import { DataType, FileTransfer } from "../services/FileTransfer";
 import path from "path/posix";
 import { Script } from "../services/RunScript";
-import { stringify } from 'yaml';
+import { parse, stringify } from 'yaml';
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ProgressStore } from "../storage/ProgressStore";
 import * as fs from 'fs';
+import { ConfigurationStore } from '../storage/ConfigurationStore';
+import { InstallationArgs } from '../renderer/components/stages/installation/installationSlice';
 
 class Installation {
 
   public async runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
+    installationArgs: InstallationArgs,
     version: string,
     zoweConfig: any,
     skipDownload: boolean
@@ -80,6 +82,100 @@ class Installation {
         }
       } else {
         download = upload = unpax = {status: true, details : ''}
+      }
+
+      let zoweRuntimePath = installationArgs.installationType === "smpe" ? installationArgs.installationDir : installationArgs.installationDir + "/runtime";
+      let readPaxYamlAndSchema = await this.readExYamlAndSchema(connectionArgs, zoweRuntimePath);
+      if(readPaxYamlAndSchema.details.yaml){
+        const parseCatCommandFromJobOutput = function(catPath: string){
+          const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat ${catPath}\\r\\n`)
+          if(jobOutputSplit[1]){
+            const trimmedYamlSchema = jobOutputSplit[1].split(`+ echo 'Script finished.'`)[0].split(`Script finished.`);
+            // console.log("\n\n *** trimmedYamlSchema[0]: ", trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`));
+            return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`);
+          }
+          return "";
+        }
+        const yamlFromPax = parseCatCommandFromJobOutput(`${zoweRuntimePath}/example-zowe.yaml`);
+        const currentConfig = ConfigurationStore.getConfig();
+        if(yamlFromPax && (currentConfig == undefined || typeof currentConfig !== "object" || (typeof currentConfig !== "object" && Object.keys(currentConfig).length == 0))){
+          try {
+            let yamlObj = parse(yamlFromPax);
+            if (installationArgs.installationDir) {
+              yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
+            }
+            if (installationArgs.workspaceDir) {
+              yamlObj.zowe.workspaceDir = installationArgs.workspaceDir;
+            }
+            if (installationArgs.logDir) {
+              yamlObj.zowe.logDirectory = installationArgs.logDir;
+            }
+            if (installationArgs.extensionDir) {
+              yamlObj.zowe.extensionDirectory = installationArgs.extensionDir;
+            }
+            if (installationArgs.rbacProfile) {
+              yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
+            }
+            if (installationArgs.jobName) {
+              yamlObj.zowe.job.name = installationArgs.jobName;
+            }
+            if (installationArgs.jobPrefix) {
+              yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
+            }
+            if (installationArgs.cookieId) {
+              yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
+            }
+            if (installationArgs.javaHome) {
+              yamlObj.java.home = installationArgs.javaHome;
+            }
+            if (installationArgs.nodeHome) {
+              yamlObj.node.home = installationArgs.nodeHome;
+            }
+            if (installationArgs.zosmfHost) {
+              yamlObj.zOSMF.host = installationArgs.zosmfHost;
+            }
+            if (installationArgs.zosmfPort) {
+              yamlObj.zOSMF.port = installationArgs.zosmfPort;
+            }
+            if (installationArgs.zosmfApplId) {
+              yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
+            }
+            ConfigurationStore.setConfig(yamlObj);
+          } catch(e) {
+            console.log('error setting example-zowe.yaml:', e);
+          }
+        }
+
+        const currentSchema = ConfigurationStore.getSchema();
+        if(currentSchema === undefined && readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
+          const parseSchemas = function(inputString: string, catPath: string){
+            const jobOutputSplit = inputString.split(`cat ${catPath}\\r\\n`)
+            if(jobOutputSplit[1]){
+              const trimmedYamlSchema = jobOutputSplit[1].split(`Script finished.`);
+              return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`).replaceAll(`\\\\"`, `\\"`);
+            }
+            return "";
+          }
+          try {
+            let yamlSchema = JSON.parse(parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
+            const serverCommon = JSON.parse(parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
+            if(yamlSchema && serverCommon){
+              // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
+              yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverCommon.$defs.datasetMember;
+              yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
+              yamlSchema.$id = serverCommon.$id;
+              if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
+                delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
+                yamlSchema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverCommon.$defs.ipv4
+              }
+              console.log('Setting schema from runtime dir:', JSON.stringify(yamlSchema));
+              ConfigurationStore.setSchema(yamlSchema);
+            }
+          } catch (e) {
+            console.log('error setting schema from pax:', e);
+          }
+        }
+        
       }
 
       let installation;
@@ -227,6 +323,10 @@ class Installation {
   async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
     return {status: false, details: 'Method not implemented.'}
   }
+
+  async readExYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse>{
+    return {status: false, details: 'Method not implemented.'}
+  }
   
 }
 
@@ -282,6 +382,16 @@ export class FTPInstallation extends Installation {
     const script = `cd ${installDir}/runtime/bin;./zwe init mvs -c ${installDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
+  }
+
+  async readExYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string){
+    const catYaml = `cat ${installDir}/example-zowe.yaml`;
+    const yamlResult = await new Script().run(connectionArgs, catYaml);
+    const catYamlSchema = `cat ${installDir}/schemas/zowe-yaml-schema.json`;
+    const yamlSchemaResult = await new Script().run(connectionArgs, catYamlSchema);
+    const catCommonSchema = `cat ${installDir}/schemas/server-common.json`;
+    const commonSchemaResult = await new Script().run(connectionArgs, catCommonSchema);
+    return {status: yamlResult.rc === 0 && yamlSchemaResult.rc == 0 && commonSchemaResult.rc == 0, details: {yaml: yamlResult.jobOutput, yamlSchema: yamlSchemaResult.jobOutput, serverCommon: commonSchemaResult.jobOutput}}
   }
 
   async checkInstallData() {

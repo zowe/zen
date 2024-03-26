@@ -11,6 +11,27 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
 
+export interface InstallationArgs {
+  installationDir: string;
+  workspaceDir: string;
+  logDir: string,
+  extensionDir: string,
+  installationType?: string;
+  downloadDir: string;
+  userUploadedPaxPath?: string;
+  smpeDir?: string;
+  javaHome: string;
+  nodeHome: string;
+  setupConfig: any;
+  jobName: string;
+  jobPrefix: string;
+  rbacProfile: string;
+  cookieId: string;
+  zosmfHost: string,
+  zosmfPort: string,
+  zosmfApplId: string
+}
+
 interface InstallationState {
   installationArgs: {
     installationDir: string;
