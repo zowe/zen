@@ -19,6 +19,9 @@ contextBridge.exposeInMainWorld('electron', {
     saveJobHeader(jobStatement: string) {
       return ipcRenderer.invoke("save-job-header", jobStatement);
     },
+    getJobHeader(jobStatement: string) {
+      return ipcRenderer.invoke("get-job-header", jobStatement);
+    },
     getExampleZowe() {
       return ipcRenderer.invoke("get-example-zowe");
     },

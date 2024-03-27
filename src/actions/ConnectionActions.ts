@@ -46,4 +46,8 @@ export class ConnectionActions {
   saveJobStatement(jobStatement: string) {
     return this.strategy.saveJobStatement(jobStatement);
   }
+
+  getJobStatement(){
+    return this.strategy.getJobStatement();
+  }
 }

@@ -57,6 +57,10 @@ export class FTPConnection extends Connection {
     return {status, details: ''};
   }
 
+  getJobStatement(): IResponse {
+    return {status: true, details: ConnectionStore.get('ftp-details.jobStatement')};
+  }
+
 }
 
 export class CLIConnection extends Connection {
@@ -70,6 +74,10 @@ export class CLIConnection extends Connection {
   }
 
   saveJobStatement() {
+    return {status: false, details: 'CLIConnection is not implemented'};
+  }
+
+  getJobStatement() {
     return {status: false, details: 'CLIConnection is not implemented'};
   }
 

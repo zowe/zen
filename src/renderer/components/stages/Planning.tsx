@@ -1294,6 +1294,13 @@ const Planning = () => {
       return;
     }
 
+    window.electron.ipcRenderer.getJobHeader().then((res: IResponse) => {
+      if(res.status){
+        dispatch(setJobStatement(res.details));
+        setJobStatementValue(res.details);
+      }
+    });
+
     window.electron.ipcRenderer.getZoweVersion().then((res: IResponse) => dispatch(setZoweVersion(res.status ? res.details : '' )));
 
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
