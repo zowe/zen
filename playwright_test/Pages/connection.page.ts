@@ -1,5 +1,4 @@
-import { Page,ElectronApplication, Locator,_electron as electron } from '@playwright/test';
-let electronApp: ElectronApplication
+import { Page,Locator } from '@playwright/test';
 
 class ConnectionPage{
   page: Page;
@@ -8,9 +7,8 @@ class ConnectionPage{
   userName: Locator;
   password: Locator;
   validateCredential: Locator;
-  continueButton: Page;
-  greenCheckIconSelector: Page
-
+  connectionPageTitle: Locator
+  continueButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -19,8 +17,8 @@ class ConnectionPage{
     this.userName = page.locator('label:has-text("User Name") + div input#standard-required')
     this.password = page.locator('#standard-password-input')
     this.validateCredential = page.locator("//button[contains(text(), 'Validate credentials')]")
+    this.connectionPageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.continueButton = page.locator('.MuiButton-containedPrimary.MuiButton-sizeMedium')
-    this.greenCheckIconSelector = page.locator('.MuiContainer-root svg[data-testid="CheckCircleIcon"]')
 
   }
   async fillConnectionDetails(host: string, port: string, username: string, password: string){
@@ -29,19 +27,19 @@ class ConnectionPage{
     await this.userName.fill(username)
     await this.password.fill(password)
   }
+
+  async getConnectionPageTitle() {
+    return await this.connectionPageTitle.textContent();
+  }
+
   async SubmitValidateCredential(){
     await this.validateCredential.click()
+  }
 
-  }
-  async isContinueButtonVisible() {
-    return await this.continueButton.isDisabled();
-  }
   async clickContinueButton() {
     return await this.continueButton.click();
   }
- async isGreenCheckIconVisible() {
-    return await this.greenCheckIconSelector.isHidden();
-  }
+
 }
 
   export default ConnectionPage;
