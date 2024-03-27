@@ -61,7 +61,7 @@ export const connectionSlice = createSlice({
     setPassword: (state, action: PayloadAction<string>) => {
       state.connectionArgs.password = action.payload;
     },
-    setJobStatement: (state, action: PayloadAction<string>) => {
+    setJobStatementVal: (state, action: PayloadAction<string>) => {
       state.connectionArgs.jobStatement = action.payload;
     },
     setSecure: (state, action: PayloadAction<boolean>) => {
@@ -80,7 +80,7 @@ export const connectionSlice = createSlice({
 });
 
 export const { setConnectionArgs, setHost, setPort,
-               setUser, setPassword, setJobStatement, setSecure, setSecureOptions, setConnectionValidationDetails, setAcceptCertificates,
+               setUser, setPassword, setJobStatementVal, setSecure, setSecureOptions, setConnectionValidationDetails, setAcceptCertificates,
              } = connectionSlice.actions;
 
 export const selectConnectionArgs = (state: RootState) => state.connection.connectionArgs;

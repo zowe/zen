@@ -10,50 +10,22 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
-import { setProgress } from './progressStore';
+import { setProgress, getProgress } from './StageProgressStatus';
+import { ProgressState } from '../../../../types/stateInterfaces';
 
-export interface progressState {
-  connectionStatus: boolean;
-  planningStatus: boolean;
-  installationTypeStatus: boolean;
-  initializationStatus: boolean;
-  datasetInstallationStatus: boolean;
-  networkingStatus: boolean;
-  apfAuthStatus: boolean;
-  securityStatus: boolean;
-  certificateStatus: boolean;
-  launchConfigStatus: boolean;
-  reviewStatus: boolean;
+const initialState: ProgressState = {
+  connectionStatus: getProgress('connectionStatus') || false,
+  planningStatus: getProgress('planningStatus') || false,
+  installationTypeStatus: getProgress('installationTypeStatus') || false,
+  initializationStatus: getProgress('initializationStatus') || false,
+  datasetInstallationStatus: getProgress('datasetInstallationStatus') || false,
+  networkingStatus: getProgress('networkingStatus') || false,
+  apfAuthStatus: getProgress('apfAuthStatus') || false,
+  securityStatus: getProgress('securityStatus') || false,
+  certificateStatus: getProgress('certificateStatus') || false,
+  launchConfigStatus: getProgress('launchConfigStatus') || false,
+  reviewStatus: getProgress('reviewStatus') || false
 }
-
-const initialState: progressState = {
-  connectionStatus: false,
-  planningStatus: false,
-  installationTypeStatus: false,
-  initializationStatus: false,
-  datasetInstallationStatus: false,
-  networkingStatus: false,
-  apfAuthStatus: false,
-  securityStatus: false,
-  certificateStatus: false,
-  launchConfigStatus: false,
-  reviewStatus: false,
-}
-
-
-// TO do: Initialization when we add the logic to maintain the state of the stage.
-
-// const initialState: progressState = {
-//   connectionStatus: getProgress('connectionStatus'),
-//   planningStatus: getProgress('planningStatus'),
-//   installationTypeStatus: getProgress('installationTypeStatus'),
-//   initializationStatus: getProgress('initializationStatus'),
-//   datasetInstallationStatus: getProgress('datasetInstallationStatus'),
-//   apfAuthStatus: getProgress('apfAuthStatus'),
-//   securityStatus: getProgress('securityStatus'),
-//   certificateStatus: getProgress('certificateStatus'),
-//   reviewStatus: getProgress('reviewStatus')
-// }
 
 export const progressSlice = createSlice({
   name: 'progress',
@@ -61,7 +33,6 @@ export const progressSlice = createSlice({
   reducers: {
     setConnectionStatus: (state, action: PayloadAction<boolean>) => {
       state.connectionStatus = action.payload;
-      setProgress('connectionStatus', action.payload);
     },
     setPlanningStatus: (state, action: PayloadAction<boolean>) => {
       state.planningStatus = action.payload;

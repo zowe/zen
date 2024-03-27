@@ -17,7 +17,7 @@ import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
-import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
+import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";

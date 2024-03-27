@@ -23,7 +23,7 @@ import { createTheme } from '@mui/material/styles';
 import { selectConnectionStatus, selectPlanningStatus, selectInstallationTypeStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, setReviewStatus } from './progress/progressSlice';
 import { setActiveStep } from './progress/activeStepSlice';
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
+import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
 
 import '../../styles/ReviewInstallation.css';
 

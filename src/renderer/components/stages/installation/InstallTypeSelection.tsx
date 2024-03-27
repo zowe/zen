@@ -9,21 +9,19 @@
  */
 
 import React, {useEffect, useRef, useState} from "react";
-import { Box, Button, FormControl, FormControlLabel, FormLabel, Link, Radio, RadioGroup, TextField, Typography } from '@mui/material';
+import { Box, Button, FormControl, FormControlLabel, Link, Radio, RadioGroup, TextField, Typography } from '@mui/material';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
-import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid, selectInstallationType, selectSmpeDir, selectLicenseAgreement, selectSmpeDirValid } from './installationSlice';
+import { setNextStepEnabled } from '../../configuration-wizard/wizardSlice';
+import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid, selectInstallationType, selectSmpeDir, selectLicenseAgreement, selectSmpeDirValid, setUserUploadedPaxPath } from './installationSlice';
 import { setInstallationTypeStatus } from "../progress/progressSlice"; 
 import { selectConnectionArgs } from '../connection/connectionSlice';
-import JsonForm from '../../common/JsonForms';
-import { IResponse } from '../../../../types/interfaces';
-import ProgressCard from '../../common/ProgressCard';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
-import { getStageDetails } from "../progress/progressStore"; 
+import { getStageDetails } from "../../../../utils/StageDetails";
+import { getInstallationTypeStatus } from "../progress/StageProgressStatus";
+import { connect } from "http2";
 
 const InstallationType = () => {
 
@@ -36,12 +34,12 @@ const InstallationType = () => {
 
   const dispatch = useAppDispatch();
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const [installValue, setInstallValue] = useState(useAppSelector(selectInstallationType));
-  const [paxPath, setPaxPath] = useState("");
-  const [smpePath, setSmpePath] = useState(useAppSelector(selectSmpeDir));
-  const [smpePathValidated, setSmpePathValidated] = useState(useAppSelector(selectSmpeDirValid));
+  const [installValue, setInstallValue] = useState(getInstallationTypeStatus().installationType);
+  const [paxPath, setPaxPath] = useState(getInstallationTypeStatus().userUploadedPaxPath);
+  const [smpePath, setSmpePath] = useState(getInstallationTypeStatus().smpeDir);
+  const [smpePathValidated, setSmpePathValidated] = useState(getInstallationTypeStatus().smpeDirValid);
   const [showLicense, setShowLicense] = useState(false);
-  const [agreeLicense, setAgreeLicense] = useState(useAppSelector(selectLicenseAgreement));
+  const [agreeLicense, setAgreeLicense] = useState(getInstallationTypeStatus().licenseAgreement);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   const version = useAppSelector(selectZoweVersion);
@@ -57,13 +55,17 @@ const InstallationType = () => {
 
   useEffect(() => {
     if((installValue === "download" && agreeLicense == false) || (installValue === "upload" && paxPath == "") || installValue === "smpe" && (smpePath === "" || !smpePathValidated)){
-        dispatch(setNextStepEnabled(false));
+      updateProgress(false);
     } else {
-        dispatch(setInstallationTypeStatus(true))
-        dispatch(setNextStepEnabled(true));
+      updateProgress(true);
     }
     
   }, [installValue, paxPath, installationArgs, agreeLicense, smpePathValidated]);
+
+  const updateProgress = (status: boolean): void => {
+    dispatch(setInstallationTypeStatus(status))
+    dispatch(setNextStepEnabled(status));
+  }
 
   const showLicenseAgreement = () => {
     setShowLicense(true);
@@ -81,8 +83,11 @@ const InstallationType = () => {
 
   const installTypeChangeHandler = (type: string) => {
     dispatch(setInstallationType(type));
+    if(type != 'download') {
+      dispatch(setLicenseAgreement(false));
+    }
     setInstallValue(type);
-    dispatch(setInstallationTypeStatus(false))
+    updateProgress(false);
   }
 
   const onSmpePathChange = (path: string) => {
@@ -90,7 +95,16 @@ const InstallationType = () => {
     setSmpePath(path);
     dispatch(setSmpeDirValid(false));
     setSmpePathValidated(false);
-    dispatch(setInstallationTypeStatus(false))
+    updateProgress(false);
+  }
+
+  const validateSmpePath = async(e: any, connectionArgs: any, smpePath: string) => {
+    e.preventDefault();
+    window.electron.ipcRenderer.checkDirExists(connectionArgs, smpePath).then((res: boolean) => {
+      setSmpePathValidated(res);
+      dispatch(setSmpeDirValid(res));
+      updateProgress(res);
+    })
   }
 
   return (
@@ -124,7 +138,7 @@ const InstallationType = () => {
             label="Runtime Directory"
             variant="standard"
             helperText="Absolute path of the Zowe 'runtime' directory from SMPE installation process."
-            value={installationArgs.smpeDir}
+            value={smpePath}
             onChange={(e) => {
                 dispatch(setInstallationArgs({...installationArgs, smpeDir: e.target.value}));
                 setSmpePath(e.target.value);
@@ -132,16 +146,21 @@ const InstallationType = () => {
             }}
         />
     </FormControl>}
-    {installValue === "smpe" && <FormControl sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-        <Button sx={{boxShadow: 'none', mr: '12px'}} type={"submit"} variant="text" onClick={async e => {
-            e.preventDefault();
-            window.electron.ipcRenderer.checkDirExists(connectionArgs, smpePath).then((res: boolean) => {
-                setSmpePathValidated(res);
-                dispatch(setSmpeDirValid(true))
-            })
-        }}>Validate location</Button>
-        {smpePathValidated ? <CheckCircle sx={{ color: 'green', fontSize: '1rem', marginTop: '15px', marginLeft: '11px'}} /> : <Typography sx={{color: "gray"}}>{'Enter a valid path.'}</Typography> }
-    </FormControl>}
+
+    {installValue === "smpe" &&
+      <FormControl sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <Button
+          sx={{boxShadow: 'none', mr: '12px'}}
+          type={"submit"} variant="text"
+          onClick={async e => validateSmpePath(e, connectionArgs, smpePath)}
+        >
+          Validate location
+        </Button>
+
+      {smpePathValidated ? <CheckCircle sx={{ color: 'green', fontSize: '1rem', marginTop: '15px', marginLeft: '11px'}} /> : <Typography sx={{color: "gray"}}>{'Enter a valid path.'}</Typography> }
+      </FormControl>
+    }
+
     {installValue === "download" &&
       <div>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
@@ -166,10 +185,9 @@ const InstallationType = () => {
         window.electron.ipcRenderer.uploadPax().then((res: any) => {
           if(res.filePaths && res.filePaths[0] != undefined){
             setPaxPath(res.filePaths[0]);
-            dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: res.filePaths[0]}));
+            dispatch(setUserUploadedPaxPath(res.filePaths[0]));
           } else {
             setPaxPath("");
-            dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: ''}));
           }
         });
       }}>Upload PAX</Button>
