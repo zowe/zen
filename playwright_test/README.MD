@@ -20,6 +20,9 @@ Example command:
   JOB_PREFIX=ZWE \
   JAVA_HOME=\\path\\to\\java \
   NODE_HOME=\\path\\to\\node \
+  DATASET_PREFIX=  \
+  AUTH_LOAD_LIB=  \
+  AUTH_PLUGIN_LIB=  \
   SECURITY_ADMIN=ZWEADMIN \
   SECURITY_SYSPROG=ZWEADMIN \
   SECURITY_STC=ZWEADMIN \
@@ -29,6 +32,8 @@ Example command:
   SECURITY_STC_ZIS=ZWESISTC \
   SECURITY_STC_ZOWE=ZWESLSTC \
   ZOSMF_APP_ID=IZUDFLT \
+  DOMAIN_NAME=domain.com \
+  EXTERNAL_PORT=7556 \
   npm run playtest
 ```
 
