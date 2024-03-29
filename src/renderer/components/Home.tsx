@@ -126,7 +126,7 @@ const Home = () => {
 
   const resumeProgress = () => {
     setShowWizard(true);
-    setShowLogin(true);
+    setShowLogin(!connectionStatus);
     eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
   }
 
