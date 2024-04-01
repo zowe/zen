@@ -98,7 +98,7 @@ class Installation {
         }
         const yamlFromPax = parseCatCommandFromJobOutput(`${zoweRuntimePath}/example-zowe.yaml`);
         const currentConfig = ConfigurationStore.getConfig();
-        if(yamlFromPax && (currentConfig == undefined || typeof currentConfig !== "object" || (typeof currentConfig !== "object" && Object.keys(currentConfig).length == 0))){
+        if(yamlFromPax && (currentConfig == undefined || typeof currentConfig !== "object" || (typeof currentConfig === "object" && Object.keys(currentConfig).length == 0))){
           try {
             let yamlObj = parse(yamlFromPax);
             if (installationArgs.installationDir) {
