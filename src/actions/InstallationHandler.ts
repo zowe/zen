@@ -105,7 +105,7 @@ class Installation {
               yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
             }
             if (installationArgs.workspaceDir) {
-              yamlObj.zowe.workspaceDir = installationArgs.workspaceDir;
+              yamlObj.zowe.workspaceDirectory = installationArgs.workspaceDir;
             }
             if (installationArgs.logDir) {
               yamlObj.zowe.logDirectory = installationArgs.logDir;
