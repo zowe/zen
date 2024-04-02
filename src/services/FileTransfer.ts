@@ -9,7 +9,7 @@
  */
 
 import {IncomingMessage} from "http";
-import {connectFTPServer} from "./utils";
+import {connectFTPServer} from "./ServiceUtils";
 import {IIpcConnectionArgs, IResponse} from "../types/interfaces";
 
 import * as fs from 'fs';
