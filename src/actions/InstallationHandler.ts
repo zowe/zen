@@ -151,7 +151,7 @@ class Installation {
   }
 
   public async runApfAuth(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string}, zoweConfig: object): Promise<IResponse>{
+    installationArgs: {installationDir: string, installationType: string}, zoweConfig: object): Promise<IResponse>{
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
     await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
@@ -176,7 +176,7 @@ class Installation {
   }
   
   public async runInitSecurity(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string}, zoweConfig: object): Promise<IResponse>{
+    installationArgs: {installationDir: string, installationType: string}, zoweConfig: object): Promise<IResponse>{
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
       await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
@@ -199,7 +199,7 @@ class Installation {
       return {status: result.rc === 0, details: result.jobOutput}
   }
 
-  async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string}, zoweConfig: any){
+  async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string}, zoweConfig: any){
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
     await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {

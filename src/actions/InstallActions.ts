@@ -36,7 +36,7 @@ export class InstallActions {
   }
 
   runInitCertificates(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string}, zoweConfig: any){
+    installationArgs: {installationDir: string, installationType: string}, zoweConfig: any){
       return this.strategy.initCertificates(connectionArgs, installationArgs, zoweConfig)
   }
 
@@ -48,12 +48,12 @@ export class InstallActions {
   }
 
   runInitSecurity(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string}, zoweConfig: object): Promise<IResponse> {
+    installationArgs: {installationDir: string, installationType: string}, zoweConfig: object): Promise<IResponse> {
     return this.strategy.runInitSecurity(connectionArgs, installationArgs, zoweConfig);
   }
 
   runApfAuth(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string}, zoweConfig: object): Promise<IResponse> {
+    installationArgs: {installationDir: string, installationType: string}, zoweConfig: object): Promise<IResponse> {
     return this.strategy.runApfAuth(connectionArgs, installationArgs, zoweConfig);
   }
 
