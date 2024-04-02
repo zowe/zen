@@ -84,7 +84,6 @@ export const { setConnectionArgs, setHost, setPort,
              } = connectionSlice.actions;
 
 export const selectConnectionArgs = (state: RootState) => state.connection.connectionArgs;
-export const selectConnectionPassword = (state: RootState) => state.connection.connectionArgs.password;
 export const selectConnectionSecure= (state: RootState) => state.connection.connectionArgs.secure;
 export const selectConnectionValidationDetails = (state: RootState) => state.connection.connectionValidationDetails;
 export const selectAcceptCertificates = (state: RootState) => state.connection.acceptCertificates;
