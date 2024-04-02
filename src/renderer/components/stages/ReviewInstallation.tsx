@@ -17,13 +17,14 @@ import ContainerCard from '../common/ContainerCard';
 import {stages} from "../configuration-wizard/Wizard";
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import eventDispatcher from '../../../utils/eventDispatcher';
+import eventDispatcher from '../../../services/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
 import { selectConnectionStatus, selectPlanningStatus, selectInstallationTypeStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, setReviewStatus } from './progress/progressSlice';
 import { setActiveStep } from './progress/activeStepSlice';
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Utils';
 
 import '../../styles/ReviewInstallation.css';
 
@@ -58,10 +59,6 @@ const ReviewInstallation = () => {
     useSelector(selectCertificateStatus),
     useSelector(selectLaunchConfigStatus),
   ];
-
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
 
   useEffect(() => {
 
