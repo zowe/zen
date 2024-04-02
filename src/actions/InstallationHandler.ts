@@ -21,7 +21,7 @@ class Installation {
 
   public async runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
     version: string,
     zoweConfig: any,
     skipDownload: boolean
@@ -34,7 +34,7 @@ class Installation {
     
     try {
       console.log("uploading yaml...");
-      const uploadYaml = await this.uploadYaml(connectionArgs, SMPE_INSTALL ? installationArgs.smpeDir : installationArgs.installationDir);
+      const uploadYaml = await this.uploadYaml(connectionArgs, SMPE_INSTALL ? installationArgs.installationDir : installationArgs.installationDir + '/runtime');
       ProgressStore.set('installation.uploadYaml', uploadYaml.status);
 
       if(!uploadYaml.status){
@@ -133,7 +133,7 @@ class Installation {
       let initMvs;
       if(installation.status){
         console.log("running zwe init mvs...");
-         initMvs = await this.initMVS(connectionArgs, SMPE_INSTALL ? installationArgs.smpeDir : installationArgs.installationDir);
+         initMvs = await this.initMVS(connectionArgs, SMPE_INSTALL ? installationArgs.installationDir : installationArgs.installationDir + '/runtime');
         ProgressStore.set('installation.initMVS', initMvs.status);
       } else {
         initMvs = {status: false, details: `zwe install step failed, unable to run zwe init mvs.`}
@@ -151,7 +151,7 @@ class Installation {
   }
 
   public async apfAuth(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, zoweConfig: object): Promise<IResponse>{
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string}, zoweConfig: object): Promise<IResponse>{
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
     await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
@@ -169,14 +169,14 @@ class Installation {
 
     }
     ProgressStore.set('apfAuth.uploadYaml', uploadYaml.status);
-    const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.smpeDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+    const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('apfAuth.success', result.rc === 0);
     return {status: result.rc === 0, details: result.jobOutput}
   }
   
   public async initSecurity(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, zoweConfig: object): Promise<IResponse>{
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string}, zoweConfig: object): Promise<IResponse>{
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
       await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
@@ -193,13 +193,13 @@ class Installation {
         return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
       ProgressStore.set('initSecurity.uploadYaml', uploadYaml.status);
-      const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.smpeDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init security -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+      const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init security -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
       ProgressStore.set('initSecurity.success', result.rc === 0);
       return {status: result.rc === 0, details: result.jobOutput}
   }
 
-  async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, zoweConfig: any){
+  async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string}, zoweConfig: any){
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
     await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
@@ -215,7 +215,7 @@ class Installation {
       return ProgressStore.set('certificate.uploadYaml', false);;
     }
     ProgressStore.set('certificate.uploadYaml', uploadYaml.status);
-    const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.smpeDir + '/bin' : installationArgs.installationDir + '/runtime/bin'} && ./zwe init certificate --update-config -c ${installationArgs.installationDir}/zowe.yaml`;
+    const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'} && ./zwe init certificate --update-config -c ${installationArgs.installationDir}/zowe.yaml`;
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('certificate.zweInitCertificate', result.rc === 0);
     return {status: result.rc === 0, details: result.jobOutput}
