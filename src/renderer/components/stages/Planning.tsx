@@ -30,6 +30,7 @@ import { Checkbox, FormControlLabel } from "@mui/material";
 import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
 import { getStageDetails } from "../stages/progress/progressStore";
+import { DEF_JOB_STATEMENT } from "../common/Utils";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -1284,6 +1285,12 @@ const Planning = () => {
   })
 
   useEffect(() => {
+    if (jobStatementValue === undefined || jobStatementValue === '') {
+      const initValue = DEF_JOB_STATEMENT;
+      dispatch(setConnectionArgs({...connectionArgs, jobStatement: initValue}));
+      onJobStatementChange(initValue);
+    }
+
     dispatch(setNextStepEnabled(false));
     // FIXME: Add a popup warning in case failed to get config files
     // FIXME: Save yaml and schema on disk to not to pull it each time?

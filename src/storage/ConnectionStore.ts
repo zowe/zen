@@ -10,6 +10,7 @@
 
 import Store from 'electron-store';
 import { DefaultStore } from './DefaultStore';
+import { DEF_JOB_STATEMENT } from '../renderer/components/common/Utils';
 
 const STORE_NAME = 'zen-connection-store';
 const STORE_SCHEMA = {
@@ -68,7 +69,7 @@ const STORE_SCHEMA = {
   }
 } as const;
 
-const STORE_DEFAULT = {
+export const STORE_DEFAULT = {
   "connection-type": "ftp",
   "zowe-cli-version": "",
   "ftp-details": {
@@ -82,8 +83,7 @@ const STORE_DEFAULT = {
       "maxVersion": "TLSv1.3",
       "minVersion": "TLSv1.2"
     },    
-    "jobStatement": `//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,
-//         MSGLEVEL=(1,1),MSGCLASS=A`
+    "jobStatement": DEF_JOB_STATEMENT
   },
   "cli-details": {
     "profile": ""

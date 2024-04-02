@@ -15,3 +15,6 @@ export const JCL_UNIX_SCRIPT_OK = "Script finished.";
 export const TYPE_YAML = "yaml";
 export const TYPE_JCL = "jcl";
 export const TYPE_OUTPUT = "output";
+
+export const DEF_JOB_STATEMENT = `//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,
+//         MSGLEVEL=(1,1),MSGCLASS=A`;
