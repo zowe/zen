@@ -20,7 +20,6 @@ interface InstallationState {
     installationType?: string;
     downloadDir: string;
     userUploadedPaxPath?: string;
-    smpeDir?: string;
     javaHome: string;
     nodeHome: string;
     setupConfig: any;
@@ -34,7 +33,6 @@ interface InstallationState {
   };
   zoweVersion: string;
   licenseAgreement: boolean;
-  smpeDirValid: boolean;
 }
 
 const initialState: InstallationState = {
@@ -45,7 +43,6 @@ const initialState: InstallationState = {
     extensionDir:'',
     installationType: 'download',
     userUploadedPaxPath: '',
-    smpeDir: '',
     downloadDir: '',
     javaHome: '',
     nodeHome: '',
@@ -60,7 +57,6 @@ const initialState: InstallationState = {
   },
   zoweVersion: '',
   licenseAgreement: false,
-  smpeDirValid: false,
 };
 
 export const installationSlice = createSlice({
@@ -76,25 +72,17 @@ export const installationSlice = createSlice({
     setInstallationType: (state, action: PayloadAction<string>) => {
       state.installationArgs.installationType = action.payload;
     },
-    setSmpeDir: (state, action: PayloadAction<string>) => {
-      state.installationArgs.smpeDir = action.payload;
-    },
     setLicenseAgreement: (state, action: PayloadAction<boolean>) => {
       state.licenseAgreement = action.payload;
-    },
-    setSmpeDirValid: (state, action: PayloadAction<boolean>) => {
-      state.smpeDirValid = action.payload;
     },
   }
 });
 
-export const { setInstallationArgs, setZoweVersion, setInstallationType, setSmpeDir, setLicenseAgreement, setSmpeDirValid} = installationSlice.actions;
+export const { setInstallationArgs, setZoweVersion, setInstallationType, setLicenseAgreement} = installationSlice.actions;
 
 export const selectInstallationArgs = (state: RootState) => state.installation.installationArgs;
 export const selectZoweVersion = (state: RootState) => state.installation.zoweVersion;
 export const selectInstallationType = (state: RootState) => state.installation.installationArgs.installationType;
-export const selectSmpeDir = (state: RootState) => state.installation.installationArgs.smpeDir;
 export const selectLicenseAgreement = (state: RootState) => state.installation.licenseAgreement;
-export const selectSmpeDirValid = (state: RootState) => state.installation.smpeDirValid;
 
 export default installationSlice.reducer;
