@@ -30,7 +30,7 @@ import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
 import { setConnectionArgs, setConnectionValidationDetails, setHost, setPort,
-               setUser, setPassword, setJobStatement, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectConnectionPassword} from './connectionSlice';
+               setUser, setPassword, setJobStatement, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates} from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { setActiveStep } from '../progress/activeStepSlice';
@@ -117,7 +117,6 @@ const FTPConnectionForm = () => {
   
   const connectionStatus = useAppSelector(selectConnectionStatus);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const connectionPassword = useAppSelector(selectConnectionPassword);
   const connValidationDetails = useAppSelector(selectConnectionValidationDetails);
   const [isFtpConnection, setIsFtpConnection] = useState(useAppSelector(selectConnectionSecure));
   const [isCertificateAccepted, setIsCertificateAccepted] = useState(useAppSelector(selectAcceptCertificates));
@@ -228,7 +227,7 @@ const FTPConnectionForm = () => {
                 setIsFtpConnection(e.target.checked);
               }} 
             />}
-            label="(Recommended, optional) Use FTP with TLS."
+            label="(Recommended) Use FTP with TLS."
             labelPlacement="start"
           />
         </Container>
@@ -289,7 +288,7 @@ const FTPConnectionForm = () => {
                 }}
               />
             }
-            label="Accept all certificates."
+            label="(Not recommended) Accept all certificates."
             labelPlacement="start"
           />
         </Container>

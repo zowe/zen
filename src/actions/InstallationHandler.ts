@@ -214,7 +214,7 @@ class Installation {
     }
   }
 
-  public async apfAuth(connectionArgs: IIpcConnectionArgs,
+  public async runApfAuth(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string}, zoweConfig: object): Promise<IResponse>{
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
@@ -233,13 +233,13 @@ class Installation {
 
     }
     ProgressStore.set('apfAuth.uploadYaml', uploadYaml.status);
-    const script = `cd ${installationArgs.installationDir}/runtime/bin;./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+    const script = `cd ${installationArgs.installationDir}/runtime/bin && ./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('apfAuth.success', result.rc === 0);
     return {status: result.rc === 0, details: result.jobOutput}
   }
   
-  public async initSecurity(connectionArgs: IIpcConnectionArgs,
+  public async runInitSecurity(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string}, zoweConfig: object): Promise<IResponse>{
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
@@ -257,7 +257,7 @@ class Installation {
         return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
       ProgressStore.set('initSecurity.uploadYaml', uploadYaml.status);
-      const script = `cd ${installationArgs.installationDir}/runtime/bin;./zwe init security -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+      const script = `cd ${installationArgs.installationDir}/runtime/bin && ./zwe init security -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
       ProgressStore.set('initSecurity.success', result.rc === 0);
       return {status: result.rc === 0, details: result.jobOutput}
@@ -368,19 +368,19 @@ export class FTPInstallation extends Installation {
 
   // TODO: Is this necessary adding "/runtime" ? User already specifies /runtime directory - removes 8 chars from max limit. See Planning.tsx
   async unpax(connectionArgs: IIpcConnectionArgs, installDir: string) {
-    const script = `mkdir ${installDir}/runtime;cd ${installDir}/runtime;pax -ppx -rf ../zowe.pax;rm ../zowe.pax`;
+    const script = `mkdir ${installDir}/runtime && cd ${installDir}/runtime && pax -ppx -rf ../zowe.pax && rm ../zowe.pax`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
 
   async install(connectionArgs: IIpcConnectionArgs, installDir: string) {
-    const script = `cd ${installDir}/runtime/bin;./zwe install -c ${installDir}/zowe.yaml --allow-overwritten`;
+    const script = `cd ${installDir}/runtime/bin && ./zwe install -c ${installDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
   
   async initMVS(connectionArgs: IIpcConnectionArgs, installDir: string) {
-    const script = `cd ${installDir}/runtime/bin;./zwe init mvs -c ${installDir}/zowe.yaml --allow-overwritten`;
+    const script = `cd ${installDir}/runtime/bin && ./zwe init mvs -c ${installDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }

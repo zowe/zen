@@ -33,9 +33,9 @@ class ConnectionPage{
   }
 
   async SubmitValidateCredential(){
-    await this.validateCredential.click()  
+    await this.validateCredential.click()
   }
-  
+
   async clickContinueButton() {
     return await this.continueButton.click();
   }

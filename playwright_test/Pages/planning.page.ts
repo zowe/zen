@@ -56,7 +56,7 @@ class PlanningPage{
     this.saveAndClose = page.locator("//button[contains(text(),'Save & close')]")
     this.previousStep = page.locator("//button[contains(text(),'Previous step')]")
     this.continueInstallationOptions = page.locator("//button[contains(text(), 'Continue to Installation Options')]")
-    this.readyToProceedMessage = page.locator("//div[contains(@class,'MuiBox-root css-hieomr')]/p")   
+    this.readyToProceedMessage = page.locator("//div[contains(@class,'MuiBox-root css-hieomr')]/p")
     this.errorMessage = page.locator("//div[contains(@class,'MuiAlert-message')]")
   }
 
@@ -142,7 +142,7 @@ class PlanningPage{
     if (await this.isSetZosmfAttributeChecked() == false){
       await this.setZosmf.click();
     }
-    
+
   }
 
   async enterZosmfHost(zosmfHost: any){
