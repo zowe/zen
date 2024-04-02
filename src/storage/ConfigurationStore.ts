@@ -12,12 +12,15 @@ import Store from 'electron-store';
 import { DefaultStore } from './DefaultStore';
 
 const STORE_NAME = 'zen-configuration-store';
-const STORE: any = new Store({cwd: STORE_NAME});
 const KEY_SCHEMA = 'schema'
 const KEY_CONFIG = 'config'
 const STORE_DEFAULT = {config: {}, schema: {}};
 
 export class ConfigurationStore extends DefaultStore {
+
+  protected static getStore(): Store {
+    return new Store({cwd: STORE_NAME});
+  }
 
   public static setSchema(value: any): boolean {
     return this.set(KEY_SCHEMA, value);
@@ -52,6 +55,6 @@ export class ConfigurationStore extends DefaultStore {
   }
 
   public static deleteAll(): void {
-    STORE.store = STORE_DEFAULT;
+    this.getStore().store = STORE_DEFAULT;
   }
 }

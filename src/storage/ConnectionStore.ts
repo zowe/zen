@@ -12,7 +12,6 @@ import Store from 'electron-store';
 import { DefaultStore } from './DefaultStore';
 
 const STORE_NAME = 'zen-connection-store';
-const STORE: any = new Store({cwd: STORE_NAME});
 const STORE_SCHEMA = {
   "connection-type": {
     "type": "string"
@@ -91,14 +90,21 @@ const STORE_DEFAULT = {
   }
 };
 
+const store = new Store({cwd: 'zen-connection-store', schema: STORE_SCHEMA});
+store.set({...STORE_DEFAULT, ...store.store});
+
 export class ConnectionStore extends DefaultStore {
+
+  protected static getStore(): Store {
+    return new Store({cwd: STORE_NAME});
+  }
 
   public static setAndValidate(key: string, value: any, schema?: any): boolean {
     return super.setAndValidate(key, value, schema || STORE_SCHEMA);
   }
 
   public static deleteAll(): void {
-    STORE.store = STORE_DEFAULT;
+    this.getStore().store = STORE_DEFAULT;
   }
 
 }

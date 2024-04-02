@@ -11,10 +11,14 @@
 import Store from 'electron-store';
 
 const STORE_NAME = 'zen-default-store';
-const STORE: any = new Store({cwd: STORE_NAME});
 
 // Note: This default class is for other Stores to inherit (this is not a Store for "defaults")
 export class DefaultStore {
+
+  // This method is intended to be overridden by subclasses
+  protected static getStore(): Store {
+    return new Store({cwd: STORE_NAME});
+  }
 
   public static validateWithSchema(key: string, schema: any): boolean {
     const keys = key.split('.');
@@ -29,16 +33,16 @@ export class DefaultStore {
   }
 
   public static get(key: string): any {
-    return STORE.get(key);
+    return this.getStore().get(key);
   }
 
   public static getAll(): any {
-    return STORE.store;
+    return this.getStore().store;
   }
 
   public static set(key: string, value: any): boolean {
     try {
-      STORE.set(key, value);
+      this.getStore().set(key, value);
       return true;
     } catch (err) {
       console.warn(`failed to add ${key} error: `, err);
@@ -55,10 +59,10 @@ export class DefaultStore {
   }
 
   public static delete(key: any): void {
-    STORE.delete(key);
+    this.getStore().delete(key);
   }
 
   public static deleteAll(): void {
-    STORE.clear();
+    this.getStore().clear();
   }
 }

@@ -39,11 +39,14 @@ const STORE_DEFAULT = {
   }
 };
 const STORE_NAME = 'zen-progress-store';
-const STORE: any = new Store({cwd: STORE_NAME});
 
 export class ProgressStore extends DefaultStore {
 
+  protected static getStore(): Store {
+    return new Store({cwd: STORE_NAME});
+  }
+
   public static deleteAll(): void {
-    STORE.store = STORE_DEFAULT;
+    this.getStore().store = STORE_DEFAULT;
   }
 }
