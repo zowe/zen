@@ -8,10 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { JCL_UNIX_SCRIPT_OK } from "../renderer/components/common/Utils";
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
-import { startBPXBATCHAndShellSession } from "./ServiceUtils";
+import {startBPXBATCHAndShellSession} from "./utils";
 
 export class CheckJava {
 
@@ -19,8 +18,8 @@ export class CheckJava {
 
     const jcl = `${config.jobStatement}
 ${startBPXBATCHAndShellSession("ZNCHKJV")}
-${java}/bin/java -version &&
-echo "${JCL_UNIX_SCRIPT_OK}"
+${java}/bin/java -version;
+echo "Script finished."
 /* `
 
     const resp: IJobResults = await submitJcl(config, jcl, ["STDOUT", "STDERR"])

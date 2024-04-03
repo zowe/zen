@@ -10,17 +10,17 @@
 
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
-import { parseUnixScriptByNumOfChars, startBPXBATCHAndShellSession } from "./ServiceUtils";
-import { JCL_UNIX_SCRIPT_OK } from "../renderer/components/common/Utils";
+import {parseUnixScriptByNumOfChars, startBPXBATCHAndShellSession} from "./utils";
 
 export class Script {
 
   public async run(config: IIpcConnectionArgs, script: string) {
 
+    // TODO: Shouldn't we change ";" to "&&" to stop on first fail instead of keep going?
     const jcl = `${config.jobStatement}
 ${startBPXBATCHAndShellSession("ZNSCRPT")}
-${parseUnixScriptByNumOfChars(script)} &&
-echo "${JCL_UNIX_SCRIPT_OK}"
+${parseUnixScriptByNumOfChars(script)};
+echo "Script finished."
 /* `
     console.log(`JOB: ${jcl}`)
     const resp: IJobResults = await submitJcl(config, jcl, ["STDOUT", "STDERR"])
