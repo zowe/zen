@@ -26,7 +26,6 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Utils';
 
 const Certificates = () => {
 
@@ -56,12 +55,17 @@ const Certificates = () => {
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
 
+  const section = 'certificate';
+
   const [certificateProgress, setCertificateProgress] = useState({
     writeYaml: false,
     uploadYaml: false,
     zweInitCertificate: false,
   });
   let timer: any;
+  const TYPE_YAML = "yaml";
+  const TYPE_JCL = "jcl";
+  const TYPE_OUTPUT = "output";
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");

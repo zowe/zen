@@ -9,11 +9,10 @@
  */
 
 import Store from 'electron-store';
-import { DefaultStore } from './DefaultStore';
 
 // TODO: Store overall progress and restore up to last successful step
 
-const STORE_DEFAULT = {
+const storeDefault = {
   "installation": {
     "uploadYaml": false,
     "download": false,
@@ -38,15 +37,21 @@ const STORE_DEFAULT = {
     "zweInitCertificate": false,
   }
 };
-const STORE_NAME = 'zen-progress-store';
 
-export class ProgressStore extends DefaultStore {
+const store = new Store({cwd: 'zen-progress-store'});
+store.set(storeDefault);
 
-  protected static getStore(): Store {
-    return new Store({cwd: STORE_NAME});
+export class ProgressStore {
+
+  public static getAll(): any {
+    return store.store;
+  }
+
+  public static set(key: string, value: string | boolean) {
+    store.set(key, value);
   }
 
   public static deleteAll(): void {
-    this.getStore().store = STORE_DEFAULT;
+    store.store = storeDefault;
   }
 }

@@ -17,14 +17,14 @@ export class InstallActions {
 
   constructor() {
     this.mode = 'ftp'; // REVIEW: get from storage when picking strategy?
-    this.strategy = this.getStrategy();
+    this.strategy = this.getStartegy();
   }
 
   setMode(mode: IIpcConnectionArgs["connectionType"]) {
     this.mode = mode;
   }
 
-  getStrategy(): FTPInstallation | CLIInstallation {
+  getStartegy(): FTPInstallation | CLIInstallation {
     switch (this.mode) {
       case 'ftp':
         return new FTPInstallation();
@@ -47,14 +47,14 @@ export class InstallActions {
     return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig, skipDownload);
   }
 
-  runInitSecurity(connectionArgs: IIpcConnectionArgs,
+  initSecurity(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string}, zoweConfig: object): Promise<IResponse> {
-    return this.strategy.runInitSecurity(connectionArgs, installationArgs, zoweConfig);
+    return this.strategy.initSecurity(connectionArgs, installationArgs, zoweConfig);
   }
 
-  runApfAuth(connectionArgs: IIpcConnectionArgs,
+  apfAuth(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string}, zoweConfig: object): Promise<IResponse> {
-    return this.strategy.runApfAuth(connectionArgs, installationArgs, zoweConfig);
+    return this.strategy.apfAuth(connectionArgs, installationArgs, zoweConfig);
   }
 
 }

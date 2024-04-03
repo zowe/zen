@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {connectFTPServer} from "./ServiceUtils";
+import {connectFTPServer} from "./utils";
 import {IIpcConnectionArgs, IJobResults, JobOutput} from "../types/interfaces";
 
 export function submitJcl(config: IIpcConnectionArgs, jcl: string, returnDDs: string[]): Promise<IJobResults> {

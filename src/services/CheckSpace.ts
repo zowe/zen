@@ -10,8 +10,7 @@
 
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
-import { startBPXBATCHAndShellSession } from "./ServiceUtils";
-import { JCL_UNIX_SCRIPT_OK } from "../renderer/components/common/Utils";
+import { startBPXBATCHAndShellSession } from "./utils";
 
 export class CheckSpace {
 
@@ -19,9 +18,9 @@ export class CheckSpace {
 
     const jcl = `${config.jobStatement}
 ${startBPXBATCHAndShellSession("ZNCHKSP")}
-echo "SPACE in MB" &&
-df -m ${dir} &&
-echo "${JCL_UNIX_SCRIPT_OK}"
+echo "SPACE in MB";
+df -m ${dir};
+echo "Script finished."
 /* `
 
     const resp: IJobResults = await submitJcl(config, jcl, ["STDOUT", "STDERR"])
