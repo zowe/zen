@@ -16,9 +16,8 @@ import { InstallActions } from "../actions/InstallActions";
 import { PlanningActions } from "../actions/PlanningActions";
 import { IIpcConnectionArgs } from '../types/interfaces';
 import { ProgressStore } from "../storage/ProgressStore";
-import { checkDirExists } from '../services/ServiceUtils';
+import { checkDirExists } from '../services/utils';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
-import { EditorStore } from '../storage/EditorStore';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -35,7 +34,7 @@ const installActions = new InstallActions();
 // TODO: Add inline help for inputs, components, etc
 // TODO: Make separate component for validation button - button / icon / error details
 // REVIEW: services/FileTransfer.ts SubmitJcl.ts CheckHLQ.ts
-// REVIEW: merge all services to ServiceUtils.ts file?
+// REVIEW: merge all services to utils.ts file?
 
 const createWindow = (): void => {
 
@@ -109,37 +108,7 @@ const createWindow = (): void => {
   });
 
   ipcMain.handle('set-config-by-key', async (_event, key: string, value) => {
-    const res = await PlanningActions.setConfigByKeyAndValidate(key, value);
-    return res;
-  });
-
-  ipcMain.handle('get-jcl-output', async (event) => {
-    const res: any = await EditorStore.getJCLOutput();
-    return res;
-  });
-
-  ipcMain.handle('set-jcl-output', async (event, value) => {
-    const res: any = await EditorStore.setJCLOutput(value);
-    return res;
-  });
-
-  ipcMain.handle('get-standard-output', async (event) => {
-    const res: any = await EditorStore.getStandardOutput();
-    return res;
-  });
-
-  ipcMain.handle('set-standard-output', async (event, value) => {
-    const res: any = await EditorStore.setStandardOutput(value);
-    return res;
-  });
-
-  ipcMain.handle('get-yaml-output', async (event) => {
-    const res: any = await EditorStore.getYAMLOutput();
-    return res;
-  });
-
-  ipcMain.handle('set-yaml-output', async (event, value) => {
-    const res: any = await EditorStore.setYAMLOutput(value);
+    const res = await ConfigurationStore.setConfigByKey(key, value);
     return res;
   });
 
@@ -189,7 +158,7 @@ const createWindow = (): void => {
   });
 
   ipcMain.handle('init-apf', async (_event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.runApfAuth(connectionArgs, installationArgs, zoweConfig);
+    const res = await installActions.apfAuth(connectionArgs, installationArgs, zoweConfig);
     return res;
   });
 
@@ -205,15 +174,16 @@ const createWindow = (): void => {
     return res;
   });
 
-  ipcMain.handle('init-security', async (_event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.runInitSecurity(connectionArgs, installationArgs, zoweConfig);
-    return res;
-  });
-
   ipcMain.handle('get-certificate-progress', async (event) => {
     const res = ProgressStore.getAll()['certificate'];
     return res;
   });
+
+  ipcMain.handle('init-security', async (event, connectionArgs, installationArgs, zoweConfig) => {
+    const res = await installActions.initSecurity(connectionArgs, installationArgs, zoweConfig);
+    return res;
+  });
+
 
   ipcMain.handle('get-init-security-progress', async () => {
     const res = ProgressStore.getAll()['initSecurity'];

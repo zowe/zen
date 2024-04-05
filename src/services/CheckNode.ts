@@ -10,8 +10,7 @@
 
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
-import { startBPXBATCHAndShellSession } from "./ServiceUtils";
-import { JCL_UNIX_SCRIPT_OK } from "../renderer/components/common/Utils";
+import { startBPXBATCHAndShellSession } from "./utils";
 
 export class CheckNode {
 
@@ -19,8 +18,8 @@ export class CheckNode {
 
     const jcl = `${config.jobStatement}
 ${startBPXBATCHAndShellSession("ZNCKNOD")}
-${node}/bin/node -v &&
-echo "${JCL_UNIX_SCRIPT_OK}"
+${node}/bin/node -v;
+echo "Script finished."
 /* `
 
     const resp: IJobResults = await submitJcl(config, jcl, ["STDOUT", "STDERR"])
