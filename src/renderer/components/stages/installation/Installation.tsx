@@ -44,10 +44,71 @@ const Installation = () => {
   const subStageId = 0;
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
+  const [DEFAULT_DATASET_SCHEMA] = useState( {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "MVS data set related configurations",
+      "properties": {
+        "prefix": {
+          "type": "string",
+          "description": "Where Zowe MVS data sets will be installed"
+        },
+        "proclib": {
+          "type": "string",
+          "description": "PROCLIB where Zowe STCs will be copied over"
+        },
+        "parmlib": {
+          "type": "string",
+          "description": "Zowe PARMLIB"
+        },
+        "parmlibMembers": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Holds Zowe PARMLIB members for plugins",
+          "properties": {
+            "zis": {
+              "type": "string",
+              "description": "A 1-8-char all caps dataset member name",
+              "minLength": 1,
+              "maxLength": 8,
+            }
+          }
+        },
+        "jcllib": {
+          "type": "string",
+          "description": "JCL library where Zowe will store temporary JCLs during initialization"
+        },
+        "loadlib": {
+          "type": "string",
+          "description": "States the dataset where Zowe executable utilities are located",
+          "default": "<hlq>.SZWELOAD"
+        },
+        "authLoadlib": {
+          "type": "string",
+          "description": "The dataset that contains any Zowe core code that needs to run APF-authorized, such as ZIS",
+          "default": "<hlq>.SZWEAUTH"
+        },
+        "authPluginLib": {
+          "type": "string",
+          "description": "APF authorized LOADLIB for Zowe ZIS Plugins"
+        }
+    }
+  });
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
+  const [setupSchema, setSetupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.dataset ?? DEFAULT_DATASET_SCHEMA);
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || {
+      prefix: "IBMUSER.ZWEV2",
+      proclib: "USER.PROCLIB",
+      parmlib: "IBMUSER.ZWEV2.CUST.PARMLIB",
+      parmlibMembers: {
+        zis: "ZWESIP00"
+      },
+      jcllib: "IBMUSER.ZWEV2.CUST.JCLLIB",
+      loadlib: "IBMUSER.ZWEV2.SZWELOAD",
+      authLoadlib: "IBMUSER.ZWEV2.SZWEAUTH",
+      authPluginLib: "IBMUSER.ZWEV2.CUST.ZWESAPL"
+  });
   const [showProgress, toggleProgress] = useState(false);
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -80,6 +141,8 @@ const Installation = () => {
   let validate: any;
   if(schema) {
     datasetSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
+  } else {
+    datasetSchema = DEFAULT_DATASET_SCHEMA;
   }
 
   if(datasetSchema) {
