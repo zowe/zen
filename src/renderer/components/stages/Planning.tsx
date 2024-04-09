@@ -101,6 +101,12 @@ const Planning = () => {
 
     window.electron.ipcRenderer.getZoweVersion().then((res: IResponse) => dispatch(setZoweVersion(res.status ? res.details : '' )));
 
+    window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
+      if(res != undefined){
+        setInstArgs((res as any));
+      }
+    })
+
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       if (res.status) {
         dispatch(setYaml(res.details.config));
@@ -234,23 +240,23 @@ const Planning = () => {
 
     e.preventDefault();
     setValidationDetails({...validationDetails, error: ''});
-    if (!localYaml?.java?.home || !localYaml?.node?.home || !localYaml?.zowe?.runtimeDirectory) {
-      console.warn('Please fill in all values');
-      alertEmitter.emit('showAlert', 'Please fill in all values', 'error');
-      //showAlert('Please fill in all values', 'success', 5000);
-      return;
-    }
+    // if (!localYaml?.java?.home || !localYaml?.node?.home || !localYaml?.zowe?.runtimeDirectory) {
+    //   console.warn('Please fill in all values');
+    //   alertEmitter.emit('showAlert', 'Please fill in all values', 'error');
+    //   //showAlert('Please fill in all values', 'success', 5000);
+    //   return;
+    // }
     dispatch(setLoading(true));
 
     // TODO: Possible feature for future: add to checkDir to see if existing Zowe install exists.
     // Then give the user ability to use existing zowe.yaml to auto-fill in fields from Zen
     Promise.all([
-      window.electron.ipcRenderer.checkJava(connectionArgs, localYaml?.java?.home),
-      window.electron.ipcRenderer.checkNode(connectionArgs, localYaml?.node?.home),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.runtimeDirectory),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.workspaceDirectory),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.extensionDirectory),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.logDirectory),
+      window.electron.ipcRenderer.checkJava(connectionArgs, localYaml?.java?.home || installationArgs.javaHome),
+      window.electron.ipcRenderer.checkNode(connectionArgs, localYaml?.node?.home || installationArgs.nodeHome),
+      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir),
+      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.workspaceDirectory || installationArgs.workspaceDir ),
+      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.extensionDirectory || installationArgs.extensionDir),
+      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.logDirectory || installationArgs.logDir),
     ]).then((res: Array<IResponse>) => {
       const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
       setEditorContent(res.map(item=>item?.details).join('\n'));
@@ -337,6 +343,7 @@ const Planning = () => {
       const newInstallationArgs = { ...installationArgs, [installationArg]: value };
       dispatch(setInstallationArgs(newInstallationArgs));
       setInstArgs(newInstallationArgs);
+      window.electron.ipcRenderer.setConfigByKey("installationArgs", newInstallationArgs);
     }
 
     const updatedYaml: any = updateAndReturnYaml(key, value)
@@ -445,7 +452,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Workspace Directory"
                 variant="standard"
-                value={localYaml?.zowe?.workspaceDirectory || installationArgs.workspaceDir}
+                value={localYaml?.zowe?.workspaceDirectory || installationArgs.workspaceDir || "/global/zowe/workspace"}
                 inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   formChangeHandler("zowe.workspaceDirectory", e.target.value, "workspaceDir");
@@ -467,7 +474,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Log Directory"
                 variant="standard"
-                value={localYaml?.zowe?.logDirectory || installationArgs.logDir}
+                value={localYaml?.zowe?.logDirectory || installationArgs.logDir || "/global/zowe/logs"}
                 inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   formChangeHandler("zowe.logDirectory", e.target.value, "logDir");
@@ -489,7 +496,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Extensions Directory"
                 variant="standard"
-                value={localYaml?.zowe?.extensionDirectory || installationArgs.extensionDir}
+                value={localYaml?.zowe?.extensionDirectory || installationArgs.extensionDir || "/global/zowe/extensions"}
                 inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   formChangeHandler("zowe.extensionDirectory", e.target.value, "extensionDir");
@@ -657,7 +664,7 @@ Please customize the job statement below to match your system requirements.
                       style={{marginLeft: 0}}
                       label="z/OSMF Host"
                       variant="standard"
-                      value={localYaml?.zOSMF?.host || installationArgs.zosmfHost}
+                      value={localYaml?.zOSMF?.host || installationArgs.zosmfHost || "dvipa.my-company.com"}
                       onChange={(e) => {
                         formChangeHandler("zOSMF.host", e.target.value, "zosmfHost");
                         if(localYaml){
