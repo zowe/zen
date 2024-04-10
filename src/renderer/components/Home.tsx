@@ -11,9 +11,11 @@
 import '../global.css';
 import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
-import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Typography, Button, DialogContent, DialogActions } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
-import { setConnectionArgs, selectConnectionPassword } from './stages/connection/connectionSlice';
+import { setConnectionArgs, selectConnectionArgs } from './stages/connection/connectionSlice';
 import { setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { Tooltip } from '@mui/material';
@@ -23,8 +25,8 @@ import eventDispatcher from "../../utils/eventDispatcher";
 import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex, selectActiveStepDate} from './stages/progress/activeStepSlice';
 import { selectConnectionStatus} from './stages/progress/progressSlice';
 import  HorizontalLinearStepper  from './common/Stepper';
-import Wizard from './configuration-wizard/Wizard';
-import { setJobStatement } from './stages/PlanningSlice';
+import Wizard from './configuration-wizard/Wizard'
+import Connection from './stages/connection/Connection';
 
 // REVIEW: Get rid of routing
 
@@ -87,9 +89,9 @@ const Home = () => {
   const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
   const connectionStatus = useAppSelector(selectConnectionStatus);
   const lastActiveDate = useAppSelector(selectActiveStepDate);
-  const connectionPassword = useAppSelector(selectConnectionPassword);
 
   const [showWizard, setShowWizard] = useState(false);
+  const [showLoginDialog, setShowLogin] = useState(false);
   const stages: any = [];
 
   useEffect(() => {
@@ -107,10 +109,9 @@ const Home = () => {
         console.log(JSON.stringify(connectionStore['ftp-details'],null,2));
         const connectionArgs: IIpcConnectionArgs = {
           ...connectionStore["ftp-details"],
-          password: connectionPassword,
-          connectionType: 'ftp'};
+          password: "",
+          connectionType: 'ftp'}; 
         dispatch(setConnectionArgs(connectionArgs));
-        dispatch(setJobStatement(connectionArgs.jobStatement));
       } else {
         // TODO: Add support for other types
         console.warn('Connection types other than FTP are not supported yet');
@@ -123,11 +124,20 @@ const Home = () => {
 
   const resumeProgress = () => {
     setShowWizard(true);
+    setShowLogin(!connectionStatus);
     eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
   }
 
   return (
     <>
+      <Dialog onClose={() => {}} open={showLoginDialog} style={{fontSize: '14px'}} fullWidth={true}
+        maxWidth={"lg"}>
+        <DialogTitle>Re-enter FTP Credentials</DialogTitle>
+         <Connection />
+         <DialogActions>
+          <Button onClick={() => setShowLogin(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
       {!showWizard && <div className="home-container" style={{ display: 'flex', flexDirection: 'column' }}>
 
         <div style={{ position: 'absolute', left: '-9999px' }}>
