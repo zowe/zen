@@ -30,7 +30,8 @@ import { setProgress, getProgress, setSecurityInitState, getSecurityInitState } 
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 
 const Security = () => {
-  const theme = createTheme();
+
+  // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
   const stageLabel = 'Initialization';
   const subStageLabel = 'Security';
@@ -39,14 +40,16 @@ const Security = () => {
   const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
   const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
 
+  const theme = createTheme();
+
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security ?? {product: 'RACF'});
+  const yaml = useAppSelector(selectYaml);
+  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('securityStatus'));
-  const [isFormInit, setIsFormInit] = useState(false);
-  const [initializeForm, setInitializeForm] = useState(false);
+  const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
@@ -55,28 +58,22 @@ const Security = () => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
 
+  const installationArgs = useAppSelector(selectInstallationArgs);
   let timer: any;
 
-  const installationArgs = useAppSelector(selectInstallationArgs);
-  const connectionArgs = useAppSelector(selectConnectionArgs);
-  
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
+  const section = 'dataset';
 
   const ajv = new Ajv();
-  let securitySchema;
+  ajv.addKeyword("$anchor");
+  let datasetSchema;
   let validate: any;
   if(schema) {
-    securitySchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
+    datasetSchema = schema.properties.zowe.properties.setup.properties.dataset;
   }
 
-  if(securitySchema) {
-    validate = ajv.compile(securitySchema);
+  if(datasetSchema) {
+    validate = ajv.compile(datasetSchema);
   }
-
-  const isStepSkipped = !useAppSelector(selectSecurityStatus);
-  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
   const setSecurityInitializationProgress = (securityInitState: any) => {
     setSecurityInitProgress(securityInitState);
@@ -84,9 +81,9 @@ const Security = () => {
   }
 
   useEffect(() => {
+    setShowProgress(initClicked || getProgress('securityStatus'));
     updateProgress(getProgress('securityStatus'));
-    setInitializeForm(true);
-    setIsFormInit(true);
+    setInit(true);
 
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
@@ -101,6 +98,9 @@ const Security = () => {
     const allAttributesTrue = Object.values(securityInitProgress).every(value => value === true);
     if(allAttributesTrue) {
       setNextStepEnabled(true);
+      setShowProgress(initClicked || getProgress('securityStatus'));
+    } else {
+      setNextStepEnabled(false);
     }
   }, [securityInitProgress]);
 
@@ -108,13 +108,14 @@ const Security = () => {
     if(!getProgress('securityStatus')) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInitSecurityProgress().then((res: any) => {
-          setSecurityInitProgress(res);
+          setSecurityInitializationProgress(res);
         })
       }, 3000);
     }
     const nextPosition = document.getElementById('init-progress');
     nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress, stateUpdated]);
+
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
@@ -123,7 +124,6 @@ const Security = () => {
     dispatch(setNextStepEnabled(status));
     dispatch(setInitializationStatus(status));
     dispatch(setSecurityStatus(status));
-    // setInitClicked(false);
     if(!status) {
       for (let key in securityInitProgress) {
         securityInitProgress[key as keyof(InitSubStepsState)] = false;
@@ -137,11 +137,11 @@ const Security = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const process = async(event: any) => {
+  const process = (event: any) => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
         updateProgress(res.status);
         clearInterval(timer);
       }).catch(() => {
@@ -151,48 +151,53 @@ const Security = () => {
       });
   }
 
-  const handleFormChange = (data: any) => {
-    if(!initializeForm) {
-      return;
-    }
-    let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.security) : (data.zowe?.setup?.security ? data.zowe.setup.security : data);
-    setIsFormInit(false);
+  const formChangeHandler = (data: any, isYamlUpdated?: boolean) => {
+    let updatedData = init ? (Object.keys(yaml?.zowe.setup.dataset).length > 0 ? yaml?.zowe.setup.dataset : data) : (data ? data : yaml?.zowe.setup.datasetg);
 
-    if (newData) {
+    setInit(false);
 
-      if(validate) {
-        validate(newData);
-        if(validate.errors) {
-          const errPath = validate.errors[0].schemaPath;
-          const errMsg = validate.errors[0].message;
-          setStageConfig(false, errPath+' '+errMsg, newData);
-        } else {
-          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: newData}}});
-          setStageConfig(true, '', newData);
+    updatedData = isYamlUpdated ? data.zowe.setup.dataset : updatedData;
+    if (updatedData && setupYaml && setupYaml.prefix !== updatedData.prefix) {
+      const newPrefix = updatedData.prefix ? updatedData.prefix : '';
+      const newData = Object.keys(setupYaml).reduce((acc, k) => {
+        if (typeof(setupYaml[k]) === 'string' && setupYaml[k].startsWith(`${setupYaml.prefix}.`)) {
+          return {...acc, [k]: setupYaml[k].replace(setupYaml.prefix, newPrefix), prefix: newPrefix}
         }
+        return {...acc, [k]: setupYaml[k]}
+      }, {});
+    }
+
+    if(validate) {
+      validate(updatedData);
+      if(validate.errors) {
+        const errPath = validate.errors[0].schemaPath;
+        const errMsg = validate.errors[0].message;
+        setStageConfig(false, errPath+' '+errMsg, updatedData, false);
+      } else {
+        // setConfiguration(section, updatedData, true);
+        setStageConfig(true, '', updatedData, true);
       }
     }
-  };
+  }
 
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
+  const setStageConfig = (isValid: boolean, errorMsg: string, data: any, proceed: boolean) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
-    updateProgress(isValid);
   }
 
   return (
     <div>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("yaml")}>View/Edit Yaml</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button>
+        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
       <ContainerCard title="Security" description="Configure Zowe Security.">
-        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={formChangeHandler}/> }
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
+          <JsonForm schema={setupSchema} onChange={(data: any) => formChangeHandler(data)} formData={setupYaml}/>
           
           {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Security Config</Button>
