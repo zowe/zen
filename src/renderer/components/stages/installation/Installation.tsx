@@ -84,16 +84,7 @@ const Installation = () => {
   }
   
   useEffect(() => {
-    // setDatasetInstallationState({
-    //   uploadYaml: true,
-    //   download: true,
-    //   upload: true,
-    //   unpax: true,
-    //   install: true,
-    //   initMVS: true
-    // })
-    // setMvsDatasetInitProgress(getDatasetInstallationState());
-    // dispatch(setDatasetInstallationStatus(true));
+    setShowProgress(initClicked || getProgress('datasetInstallationStatus'));
     updateProgress(getProgress('datasetInstallationStatus'));
     setIsFormInit(true);
 
@@ -108,13 +99,17 @@ const Installation = () => {
   }
 
   useEffect(() => {
-    setShowProgress(initClicked || getProgress('apfAuthStatus'));
+    setShowProgress(initClicked || getProgress('datasetInstallationStatus'));
   }, [initClicked]);
 
   useEffect(() => {
     const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
     if(allAttributesTrue) {
       setNextStepEnabled(true);
+      setShowProgress(initClicked || getProgress('datasetInstallationStatus'));
+    }
+    else {
+      setNextStepEnabled(false);
     }
   }, [mvsDatasetInitProgress]);
 
@@ -143,8 +138,8 @@ const Installation = () => {
       for (let key in mvsDatasetInitProgress) {
         mvsDatasetInitProgress[key as keyof(DatasetInstallationState)] = false;
       }
-      setMvsDatasetInitializationProgress(mvsDatasetInitProgress);
     }
+    setMvsDatasetInitializationProgress(mvsDatasetInitProgress);
   }
 
   const toggleEditorVisibility = (type: any) => {

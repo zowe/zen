@@ -81,16 +81,15 @@ const Certificates = () => {
     validate = ajv.compile(certificateSchema);
   }
 
-if(verifyCertsSchema) {
-  validateVerifyCertSchema = ajv.compile(verifyCertsSchema);
-}  
-
-const isStepSkipped = !useAppSelector(selectCertificateStatus);
-  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
+  if(verifyCertsSchema) {
+    validateVerifyCertSchema = ajv.compile(verifyCertsSchema);
+  }
 
   useEffect(() => {
+    setShowProgress(initClicked || getProgress('certificateStatus'));
     updateProgress(getProgress('certificateStatus'));
     setIsFormInit(true);
+
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
@@ -110,13 +109,16 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
       const nextPosition = document.getElementById('certificate-progress');
       nextPosition.scrollIntoView({behavior: 'smooth'});
     }
-    
   }, [showProgress, stateUpdated]);
 
   useEffect(() => {
     const allAttributesTrue = Object.values(certificateInitProgress).every(value => value === true);
     if(allAttributesTrue) {
       setNextStepEnabled(true);
+      setShowProgress(initClicked || getProgress('certificateStatus'));
+    }
+    else {
+      setNextStepEnabled(false);
     }
   }, [certificateInitProgress]);
 
@@ -136,8 +138,8 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
       for (let key in certificateInitProgress) {
         certificateInitProgress[key as keyof(CertInitSubStepsState)] = false;
       }
-      setCertificateInitializationProgress(certificateInitProgress);
     }
+    setCertificateInitializationProgress(certificateInitProgress);
   }
 
   const process = async(event: any) => {
@@ -210,7 +212,6 @@ const isStepSkipped = !useAppSelector(selectCertificateStatus);
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
-    updateProgress(isValid);
   } 
 
   return (

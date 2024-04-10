@@ -128,8 +128,8 @@ const Security = () => {
       for (let key in securityInitProgress) {
         securityInitProgress[key as keyof(InitSubStepsState)] = false;
       }
-      setSecurityInitializationProgress(securityInitProgress);
     }
+    setSecurityInitializationProgress(securityInitProgress);
   }
 
   const toggleEditorVisibility = (type: any) => {
