@@ -20,9 +20,15 @@ Example command:
   JOB_PREFIX=ZWE \
   JAVA_HOME=\\path\\to\\java \
   NODE_HOME=\\path\\to\\node \
+  UPLOAD_PAX_PATH=  \
   DATASET_PREFIX=  \
-  AUTH_LOAD_LIB=  \
-  AUTH_PLUGIN_LIB=  \
+  PROC_LIB =  \
+  PARM_LIB =  \
+  ZIS =  \
+  JCL_LIB =  \
+  LOAD_LIB =  \
+  AUTH_LOAD_LIB =  \
+  AUTH_PLUGIN_LIB =  \
   SECURITY_ADMIN=ZWEADMIN \
   SECURITY_SYSPROG=ZWEADMIN \
   SECURITY_STC=ZWEADMIN \
