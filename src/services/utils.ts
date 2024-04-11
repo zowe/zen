@@ -13,8 +13,6 @@ import Header from "../renderer/components/Header"
 import { AlertColor } from "@mui/material/Alert";
 import zos from 'zos-node-accessor';
 
-// Note: This file is not usable by the Renderer
-
 export const JCL_UNIX_SCRIPT_CHARS = 70;
 
 export const JCL_JOBNAME_DEFAULT = "ZENJOB";
@@ -48,7 +46,6 @@ export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<
     await client.makeDirectory(dir);
     return true;
   } catch (error) {
-    console.error(error);
     return false;
   } finally {
     client.close();
@@ -90,5 +87,5 @@ export function startBPXBATCHAndShellSession(jobName: string = JCL_JOBNAME_DEFAU
   return `//${jobName}    EXEC PGM=BPXBATCH,REGION=0M
 //STDOUT DD SYSOUT=*
 //STDPARM      DD *
-sh set -x &&`;
+sh set -x;`;
 }

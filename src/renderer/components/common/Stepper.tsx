@@ -26,12 +26,10 @@ import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progr
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
 import savedInstall from '../../assets/saved-install-green.png';
-import { createTheme } from '@mui/material/styles';
-import eventDispatcher from '../../../services/eventDispatcher';
+import eventDispatcher from '../../../utils/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import Home from '../Home';
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Utils';
 
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
@@ -61,6 +59,10 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     useSelector(selectCertificateStatus), 
     useSelector(selectLaunchConfigStatus), 
   ]
+  
+  const TYPE_YAML = "yaml";
+  const TYPE_JCL = "jcl";
+  const TYPE_OUTPUT = "output";
 
   const [activeStep, setActiveStep] =  initialization ? useState(0) : useState(useAppSelector(selectActiveStepIndex));
   const [activeSubStep, setActiveSubStep] = initialization ? useState(0) : useState(useAppSelector(selectActiveSubStepIndex));
@@ -229,7 +231,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
                 {backgroundColor: '#E0E0E0', 
                 padding: '10px 20px 25px', 
                 position: 'relative', 
-                marginBottom: '-30px', 
+                marginBottom: '-27px', 
                 borderTopRightRadius: '7px', 
                 borderTopLeftRadius: '7px',
                 boxShadow: 'rgb(0 0 0 / 15%) 0px 6px 4px -1px inset'} : {}}>

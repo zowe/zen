@@ -9,11 +9,8 @@
  */
 
 import Store from 'electron-store';
-import { DefaultStore } from './DefaultStore';
-import { DEF_JOB_STATEMENT } from '../renderer/components/common/Utils';
 
-const STORE_NAME = 'zen-connection-store';
-const STORE_SCHEMA = {
+const storeSchema = {
   "connection-type": {
     "type": "string"
   },
@@ -69,7 +66,7 @@ const STORE_SCHEMA = {
   }
 } as const;
 
-export const STORE_DEFAULT = {
+const storeDefault = {
   "connection-type": "ftp",
   "zowe-cli-version": "",
   "ftp-details": {
@@ -83,29 +80,52 @@ export const STORE_DEFAULT = {
       "maxVersion": "TLSv1.3",
       "minVersion": "TLSv1.2"
     },    
-    "jobStatement": DEF_JOB_STATEMENT
+    "jobStatement": `//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,
+//         MSGLEVEL=(1,1),MSGCLASS=A`
   },
   "cli-details": {
     "profile": ""
   }
 };
 
-const store = new Store({cwd: 'zen-connection-store', schema: STORE_SCHEMA});
-store.set({...STORE_DEFAULT, ...store.store});
+const validateWithSchema = (key: string): boolean => {
+  const keys = key.split('.');
+  let schemaPart: any = storeSchema;
+  for (const key of keys) {
+      if (!Object.prototype.hasOwnProperty.call(schemaPart, key)) {
+          return false;
+      }
+      schemaPart = schemaPart[key].properties;
+  }
+  return true;
+}
 
-export class ConnectionStore extends DefaultStore {
+const store = new Store({cwd: 'zen-connection-store', schema: storeSchema});
+store.set({...storeDefault, ...store.store});
 
-  protected static getStore(): Store {
-    return new Store({cwd: STORE_NAME});
+export class ConnectionStore {
+
+  public static get(key: string): any {
+    return store.get(key);
   }
 
-  public static setAndValidate(key: string, value: any, schema?: any): boolean {
-    return super.setAndValidate(key, value, schema || STORE_SCHEMA);
+  public static getAll(): any {
+    return store.store;
+  }
+
+  public static set(key: string, value: any): boolean {
+    if (validateWithSchema(key)) {
+      store.set(key, value);
+      return true;
+    }
+    return false;
+  }
+
+  public static delete(key: any): void {
+    store.delete(key);
   }
 
   public static deleteAll(): void {
-    this.getStore().store = STORE_DEFAULT;
+    store.store = storeDefault;
   }
-
 }
-

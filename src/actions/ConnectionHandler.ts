@@ -9,7 +9,7 @@
  */
 
 import { ConnectionStore } from "../storage/ConnectionStore";
-import { connectFTPServer } from "../services/ServiceUtils";
+import { connectFTPServer } from "../services/utils";
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 
 class Connection {
