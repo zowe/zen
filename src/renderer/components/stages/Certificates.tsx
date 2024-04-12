@@ -202,7 +202,6 @@ const Certificates = () => {
           setVerifyCertsYaml({'verifyCertificates': e.verifyCertificates});
           setIsFormValid(true);
           window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, verifyCertificates: e.verifyCertificates}})
-          dispatch(setNextStepEnabled(true));
         }
       }
     }
