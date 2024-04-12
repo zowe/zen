@@ -44,8 +44,8 @@ const Security = () => {
 
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
-  const yaml = useAppSelector(selectYaml);
-  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const connectionArgs = useState(useAppSelector(selectConnectionArgs));
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security);
   const [showProgress, setShowProgress] = useState(getProgress('securityStatus'));
