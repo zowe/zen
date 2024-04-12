@@ -79,6 +79,11 @@ const InitApfAuth = () => {
   const setApfAuthorizationInitProgress = (aftAuthorizationState: any) => {
     setApfAuthInitProgress(aftAuthorizationState);
     setApfAuthState(aftAuthorizationState);
+    const allAttributesTrue = Object.values(aftAuthorizationState).every(value => value === true);
+    if(allAttributesTrue) {
+      dispatch(setNextStepEnabled(true));
+      dispatch(setApfAuthStatus(true));
+    }
   }
 
   useEffect(() => {
@@ -107,7 +112,9 @@ const InitApfAuth = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(apfAuthInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      setNextStepEnabled(true);
+      dispatch(setNextStepEnabled(true));
+      dispatch(setApfAuthStatus(true));
+      setShowProgress(initClicked || getProgress('apfAuthStatus'));
     }
   }, [apfAuthInitProgress]);
 
@@ -133,8 +140,8 @@ const InitApfAuth = () => {
       for (let key in apfAuthInitProgress) {
         apfAuthInitProgress[key as keyof(InitSubStepsState)] = false;
       }
-      setApfAuthorizationInitProgress(apfAuthInitProgress);
     }
+    setApfAuthorizationInitProgress(apfAuthInitProgress);
   }
   
   const toggleEditorVisibility = (type: any) => {

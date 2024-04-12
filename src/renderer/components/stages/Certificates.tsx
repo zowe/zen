@@ -121,17 +121,22 @@ const Certificates = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(certificateInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      setNextStepEnabled(true);
+      dispatch(setNextStepEnabled(true));
+      dispatch(setCertificateStatus(true));
       setShowProgress(initClicked || getProgress('certificateStatus'));
-    }
-    else {
-      setNextStepEnabled(false);
+    } else {
+      dispatch(setNextStepEnabled(false));
     }
   }, [certificateInitProgress]);
 
-  const setCertificateInitializationProgress = (aftAuthorizationState: any) => {
-    setCertificateInitProgress(aftAuthorizationState);
-    setCertificateInitState(aftAuthorizationState);
+  const setCertificateInitializationProgress = (certificateInitState: any) => {
+    setCertificateInitProgress(certificateInitState);
+    setCertificateInitState(certificateInitState);
+    const allAttributesTrue = Object.values(certificateInitState).every(value => value === true);
+    if(allAttributesTrue) {
+      dispatch(setNextStepEnabled(true));
+      dispatch(setCertificateStatus(true));
+    }
   }
 
   const updateProgress = (status: boolean) => {

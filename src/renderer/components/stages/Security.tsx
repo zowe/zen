@@ -78,6 +78,11 @@ const Security = () => {
   const setSecurityInitializationProgress = (securityInitState: any) => {
     setSecurityInitProgress(securityInitState);
     setSecurityInitState(securityInitState);
+    const allAttributesTrue = Object.values(securityInitState).every(value => value === true);
+    if(allAttributesTrue) {
+      dispatch(setNextStepEnabled(true));
+      dispatch(setSecurityStatus(true));
+    }
   }
 
   useEffect(() => {
@@ -106,10 +111,11 @@ const Security = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(securityInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      setNextStepEnabled(true);
+      dispatch(setNextStepEnabled(true));
+      dispatch(setSecurityStatus(true));
       setShowProgress(initClicked || getProgress('securityStatus'));
     } else {
-      setNextStepEnabled(false);
+      dispatch(setNextStepEnabled(false));
     }
   }, [securityInitProgress]);
 

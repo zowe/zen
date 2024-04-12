@@ -99,6 +99,10 @@ const Installation = () => {
   const setMvsDatasetInitializationProgress = (datasetInitState: any) => {
     setMvsDatasetInitProgress(datasetInitState);
     setDatasetInstallationState(datasetInitState);
+    const allAttributesTrue = Object.values(datasetInitState).every(value => value === true);
+    if(allAttributesTrue) {
+      dispatch(setNextStepEnabled(true));
+    }
   }
 
   useEffect(() => {
@@ -114,11 +118,10 @@ const Installation = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      setNextStepEnabled(true);
+      dispatch(setNextStepEnabled(true));
       setShowProgress(initClicked || getProgress('datasetInstallationStatus'));
-    }
-    else {
-      setNextStepEnabled(false);
+    } else {
+      dispatch(setNextStepEnabled(false));
     }
   }, [mvsDatasetInitProgress]);
 
