@@ -95,9 +95,12 @@ const InitApfAuth = () => {
 
   useEffect(() => {
     setShowProgress(initClicked || getProgress('apfAuthStatus'));
+
     if(initClicked) {
       const nextPosition = document.getElementById('apf-progress');
       nextPosition.scrollIntoView({behavior: 'smooth'});
+      setStateUpdated(!stateUpdated);
+      dispatch(setApfAuthStatus(false));
     }
   }, [initClicked]);
 

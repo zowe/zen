@@ -103,6 +103,8 @@ const Certificates = () => {
     if(initClicked) {
       const nextPosition = document.getElementById('certificate-progress');
       nextPosition.scrollIntoView({behavior: 'smooth'});
+      setStateUpdated(!stateUpdated);
+      dispatch(setCertificateStatus(false));
     }
   }, [initClicked]);
 

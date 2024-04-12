@@ -106,6 +106,8 @@ const Installation = () => {
     if(initClicked) {
       const nextPosition = document.getElementById('installation-progress');
       nextPosition.scrollIntoView({behavior: 'smooth'});
+      setStateUpdated(!stateUpdated);
+      dispatch(setDatasetInstallationStatus(false));
     }
   }, [initClicked]);
 
