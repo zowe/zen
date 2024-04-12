@@ -1270,6 +1270,7 @@ const Planning = () => {
   const [contentType, setContentType] = useState('output');
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState('');
+  const [stateUpdated, setStateUpdated] = useState(false);
 
   const toggleEditorVisibility = (type?: any) => {
     if (type) {
@@ -1279,6 +1280,9 @@ const Planning = () => {
   };
 
   useEffect(() => {
+    const nextPosition = document.getElementById(`position-${step}`);
+    nextPosition.scrollIntoView({behavior: 'smooth'});
+
     if(getPlanningStageStatus()?.isJobStatementValid) {
       setJobHeaderSaved(true);
       if(getPlanningStageStatus()?.isLocationValid) {
@@ -1345,8 +1349,10 @@ const Planning = () => {
   }, [jobHeaderSaved, locationsValidated]);
 
   useEffect(() => {
-    const nextPosition = document.getElementById(`position-${step}`);
-    nextPosition.scrollIntoView({behavior: 'smooth'});
+    if(stateUpdated) {
+      const nextPosition = document.getElementById(`position-${step}`);
+      nextPosition.scrollIntoView({behavior: 'smooth'});
+    }
   }, [step]);
 
   const setPlanningState = (status: boolean): void => {
@@ -1386,7 +1392,9 @@ const Planning = () => {
   }
 
   const saveJobHeader = (e: any) => {
-    
+
+    setStateUpdated(true);
+
     if(jobStatementValid && !isJobStatementUpdated) {
       setJobHeaderSaved(true);
       setEditorContentAndType(jobStatementValidMsg, 'output');
@@ -1433,6 +1441,8 @@ const Planning = () => {
 
   const validateLocations = (e: any, click?: boolean) => {
    
+    setStateUpdated(true);
+
     if(planningStatus && !isLocationsUpdated && !click) {
       setLocValidations(true);
       setPlanningState(true);
@@ -1576,7 +1586,7 @@ const Planning = () => {
     <React.Fragment><span id="position-0"></span>
     <ContainerCard title="Before you start" description="Prerequisites, requirements and roles needed to install.">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} content={editorContent}/>
-      <Box sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto'}}>
+      <Box id="conatiner-box-id" sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto'}}>
         <Typography sx={{ mb: 2 }} color="text.secondary"> 
           {/* TODO: Allow to choose Zowe version here by click here, support for other instalation types? */}
           {zoweVersion ? `About to install latest Zowe version: ${zoweVersion} from the convenience build. Approximate required space: ${requiredSpace}MB` : ''}
