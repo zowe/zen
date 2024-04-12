@@ -81,6 +81,9 @@ const Security = () => {
   }
 
   useEffect(() => {
+    const nextPosition = document.getElementById('container-box-id');
+    nextPosition.scrollIntoView({behavior: 'smooth'});
+
     setShowProgress(initClicked || getProgress('securityStatus'));
     updateProgress(getProgress('securityStatus'));
     setInit(true);
@@ -92,6 +95,10 @@ const Security = () => {
 
   useEffect(() => {
     setShowProgress(initClicked || getProgress('securityStatus'));
+    if(initClicked) {
+      const nextPosition = document.getElementById('init-progress');
+      nextPosition.scrollIntoView({behavior: 'smooth'});
+    }
   }, [initClicked]);
 
   useEffect(() => {
@@ -112,8 +119,6 @@ const Security = () => {
         })
       }, 3000);
     }
-    const nextPosition = document.getElementById('init-progress');
-    nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress, stateUpdated]);
 
 
@@ -144,7 +149,7 @@ const Security = () => {
     window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
         updateProgress(res.status);
         clearInterval(timer);
-      }).catch(() => {
+      }).catch((error: any) => {
         clearInterval(timer);
         updateProgress(false);
         console.warn('zwe init security failed');
@@ -187,7 +192,7 @@ const Security = () => {
   }
 
   return (
-    <div>
+    <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("yaml")}>View/Edit Yaml</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button>

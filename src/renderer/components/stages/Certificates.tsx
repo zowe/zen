@@ -86,6 +86,9 @@ const Certificates = () => {
   }
 
   useEffect(() => {
+    const nextPosition = document.getElementById('container-box-id');
+    nextPosition.scrollIntoView({behavior: 'smooth'});
+
     setShowProgress(initClicked || getProgress('certificateStatus'));
     updateProgress(getProgress('certificateStatus'));
     setIsFormInit(true);
@@ -97,6 +100,10 @@ const Certificates = () => {
 
   useEffect(() => {
     setShowProgress(initClicked || getProgress('certificateStatus'));
+    if(initClicked) {
+      const nextPosition = document.getElementById('certificate-progress');
+      nextPosition.scrollIntoView({behavior: 'smooth'});
+    }
   }, [initClicked]);
 
   useEffect(() => {
@@ -106,8 +113,6 @@ const Certificates = () => {
           setCertificateInitializationProgress(res)
         })
       }, 3000);
-      const nextPosition = document.getElementById('certificate-progress');
-      nextPosition.scrollIntoView({behavior: 'smooth'});
     }
   }, [showProgress, stateUpdated]);
 
@@ -214,7 +219,7 @@ const Certificates = () => {
   } 
 
   return (
-    <div>
+    <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>

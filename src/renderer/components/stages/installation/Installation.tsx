@@ -84,6 +84,9 @@ const Installation = () => {
   }
   
   useEffect(() => {
+    const nextPosition = document.getElementById('container-box-id');
+    nextPosition.scrollIntoView({behavior: 'smooth'});
+
     setShowProgress(initClicked || getProgress('datasetInstallationStatus'));
     updateProgress(getProgress('datasetInstallationStatus'));
     setIsFormInit(true);
@@ -100,6 +103,10 @@ const Installation = () => {
 
   useEffect(() => {
     setShowProgress(initClicked || getProgress('datasetInstallationStatus'));
+    if(initClicked) {
+      const nextPosition = document.getElementById('installation-progress');
+      nextPosition.scrollIntoView({behavior: 'smooth'});
+    }
   }, [initClicked]);
 
   useEffect(() => {
@@ -121,9 +128,6 @@ const Installation = () => {
         })
       }, 3000);
     }
-
-    const nextPosition = document.getElementById('installation-progress');
-    nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress, stateUpdated]);
 
   const updateProgress = (status: boolean) => {
@@ -211,7 +215,7 @@ const Installation = () => {
   }
 
   return (
-    <div>
+    <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>

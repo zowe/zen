@@ -82,6 +82,9 @@ const InitApfAuth = () => {
   }
 
   useEffect(() => {
+    const nextPosition = document.getElementById('container-box-id');
+    nextPosition.scrollIntoView({behavior: 'smooth'});
+
     updateProgress(getProgress('apfAuthStatus'));
     setInit(true);
 
@@ -92,6 +95,10 @@ const InitApfAuth = () => {
 
   useEffect(() => {
     setShowProgress(initClicked || getProgress('apfAuthStatus'));
+    if(initClicked) {
+      const nextPosition = document.getElementById('apf-progress');
+      nextPosition.scrollIntoView({behavior: 'smooth'});
+    }
   }, [initClicked]);
 
   useEffect(() => {
@@ -109,8 +116,6 @@ const InitApfAuth = () => {
         })
       }, 3000);
     }
-    const nextPosition = document.getElementById('apf-progress');
-    nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [showProgress, stateUpdated]);
 
 
@@ -185,7 +190,7 @@ const InitApfAuth = () => {
   }
 
   return (
-    <div>
+    <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("yaml")}>View/Edit Yaml</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button>
