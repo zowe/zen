@@ -46,8 +46,8 @@ const Security = () => {
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
+  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security);
   const [showProgress, setShowProgress] = useState(getProgress('securityStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -61,18 +61,18 @@ const Security = () => {
   const installationArgs = useAppSelector(selectInstallationArgs);
   let timer: any;
 
-  const section = 'dataset';
+  const section = 'security';
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
-  let datasetSchema;
+  let securitySchema;
   let validate: any;
   if(schema) {
-    datasetSchema = schema.properties.zowe.properties.setup.properties.dataset;
+    securitySchema = schema.properties.zowe.properties.setup.properties.security;
   }
 
-  if(datasetSchema) {
-    validate = ajv.compile(datasetSchema);
+  if(securitySchema) {
+    validate = ajv.compile(securitySchema);
   }
 
   const setSecurityInitializationProgress = (securityInitState: any) => {
@@ -152,11 +152,11 @@ const Security = () => {
   }
 
   const formChangeHandler = (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = init ? (Object.keys(yaml?.zowe.setup.dataset).length > 0 ? yaml?.zowe.setup.dataset : data) : (data ? data : yaml?.zowe.setup.datasetg);
+    let updatedData = init ? (Object.keys(yaml?.zowe.setup.security).length > 0 ? yaml?.zowe.setup.security : data) : (data ? data : yaml?.zowe.setup.security);
 
     setInit(false);
 
-    updatedData = isYamlUpdated ? data.zowe.setup.dataset : updatedData;
+    updatedData = isYamlUpdated ? data.zowe.setup.security : updatedData;
     if (updatedData && setupYaml && setupYaml.prefix !== updatedData.prefix) {
       const newPrefix = updatedData.prefix ? updatedData.prefix : '';
       const newData = Object.keys(setupYaml).reduce((acc, k) => {
