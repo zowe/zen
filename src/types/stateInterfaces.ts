@@ -64,6 +64,12 @@ export interface CertInitSubStepsState {
   zweInitCertificate: boolean
 }
 
+export interface PlanningValidationDetails {
+  javaVersion: string,
+  nodeVersion: string,
+  spaceAvailableMb: string,
+  error: string
+}
 
 
 

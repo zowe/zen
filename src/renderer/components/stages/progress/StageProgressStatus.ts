@@ -9,7 +9,7 @@
  */
 
 import { flatten, unflatten } from 'flat';
-import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState} from '../../../../types/stateInterfaces';
+import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails} from '../../../../types/stateInterfaces';
 
 const installationTypeStatus: InstallationType = {
   installationType: 'download',
@@ -72,6 +72,13 @@ const certificateInitStatus: CertInitSubStepsState = {
   zweInitCertificate: false
 }
 
+const planningValidationDetailsStatus: PlanningValidationDetails = {
+  javaVersion: '',
+  nodeVersion: '',
+  spaceAvailableMb: '',
+  error: ''
+}
+
 let progressStateKey = 'stage_progress';
 let activeStateKey = 'active_state';
 let planningStateKey = 'planning_stage';
@@ -80,6 +87,7 @@ let datasetInstallationKey = 'dataset_installation';
 let apfAuthKey = 'apf_auth';
 let securityKey = 'security_init';
 let certificateKey = 'certificate_init';
+let planningValidationDetailsKey = `planning_validation_details`;
 
 const setKeys = (id: string) => {
   progressStateKey = `${progressStateKey}_${id}`;
@@ -90,6 +98,7 @@ const setKeys = (id: string) => {
   apfAuthKey = `${apfAuthKey}_${id}`;
   securityKey = `${securityKey}_${id}`;
   certificateKey = `${certificateKey}_${id}`;
+  planningValidationDetailsKey = `${planningValidationDetailsKey}_${id}`;
 }
 
 export const initializeProgress = (host: string, user: string) => {
@@ -142,6 +151,27 @@ export const initializeProgress = (host: string, user: string) => {
   if(!certificateInitState) {
     const flattenedData = flatten(certificateInitStatus);
     localStorage.setItem(certificateKey, JSON.stringify(flattenedData));
+  }
+
+  const planningValidationDetailsState = localStorage.getItem(certificateKey);
+  if(!planningValidationDetailsState) {
+    const flattenedData = flatten(planningValidationDetailsStatus);
+    localStorage.setItem(planningValidationDetailsKey, JSON.stringify(flattenedData));
+  }
+}
+
+export const setPlanningValidationDetailsState = (planningValidationsDetails: PlanningValidationDetails): void => {
+  Object.assign(planningValidationDetailsStatus, planningValidationsDetails);
+  localStorage.setItem(planningValidationDetailsKey, JSON.stringify(planningValidationDetailsStatus));
+}
+
+export const getPlanningValidationDetailsState = (): PlanningValidationDetails => {
+  const planningValidationDetailsState = localStorage.getItem(planningValidationDetailsKey);
+  if(planningValidationDetailsState) {
+    const flattenedData = JSON.parse(planningValidationDetailsState);
+    return unflatten(flattenedData)
+  } else {
+    return planningValidationDetailsStatus;
   }
 }
 

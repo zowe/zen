@@ -29,7 +29,7 @@ import { Checkbox, FormControlLabel } from "@mui/material";
 import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
 import { getStageDetails } from "../../../utils/StageDetails";
-import { getProgress, getPlanningStageStatus } from "./progress/StageProgressStatus";
+import { getProgress, getPlanningStageStatus, setPlanningValidationDetailsState, getPlanningValidationDetailsState } from "./progress/StageProgressStatus";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -1260,7 +1260,7 @@ const Planning = () => {
   
   const [locationsValidated, setLocationsValidated] = useState(getPlanningStageStatus()?.isLocationValid || false);
   const [isLocationsUpdated, setIsLocationsUpdated] = useState(false);
-  const [validationDetails, setValidationDetails] = useState({javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''});
+  const [validationDetails, setValidationDetails] = useState(getPlanningValidationDetailsState());
   const [showZosmfAttributes, setShowZosmfAttributes] = useState(true);
 
   const zoweVersion = useAppSelector(selectZoweVersion);
@@ -1437,6 +1437,7 @@ const Planning = () => {
       setLocValidations(true);
       setPlanningState(true);
       setValidationDetails(locationValidationDetails);
+      setPlanningValidationDetailsState(locationValidationDetails);
       setEditorContentAndType(jobStatementValidMsg, 'output');
       setStep(2);
       return;
@@ -1444,6 +1445,7 @@ const Planning = () => {
 
     e.preventDefault();
     setValidationDetails({...validationDetails, error: ''});
+    setPlanningValidationDetailsState({...validationDetails, error: ''});
     if (!localYaml?.java?.home || !localYaml?.node?.home || !localYaml?.zowe?.runtimeDirectory) {
       console.warn('Please fill in all values');
       alertEmitter.emit('showAlert', 'Please fill in all values', 'error');
@@ -1508,6 +1510,7 @@ const Planning = () => {
       //   console.warn(res[2].details);
       // }
       setValidationDetails(details);
+      setPlanningValidationDetailsState(details);
       dispatch(setLocationValidationDetails(details))
       dispatch(setLoading(false));
       if (!details.error) {
