@@ -1290,7 +1290,7 @@ const Planning = () => {
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     }
-  })
+  }, [])
 
   useEffect(() => {
     setPlanningState(getProgress('planningStatus'));
