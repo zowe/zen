@@ -146,8 +146,8 @@ class Installation {
           }
         }
 
-        const currentSchema = ConfigurationStore.getSchema();
-        if(currentSchema === undefined && readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
+        //No reason not to always set schema to latest if user is re-running installation
+        if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
           const parseSchemas = function(inputString: string, catPath: string){
             const jobOutputSplit = inputString.split(`cat ${catPath}\\r\\n`)
             if(jobOutputSplit[1]){
