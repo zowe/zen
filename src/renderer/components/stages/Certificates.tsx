@@ -150,9 +150,10 @@ const Certificates = () => {
     if(!status) {
       for (let key in certificateInitProgress) {
         certificateInitProgress[key as keyof(CertInitSubStepsState)] = false;
+        setCertificateInitState(certificateInitProgress);
       }
     }
-    setCertificateInitializationProgress(certificateInitProgress);
+    setCertificateInitializationProgress(getCertificateInitState());
   }
 
   const process = async(event: any) => {

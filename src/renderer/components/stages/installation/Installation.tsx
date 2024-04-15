@@ -148,9 +148,10 @@ const Installation = () => {
     if(!status) {
       for (let key in mvsDatasetInitProgress) {
         mvsDatasetInitProgress[key as keyof(DatasetInstallationState)] = false;
+        setDatasetInstallationState(mvsDatasetInitProgress);
       }
     }
-    setMvsDatasetInitializationProgress(mvsDatasetInitProgress);
+    setMvsDatasetInitializationProgress(getDatasetInstallationState());
   }
 
   const toggleEditorVisibility = (type: any) => {

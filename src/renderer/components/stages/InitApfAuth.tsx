@@ -146,9 +146,10 @@ const InitApfAuth = () => {
     if(!status) {
       for (let key in apfAuthInitProgress) {
         apfAuthInitProgress[key as keyof(InitSubStepsState)] = false;
+        setApfAuthState(apfAuthInitProgress);
       }
     }
-    setApfAuthorizationInitProgress(apfAuthInitProgress);
+    setApfAuthorizationInitProgress(getApfAuthState());
   }
   
   const toggleEditorVisibility = (type: any) => {
