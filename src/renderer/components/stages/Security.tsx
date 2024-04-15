@@ -45,7 +45,6 @@ const Security = () => {
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const connectionArgs = useState(useAppSelector(selectConnectionArgs));
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security ?? {product: 'RACF'});
   const [showProgress, setShowProgress] = useState(getProgress('securityStatus'));
@@ -59,6 +58,7 @@ const Security = () => {
   const [initClicked, setInitClicked] = useState(false);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
+  const connectionArgs = useAppSelector(selectConnectionArgs);
   let timer: any;
 
   const section = 'security';
