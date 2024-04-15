@@ -87,7 +87,6 @@ const Installation = () => {
     const nextPosition = document.getElementById('container-box-id');
     nextPosition.scrollIntoView({behavior: 'smooth'});
 
-    setShowProgress(initClicked || getProgress('datasetInstallationStatus'));
     updateProgress(getProgress('datasetInstallationStatus'));
     setIsFormInit(true);
 
@@ -95,15 +94,6 @@ const Installation = () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
-
-  const setMvsDatasetInitializationProgress = (datasetInitState: any) => {
-    setMvsDatasetInitProgress(datasetInitState);
-    setDatasetInstallationState(datasetInitState);
-    const allAttributesTrue = Object.values(datasetInitState).every(value => value === true);
-    if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-    }
-  }
 
   useEffect(() => {
     setShowProgress(initClicked || getProgress('datasetInstallationStatus'));
@@ -119,14 +109,13 @@ const Installation = () => {
     const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
     if(allAttributesTrue) {
       dispatch(setNextStepEnabled(true));
+      dispatch(setDatasetInstallationStatus(true));
       setShowProgress(initClicked || getProgress('datasetInstallationStatus'));
-    } else {
-      dispatch(setNextStepEnabled(false));
     }
   }, [mvsDatasetInitProgress]);
 
   useEffect(() => {
-    if(!getProgress('datasetInstallationStatus')) {
+    if(!getProgress('datasetInstallationStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
           setMvsDatasetInitializationProgress(res);
@@ -134,6 +123,16 @@ const Installation = () => {
       }, 3000);
     }
   }, [showProgress, stateUpdated]);
+
+  const setMvsDatasetInitializationProgress = (datasetInitState: any) => {
+    setMvsDatasetInitProgress(datasetInitState);
+    setDatasetInstallationState(datasetInitState);
+    const allAttributesTrue = Object.values(datasetInitState).every(value => value === true);
+    if(allAttributesTrue) {
+      dispatch(setNextStepEnabled(true));
+      dispatch(setDatasetInstallationStatus(true));
+    }
+  }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);

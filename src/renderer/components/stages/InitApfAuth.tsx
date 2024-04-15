@@ -75,16 +75,6 @@ const InitApfAuth = () => {
 
   const isStepSkipped = !useAppSelector(selectApfAuthStatus);
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
-  
-  const setApfAuthorizationInitProgress = (aftAuthorizationState: any) => {
-    setApfAuthInitProgress(aftAuthorizationState);
-    setApfAuthState(aftAuthorizationState);
-    const allAttributesTrue = Object.values(aftAuthorizationState).every(value => value === true);
-    if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-      dispatch(setApfAuthStatus(true));
-    }
-  }
 
   useEffect(() => {
     const nextPosition = document.getElementById('container-box-id');
@@ -119,7 +109,7 @@ const InitApfAuth = () => {
   }, [apfAuthInitProgress]);
 
   useEffect(() => {
-    if(!getProgress('apfAuthStatus')) {
+    if(!getProgress('apfAuthStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
           setApfAuthorizationInitProgress(res);
@@ -128,6 +118,15 @@ const InitApfAuth = () => {
     }
   }, [showProgress, stateUpdated]);
 
+  const setApfAuthorizationInitProgress = (aftAuthorizationState: any) => {
+    setApfAuthInitProgress(aftAuthorizationState);
+    setApfAuthState(aftAuthorizationState);
+    const allAttributesTrue = Object.values(aftAuthorizationState).every(value => value === true);
+    if(allAttributesTrue) {
+      dispatch(setNextStepEnabled(true));
+      dispatch(setApfAuthStatus(true));
+    }
+  }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
