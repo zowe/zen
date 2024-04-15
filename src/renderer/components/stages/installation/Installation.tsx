@@ -118,7 +118,9 @@ const Installation = () => {
     if(!getProgress('datasetInstallationStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
-          setMvsDatasetInitializationProgress(res);
+          if(!getProgress('datasetInstallationStatus') && initClicked) {
+            setMvsDatasetInitializationProgress(res);
+          }
         })
       }, 3000);
     }

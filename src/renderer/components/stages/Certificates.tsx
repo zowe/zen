@@ -109,10 +109,12 @@ const Certificates = () => {
   }, [initClicked]);
 
   useEffect(() => {
-    if(!getProgress('certificateStatus')) {
+    if(!getProgress('certificateStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getCertificateProgress().then((res: any) => {
-          setCertificateInitializationProgress(res)
+          if(!getProgress('certificateStatus') && initClicked) {
+            setCertificateInitializationProgress(res)
+          }
         })
       }, 3000);
     }

@@ -75,16 +75,6 @@ const Security = () => {
     validate = ajv.compile(securitySchema);
   }
 
-  const setSecurityInitializationProgress = (securityInitState: any) => {
-    setSecurityInitProgress(securityInitState);
-    setSecurityInitState(securityInitState);
-    const allAttributesTrue = Object.values(securityInitState).every(value => value === true);
-    if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-      dispatch(setSecurityStatus(true));
-    }
-  }
-
   useEffect(() => {
     const nextPosition = document.getElementById('container-box-id');
     nextPosition.scrollIntoView({behavior: 'smooth'});
@@ -111,30 +101,41 @@ const Security = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(securityInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
       dispatch(setSecurityStatus(true));
+      dispatch(setNextStepEnabled(true));
       setShowProgress(initClicked || getProgress('securityStatus'));
     }
   }, [securityInitProgress]);
 
   useEffect(() => {
-    if(!getProgress('securityStatus')) {
+    if(!getProgress('securityStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInitSecurityProgress().then((res: any) => {
-          setSecurityInitializationProgress(res);
+          if(!getProgress('securityStatus') && initClicked) {
+            setSecurityInitializationProgress(res);
+          }
         })
       }, 3000);
     }
   }, [showProgress, stateUpdated]);
 
+  const setSecurityInitializationProgress = (securityInitState: any) => {
+    setSecurityInitProgress(securityInitState);
+    setSecurityInitState(securityInitState);
+    const allAttributesTrue = Object.values(securityInitState).every(value => value === true);
+    if(allAttributesTrue) {
+      dispatch(setSecurityStatus(true));
+      dispatch(setNextStepEnabled(true));
+    }
+  }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
     stages[STAGE_ID].isSkipped = !status;
-    dispatch(setNextStepEnabled(status));
     dispatch(setInitializationStatus(status));
     dispatch(setSecurityStatus(status));
+    dispatch(setNextStepEnabled(status));
     if(!status) {
       for (let key in securityInitProgress) {
         securityInitProgress[key as keyof(InitSubStepsState)] = false;

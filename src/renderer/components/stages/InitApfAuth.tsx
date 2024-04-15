@@ -112,15 +112,17 @@ const InitApfAuth = () => {
     if(!getProgress('apfAuthStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
-          setApfAuthorizationInitProgress(res);
+          if(!getProgress('apfAuthStatus') && initClicked) {
+            setApfAuthorizationInitProgress(res);
+          }
         })
       }, 3000);
     }
   }, [showProgress, stateUpdated]);
 
   const setApfAuthorizationInitProgress = (aftAuthorizationState: any) => {
-    setApfAuthInitProgress(aftAuthorizationState);
     setApfAuthState(aftAuthorizationState);
+    setApfAuthInitProgress(aftAuthorizationState);
     const allAttributesTrue = Object.values(aftAuthorizationState).every(value => value === true);
     if(allAttributesTrue) {
       dispatch(setNextStepEnabled(true));

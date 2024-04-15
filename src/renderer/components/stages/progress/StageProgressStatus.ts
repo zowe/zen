@@ -182,11 +182,11 @@ export const getApfAuthState = (): InitSubStepsState => {
   const apfAuthState = localStorage.getItem(apfAuthKey);
   if(apfAuthState) {
     const flattenedData = JSON.parse(apfAuthState);
-    return unflatten(flattenedData)
+    return unflatten(flattenedData);
   } else {
     return apfAuthStatus;
   }
-}
+};
 
 export const setSecurityInitState = (securityInitSteps: InitSubStepsState): void => {
   Object.assign(securityInitStatus, securityInitSteps);
