@@ -1545,7 +1545,21 @@ const Planning = () => {
     setStep(0);
   }
 
-  const formChangeHandler = (key?: string, value?: string, installationArg?: string) => {
+  const updateNestedObject = (sourceObject: any, keys: string[], value: string) => {
+    const updatedObject = { ...sourceObject };
+    let nestedObject = updatedObject;
+  
+    for (let i = 0; i < keys.length - 1; i++) {
+      const k = keys[i];
+      nestedObject[k] = { ...(nestedObject[k] || {}) };
+      nestedObject = nestedObject[k];
+    }
+    nestedObject[keys[keys.length - 1]] = value;
+  
+    return updatedObject;
+  }
+
+  const formChangeHandler = (key?: string, installationArg?: string, value?: string) => {
     setIsLocationsUpdated(true);
     setLocValidations(false);
     setStep(1);
@@ -1568,15 +1582,7 @@ const Planning = () => {
 
   const updateAndReturnYaml = (key: string, value: string) => {
     const keys = key.split('.');
-    const updatedYaml: any = { ...localYaml };
-
-    let nestedObject = updatedYaml;
-
-    for (let i = 0; i < keys.length - 1; i++) {
-        const k = keys[i];
-        nestedObject[k] = { ...(nestedObject[k] || {}) };
-        nestedObject = nestedObject[k];
-    }
+    const updatedYaml = updateNestedObject(localYaml, keys, value);
 
     nestedObject[keys[keys.length - 1]] = value;
     return updatedYaml;
