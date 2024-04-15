@@ -1584,6 +1584,14 @@ const Planning = () => {
     const keys = key.split('.');
     const updatedYaml = updateNestedObject(localYaml, keys, value);
 
+    let nestedObject = updatedYaml;
+
+    for (let i = 0; i < keys.length - 1; i++) {
+        const k = keys[i];
+        nestedObject[k] = { ...(nestedObject[k] || {}) };
+        nestedObject = nestedObject[k];
+    }
+
     nestedObject[keys[keys.length - 1]] = value;
     return updatedYaml;
   }
