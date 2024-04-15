@@ -70,13 +70,13 @@ contextBridge.exposeInMainWorld('electron', {
     checkDirOrCreate(connectionArgs: IIpcConnectionArgs, location: string) {
       return ipcRenderer.invoke("check-dir-or-create", connectionArgs, location);
     },
-    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, version: string, zoweConfig: any, skipDownload: boolean) {
+    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string, zoweConfig: any, skipDownload: boolean) {
       return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version, zoweConfig, skipDownload);
     },
     initCertsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
       return ipcRenderer.invoke("init-certificates", connectionArgs, installationArgs, zoweConfig);
     },
-    apfAuthButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
+    apfAuthButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string}, zoweConfig: any) {
       return ipcRenderer.invoke("init-apf", connectionArgs, installationArgs, zoweConfig);
     },
     getApfAuthProgress(){
