@@ -47,7 +47,7 @@ const Security = () => {
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useState(useAppSelector(selectConnectionArgs));
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security);
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security ?? {product: 'RACF'});
   const [showProgress, setShowProgress] = useState(getProgress('securityStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -68,7 +68,7 @@ const Security = () => {
   let securitySchema;
   let validate: any;
   if(schema) {
-    securitySchema = schema.properties.zowe.properties.setup.properties.security;
+    securitySchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
   }
 
   if(securitySchema) {
