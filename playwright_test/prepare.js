@@ -11,9 +11,6 @@ async function prepareEnvironment(options = {}) {
   const ZOWE_EXTENSION_DIR = process.env.ZOWE_EXTENSION_DIR;
   const ZOWE_LOG_DIR = process.env.ZOWE_LOG_DIR;
   const ZOWE_WORKSPACE_DIR = process.env.ZOWE_WORKSPACE_DIR;
-  const ZOSMF_PORT = process.env.ZOSMF_PORT;
-  const JOB_NAME = process.env.JOB_NAME;
-  const JOB_PREFIX = process.env.JOB_PREFIX;
   const JAVA_HOME = process.env.JAVA_HOME;
   const NODE_HOME = process.env.NODE_HOME;
   const DATASET_PREFIX = process.env.DATASET_PREFIX;
@@ -30,6 +27,9 @@ async function prepareEnvironment(options = {}) {
   const ZOSMF_APP_ID = process.env.ZOSMF_APP_ID;
   const DOMAIN_NAME = process.env.DOMAIN_NAME;
   const EXTERNAL_PORT = process.env.EXTERNAL_PORT;
+  let ZOSMF_PORT = process.env.ZOSMF_PORT || 10443;
+  let JOB_NAME = process.env.JOB_NAME || 'ZWE1SV';
+  let JOB_PREFIX = process.env.JOB_PREFIX || 'ZWE';
 
   if (!SSH_HOST) {
     throw new Error('SSH_HOST is not defined');
@@ -54,15 +54,6 @@ async function prepareEnvironment(options = {}) {
   }
   if (!ZOWE_WORKSPACE_DIR) {
     throw new Error('ZOWE_WORKSPACE_DIR is not defined');
-  }
-  if (!ZOSMF_PORT) {
-    ZOSMF_PORT=10443;
-  }
-  if (!JOB_NAME) {
-    JOB_NAME=ZWE1SV;
-  }
-  if (!JOB_PREFIX) {
-    JOB_PREFIX=ZWE;
   }
   if (!JAVA_HOME) {
     throw new Error('JAVA_HOME is not defined');
