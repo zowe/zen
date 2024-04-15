@@ -15,8 +15,6 @@ const installationTypeStatus: InstallationType = {
   installationType: 'download',
   licenseAgreement: false,
   userUploadedPaxPath: '',
-  smpeDir: '',
-  smpeDirValid: false
 } 
 
 const progressStatus: ProgressState = {

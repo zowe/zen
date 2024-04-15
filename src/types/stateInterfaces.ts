@@ -32,8 +32,6 @@ export interface InstallationType {
   installationType: string;
   licenseAgreement: boolean;
   userUploadedPaxPath: string;
-  smpeDir: string;
-  smpeDirValid: boolean;
 }
 
 export interface ActiveState {
