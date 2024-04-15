@@ -22,7 +22,7 @@ import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
 import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
-import { setActiveStep } from "./progress/activeStepSlice";
+import { setActiveStep, selectActiveStepIndex, selectActiveSubStepIndex, selectIsSubstep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
 import { setProgress, getProgress, setApfAuthState, getApfAuthState } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
@@ -39,6 +39,10 @@ const InitApfAuth = () => {
   const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
 
   const theme = createTheme();
+
+  const activeStep = useAppSelector(selectActiveStepIndex);
+  const isSubStep = useAppSelector(selectIsSubstep);
+  const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
 
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
@@ -112,12 +116,14 @@ const InitApfAuth = () => {
     if(!getProgress('apfAuthStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
-          if(!getProgress('apfAuthStatus') && initClicked) {
-            setApfAuthorizationInitProgress(res);
-          }
+          setApfAuthorizationInitProgress(res);
         })
       }, 3000);
     }
+
+    return () => {
+      clearInterval(timer);
+    };
   }, [showProgress, stateUpdated]);
 
   const setApfAuthorizationInitProgress = (aftAuthorizationState: any) => {

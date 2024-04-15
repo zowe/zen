@@ -112,12 +112,13 @@ const Certificates = () => {
     if(!getProgress('certificateStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getCertificateProgress().then((res: any) => {
-          if(!getProgress('certificateStatus') && initClicked) {
-            setCertificateInitializationProgress(res)
-          }
+          setCertificateInitializationProgress(res)
         })
       }, 3000);
     }
+    return () => {
+      clearInterval(timer);
+    };
   }, [showProgress, stateUpdated]);
 
   useEffect(() => {
@@ -126,8 +127,6 @@ const Certificates = () => {
       dispatch(setNextStepEnabled(true));
       dispatch(setCertificateStatus(true));
       setShowProgress(initClicked || getProgress('certificateStatus'));
-    } else {
-      dispatch(setNextStepEnabled(false));
     }
   }, [certificateInitProgress]);
 

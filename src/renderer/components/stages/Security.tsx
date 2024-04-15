@@ -111,12 +111,13 @@ const Security = () => {
     if(!getProgress('securityStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInitSecurityProgress().then((res: any) => {
-          if(!getProgress('securityStatus') && initClicked) {
-            setSecurityInitializationProgress(res);
-          }
+          setSecurityInitializationProgress(res);
         })
       }, 3000);
     }
+    return () => {
+      clearInterval(timer);
+    };
   }, [showProgress, stateUpdated]);
 
   const setSecurityInitializationProgress = (securityInitState: any) => {
