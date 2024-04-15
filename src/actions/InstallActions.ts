@@ -36,24 +36,24 @@ export class InstallActions {
   }
 
   runInitCertificates(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string}, zoweConfig: any){
+    installationArgs: {installationDir: string, installationType: string}, zoweConfig: any){
       return this.strategy.initCertificates(connectionArgs, installationArgs, zoweConfig)
   }
 
   runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string, smpeDir: string},
+    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
     version: string, zoweConfig: any, skipDownload: boolean): Promise<IResponse> {
     return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig, skipDownload);
   }
 
   initSecurity(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string}, zoweConfig: object): Promise<IResponse> {
+    installationArgs: {installationDir: string, installationType: string}, zoweConfig: object): Promise<IResponse> {
     return this.strategy.initSecurity(connectionArgs, installationArgs, zoweConfig);
   }
 
   apfAuth(connectionArgs: IIpcConnectionArgs,
-    installationArgs: {installationDir: string}, zoweConfig: object): Promise<IResponse> {
+    installationArgs: {installationDir: string, installationType: string}, zoweConfig: object): Promise<IResponse> {
     return this.strategy.apfAuth(connectionArgs, installationArgs, zoweConfig);
   }
 
