@@ -114,8 +114,6 @@ const Security = () => {
       dispatch(setNextStepEnabled(true));
       dispatch(setSecurityStatus(true));
       setShowProgress(initClicked || getProgress('securityStatus'));
-    } else {
-      dispatch(setNextStepEnabled(false));
     }
   }, [securityInitProgress]);
 

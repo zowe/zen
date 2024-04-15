@@ -34,10 +34,10 @@ const InstallationType = () => {
 
   const dispatch = useAppDispatch();
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const [installValue, setInstallValue] = useState(getInstallationTypeStatus().installationType);
-  const [paxPath, setPaxPath] = useState(getInstallationTypeStatus().userUploadedPaxPath);
+  const [installValue, setInstallValue] = useState(getInstallationTypeStatus()?.installationType || 'download');
+  const [paxPath, setPaxPath] = useState(getInstallationTypeStatus()?.userUploadedPaxPath || '');
   const [showLicense, setShowLicense] = useState(false);
-  const [agreeLicense, setAgreeLicense] = useState(getInstallationTypeStatus().licenseAgreement);
+  const [agreeLicense, setAgreeLicense] = useState(getInstallationTypeStatus()?.licenseAgreement || false);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
 
