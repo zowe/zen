@@ -4,10 +4,6 @@ import ConnectionPage from '../Pages/connection.page.ts';
 import PlanningPage from '../Pages/planning.page.ts';
 import InstallationTypePage from '../Pages/installationType.page.ts';
 import InstallationPage from '../Pages/installation.page.ts';
-// import { spawn } from 'child_process';
-// import path from 'path';
-// let page: Page;
-
 
 let electronApp: ElectronApplication
 const PLANNING_TITLE = 'Before you start';
@@ -24,6 +20,8 @@ const JOB_NAME= process.env.JOB_NAME;
 const JOB_PREFIX=process.env.JOB_PREFIX;
 const JAVA_HOME=process.env.JAVA_HOME;
 const NODE_HOME=process.env.NODE_HOME;
+const ZOSMF_HOST=process.env.ZOSMF_HOST;
+const ZOSMF_PORT=process.env.ZOSMF_PORT;
 const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 const UPLOAD_PAX_PATH= process.env.UPLOAD_PAX_PATH
 
@@ -50,7 +48,7 @@ test.describe('InstallationTypeTab', () => {
     connectionPage.clickContinueButton()
     planningPage.clickSaveValidate()
     await page.waitForTimeout(20000);
-    planningPage.fillPlanningPageWithRequiredFields(RUNTIME_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
+    planningPage.fillPlanningPageWithRequiredFields(RUNTIME_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
     await page.waitForTimeout(20000);
     planningPage.clickValidateLocations()
     await page.waitForTimeout(20000);
