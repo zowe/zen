@@ -97,8 +97,8 @@ class Installation {
           return "";
         }
         const yamlFromPax = parseCatCommandFromJobOutput(`${zoweRuntimePath}/example-zowe.yaml`);
-        const currentConfig = ConfigurationStore.getConfig();
-        if(yamlFromPax && (currentConfig == undefined || typeof currentConfig !== "object" || (typeof currentConfig === "object" && Object.keys(currentConfig).length == 0))){
+        const currentConfig: any = ConfigurationStore.getConfig();
+        if(yamlFromPax){
           try {
             let yamlObj = parse(yamlFromPax);
             if (installationArgs.installationDir) {
@@ -140,10 +140,16 @@ class Installation {
             if (installationArgs.zosmfApplId) {
               yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
             }
+            if (currentConfig) {
+              yamlObj = {...currentConfig, ...yamlObj}
+            }
+            console.log('Setting merged yaml:', JSON.stringify(yamlObj));
             ConfigurationStore.setConfig(yamlObj);
           } catch(e) {
-            console.log('error setting example-zowe.yaml:', e);
+            console.log('error parsing example-zowe.yaml:', e);
           }
+        } else {
+          console.log("no yaml found from pax");
         }
 
         //No reason not to always set schema to latest if user is re-running installation
@@ -159,6 +165,8 @@ class Installation {
           try {
             let yamlSchema = JSON.parse(parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
             const serverCommon = JSON.parse(parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
+            // console.log('yaml schema:', parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
+            // console.log('server common', parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
             if(yamlSchema && serverCommon){
               // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
               // Without these, AJV does not properly find $refs in the schema and therefore validation cannot occur
