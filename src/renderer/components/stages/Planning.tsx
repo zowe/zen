@@ -109,9 +109,9 @@ const Planning = () => {
 
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       if (res.status) {
-        dispatch(setYaml(res.details.config));
-        setLocalYaml(res.details.config);
-        const schema = res.details.schema;
+        dispatch(setYaml(res.details));
+        setLocalYaml(res.details);
+        // const schema = res.details.schema;
         // Leaving this as a comment because the note about setting $ref properly is still valid i think
         // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
         // schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
@@ -121,7 +121,7 @@ const Planning = () => {
         //   delete schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
         //   schema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverSchema.$defs.ipv4
         // }
-        dispatch(setSchema(schema));
+        // dispatch(setSchema(schema));
         let installationDir = '';
         if (res.details.config?.zowe?.runtimeDirectory && res.details.config?.zowe?.workspaceDirectory) {
           const getParentDir = (path: string): string => path.split('/').filter((i: string, ind: number) => i || !ind).slice(0, -1).join('/');
@@ -130,16 +130,12 @@ const Planning = () => {
           if (runtimeParent === workspaceParent) installationDir = runtimeParent;
         }
         dispatch(setInstallationArgs({...installationArgs, installationDir: res.details.config?.zowe?.runtimeDirectory ?? ''}));
-      } else {
-        // dispatch(setYaml(EXAMPLE_YAML));
-        // setLocalYaml((EXAMPLE_YAML));
-        // dispatch(setSchema(YAML_SCHEMA));
-        // window.electron.ipcRenderer.setConfig(EXAMPLE_YAML).then((res: IResponse) => {
-        //   // yaml response
-        // });
-        // window.electron.ipcRenderer.setSchema(YAML_SCHEMA).then((res: IResponse) => {
-        //   // schema response
-        // });
+      }
+    })
+
+    window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+      if (res.status) {
+        dispatch(setSchema(res.details));
       }
     })
 
