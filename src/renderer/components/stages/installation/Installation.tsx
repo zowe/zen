@@ -1333,7 +1333,7 @@ const Installation = () => {
   const process = (event: any, skipDownload?: boolean) => {
     event.preventDefault();
     dispatch(setLoading(true));
-    const {javaHome, nodeHome, installationDir, installationType, smpeDir} = installationArgs;
+    const {javaHome, nodeHome, installationDir, installationType} = installationArgs;
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
     if(installationType === 'smpe'){
