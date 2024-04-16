@@ -1336,39 +1336,35 @@ const Installation = () => {
     const {javaHome, nodeHome, installationDir, installationType, smpeDir} = installationArgs;
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
-    Promise.all([
-      window.electron.ipcRenderer.setConfigByKey('zowe.setup.dataset', setupYaml),
-    ]).then(async () => {
-      if(installationType === 'smpe'){
-        dispatch(setNextStepEnabled(true));
+    if(installationType === 'smpe'){
+      dispatch(setNextStepEnabled(true));
+      dispatch(setDatasetInstallationStatus(true));
+      dispatch(setInitializationStatus(true));
+      dispatch(setLoading(false));
+    } else {
+      setYaml(window.electron.ipcRenderer.getConfig());
+      toggleProgress(true);
+      dispatch(setLoading(false));
+      // const config = (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml;
+      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, setupYaml, skipDownload ?? false).then((res: IResponse) => {
+        if(!res.status){ //errors during runInstallation()
+          alertEmitter.emit('showAlert', res.details, 'error');
+        }
+        dispatch(setNextStepEnabled(res.status));
+        dispatch(setDatasetInstallationStatus(res.status));
         dispatch(setDatasetInstallationStatus(true));
         dispatch(setInitializationStatus(true));
-        dispatch(setLoading(false));
-      } else {
-        setYaml(window.electron.ipcRenderer.getConfig());
-        toggleProgress(true);
-        dispatch(setLoading(false));
-        const config = (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml;
-        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
-          if(!res.status){ //errors during runInstallation()
-            alertEmitter.emit('showAlert', res.details, 'error');
-          }
-          dispatch(setNextStepEnabled(res.status));
-          dispatch(setDatasetInstallationStatus(res.status));
-          dispatch(setDatasetInstallationStatus(true));
-          dispatch(setInitializationStatus(true));
-          clearInterval(timer);
-        }).catch(() => {
-          clearInterval(timer);
-          dispatch(setNextStepEnabled(false));
-          dispatch(setInitializationStatus(false));
-          dispatch(setDatasetInstallationStatus(false));
-          stages[stageId].subStages[subStageId].isSkipped = true;
-          stages[stageId].isSkipped = true;
-          console.warn('Installation failed');
-        });
-      }
-    })
+        clearInterval(timer);
+      }).catch(() => {
+        clearInterval(timer);
+        dispatch(setNextStepEnabled(false));
+        dispatch(setInitializationStatus(false));
+        dispatch(setDatasetInstallationStatus(false));
+        stages[stageId].subStages[subStageId].isSkipped = true;
+        stages[stageId].isSkipped = true;
+        console.warn('Installation failed');
+      });
+    }
   }
 
   const debouncedChange = useCallback(
