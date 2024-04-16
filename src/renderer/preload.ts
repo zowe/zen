@@ -40,6 +40,9 @@ contextBridge.exposeInMainWorld('electron', {
     setSchema(schema: any) {
       return ipcRenderer.invoke("set-schema", schema);
     },
+    getSchema() {
+      return ipcRenderer.invoke("get-schema");
+    },
     checkZoweCLI() {
       return ipcRenderer.invoke("check-zowe-cli");
     },
