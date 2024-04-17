@@ -43,8 +43,9 @@ test.describe('InstallationTypeTab', () => {
     installationPage = new InstallationPage(page);
     titlePage.navigateToConnectionTab()
     connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
-    connectionPage.SubmitValidateCredential()
     await page.waitForTimeout(5000);
+    connectionPage.SubmitValidateCredential()
+    await page.waitForTimeout(2000);
     connectionPage.clickContinueButton()
     planningPage.clickSaveValidate()
     await page.waitForTimeout(20000);

@@ -21,6 +21,8 @@ const JOB_NAME= process.env.JOB_NAME;
 const JOB_PREFIX=process.env.JOB_PREFIX;
 const JAVA_HOME=process.env.JAVA_HOME;
 const NODE_HOME=process.env.NODE_HOME;
+const ZOSMF_HOST=process.env.ZOSMF_HOST;
+const ZOSMF_PORT=process.env.ZOSMF_PORT;
 const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 const DATASET_PREFIX= process.env.DATASET_PREFIX;
 const PROC_LIB = process.env.PROC_LIB;
@@ -56,9 +58,10 @@ test.describe('InstallationTab', () => {
     connectionPage.SubmitValidateCredential()
     await page.waitForTimeout(5000);
     connectionPage.clickContinueButton()
+    await page.waitForTimeout(2000);
     planningPage.clickSaveValidate()
     await page.waitForTimeout(20000);
-    planningPage.fillPlanningPageWithRequiredFields(RUNTIME_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
+    planningPage.fillPlanningPageWithRequiredFields(RUNTIME_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
     await page.waitForTimeout(20000);
     planningPage.clickValidateLocations()
     await page.waitForTimeout(20000);

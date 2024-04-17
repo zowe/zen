@@ -39,71 +39,92 @@ class InstallationTypePage{
   }
 
   async getInstallationTypePageTitle(){
+    await this.page.waitForTimeout(1000)
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
   async selectDownloadZowePax(){
+    await this.page.waitForTimeout(1000)
     await this.downloadPax.click();
   }
 
   async selectUploadZowePax(){
+    await this.page.waitForTimeout(1000)
     await this.uploadPax.click();
   }
 
   async selectSmpe(){
+    await this.page.waitForTimeout(1000)
     await this.smpe.click();
   }
 
   async clickZoweLink(){
+    await this.page.waitForTimeout(1000)
     await this.zoweLink.click();
   }
 
   async clickLicenseAgreement(){
+    await this.page.waitForTimeout(1000)
     await this.licenseAgreement.click();
   }
 
   async clickSaveAndClose(){
+    await this.page.waitForTimeout(1000)
     await this.saveAndClose.click({timeout: 2000});
+    await this.page.waitForTimeout(2000)
   }
 
   async clickPreviousStep(){
+    await this.page.waitForTimeout(1000)
     await this.previousStep.click();
+    await this.page.waitForTimeout(2000)
   }
 
   async clickContinueToInstallation(){
-   await this.continueToComponentInstallation.click();
+    await this.page.waitForTimeout(1000)
+    await this.continueToComponentInstallation.click();
+    await this.page.waitForTimeout(5000);
   }
 
   async isContinueToComponentInstallationDisabled(){
+    await this.page.waitForTimeout(1000)
     return await this.continueToComponentInstallation.isDisabled()
   }
 
   async isContinueToComponentInstallationEnabled(){
+    await this.page.waitForTimeout(1000)
     return await this.continueToComponentInstallation.isEnabled()
   }
 
   async clickAgreeLicense(){
+    await this.page.waitForTimeout(1000)
     await this.agreeLicense.click();
   }
 
   async isLicenseAgreementGreenCheckVisible(){
+    await this.page.waitForTimeout(1000)
     return await this.licenseAgreementGreenCheck.isVisible();
   }
 
   async clickUploadPaxButton(){
+    await this.page.waitForTimeout(1000)
     await this.uploadPaxButton.click();
   }
 
   async enterRuntimeDir(runtimeDir: any){
+    await this.page.waitForTimeout(1000)
     await this.runtimeDir.clear({timeout: 2000})
     await this.runtimeDir.fill(runtimeDir);
   }
 
   async clickValidateLocation(){
+    await this.page.waitForTimeout(1000)
     await this.validateLocation.click({timeout: 5000});
+    await this.page.waitForTimeout(2000)
   }
 
   async isValidateLocationGreenCheckVisible(){
+    await this.page.waitForTimeout(1000)
     return await this.validateLocationGreenCheck.isVisible();
   }
 
@@ -115,7 +136,9 @@ class InstallationTypePage{
 
   async uploadZowePaxAndNavigateToInstallationPage(uploadPaxPath: any){
     this.selectUploadZowePax()
+    await this.page.waitForTimeout(2000)
     await this.uploadPaxButton.setInputFiles(uploadPaxPath)
+    await this.page.waitForTimeout(2000)
   } 
 
   async smpeZowePaxAndNavigateToInstallationPage(runtimeDir: any){

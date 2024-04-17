@@ -22,21 +22,28 @@ class ConnectionPage{
 
   }
   async fillConnectionDetails(host: string, port: string, username: string, password: string){
+    await this.page.waitForTimeout(500);
     await this.host.fill(host)
+    await this.page.waitForTimeout(500);
     await this.port.fill(port)
+    await this.page.waitForTimeout(500);
     await this.userName.fill(username)
+    await this.page.waitForTimeout(500);
     await this.password.fill(password)
   }
 
   async getConnectionPageTitle() {
+    await this.page.waitForTimeout(1000);
     return await this.connectionPageTitle.textContent();
   }
 
   async SubmitValidateCredential(){
+    await this.page.waitForTimeout(1000);
     await this.validateCredential.click()
   }
 
   async clickContinueButton() {
+    await this.page.waitForTimeout(1000);
     return await this.continueButton.click();
   }
 
