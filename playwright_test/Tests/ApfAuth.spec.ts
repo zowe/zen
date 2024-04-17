@@ -1,5 +1,5 @@
 import { test, ElectronApplication, expect, _electron as electron } from '@playwright/test';
-import { setup } from './setup.ts';
+import { prepareEnvironment } from '../prepare.js';
 import ApfAuthPage from '../Pages/ApfAuth.page';
 import TitlePage from '../Pages/title.page';
 import ConnectionPage from '../Pages/connection.page';
@@ -30,23 +30,12 @@ const  NODE_HOME=process.env.NODE_HOME;
 const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 
 test.beforeAll(async () => {
-  const createDirsScriptPath = path.resolve(__dirname, '../prepare.js');
-  console.log('Creating child process with command:', 'node', [createDirsScriptPath]);
-  const child = spawn('node', [createDirsScriptPath]);
-  if (!child) {
-    console.error('Failed to spawn child process');
-    return;
+  try {
+    await prepareEnvironment({ install: true, remove: false });
+  } catch (error) {
+    console.error('Error during environment preparation:', error);
+    process.exit(1); 
   }
-  console.log('Child process created successfully');
-  child.stdout.on('data', (data) => {
-    console.log(`stdout: ${data}`);
-  });
-  child.stderr.on('data', (data) => {
-    console.error(`stderr: ${data}`);
-  });
-  child.on('error', (error) => {
-    console.error('Child process encountered an error:', error);
-  });
 });
 
 test.describe('ApfAuthTab', () => {
