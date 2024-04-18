@@ -11,6 +11,11 @@ class Script {
     return this.run(script);
   }
   
+  async remove(installDir) {
+    const script = `rm -rf ${installDir}`;
+    return this.run(script);
+  }
+  
   static getZoweVersion() {
     return new Promise((resolve, reject) => {
       https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/manifest.json.template', (res) => {
