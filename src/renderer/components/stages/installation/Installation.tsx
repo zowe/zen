@@ -99,7 +99,7 @@ const Installation = () => {
     setShowProgress(initClicked || getProgress('datasetInstallationStatus'));
     if(initClicked) {
       const nextPosition = document.getElementById('installation-progress');
-      nextPosition.scrollIntoView({behavior: 'smooth'});
+      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
       setStateUpdated(!stateUpdated);
       dispatch(setDatasetInstallationStatus(false));
     }
@@ -127,7 +127,7 @@ const Installation = () => {
     };
   }, [showProgress, stateUpdated]);
 
-  const setMvsDatasetInitializationProgress = (datasetInitState: any) => {
+  const setMvsDatasetInitializationProgress = (datasetInitState: DatasetInstallationState) => {
     setMvsDatasetInitProgress(datasetInitState);
     setDatasetInstallationState(datasetInitState);
     const allAttributesTrue = Object.values(datasetInitState).every(value => value === true);
@@ -142,15 +142,17 @@ const Installation = () => {
     setInitClicked(false);
     stages[stageId].subStages[subStageId].isSkipped = !status;
     stages[stageId].isSkipped = !status;
-    dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(status));
-    dispatch(setDatasetInstallationStatus(status));
     if(!status) {
       for (let key in mvsDatasetInitProgress) {
         mvsDatasetInitProgress[key as keyof(DatasetInstallationState)] = false;
         setDatasetInstallationState(mvsDatasetInitProgress);
       }
     }
+    const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
+    status = allAttributesTrue ? true : false;
+    dispatch(setNextStepEnabled(status));
+    dispatch(setInitializationStatus(status));
+    dispatch(setDatasetInstallationStatus(status));
     setMvsDatasetInitializationProgress(getDatasetInstallationState());
   }
 
@@ -255,7 +257,8 @@ const Installation = () => {
             <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'Reinstall MVS datasets'}</Button>
           </React.Fragment>
         }
-        </Box> 
+        </Box>
+        <Box sx={{ height: showProgress ? 'calc(100vh - 220px)' : 'auto', minHeight: '300px' }} id="installation-progress"></Box>
       </ContainerCard>
     </div>
     

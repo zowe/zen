@@ -97,7 +97,7 @@ const InitApfAuth = () => {
 
     if(initClicked) {
       const nextPosition = document.getElementById('apf-progress');
-      nextPosition.scrollIntoView({behavior: 'smooth'});
+      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
       setStateUpdated(!stateUpdated);
       dispatch(setApfAuthStatus(false));
     }
@@ -259,7 +259,7 @@ const InitApfAuth = () => {
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize APF Authorizations</Button>
         </FormControl> : null}
-        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="apf-progress">
+        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} >
         {!showProgress ? null :
           <React.Fragment>
             <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfAuthInitProgress.writeYaml}/>
@@ -268,7 +268,8 @@ const InitApfAuth = () => {
             <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Reinitialize APF Authorizations</Button>
           </React.Fragment>
         }
-        </Box> 
+        </Box>
+        <Box sx={{ height: showProgress ? 'calc(100vh - 220px)' : 'auto', minHeight: '300px' }} id="apf-progress"></Box>
       </ContainerCard>
     </div>
     
