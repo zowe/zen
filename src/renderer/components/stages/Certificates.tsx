@@ -130,7 +130,7 @@ const Certificates = () => {
     }
   }, [certificateInitProgress]);
 
-  const setCertificateInitializationProgress = (certificateInitState: any) => {
+  const setCertificateInitializationProgress = (certificateInitState: CertInitSubStepsState) => {
     setCertificateInitProgress(certificateInitState);
     setCertificateInitState(certificateInitState);
     const allAttributesTrue = Object.values(certificateInitState).every(value => value === true);
@@ -144,15 +144,17 @@ const Certificates = () => {
     setStateUpdated(!stateUpdated);
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
     stages[STAGE_ID].isSkipped = !status;
-    dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(status));
-    dispatch(setCertificateStatus(status));
     if(!status) {
       for (let key in certificateInitProgress) {
         certificateInitProgress[key as keyof(CertInitSubStepsState)] = false;
         setCertificateInitState(certificateInitProgress);
       }
     }
+    const allAttributesTrue = Object.values(certificateInitProgress).every(value => value === true);
+    status = allAttributesTrue ? true : false;
+    dispatch(setNextStepEnabled(status));
+    dispatch(setInitializationStatus(status));
+    dispatch(setCertificateStatus(status));
     setCertificateInitializationProgress(getCertificateInitState());
   }
 

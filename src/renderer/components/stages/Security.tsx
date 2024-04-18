@@ -120,7 +120,7 @@ const Security = () => {
     };
   }, [showProgress, stateUpdated]);
 
-  const setSecurityInitializationProgress = (securityInitState: any) => {
+  const setSecurityInitializationProgress = (securityInitState: InitSubStepsState) => {
     setSecurityInitProgress(securityInitState);
     setSecurityInitState(securityInitState);
     const allAttributesTrue = Object.values(securityInitState).every(value => value === true);
@@ -134,15 +134,17 @@ const Security = () => {
     setStateUpdated(!stateUpdated);
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
     stages[STAGE_ID].isSkipped = !status;
-    dispatch(setInitializationStatus(status));
-    dispatch(setSecurityStatus(status));
-    dispatch(setNextStepEnabled(status));
     if(!status) {
       for (let key in securityInitProgress) {
         securityInitProgress[key as keyof(InitSubStepsState)] = false;
         setSecurityInitState(securityInitProgress);
       }
     }
+    const allAttributesTrue = Object.values(securityInitProgress).every(value => value === true);
+    status = allAttributesTrue ? true : false;
+    dispatch(setInitializationStatus(status));
+    dispatch(setSecurityStatus(status));
+    dispatch(setNextStepEnabled(status));
     setSecurityInitializationProgress(getSecurityInitState());
   }
 

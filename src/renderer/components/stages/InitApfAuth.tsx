@@ -126,7 +126,7 @@ const InitApfAuth = () => {
     };
   }, [showProgress, stateUpdated]);
 
-  const setApfAuthorizationInitProgress = (aftAuthorizationState: any) => {
+  const setApfAuthorizationInitProgress = (aftAuthorizationState: InitSubStepsState) => {
     setApfAuthState(aftAuthorizationState);
     setApfAuthInitProgress(aftAuthorizationState);
     const allAttributesTrue = Object.values(aftAuthorizationState).every(value => value === true);
@@ -140,15 +140,17 @@ const InitApfAuth = () => {
     setStateUpdated(!stateUpdated);
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
     stages[STAGE_ID].isSkipped = !status;
-    dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(status));
-    dispatch(setApfAuthStatus(status));
     if(!status) {
       for (let key in apfAuthInitProgress) {
         apfAuthInitProgress[key as keyof(InitSubStepsState)] = false;
         setApfAuthState(apfAuthInitProgress);
       }
     }
+    const allAttributesTrue = Object.values(apfAuthInitProgress).every(value => value === true);
+    status = allAttributesTrue ? true : false;
+    dispatch(setNextStepEnabled(status));
+    dispatch(setInitializationStatus(status));
+    dispatch(setApfAuthStatus(status));
     setApfAuthorizationInitProgress(getApfAuthState());
   }
   
