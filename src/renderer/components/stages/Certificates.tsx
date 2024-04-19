@@ -12,7 +12,7 @@ import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progress/progressSlice';
-import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectOutput, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -55,17 +55,13 @@ const Certificates = () => {
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
 
-  const section = 'certificate';
-
   const [certificateProgress, setCertificateProgress] = useState({
     writeYaml: false,
     uploadYaml: false,
     zweInitCertificate: false,
   });
   let timer: any;
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
+
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");

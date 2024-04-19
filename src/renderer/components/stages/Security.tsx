@@ -11,7 +11,7 @@
 import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectOutput, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import { setSecurityStatus, setInitializationStatus, selectSecurityStatus, selectInitializationStatus } from './progress/progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
@@ -23,10 +23,12 @@ import { IResponse } from "../../../types/interfaces";
 import ProgressCard from "../common/ProgressCard";
 import React from "react";
 import { createTheme } from '@mui/material/styles';
+import { alertEmitter } from "../Header";
 import progressSlice from "./progress/progressSlice";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK } from '../common/Utils';
 
 const Security = () => {
   const theme = createTheme();
@@ -60,9 +62,7 @@ const Security = () => {
   const installationArgs = useAppSelector(selectInstallationArgs);
   const connectionArgs = useAppSelector(selectConnectionArgs);
   
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
+
 
   const ajv = new Ajv();
   let securitySchema;
@@ -109,20 +109,45 @@ const Security = () => {
     event.preventDefault();
     toggleProgress(true);
     window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml).then((res: IResponse) => {
-        dispatch(setNextStepEnabled(res.status));
-        dispatch(setSecurityStatus(res.status));
-        dispatch(setInitializationStatus(res.status));
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+        // Some parts of Zen pass the response as a string directly into the object
+        if (res.status == false && typeof res.details == "string") {
+          res.details = { 3: res.details };
+        }
+        if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe init security
+          alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
+          window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
+            toggleEditorVisibility("output");
+          })
+          toggleProgress(false);
+          securityProceedActions(false);
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+          clearInterval(timer);
+        } else {
+          securityProceedActions(res.status);
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+          clearInterval(timer);
+        }
+      }).catch((err: any) => {
+        // TODO: Test this
+        //alertEmitter.emit('showAlert', err.toString(), 'error');
+        toggleProgress(false);
         clearInterval(timer);
-      }).catch(() => {
-        clearInterval(timer);
-        dispatch(setNextStepEnabled(false));
-        dispatch(setSecurityStatus(false));
-        dispatch(setInitializationStatus(false));
+        securityProceedActions(false);
         stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
         stages[STAGE_ID].isSkipped = true;
-        console.warn('zwe init security failed');
+        if (typeof err === "string") {
+          console.warn('zwe init security failed', err);
+        } else {
+          console.warn('zwe init security failed', err?.toString()); // toString() throws run-time error on undefined or null
+        }
       });
+  }
+
+  // True - a proceed, False - blocked
+  const securityProceedActions = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setSecurityStatus(status));
+    dispatch(setInitializationStatus(status));
   }
 
   const handleFormChange = (data: any) => {

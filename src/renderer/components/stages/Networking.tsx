@@ -653,9 +653,7 @@ const Networking = () => {
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
 
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
+
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");

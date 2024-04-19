@@ -26,6 +26,7 @@ import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../progress/progressStore"; 
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK } from '../../common/Utils';
 
 const Installation = () => {
 
@@ -40,6 +41,7 @@ const Installation = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
+  // TODO: Why are there two sets of stageId/STAGE_ID's?
   const stageId = 3;
   const subStageId = 0;
   const dispatch = useAppDispatch();
@@ -66,13 +68,6 @@ const Installation = () => {
   const installationArgs = useAppSelector(selectInstallationArgs);
   const version = useAppSelector(selectZoweVersion);
   let timer: any;
-
-  const section = 'dataset';
-  // const initConfig = getConfiguration(section);
-
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -122,38 +117,55 @@ const Installation = () => {
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
     Promise.all([
-      window.electron.ipcRenderer.setConfigByKey('zowe.setup.dataset', setupYaml),
+      window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.setup.dataset', setupYaml),
     ]).then(async () => {
+      dispatch(setLoading(false));
       if(installationType === 'smpe'){
-        dispatch(setNextStepEnabled(true));
-        dispatch(setDatasetInstallationStatus(true));
-        dispatch(setInitializationStatus(true));
-        dispatch(setLoading(false));
+        installProceedActions(true);
       } else {
         setYaml(window.electron.ipcRenderer.getConfig());
         toggleProgress(true);
-        dispatch(setLoading(false));
+
         const config = (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml;
         window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
-          if(!res.status){ //errors during runInstallation()
-            alertEmitter.emit('showAlert', res.details, 'error');
+          // Some parts of Zen pass the response as a string directly into the object
+          if (res.status == false && typeof res.details == "string") {
+            res.details = { 3: res.details };
           }
-          dispatch(setNextStepEnabled(res.status));
-          dispatch(setDatasetInstallationStatus(res.status));
-          dispatch(setDatasetInstallationStatus(true));
-          dispatch(setInitializationStatus(true));
+          if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe install
+            alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
+            window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
+              toggleEditorVisibility("output");
+            })
+            toggleProgress(false);
+            installProceedActions(false);
+            stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+            clearInterval(timer);
+          } else {
+            installProceedActions(res.status);
+            stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+            clearInterval(timer);
+          }
+        }).catch((err: any) => {
           clearInterval(timer);
-        }).catch(() => {
-          clearInterval(timer);
-          dispatch(setNextStepEnabled(false));
-          dispatch(setInitializationStatus(false));
-          dispatch(setDatasetInstallationStatus(false));
+          installProceedActions(false);
           stages[stageId].subStages[subStageId].isSkipped = true;
           stages[stageId].isSkipped = true;
-          console.warn('Installation failed');
+          if (typeof err === "string") {
+            console.warn('Installation failed', err);
+          } else {
+            console.warn('Installation failed', err?.toString()); // toString() throws run-time error on undefined or null
+          }
         });
       }
     })
+  }
+
+  // True - a proceed, False - blocked
+  const installProceedActions = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setDatasetInstallationStatus(status));
+    dispatch(setInitializationStatus(status));
   }
 
   const debouncedChange = useCallback(
@@ -197,7 +209,7 @@ const Installation = () => {
       <ContainerCard title="Installation" description="Provide installation details."> 
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
-          {installationArgs.installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
+          {installationArgs.installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install the MVS data sets, please provide the high-level qualifiers below\n`}
         </Typography>
 
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
