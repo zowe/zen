@@ -139,7 +139,6 @@ const Installation = () => {
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setInitClicked(false);
     stages[stageId].subStages[subStageId].isSkipped = !status;
     stages[stageId].isSkipped = !status;
     if(!status) {
@@ -245,7 +244,7 @@ const Installation = () => {
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'Install MVS datasets'}</Button>
           {/* <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e, true)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'SKIP DOWNLOAD and Install MVS datasets'}</Button> */}
         </FormControl> : null}
-        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="installation-progress">
+        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}}>
         {!showProgress ? null :
           <React.Fragment>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={mvsDatasetInitProgress.uploadYaml}/>
@@ -261,7 +260,6 @@ const Installation = () => {
         <Box sx={{ height: showProgress ? 'calc(100vh - 220px)' : 'auto', minHeight: '300px' }} id="installation-progress"></Box>
       </ContainerCard>
     </div>
-    
   );
 };
 
