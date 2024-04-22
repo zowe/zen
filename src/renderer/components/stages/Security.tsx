@@ -168,7 +168,7 @@ const Security = () => {
   }
 
   const formChangeHandler = (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = init ? (Object.keys(yaml?.zowe.setup.security).length > 0 ? yaml?.zowe.setup.security : data) : (data ? data : yaml?.zowe.setup.security);
+    let updatedData = init ? (yaml && yaml.zowe && yaml.zowe.setup && yaml.zowe.setup.security && Object.keys(yaml.zowe.setup.security).length > 0 ? yaml?.zowe?.setup?.security : data) : (data ? data : yaml?.zowe?.setup?.security);
 
     setInit(false);
 
@@ -192,6 +192,7 @@ const Security = () => {
       } else {
         // setConfiguration(section, updatedData, true);
         setStageConfig(true, '', updatedData, true);
+        dispatch(updatedData);
       }
     }
   }
