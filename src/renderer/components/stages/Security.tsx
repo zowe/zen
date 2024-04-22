@@ -192,7 +192,6 @@ const Security = () => {
       } else {
         // setConfiguration(section, updatedData, true);
         setStageConfig(true, '', updatedData, true);
-        dispatch(updatedData);
       }
     }
   }

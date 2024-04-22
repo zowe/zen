@@ -47,8 +47,8 @@ const Certificates = () => {
   const installationArgs = useAppSelector(selectInstallationArgs);
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
   const verifyCertsSchema = schema ? {"type": "object", "properties": {"verifyCertificates": schema.properties.zowe.properties.verifyCertificates}} : "";
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe.setup.certificate);
-  const [verifyCertsYaml, setVerifyCertsYaml] = useState({verifyCertificates: yaml?.zowe.verifyCertificates})
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
+  const [verifyCertsYaml, setVerifyCertsYaml] = useState({verifyCertificates: yaml?.zowe?.verifyCertificates})
   const [isFormInit, setIsFormInit] = useState(false);
   const [initializeForm, setInitializeForm] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -189,14 +189,14 @@ const Certificates = () => {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
-          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml?.zowe, setup: {...yaml?.zowe?.setup, certificate: newData}}});
         } else {
           // setConfiguration(section, newData, true);
           setLYaml((prevYaml: any) => ({
-            ...prevYaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}
+            ...prevYaml, zowe: {...yaml?.zowe, setup: {...yaml?.zowe?.setup, certificate: newData}}
           }))
           // dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}}))
-          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml?.zowe, setup: {...yaml?.zowe?.setup, certificate: newData}}});
           setStageConfig(true, '', newData);
         }
       }
@@ -212,12 +212,12 @@ const Certificates = () => {
           const errMsg = validateVerifyCertSchema.errors[0].message;
           setIsFormValid(false);
           setFormError(errPath+' '+errMsg);
-          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, verifyCertificates: e.verifyCertificates}})
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.verifyCertificates}})
           dispatch(setNextStepEnabled(false));
         } else {
           setVerifyCertsYaml({'verifyCertificates': e.verifyCertificates});
           setIsFormValid(true);
-          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, verifyCertificates: e.verifyCertificates}})
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.verifyCertificates}})
         }
       }
     }
