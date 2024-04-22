@@ -33,10 +33,8 @@ class Installation {
     }
     
     try {
-      console.log("uploading yaml..." + SMPE_INSTALL ? installationArgs.installationDir : installationArgs.installationDir + '/runtime');
-      console.log(SMPE_INSTALL);
-      console.log(installationArgs)
-      const uploadYaml = await this.uploadYaml(connectionArgs, SMPE_INSTALL ? installationArgs.installationDir : installationArgs.installationDir + '/runtime');
+      console.log("uploading yaml...");
+      const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
       ProgressStore.set('installation.uploadYaml', uploadYaml.status);
 
       if(!uploadYaml.status){
