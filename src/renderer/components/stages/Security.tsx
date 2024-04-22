@@ -167,36 +167,26 @@ const Security = () => {
       });
   }
 
-  const formChangeHandler = (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = init ? (yaml && yaml.zowe && yaml.zowe.setup && yaml.zowe.setup.security && Object.keys(yaml.zowe.setup.security).length > 0 ? yaml?.zowe?.setup?.security : data) : (data ? data : yaml?.zowe?.setup?.security);
-
+  const handleFormChange = (data: any) => {
+    let newData = init ? (Object.keys(setupYaml).length > 0 ? setupYaml : data?.zowe?.setup?.security) : (data?.zowe?.setup?.security ? data?.zowe?.setup?.security : data);
     setInit(false);
 
-    updatedData = isYamlUpdated ? data.zowe.setup.security : updatedData;
-    if (updatedData && setupYaml && setupYaml.prefix !== updatedData.prefix) {
-      const newPrefix = updatedData.prefix ? updatedData.prefix : '';
-      const newData = Object.keys(setupYaml).reduce((acc, k) => {
-        if (typeof(setupYaml[k]) === 'string' && setupYaml[k].startsWith(`${setupYaml.prefix}.`)) {
-          return {...acc, [k]: setupYaml[k].replace(setupYaml.prefix, newPrefix), prefix: newPrefix}
+    if (newData) {
+      if(validate) {
+        validate(newData);
+        if(validate.errors) {
+          const errPath = validate.errors[0].schemaPath;
+          const errMsg = validate.errors[0].message;
+          setStageConfig(false, errPath+' '+errMsg, newData);
+        } else {
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: newData}}});
+          setStageConfig(true, '', newData);
         }
-        return {...acc, [k]: setupYaml[k]}
-      }, {});
-    }
-
-    if(validate) {
-      validate(updatedData);
-      if(validate.errors) {
-        const errPath = validate.errors[0].schemaPath;
-        const errMsg = validate.errors[0].message;
-        setStageConfig(false, errPath+' '+errMsg, updatedData, false);
-      } else {
-        // setConfiguration(section, updatedData, true);
-        setStageConfig(true, '', updatedData, true);
       }
     }
-  }
+  };
 
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any, proceed: boolean) => {
+  const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
@@ -210,10 +200,10 @@ const Security = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
       <ContainerCard title="Security" description="Configure Zowe Security.">
-        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={formChangeHandler}/> }
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={setupSchema} onChange={(data: any) => formChangeHandler(data)} formData={setupYaml}/>
+          <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
           
           {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Security Config</Button>
