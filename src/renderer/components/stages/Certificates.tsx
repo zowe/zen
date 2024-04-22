@@ -26,6 +26,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
+import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT } from "../common/Utils";
 
 const Certificates = () => {
 

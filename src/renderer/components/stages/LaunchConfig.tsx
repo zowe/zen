@@ -21,6 +21,7 @@ import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
+import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT } from "../common/Utils";
 
 const LaunchConfig = () => {
 
