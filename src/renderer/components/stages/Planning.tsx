@@ -1279,6 +1279,9 @@ const Planning = () => {
   };
 
   useEffect(() => {
+    const nextPosition = document.getElementById('container-box-id');
+    nextPosition.scrollIntoView({behavior: 'smooth', block: 'start'});
+
     if(getPlanningStageStatus()?.isJobStatementValid) {
       setJobHeaderSaved(true);
       if(getPlanningStageStatus()?.isLocationValid) {
@@ -1576,6 +1579,7 @@ const Planning = () => {
   }
 
   return (
+    <div id="container-box-id">
     <React.Fragment><span id="position-0"></span>
     <ContainerCard title="Before you start" description="Prerequisites, requirements and roles needed to install.">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} content={editorContent}/>
@@ -1926,6 +1930,7 @@ All set, ready to proceed.`
         : <div/> }
     </ContainerCard>
     </React.Fragment>
+    </div>
   );
 };
 
