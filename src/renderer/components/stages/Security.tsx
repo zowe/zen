@@ -78,7 +78,7 @@ const Security = () => {
   useEffect(() => {
 
     if(getProgress('securityStatus')) {
-      const nextPosition = document.getElementById('security-progress-start');
+      const nextPosition = document.getElementById('start-security-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
       const nextPosition = document.getElementById('container-box-id');
@@ -97,21 +97,12 @@ const Security = () => {
   useEffect(() => {
     setShowProgress(initClicked || getProgress('securityStatus'));
     if(initClicked) {
-      const nextPosition = document.getElementById('init-progress');
+      const nextPosition = document.getElementById('security-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
       setStateUpdated(!stateUpdated);
       dispatch(setSecurityStatus(false));
     }
   }, [initClicked]);
-
-  useEffect(() => {
-    const allAttributesTrue = Object.values(securityInitProgress).every(value => value === true);
-    if(allAttributesTrue) {
-      dispatch(setSecurityStatus(true));
-      dispatch(setNextStepEnabled(true));
-      setShowProgress(initClicked || getProgress('securityStatus'));
-    }
-  }, [securityInitProgress]);
 
   useEffect(() => {
     if(!getProgress('securityStatus') && initClicked) {
@@ -125,6 +116,15 @@ const Security = () => {
       clearInterval(timer);
     };
   }, [showProgress, stateUpdated]);
+
+  useEffect(() => {
+    const allAttributesTrue = Object.values(securityInitProgress).every(value => value === true);
+    if(allAttributesTrue) {
+      dispatch(setSecurityStatus(true));
+      dispatch(setNextStepEnabled(true));
+      setShowProgress(initClicked || getProgress('securityStatus'));
+    }
+  }, [securityInitProgress]);
 
   const setSecurityInitializationProgress = (securityInitState: InitSubStepsState) => {
     setSecurityInitProgress(securityInitState);
@@ -216,7 +216,7 @@ const Security = () => {
           </FormControl> : null}
 
 
-          <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="security-progress-start">
+          <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-security-progress">
           {!showProgress ? null :
           <React.Fragment>
             <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={securityInitProgress.writeYaml}/>
@@ -227,7 +227,7 @@ const Security = () => {
         }
         </Box>
         </Box>
-        <Box sx={{ height: showProgress ? '200px' : 'auto', minHeight: '200px' }} id="init-progress"></Box>
+        <Box sx={{ height: showProgress ? '250px' : 'auto', minHeight: '250px' }} id="security-progress"></Box>
       </ContainerCard>
     </div>
   );

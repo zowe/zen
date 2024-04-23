@@ -84,8 +84,14 @@ const Installation = () => {
   }
   
   useEffect(() => {
-    const nextPosition = document.getElementById('container-box-id');
-    nextPosition.scrollIntoView({behavior: 'smooth'});
+
+    if(getProgress("datasetInstallationStatus")) {
+      const nextPosition = document.getElementById('start-installation-progress');
+      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      const nextPosition = document.getElementById('container-box-id');
+      nextPosition.scrollIntoView({behavior: 'smooth'});
+    }
 
     updateProgress(getProgress('datasetInstallationStatus'));
     setIsFormInit(true);
@@ -244,7 +250,7 @@ const Installation = () => {
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'Install MVS datasets'}</Button>
           {/* <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e, true)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'SKIP DOWNLOAD and Install MVS datasets'}</Button> */}
         </FormControl> : null}
-        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}}>
+        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-installation-progress">
         {!showProgress ? null :
           <React.Fragment>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={mvsDatasetInitProgress.uploadYaml}/>
