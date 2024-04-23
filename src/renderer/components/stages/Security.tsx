@@ -76,8 +76,14 @@ const Security = () => {
   }
 
   useEffect(() => {
-    const nextPosition = document.getElementById('container-box-id');
-    nextPosition.scrollIntoView({behavior: 'smooth'});
+
+    if(getProgress('securityStatus')) {
+      const nextPosition = document.getElementById('security-progress-start');
+      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      const nextPosition = document.getElementById('container-box-id');
+      nextPosition.scrollIntoView({behavior: 'smooth'});
+    }
 
     setShowProgress(initClicked || getProgress('securityStatus'));
     updateProgress(getProgress('securityStatus'));
@@ -210,7 +216,7 @@ const Security = () => {
           </FormControl> : null}
 
 
-          <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}}>
+          <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="security-progress-start">
           {!showProgress ? null :
           <React.Fragment>
             <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={securityInitProgress.writeYaml}/>
@@ -221,7 +227,7 @@ const Security = () => {
         }
         </Box>
         </Box>
-        <Box sx={{ height: showProgress ? 'calc(100vh - 220px)' : 'auto', minHeight: '300px' }} id="init-progress"></Box>
+        <Box sx={{ height: showProgress ? '200px' : 'auto', minHeight: '200px' }} id="init-progress"></Box>
       </ContainerCard>
     </div>
   );

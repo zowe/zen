@@ -86,8 +86,14 @@ const Certificates = () => {
   }
 
   useEffect(() => {
-    const nextPosition = document.getElementById('container-box-id');
-    nextPosition.scrollIntoView({behavior: 'smooth'});
+
+    if(getProgress('certificateStatus')) {
+      const nextPosition = document.getElementById('certificate-progress-start');
+      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      const nextPosition = document.getElementById('container-box-id');
+      nextPosition.scrollIntoView({behavior: 'smooth'});
+    }
 
     setShowProgress(initClicked || getProgress('certificateStatus'));
     updateProgress(getProgress('certificateStatus'));
@@ -246,7 +252,7 @@ const Certificates = () => {
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Zowe Certificates</Button>
           </FormControl> : null}
         </Box>
-        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}}>
+        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="certificate-progress-start">
         {!showProgress ? null :
           <React.Fragment>
             <ProgressCard label="Write configuration file to local disk" id="download-progress-card" status={certificateInitProgress.writeYaml}/>
@@ -256,7 +262,7 @@ const Certificates = () => {
           </React.Fragment>
         }
         </Box>
-        <Box sx={{ height: showProgress ? 'calc(100vh - 220px)' : 'auto', minHeight: '300px' }} id="certificate-progress"></Box>
+        <Box sx={{ height: showProgress ? '200px' : 'auto', minHeight: '200px' }} id="certificate-progress"></Box>
       </ContainerCard>
     </div>
   );
