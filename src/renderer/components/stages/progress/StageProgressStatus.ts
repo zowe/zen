@@ -40,7 +40,7 @@ const activeStatus: ActiveState = {
 const planningStageStatus: PlanningState = {
   jobStatement: '',
   isJobStatementValid: false,
-  isLocationValid: false
+  isLocationValid: false,
 }
 
 const datasetInstallationStatus: DatasetInstallationState = {

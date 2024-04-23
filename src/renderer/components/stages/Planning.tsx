@@ -1270,7 +1270,6 @@ const Planning = () => {
   const [contentType, setContentType] = useState('output');
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState('');
-  const [stateUpdated, setStateUpdated] = useState(false);
 
   const toggleEditorVisibility = (type?: any) => {
     if (type) {
@@ -1280,9 +1279,6 @@ const Planning = () => {
   };
 
   useEffect(() => {
-    const nextPosition = document.getElementById(`position-${step}`);
-    nextPosition.scrollIntoView({behavior: 'smooth'});
-
     if(getPlanningStageStatus()?.isJobStatementValid) {
       setJobHeaderSaved(true);
       if(getPlanningStageStatus()?.isLocationValid) {
@@ -1349,10 +1345,8 @@ const Planning = () => {
   }, [jobHeaderSaved, locationsValidated]);
 
   useEffect(() => {
-    if(stateUpdated) {
-      const nextPosition = document.getElementById(`position-${step}`);
-      nextPosition.scrollIntoView({behavior: 'smooth'});
-    }
+    const nextPosition = document.getElementById(`position-${step}`);
+    nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [step]);
 
   const setPlanningState = (status: boolean): void => {
@@ -1392,8 +1386,6 @@ const Planning = () => {
   }
 
   const saveJobHeader = (e: any) => {
-
-    setStateUpdated(true);
 
     if(jobStatementValid && !isJobStatementUpdated) {
       setJobHeaderSaved(true);
@@ -1441,8 +1433,6 @@ const Planning = () => {
 
   const validateLocations = (e: any, click?: boolean) => {
    
-    setStateUpdated(true);
-
     if(planningStatus && !isLocationsUpdated && !click) {
       setLocValidations(true);
       setPlanningState(true);
