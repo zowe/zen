@@ -56,6 +56,7 @@ const Security = () => {
   const [securityInitProgress, setSecurityInitProgress] = useState(getSecurityInitState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
+  const [reinit, setReinit] = useState(false);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   const connectionArgs = useAppSelector(selectConnectionArgs);
@@ -77,19 +78,20 @@ const Security = () => {
 
   useEffect(() => {
 
+    setShowProgress(initClicked || getProgress('securityStatus'));
+    let nextPosition;
+
     if(getProgress('securityStatus')) {
       console.log('security: start-security-progress');
-      const nextPosition = document.getElementById('start-security-progress');
-      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      nextPosition = document.getElementById('security-progress');
+      nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     } else {
       console.log('security: container-box-id');
-      let nextPosition = document.getElementById('start-security-progress');
-      nextPosition.scrollIntoView({ behavior: 'smooth' });
       nextPosition = document.getElementById('container-box-id');
-      nextPosition.scrollIntoView({behavior: 'smooth'});
+      nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
-    setShowProgress(initClicked || getProgress('securityStatus'));
+
     updateProgress(getProgress('securityStatus'));
     setInit(true);
 
@@ -100,10 +102,17 @@ const Security = () => {
 
   useEffect(() => {
     setShowProgress(initClicked || getProgress('securityStatus'));
+
     if(initClicked) {
-      console.log('security: security-progress');
-      const nextPosition = document.getElementById('security-progress');
-      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      let nextPosition = document.getElementById('start-security-progress');
+      nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      if(reinit) {
+        setReinit(false);
+        nextPosition = document.getElementById('start-security-progress');
+        nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
       setStateUpdated(!stateUpdated);
       dispatch(setSecurityStatus(false));
     }
@@ -116,6 +125,12 @@ const Security = () => {
           setSecurityInitializationProgress(res);
         })
       }, 3000);
+
+      if(showProgress) {
+        console.log('security: if progress');
+        const nextPosition = document.getElementById('start-security-progress');
+        nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
     return () => {
       clearInterval(timer);
@@ -163,6 +178,11 @@ const Security = () => {
     setContentType(type);
     setEditorVisible(!editorVisible);
   };
+
+  const reinitialize = (event: any) => {
+    setReinit(true);
+    process(event);
+  }
 
   const process = (event: any) => {
     setInitClicked(true);
@@ -227,12 +247,13 @@ const Security = () => {
             <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={securityInitProgress.writeYaml}/>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={securityInitProgress.uploadYaml}/>
             <ProgressCard label={`Run zwe init security`} id="success-progress-card" status={securityInitProgress.success}/>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Reinitialize Security Config</Button>
+            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize Security Config</Button>
           </React.Fragment>
         }
         </Box>
         </Box>
-        <Box sx={{ height: showProgress ? '55vh' : 'auto', minHeight: '30vh' }} id="security-progress"></Box>
+        <Box sx={{ height: showProgress ? '105vh' : 'auto', minHeight: showProgress ? '105vh' : '10vh' }} id="security-progress"></Box>
+
       </ContainerCard>
     </div>
   );
