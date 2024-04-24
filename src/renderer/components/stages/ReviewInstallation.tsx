@@ -68,13 +68,22 @@ const ReviewInstallation = () => {
     const stageProgress = stageProgressStatus.every(status => status === true);
     const subStageProgress = subStageProgressStatus.every(status => status === true);
 
-    if(stageProgress && subStageProgress) {
-      dispatch(setNextStepEnabled(true));
-    } else {
-      dispatch(setNextStepEnabled(false));
+    const setStageSkipStatus = (status: boolean) => {
+      stages[STAGE_ID].isSkipped = status;
     }
 
-    dispatch(setReviewStatus(true));
+    const setDsInstallStageStatus = (status: boolean) => {
+      dispatch(setNextStepEnabled(status));
+      dispatch(setReviewStatus(status));
+    }
+
+    if(stageProgress && subStageProgress) {
+      setStageSkipStatus(false);
+      setDsInstallStageStatus(true);
+    } else {
+      setStageSkipStatus(true);
+      setDsInstallStageStatus(false);
+    }
 
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
