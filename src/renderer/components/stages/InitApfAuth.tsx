@@ -102,7 +102,7 @@ const InitApfAuth = () => {
 
     if(initClicked) {
       const nextPosition = document.getElementById('apf-progress');
-      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setStateUpdated(!stateUpdated);
       dispatch(setApfAuthStatus(false));
     }
@@ -274,7 +274,7 @@ const InitApfAuth = () => {
           </React.Fragment>
         }
         </Box>
-        <Box sx={{ height: showProgress ? '250px' : 'auto', minHeight: '250px' }} id="apf-progress"></Box>
+        <Box sx={{ height: showProgress ? '55vh' : 'auto', minHeight: '30vh' }} id="apf-progress"></Box>
       </ContainerCard>
     </div>
     
