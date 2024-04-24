@@ -56,6 +56,7 @@ const Certificates = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
+  const [reinit, setReinit] = useState(false);
 
   const section = 'certificate';
 
@@ -106,12 +107,12 @@ const Certificates = () => {
 
   useEffect(() => {
     setShowProgress(initClicked || getProgress('certificateStatus'));
+
     if(initClicked) {
-      const nextPosition = document.getElementById('certificate-progress');
-      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      setStateUpdated(!stateUpdated);
-      dispatch(setCertificateStatus(false));
+      let nextPosition = document.getElementById('start-certificate-progress');
+      nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+
   }, [initClicked]);
 
   useEffect(() => {
@@ -122,6 +123,13 @@ const Certificates = () => {
         })
       }, 3000);
     }
+
+    if(showProgress) {
+      console.log('security: if progress');
+      const nextPosition = document.getElementById('start-certificate-progress');
+      nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     return () => {
       clearInterval(timer);
     };
@@ -162,6 +170,11 @@ const Certificates = () => {
     dispatch(setInitializationStatus(status));
     dispatch(setCertificateStatus(status));
     setCertificateInitializationProgress(getCertificateInitState());
+  }
+
+  const reinitialize = (event: any) => {
+    setReinit(true);
+    process(event);
   }
 
   const process = async(event: any) => {
@@ -258,11 +271,11 @@ const Certificates = () => {
             <ProgressCard label="Write configuration file to local disk" id="download-progress-card" status={certificateInitProgress.writeYaml}/>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={certificateInitProgress.uploadYaml}/>
             <ProgressCard label="Run certificate initialization script (zwe init certifiate)" id="install-progress-card" status={certificateInitProgress.zweInitCertificate}/>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Reinitialize Zowe Certificates</Button>
+            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize Zowe Certificates</Button>
           </React.Fragment>
         }
         </Box>
-        <Box sx={{ height: showProgress ? '250px' : 'auto', minHeight: '250px' }} id="certificate-progress"></Box>
+        <Box sx={{ height: showProgress ? '30vh' : 'auto', minHeight: showProgress ? '30vh' : '10vh' }} id="certificate-progress"></Box>
       </ContainerCard>
     </div>
   );

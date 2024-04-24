@@ -106,13 +106,6 @@ const Security = () => {
     if(initClicked) {
       let nextPosition = document.getElementById('start-security-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      if(reinit) {
-        setReinit(false);
-        nextPosition = document.getElementById('start-security-progress');
-        nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-
       setStateUpdated(!stateUpdated);
       dispatch(setSecurityStatus(false));
     }
