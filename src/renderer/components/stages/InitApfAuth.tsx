@@ -59,6 +59,7 @@ const InitApfAuth = () => {
   const [apfAuthInitProgress, setApfAuthInitProgress] = useState(getApfAuthState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
+  const [reinit, setReinit] = useState(false);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   let timer: any;
@@ -101,8 +102,13 @@ const InitApfAuth = () => {
     setShowProgress(initClicked || getProgress('apfAuthStatus'));
 
     if(initClicked) {
-      const nextPosition = document.getElementById('apf-progress');
+      let nextPosition = document.getElementById('apf-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if(reinit) {
+        setReinit(false);
+        nextPosition = document.getElementById('start-apf-progress');
+        nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
       setStateUpdated(!stateUpdated);
       dispatch(setApfAuthStatus(false));
     }
@@ -163,6 +169,11 @@ const InitApfAuth = () => {
     setContentType(type);
     setEditorVisible(!editorVisible);
   };
+
+  const reinitialize = (event: any) => {
+    setReinit(true);
+    process(event);
+  }
 
   const process = (event: any) => {
     setInitClicked(true);
@@ -270,7 +281,7 @@ const InitApfAuth = () => {
             <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfAuthInitProgress.writeYaml}/>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={apfAuthInitProgress.uploadYaml}/>
             <ProgressCard label={`Run zwe init apfauth command`} id="upload-progress-card" status={apfAuthInitProgress.success}/>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Reinitialize APF Authorizations</Button>
+            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize APF Authorizations</Button>
           </React.Fragment>
         }
         </Box>
