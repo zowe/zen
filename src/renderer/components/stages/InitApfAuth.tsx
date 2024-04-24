@@ -82,12 +82,13 @@ const InitApfAuth = () => {
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
   useEffect(() => {
+    let nextPosition;
     if(getProgress('apfAuthStatus')) {
-      const nextPosition = document.getElementById('start-apf-progress');
-      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      nextPosition = document.getElementById('start-apf-progress');
+      nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
-      const nextPosition = document.getElementById('container-box-id');
-      nextPosition.scrollIntoView({behavior: 'smooth'});
+      nextPosition = document.getElementById('container-box-id');
+      nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
     updateProgress(getProgress('apfAuthStatus'));
