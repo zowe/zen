@@ -78,10 +78,14 @@ const Security = () => {
   useEffect(() => {
 
     if(getProgress('securityStatus')) {
+      console.log('security: start-security-progress');
       const nextPosition = document.getElementById('start-security-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
-      const nextPosition = document.getElementById('container-box-id');
+      console.log('security: container-box-id');
+      let nextPosition = document.getElementById('start-security-progress');
+      nextPosition.scrollIntoView({ behavior: 'smooth' });
+      nextPosition = document.getElementById('container-box-id');
       nextPosition.scrollIntoView({behavior: 'smooth'});
     }
 
@@ -97,6 +101,7 @@ const Security = () => {
   useEffect(() => {
     setShowProgress(initClicked || getProgress('securityStatus'));
     if(initClicked) {
+      console.log('security: security-progress');
       const nextPosition = document.getElementById('security-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
       setStateUpdated(!stateUpdated);
@@ -199,7 +204,8 @@ const Security = () => {
   }
 
   return (
-    <div id="container-box-id">
+    <div>
+      <Box sx={{ position: 'relative', top: '50vh' }} id="container-box-id"></Box>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("yaml")}>View/Edit Yaml</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button>
@@ -227,7 +233,7 @@ const Security = () => {
         }
         </Box>
         </Box>
-        <Box sx={{ height: showProgress ? '250px' : 'auto', minHeight: '250px' }} id="security-progress"></Box>
+        <Box sx={{ height: showProgress ? '55vh' : 'auto', minHeight: '30vh' }} id="security-progress"></Box>
       </ContainerCard>
     </div>
   );
