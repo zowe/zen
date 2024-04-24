@@ -12,9 +12,9 @@ import React, {useCallback, useEffect, useRef, useState} from "react";
 import { Box, Button, FormControl, Typography, debounce } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion } from './installationSlice';
+import { selectInstallationArgs, selectZoweVersion, selectInstallationType } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
-import { setDatasetInstallationStatus, setInitializationStatus ,selectDatasetInstallationStatus, selectInitializationStatus } from "../progress/progressSlice";
+import { setDatasetInstallationStatus, setInitializationStatus } from "../progress/progressSlice";
 import { IResponse } from '../../../../types/interfaces';
 import ProgressCard from '../../common/ProgressCard';
 import ContainerCard from '../../common/ContainerCard';
@@ -26,7 +26,7 @@ import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../../utils/StageDetails"; 
-import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState } from "../progress/StageProgressStatus";
+import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
 
 const Installation = () => {
@@ -63,6 +63,7 @@ const Installation = () => {
   const installationArgs = useAppSelector(selectInstallationArgs);
   const version = useAppSelector(selectZoweVersion);
   let timer: any;
+  const installationType = getInstallationTypeStatus().installationType;
 
   const section = 'dataset';
   // const initConfig = getConfiguration(section);
@@ -86,15 +87,27 @@ const Installation = () => {
   useEffect(() => {
 
     if(getProgress("datasetInstallationStatus")) {
-      const nextPosition = document.getElementById('start-installation-progress');
-      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if(installationType !== 'smpe') {
+        const nextPosition = document.getElementById('start-installation-progress');
+        nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        const nextPosition = document.getElementById('save-installation-progress');
+        nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'start' });
+      }
     } else {
       const nextPosition = document.getElementById('container-box-id');
       nextPosition.scrollIntoView({behavior: 'smooth'});
     }
 
-    updateProgress(getProgress('datasetInstallationStatus'));
     setIsFormInit(true);
+
+    if(installationType === 'smpe') {
+      const status = getProgress('datasetInstallationStatus');
+      setStageSkipStatus(!status);
+      setDsInstallStageStatus(status);
+    } else {
+      updateProgress(getProgress('datasetInstallationStatus'));
+    }
 
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
@@ -102,7 +115,8 @@ const Installation = () => {
   }, []);
 
   useEffect(() => {
-    setShowProgress(initClicked || getProgress('datasetInstallationStatus'));
+    setShowProgress(installationType!=='smpe' && (initClicked || getProgress('datasetInstallationStatus')));
+
     if(initClicked) {
       const nextPosition = document.getElementById('installation-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -116,7 +130,7 @@ const Installation = () => {
     if(allAttributesTrue) {
       dispatch(setNextStepEnabled(true));
       dispatch(setDatasetInstallationStatus(true));
-      setShowProgress(initClicked || getProgress('datasetInstallationStatus'));
+      setShowProgress(installationType!=='smpe' && (initClicked || getProgress('datasetInstallationStatus')));
     }
   }, [mvsDatasetInitProgress]);
 
@@ -143,10 +157,20 @@ const Installation = () => {
     }
   }
 
+  const setStageSkipStatus = (status: boolean) => {
+    stages[stageId].subStages[subStageId].isSkipped = status;
+    stages[stageId].isSkipped = status;
+  }
+
+  const setDsInstallStageStatus = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setInitializationStatus(status));
+    dispatch(setDatasetInstallationStatus(status));
+  }
+
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    stages[stageId].subStages[subStageId].isSkipped = !status;
-    stages[stageId].isSkipped = !status;
+    setStageSkipStatus(!status);
     if(!status) {
       for (let key in mvsDatasetInitProgress) {
         mvsDatasetInitProgress[key as keyof(DatasetInstallationState)] = false;
@@ -155,9 +179,7 @@ const Installation = () => {
     }
     const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(status));
-    dispatch(setDatasetInstallationStatus(status));
+    setDsInstallStageStatus(status);
     setMvsDatasetInitializationProgress(getDatasetInstallationState());
   }
 
@@ -167,19 +189,23 @@ const Installation = () => {
   };
 
   const process = (event: any, skipDownload?: boolean) => {
-    setInitClicked(true);
-    updateProgress(false);
+
+    if(!(installationType === 'smpe')) {
+      setInitClicked(true);
+      updateProgress(false);
+    }
     event.preventDefault();
     dispatch(setLoading(true));
-    const {javaHome, nodeHome, installationDir, installationType} = installationArgs;
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
     Promise.all([
       window.electron.ipcRenderer.setConfigByKey('zowe.setup.dataset', setupYaml),
     ]).then(async () => {
       if(installationType === 'smpe'){
-        updateProgress(true);
+        setStageSkipStatus(false);
+        setDsInstallStageStatus(true);
         dispatch(setLoading(false));
+        setShowProgress(false);
       } else {
         setYaml(window.electron.ipcRenderer.getConfig());
         setShowProgress(true);
@@ -239,18 +265,18 @@ const Installation = () => {
       <ContainerCard title="Installation" description="Provide installation details."> 
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
-          {installationArgs.installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
+          {installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
         </Typography>
 
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
           {!isFormValid && formError && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
-        </Box>  
+        </Box>
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'Install MVS datasets'}</Button>
-          {/* <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e, true)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'SKIP DOWNLOAD and Install MVS datasets'}</Button> */}
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationType === 'smpe' ? 'Save' : 'Install MVS datasets'}</Button>
+          {/* <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e, true)}>{installationType === 'smpe' ? 'Save' : 'SKIP DOWNLOAD and Install MVS datasets'}</Button> */}
         </FormControl> : null}
-        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-installation-progress">
+        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : '0'}} id="start-installation-progress">
         {!showProgress ? null :
           <React.Fragment>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={mvsDatasetInitProgress.uploadYaml}/>
@@ -259,11 +285,12 @@ const Installation = () => {
             <ProgressCard label="Unpax installation files" id="unpax-progress-card" status={mvsDatasetInitProgress.unpax}/>
             <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={mvsDatasetInitProgress.install}/>
             <ProgressCard label="Run MVS dataset initialization script (zwe init mvs)" id="install-progress-card" status={mvsDatasetInitProgress.initMVS}/>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationArgs.installationType === 'smpe' ? 'Save' : 'Reinstall MVS datasets'}</Button>
+            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationType === 'smpe' ? 'Save' : 'Reinstall MVS datasets'}</Button>
           </React.Fragment>
         }
         </Box>
-        <Box sx={{ height: showProgress ? 'calc(100vh - 220px)' : 'auto', minHeight: '300px' }} id="installation-progress"></Box>
+        <Box sx={{ height: '0', minHeight: '0' }} id="save-installation-progress"></Box>
+        <Box sx={{ height: showProgress ? '55vh' : 'auto', minHeight: '55vh' }} id="installation-progress"></Box>
       </ContainerCard>
     </div>
   );

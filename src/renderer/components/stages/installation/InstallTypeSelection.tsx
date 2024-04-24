@@ -13,7 +13,7 @@ import { Box, Button, FormControl, FormControlLabel, Link, Radio, RadioGroup, Ty
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { setNextStepEnabled } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setLicenseAgreement, selectInstallationType, selectLicenseAgreement } from './installationSlice';
+import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath, selectInstallationType, selectLicenseAgreement } from './installationSlice';
 import { setInstallationTypeStatus } from "../progress/progressSlice"; 
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import CheckCircle from '@mui/icons-material/CheckCircle';
@@ -95,7 +95,8 @@ const InstallationType = () => {
             value={installValue}
             name="radio-buttons-group"
             onChange={(e) => {
-                dispatch(setInstallationArgs({...installationArgs, installationType: e.target.value}))
+                dispatch(setInstallationArgs({...installationArgs, installationType: e.target.value}));
+                dispatch(setInstallationType(e.target.value))
                 installTypeChangeHandler(e.target.value)
             }}
         >
@@ -132,6 +133,7 @@ const InstallationType = () => {
           if(res.filePaths && res.filePaths[0] != undefined){
             setPaxPath(res.filePaths[0]);
             dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: res.filePaths[0]}));
+            dispatch(setUserUploadedPaxPath(res.filePaths[0]));
           } else {
             setPaxPath("");
           }

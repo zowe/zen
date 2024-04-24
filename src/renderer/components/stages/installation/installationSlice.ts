@@ -85,7 +85,7 @@ export const installationSlice = createSlice({
   }
 });
 
-export const { setInstallationArgs, setZoweVersion, setInstallationType, setLicenseAgreement} = installationSlice.actions;
+export const { setInstallationArgs, setZoweVersion, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath} = installationSlice.actions;
 
 export const selectInstallationArgs = (state: RootState) => state.installation.installationArgs;
 export const selectZoweVersion = (state: RootState) => state.installation.zoweVersion;
