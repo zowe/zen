@@ -231,8 +231,8 @@ class PlanningPage{
     await this.clickSaveValidate();
     await this.enterRuntimeDir(runtimeDir);
     await this.enterWorkspaceDir(workspaceDir);
-    await this.enterExtensionsDir(extensionDir);
     await this.enterLogsDir(logDir);
+    await this.enterExtensionsDir(extensionDir);
     await this.enterRbacProfileIdentifier(profileIdentifier);
     await this.enterJobName(jobname);
     await this.enterJobPrefix(jobPrefix);

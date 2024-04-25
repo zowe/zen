@@ -8,6 +8,10 @@ let page: Page;
 
 let electronApp: ElectronApplication
 const CONNECTION_PAGE_TITLE = 'Connection';
+const SSH_HOST = process.env.SSH_HOST;
+const SSH_PASSWD =  process.env.SSH_PASSWD;
+const SSH_PORT = process.env.SSH_PORT;
+const SSH_USER = process.env.SSH_USER;
 const PLANNING_TITLE = 'Before you start';
 const INSTALLATION_TYPE_TITLE = 'Installation Type';
 const JOB_STATEMENT = "//HELLOJOB JOB 'HELLO, WORLD!',CLASS=A,MSGCLASS=A\n//STEP01   EXEC PGM=IEFBR14\n//SYSPRINT DD  SYSOUT=A\n//SYSIN    DD  DUMMY";
@@ -23,9 +27,9 @@ const JOB_PREFIX = process.env.JOB_PREFIX;
 const COOKIE_IDENTIFIER = '1';
 const JAVA_LOCATION = process.env.JAVA_HOME;
 const NODEJS_LOCATION = process.env.NODE_HOME;
-const ZOSMF_HOST = 'RS28.rocketsoftware.com';
-const ZOSMF_PORT = '11443';
-const ZOSMF_APPID = process.env.ZOSMF_APP_ID;
+const ZOSMF_HOST=process.env.ZOSMF_HOST;
+const ZOSMF_PORT=process.env.ZOSMF_PORT;
+const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 
 test.describe('PlanningTab', () => {
     let connectionPage: ConnectionPage;
@@ -42,7 +46,7 @@ test.describe('PlanningTab', () => {
       planningPage = new PlanningPage(page);
       installationTypePage = new InstallationTypePage(page);
       titlePage.navigateToConnectionTab();
-      connectionPage.fillConnectionDetails(process.env.SSH_HOST, process.env.SSH_PORT, process.env.SSH_USER, process.env.SSH_PASSWD);
+      connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
       connectionPage.SubmitValidateCredential();
       await page.waitForTimeout(5000);
       connectionPage.clickContinueButton();
@@ -145,7 +149,7 @@ test.describe('PlanningTab', () => {
       await page.waitForTimeout(2000);
       planningPage.enterZosmfPort(ZOSMF_PORT);     
       await page.waitForTimeout(2000);
-      planningPage.enterZosmfApplicationId(ZOSMF_APPID);
+      planningPage.enterZosmfApplicationId(ZOSMF_APP_ID);
       await page.waitForTimeout(2000);
       planningPage.clickValidateLocations();
       await page.waitForTimeout(20000);

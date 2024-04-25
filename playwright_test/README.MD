@@ -41,7 +41,7 @@ Example command:
   JOB_PREFIX=ZWE \
   JAVA_HOME=/path/to/java \
   NODE_HOME=/path/to/node \
-  UPLOAD_PAX_PATH=  \
+  UPLOAD_PAX_PATH=/path/to/pax  \
   DATASET_PREFIX=  \
   PROC_LIB =  \
   PARM_LIB =  \

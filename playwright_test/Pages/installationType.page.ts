@@ -22,16 +22,16 @@ class InstallationTypePage{
   constructor(page: Page) {
     this.page = page;
     this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
-    this.downloadPax = page.locator("//span[text()='Download Zowe convenience build PAX from internet']/preceding-sibling::span")
-    this.uploadPax = page.locator("//span[text()='Upload Zowe PAX for offline install']/preceding-sibling::span")
-    this.smpe = page.locator("//span[text()='SMP/E']/preceding-sibling::span")
+    this.downloadPax = page.locator("//span[text()='Download Zowe convenience build PAX from internet']/preceding-sibling::span/input")
+    this.uploadPax = page.locator("//span[text()='Upload Zowe PAX for offline install']/preceding-sibling::span/input")
+    this.smpe = page.locator("//span[text()='SMP/E']/preceding-sibling::span/input")
     this.licenseAgreement = page.locator("//button[text()='License Agreement']")
 	  this.saveAndClose = page.locator("//button[contains(text(),'Save & close')]")
     this.previousStep = page.locator("//button[contains(text(),'Previous step')]")
     this.continueToComponentInstallation = page.locator("//button[text()='Continue to Components Installation']")
     this.zoweLink = page.locator("//a[@href='zowe.org']")
     this.agreeLicense = page.locator("//button[text()='Agree']")
-    this.uploadPaxButton = page.locator("//button[text()='Agree']")
+    this.uploadPaxButton = page.locator("//button[text()='Upload PAX']")
     this.runtimeDir = page.locator("//label[contains(text(),'Runtime Directory')]//following-sibling::div/input")
     this.validateLocation = page.locator("//button[text()= 'Validate location']")
     this.validateLocationGreenCheck = page.locator("//button[text()='Validate location']//following-sibling::*[@data-testid='CheckCircleIcon']")
@@ -45,17 +45,17 @@ class InstallationTypePage{
 
   async selectDownloadZowePax(){
     await this.page.waitForTimeout(1000)
-    await this.downloadPax.click();
+    await this.downloadPax.click({timeout: 5000})
   }
 
   async selectUploadZowePax(){
-    await this.page.waitForTimeout(1000)
-    await this.uploadPax.click();
+    await this.page.waitForTimeout(2000)
+    await this.uploadPax.click({timeout: 5000});
   }
 
   async selectSmpe(){
     await this.page.waitForTimeout(1000)
-    await this.smpe.click();
+    await this.smpe.click({timeout: 5000});
   }
 
   async clickZoweLink(){
@@ -65,12 +65,12 @@ class InstallationTypePage{
 
   async clickLicenseAgreement(){
     await this.page.waitForTimeout(1000)
-    await this.licenseAgreement.click();
+    await this.licenseAgreement.click({timeout: 5000});
   }
 
   async clickSaveAndClose(){
     await this.page.waitForTimeout(1000)
-    await this.saveAndClose.click({timeout: 2000});
+    await this.saveAndClose.click({timeout: 5000});
     await this.page.waitForTimeout(2000)
   }
 
@@ -98,7 +98,7 @@ class InstallationTypePage{
 
   async clickAgreeLicense(){
     await this.page.waitForTimeout(1000)
-    await this.agreeLicense.click();
+    await this.agreeLicense.click({timeout: 5000});
   }
 
   async isLicenseAgreementGreenCheckVisible(){
@@ -108,12 +108,12 @@ class InstallationTypePage{
 
   async clickUploadPaxButton(){
     await this.page.waitForTimeout(1000)
-    await this.uploadPaxButton.click();
+    await this.uploadPaxButton.click({timeout: 5000});
   }
 
   async enterRuntimeDir(runtimeDir: any){
     await this.page.waitForTimeout(1000)
-    await this.runtimeDir.clear({timeout: 2000})
+    await this.runtimeDir.clear({timeout: 5000})
     await this.runtimeDir.fill(runtimeDir);
   }
 
