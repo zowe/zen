@@ -27,12 +27,12 @@ const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 const DATASET_PREFIX= process.env.DATASET_PREFIX;
 const PROC_LIB = process.env.PROC_LIB;
 const PARM_LIB = process.env.PARM_LIB;
-const ZIS = process.env.ZIS;
+const ZIS = process.env.SECURITY_STC_ZIS;
 const JCL_LIB = process.env.JCL_LIB;
 const LOAD_LIB = process.env.LOAD_LIB;
 const AUTH_LOAD_LIB = process.env.AUTH_LOAD_LIB;
 const AUTH_PLUGIN_LIB = process.env.AUTH_PLUGIN_LIB;
-const UPLOAD_PAX_PATH= process.env.UPLOAD_PAX_PATH
+const UPLOAD_PAX_PATH= process.env.ZOWE_ROOT_DIR
 
 test.describe('InstallationTab', () => {
   let connectionPage: ConnectionPage;

@@ -23,7 +23,7 @@ const NODE_HOME=process.env.NODE_HOME;
 const ZOSMF_HOST=process.env.ZOSMF_HOST;
 const ZOSMF_PORT=process.env.ZOSMF_PORT;
 const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
-const UPLOAD_PAX_PATH= process.env.UPLOAD_PAX_PATH
+const UPLOAD_PAX_PATH= process.env.ZOWE_ROOT_DIR
 
 test.describe('InstallationTypeTab', () => {
   let connectionPage: ConnectionPage;
