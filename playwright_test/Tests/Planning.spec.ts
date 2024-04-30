@@ -3,7 +3,6 @@ import ConnectionPage from '../Pages/connection.page';
 import TitlePage from '../Pages/title.page';
 import PlanningPage from '../Pages/planning.page.ts';
 import InstallationTypePage from '../Pages/installationType.page.ts';
-import { spawn } from 'child_process';
 import path from 'path';
 let page: Page;
 
