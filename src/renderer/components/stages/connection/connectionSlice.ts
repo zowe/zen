@@ -26,7 +26,7 @@ const initialState: ConnectionState = {
     port: 21,
     user: '',
     password: '',
-    jobStatement: '',
+    jobStatement: "//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,\n//         MSGLEVEL=(1,1),MSGCLASS=A",
     secure: false,
     secureOptions: {
       enableTrace: false,
