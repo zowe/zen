@@ -16,7 +16,7 @@ import ContainerCard from '../common/ContainerCard';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
-import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
+import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
@@ -673,6 +673,9 @@ const Networking = () => {
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
   useEffect(() => {
+    const nextPosition = document.getElementById('container-box-id');
+    nextPosition.scrollIntoView({behavior: 'smooth'});
+
     dispatch(setNextStepEnabled(true));
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = false;
     stages[STAGE_ID].isSkipped = isInitializationSkipped;
@@ -689,7 +692,6 @@ const Networking = () => {
   };
   
   const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
-    // console.log('form change data:', JSON.stringify(data));
     let updatedData = isFormInit ? (Object.keys(moddedYaml).length > 0 ? moddedYaml : data.zowe) : (data.zowe ? data.zowe : data);
     setIsFormInit(false);
 
@@ -719,7 +721,7 @@ const Networking = () => {
   } 
 
   return (
-    yaml && schema && <div>
+    yaml && schema && <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View Yaml</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>Preview Job</Button>
