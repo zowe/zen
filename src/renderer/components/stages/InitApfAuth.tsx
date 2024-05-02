@@ -22,8 +22,10 @@ import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
 import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
-import { setActiveStep } from "./progress/activeStepSlice";
-import { getStageDetails, getSubStageDetails } from "./progress/progressStore"; 
+import { setActiveStep, selectActiveStepIndex, selectActiveSubStepIndex, selectIsSubstep } from "./progress/activeStepSlice";
+import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
+import { setProgress, getProgress, setApfAuthState, getApfAuthState } from "./progress/StageProgressStatus";
+import { InitSubStepsState } from "../../../types/stateInterfaces";
 
 const InitApfAuth = () => {
 
@@ -38,23 +40,26 @@ const InitApfAuth = () => {
 
   const theme = createTheme();
 
+  const activeStep = useAppSelector(selectActiveStepIndex);
+  const isSubStep = useAppSelector(selectIsSubstep);
+  const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
+
   const dispatch = useAppDispatch();
   const schema = useAppSelector(selectSchema);
   const yaml = useAppSelector(selectYaml);
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
-  const [showProgress, toggleProgress] = useState(false);
+  const [showProgress, setShowProgress] = useState(getProgress('apfAuthStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
-  const [apfProgress, setApfProgress] = useState({
-    writeYaml: false,
-    uploadYaml: false,
-    success: false,
-  });
+  const [apfAuthInitProgress, setApfAuthInitProgress] = useState(getApfAuthState());
+  const [stateUpdated, setStateUpdated] = useState(false);
+  const [initClicked, setInitClicked] = useState(false);
+  const [reinit, setReinit] = useState(false);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
   let timer: any;
@@ -75,11 +80,18 @@ const InitApfAuth = () => {
 
   const isStepSkipped = !useAppSelector(selectApfAuthStatus);
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
-  
+
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
-    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = isStepSkipped;
-    stages[STAGE_ID].isSkipped = isInitializationSkipped;
+    let nextPosition;
+    if(getProgress('apfAuthStatus')) {
+      nextPosition = document.getElementById('start-apf-progress');
+      nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      nextPosition = document.getElementById('container-box-id');
+      nextPosition?.scrollIntoView({behavior: 'smooth'});
+    }
+
+    updateProgress(getProgress('apfAuthStatus'));
     setInit(true);
 
     return () => {
@@ -88,42 +100,97 @@ const InitApfAuth = () => {
   }, []);
 
   useEffect(() => {
-    timer = setInterval(() => {
-      window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
-        setApfProgress(res);
-      })
-    }, 3000);
-    const nextPosition = document.getElementById('apf-progress');
-    nextPosition.scrollIntoView({behavior: 'smooth'});
-  }, [showProgress]);
+    setShowProgress(initClicked || getProgress('apfAuthStatus'));
 
+    if(initClicked) {
+      let nextPosition = document.getElementById('apf-progress');
+      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if(reinit) {
+        setReinit(false);
+        nextPosition = document.getElementById('start-apf-progress');
+        nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      setStateUpdated(!stateUpdated);
+      dispatch(setApfAuthStatus(false));
+    }
+  }, [initClicked]);
 
+  useEffect(() => {
+    const allAttributesTrue = Object.values(apfAuthInitProgress).every(value => value === true);
+    if(allAttributesTrue) {
+      dispatch(setNextStepEnabled(true));
+      dispatch(setApfAuthStatus(true));
+      setShowProgress(initClicked || getProgress('apfAuthStatus'));
+    }
+  }, [apfAuthInitProgress]);
+
+  useEffect(() => {
+    if(!getProgress('apfAuthStatus') && initClicked) {
+      timer = setInterval(() => {
+        window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
+          setApfAuthorizationInitProgress(res);
+        })
+      }, 3000);
+    }
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [showProgress, stateUpdated]);
+
+  const setApfAuthorizationInitProgress = (aftAuthorizationState: InitSubStepsState) => {
+    setApfAuthState(aftAuthorizationState);
+    setApfAuthInitProgress(aftAuthorizationState);
+    const allAttributesTrue = Object.values(aftAuthorizationState).every(value => value === true);
+    if(allAttributesTrue) {
+      dispatch(setNextStepEnabled(true));
+      dispatch(setApfAuthStatus(true));
+    }
+  }
+
+  const updateProgress = (status: boolean) => {
+    setStateUpdated(!stateUpdated);
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
+    stages[STAGE_ID].isSkipped = !status;
+    if(!status) {
+      for (let key in apfAuthInitProgress) {
+        apfAuthInitProgress[key as keyof(InitSubStepsState)] = false;
+        setApfAuthState(apfAuthInitProgress);
+      }
+    }
+    const allAttributesTrue = Object.values(apfAuthInitProgress).every(value => value === true);
+    status = allAttributesTrue ? true : false;
+    dispatch(setNextStepEnabled(status));
+    dispatch(setInitializationStatus(status));
+    dispatch(setApfAuthStatus(status));
+    setApfAuthorizationInitProgress(getApfAuthState());
+  }
+  
   const toggleEditorVisibility = (type: any) => {
     setContentType(type);
     setEditorVisible(!editorVisible);
   };
 
+  const reinitialize = (event: any) => {
+    setReinit(true);
+    process(event);
+  }
+
   const process = (event: any) => {
+    setInitClicked(true);
+    updateProgress(false);
     event.preventDefault();
-    toggleProgress(true);
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
-        dispatch(setNextStepEnabled(res.status));
-        dispatch(setApfAuthStatus(res.status));
-        dispatch(setInitializationStatus(res.status));
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+        updateProgress(res.status);
         clearInterval(timer);
       }).catch(() => {
         clearInterval(timer);
-        dispatch(setNextStepEnabled(false));
-        dispatch(setInitializationStatus(false));
-        dispatch(setApfAuthStatus(false));
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-        stages[STAGE_ID].isSkipped = true;
+        updateProgress(false);
         console.warn('zwe init apfauth failed');
       });
   }
 
-  const editHLQ = (data: any, isYamlUpdated?: boolean) => {
+  const formChangeHandler = (data: any, isYamlUpdated?: boolean) => {
     let updatedData = init ? (Object.keys(yaml?.zowe.setup.dataset).length > 0 ? yaml?.zowe.setup.dataset : data) : (data ? data : yaml?.zowe.setup.datasetg);
     
     setInit(false);
@@ -156,18 +223,18 @@ const InitApfAuth = () => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
-    dispatch(setNextStepEnabled(proceed));
+    updateProgress(proceed);
   }
 
   return (
-    <div>
+    <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("yaml")}>View/Edit Yaml</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
       <ContainerCard title="APF Authorize Load Libraries" description="Run the `zwe init apfauth` command to APF authorize load libraries.">
-      <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={editHLQ}/>
+      <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={formChangeHandler}/>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
           {`Please review the following dataset setup configuration values before pressing run.\n`}
         </Typography>
@@ -209,15 +276,17 @@ const InitApfAuth = () => {
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize APF Authorizations</Button>
         </FormControl> : null}
-        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="apf-progress">
+        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-apf-progress">
         {!showProgress ? null :
           <React.Fragment>
-            <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfProgress.writeYaml}/>
-            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={apfProgress.uploadYaml}/>
-            <ProgressCard label={`Run zwe init apfauth command`} id="upload-progress-card" status={apfProgress.success}/>
+            <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfAuthInitProgress.writeYaml}/>
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={apfAuthInitProgress.uploadYaml}/>
+            <ProgressCard label={`Run zwe init apfauth command`} id="upload-progress-card" status={apfAuthInitProgress.success}/>
+            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize APF Authorizations</Button>
           </React.Fragment>
         }
-        </Box> 
+        </Box>
+        <Box sx={{ height: showProgress ? '55vh' : 'auto', minHeight: '30vh' }} id="apf-progress"></Box>
       </ContainerCard>
     </div>
     
