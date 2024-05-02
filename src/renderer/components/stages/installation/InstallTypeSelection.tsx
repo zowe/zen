@@ -13,13 +13,15 @@ import { Box, Button, FormControl, FormControlLabel, Link, Radio, RadioGroup, Ty
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { setNextStepEnabled } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setLicenseAgreement, selectInstallationType, selectLicenseAgreement } from './installationSlice';
+import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath, selectInstallationType, selectLicenseAgreement } from './installationSlice';
 import { setInstallationTypeStatus } from "../progress/progressSlice"; 
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
-import { getStageDetails } from "../progress/progressStore"; 
+import { getStageDetails } from "../../../../utils/StageDetails";
+import { getInstallationTypeStatus } from "../progress/StageProgressStatus";
+import { connect } from "http2";
 
 const InstallationType = () => {
 
@@ -31,10 +33,11 @@ const InstallationType = () => {
   const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
 
   const dispatch = useAppDispatch();
-  const [installValue, setInstallValue] = useState(useAppSelector(selectInstallationType));
-  const [paxPath, setPaxPath] = useState("");
+  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const [installValue, setInstallValue] = useState(getInstallationTypeStatus()?.installationType || 'download');
+  const [paxPath, setPaxPath] = useState(getInstallationTypeStatus()?.userUploadedPaxPath || '');
   const [showLicense, setShowLicense] = useState(false);
-  const [agreeLicense, setAgreeLicense] = useState(useAppSelector(selectLicenseAgreement));
+  const [agreeLicense, setAgreeLicense] = useState(getInstallationTypeStatus()?.licenseAgreement || false);
 
   const installationArgs = useAppSelector(selectInstallationArgs);
 
@@ -46,13 +49,17 @@ const InstallationType = () => {
 
   useEffect(() => {
     if((installValue === "download" && agreeLicense == false) || (installValue === "upload" && paxPath == "")){
-        dispatch(setNextStepEnabled(false));
+      updateProgress(false);
     } else {
-        dispatch(setInstallationTypeStatus(true))
-        dispatch(setNextStepEnabled(true));
+      updateProgress(true);
     }
     
   }, [installValue, paxPath, installationArgs, agreeLicense]);
+
+  const updateProgress = (status: boolean): void => {
+    dispatch(setInstallationTypeStatus(status))
+    dispatch(setNextStepEnabled(status));
+  }
 
   const showLicenseAgreement = () => {
     setShowLicense(true);
@@ -70,8 +77,11 @@ const InstallationType = () => {
 
   const installTypeChangeHandler = (type: string) => {
     dispatch(setInstallationType(type));
+    if(type != 'download') {
+      dispatch(setLicenseAgreement(false));
+    }
     setInstallValue(type);
-    dispatch(setInstallationTypeStatus(false))
+    updateProgress(false);
   }
 
   return (
@@ -85,7 +95,8 @@ const InstallationType = () => {
             value={installValue}
             name="radio-buttons-group"
             onChange={(e) => {
-                dispatch(setInstallationArgs({...installationArgs, installationType: e.target.value}))
+                dispatch(setInstallationArgs({...installationArgs, installationType: e.target.value}));
+                dispatch(setInstallationType(e.target.value))
                 installTypeChangeHandler(e.target.value)
             }}
         >
@@ -122,9 +133,9 @@ const InstallationType = () => {
           if(res.filePaths && res.filePaths[0] != undefined){
             setPaxPath(res.filePaths[0]);
             dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: res.filePaths[0]}));
+            dispatch(setUserUploadedPaxPath(res.filePaths[0]));
           } else {
             setPaxPath("");
-            dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: ''}));
           }
         });
       }}>Upload PAX</Button>

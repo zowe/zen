@@ -10,24 +10,27 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
+import { setPlanningStageStatus, getPlanningStageStatus } from './progress/StageProgressStatus';
 
 export interface jobValidation {
   jobStatement: string;
-  jobStatementValid: boolean;
+  isJobStatementValid: boolean;
   jobStatementValidMsg: string;
 }
 
 export interface locationValidation {
+  isLocationValid: boolean;
   locValidationDetails: any;
 }
 
 const initialState: jobValidation = {
-  jobStatement: '',
-  jobStatementValid: false,
+  jobStatement: getPlanningStageStatus()?.jobStatement || '',
+  isJobStatementValid: getPlanningStageStatus()?.isJobStatementValid || false,
   jobStatementValidMsg: ''
 }
 
 const locValidationInitialState: locationValidation = {
+  isLocationValid: getPlanningStageStatus()?.isLocationValid || false,
   locValidationDetails: {}
 }
 
@@ -36,32 +39,38 @@ export const planningSlice = createSlice({
   initialState,
   reducers: {
     setJobStatement: (state, action: PayloadAction<string>) => {
-        state.jobStatement = action.payload;
+      state.jobStatement = action.payload;
+      setPlanningStageStatus('jobStatement', action.payload);
     },
     setJobStatementValid: (state, action: PayloadAction<boolean>) => {
-        state.jobStatementValid = action.payload;
+      state.isJobStatementValid = action.payload;
+      setPlanningStageStatus('isJobStatementValid', action.payload);
     },
     setJobStatementValidMsg: (state, action: PayloadAction<string>) => {
-        state.jobStatementValidMsg = action.payload;
+      state.jobStatementValidMsg = action.payload;
     },
   }
 })
 
 export const locationValidationSlice = createSlice({
-    name: 'locationValidation',
-    initialState: locValidationInitialState,
-    reducers: {
-      setLocationValidationDetails: (state, action: PayloadAction<any>) => {
-          state.locValidationDetails = action.payload;
-      }
+  name: 'locationValidation',
+  initialState: locValidationInitialState,
+  reducers: {
+    setIsLocationValid: (state, action: PayloadAction<boolean>) => {
+      state.isLocationValid = action.payload;
+      setPlanningStageStatus('isLocationValid', action.payload);
+    },
+    setLocationValidationDetails: (state, action: PayloadAction<any>) => {
+      state.locValidationDetails = action.payload;
     }
-  })
+  }
+})
 
 export const { setJobStatementValid, setJobStatementValidMsg, setJobStatement } = planningSlice.actions;
-export const { setLocationValidationDetails } = locationValidationSlice.actions
+export const { setIsLocationValid, setLocationValidationDetails } = locationValidationSlice.actions
 
 export const selectJobStatement = (state: RootState) => state.planning.jobStatement;
-export const selectJobStatementValid = (state: RootState) => state.planning.jobStatementValid;
+export const selectJobStatementValid = (state: RootState) => state.planning.isJobStatementValid;
 export const selectJobStatementValidMsg = (state: RootState) => state.planning.jobStatementValidMsg;
 export const selectLocValidationDetails = (state: RootState) => state.locationValidation.locValidationDetails;
 
