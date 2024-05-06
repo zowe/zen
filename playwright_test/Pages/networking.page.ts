@@ -91,7 +91,7 @@ class NetworkingPage{
     this.NETWORKING_TITLE = page.locator(' //div[text()="Networking"]');
     this.licenseAgreement = page.locator('//button[contains(text(), "License Agreement")]');
     this.acceptLicense = page.locator('//html/body/div[2]/div[3]/div/div[2]/button[1]');
-    this.continueToComponentInstallation = page.locator('//button[contains(text(), "Continue to Components Installation"]');
+    this.continueToComponentInstallation = page.locator('//button[contains(text(), "Continue to Components Installation")]');
     this.view_yaml =  page.locator('//button[contains(text(),"View Yaml")]');
     this.viewAndSubmitJob =  page.locator('//button[contains(text(), "Preview Job")]');
     this.view_job_output =  page.locator('//button[contains(text(), "Submit Job")]');

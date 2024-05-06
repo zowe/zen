@@ -23,9 +23,11 @@ const ZOWE_LOG_DIR=process.env.ZOWE_LOG_DIR;
 const ZOWE_WORKSPACE_DIR=process.env.ZOWE_WORKSPACE_DIR;
 const JOB_NAME= process.env.JOB_NAME;
 const JOB_PREFIX=process.env.JOB_PREFIX;
-const  JAVA_HOME=process.env.JAVA_HOME;
-const  NODE_HOME=process.env.NODE_HOME;
-const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
+const JAVA_HOME=process.env.JAVA_HOME;
+const NODE_HOME=process.env.NODE_HOME;
+const ZOSMF_HOST=process.env.ZOSMF_HOST;
+const ZOSMF_PORT=process.env.ZOSMF_PORT;
+const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 const SECURITY_ADMIN= process.env.SECURITY_ADMIN;
 const SECURITY_STC = process.env.SECURITY_STC;
 const SECURITY_SYSPROG = process.env.SECURITY_SYSPROG;
@@ -68,7 +70,7 @@ test.describe('securityTab', () => {
       connectionPage.clickContinueButton()
       planningPage.clickSaveValidate()
       await page.waitForTimeout(20000);
-      planningPage.fillPlanningPageWithRequiredFields(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
+      planningPage.fillPlanningPageWithRequiredFields(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
       await page.waitForTimeout(20000);
       planningPage.clickValidateLocations()
       await page.waitForTimeout(20000);
@@ -194,19 +196,16 @@ test.describe('securityTab', () => {
      await page.waitForTimeout(5000);
     })
 
-    test('Test save and close', async ({ page }) => {
+    test('Test save and close and Resume Progress', async ({ page }) => {
      await page.waitForTimeout(5000);
      securityPage.fillSecurityDetails('RACF',SECURITY_ADMIN,SECURITY_STC,SECURITY_SYSPROG,SECURITY_USER_ZIS,SECURITY_USER_ZOWE,SECURITY_AUX,SECURITY_STC_ZOWE,SECURITY_STC_ZIS)
      await page.waitForTimeout(5000);
      securityPage.click_saveAndClose()
-     await page.waitForTimeout(5000);
-     titlePage.navigateToConnectionTab()
-     connectionPage.clickContinueButton()
-     await page.waitForTimeout(5000);
-     planningPage.clickContinueToInstallation()
-     await page.waitForTimeout(5000);
-     securityPage.movetoSecurityPage()
+     await page.waitForTimeout(3000);
+     titlePage.clickOnResumeProgress();
      await page.waitForTimeout(15000);
+     const title = await securityPage.returnTitleOfSecurityPage();
+     expect(title).toBe(SECURITY_TITLE);
      const sysProg_value = await securityPage.get_sysProg_value();
      const admin_value = await securityPage.get_admin_value();
      const stc_value = await securityPage.get_stc_value();
@@ -224,17 +223,4 @@ test.describe('securityTab', () => {
      expect(stcZis_value).toBe(process.env.SECURITY_STC_ZIS);
      expect(aux_value).toBe(process.env.SECURITY_AUX);
     })
-
-   test('Test Resume Progress', async ({ page }) => {
-    await page.waitForTimeout(8000);
-    securityPage.fillAdmin('TESTDATA')
-    securityPage.click_saveAndClose()
-    await page.waitForTimeout(8000);
-    connectionPage.click_resumeProgress()
-    await page.waitForTimeout(8000);
-    const admin_value = await securityPage.get_admin_value();
-    expect(admin_value).toBe('TESTDATA');
-    const title = await securityPage.returnTitleOfSecurityPage();
-    expect(title).toBe(SECURITY_TITLE);
-  })
 })

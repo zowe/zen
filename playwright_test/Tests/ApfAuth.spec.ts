@@ -27,9 +27,11 @@ const ZOWE_ROOT_DIR=process.env.ZOWE_ROOT_DIR;
 const ZOWE_WORKSPACE_DIR=process.env.ZOWE_WORKSPACE_DIR;
 const JOB_NAME= process.env.JOB_NAME;
 const JOB_PREFIX=process.env.JOB_PREFIX;
-const  JAVA_HOME=process.env.JAVA_HOME;
-const  NODE_HOME=process.env.NODE_HOME;
-const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
+const JAVA_HOME=process.env.JAVA_HOME;
+const NODE_HOME=process.env.NODE_HOME;
+const ZOSMF_HOST=process.env.ZOSMF_HOST;
+const ZOSMF_PORT=process.env.ZOSMF_PORT;
+const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 
 test.beforeAll(async () => {
   try {
@@ -61,7 +63,7 @@ test.describe('ApfAuthTab', () => {
       connectionPage.clickContinueButton()
       planningPage.clickSaveValidate()
       await page.waitForTimeout(20000);
-      planningPage.fillPlanningPageWithRequiredFields(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
+      planningPage.fillPlanningPageWithRequiredFields(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
       await page.waitForTimeout(20000);
       planningPage.clickValidateLocations()
       await page.waitForTimeout(30000);
@@ -139,6 +141,7 @@ test.describe('ApfAuthTab', () => {
      const isInitApf_check_visible = await apfAuthPage.isInitApf_check_visible();
      expect(isInitApf_check_visible).toBe(true);
     })
+
     test('click Previous step', async ({ page }) => {
      await page.waitForTimeout(5000);
      apfAuthPage.movetoApfAuthPage()
@@ -205,23 +208,18 @@ test.describe('ApfAuthTab', () => {
      await page.waitForTimeout(5000);
     })
 
-    test('Test save and close', async ({ page }) => {
+    test('Test save and close and Resume Progress', async ({ page }) => {
      await page.waitForTimeout(5000);
      apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
      await page.waitForTimeout(5000);
      apfAuthPage.movetoApfAuthPage()
      await page.waitForTimeout(5000);
      apfAuthPage.click_saveAndClose()
-     await page.waitForTimeout(5000);
-     titlePage.navigateToConnectionTab()
-     connectionPage.clickContinueButton()
-     await page.waitForTimeout(5000);
-     planningPage.clickContinueToInstallation()
-     await page.waitForTimeout(5000);
-     apfAuthPage.movetoInstallationPage()
-     await page.waitForTimeout(5000);
-     apfAuthPage.movetoApfAuthPage()
-     await page.waitForTimeout(5000);
+     await page.waitForTimeout(3000);
+     titlePage.clickOnResumeProgress();
+     await page.waitForTimeout(15000);
+     const title = await securityPage.returnTitleOfSecurityPage();
+     expect(title).toBe(SECURITY_TITLE);
      const datatsetPrefixValue = await apfAuthPage.get_datasetPrefix_value();
      const authPluginLibValue = await apfAuthPage.get_authPluginLib_value();
      const authLoadLibValue = await apfAuthPage.get_authLoadLib_value();

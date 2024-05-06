@@ -26,9 +26,11 @@ const ZOWE_LOG_DIR=process.env.ZOWE_LOG_DIR;
 const ZOWE_WORKSPACE_DIR=process.env.ZOWE_WORKSPACE_DIR;
 const JOB_NAME= process.env.JOB_NAME;
 const JOB_PREFIX=process.env.JOB_PREFIX;
-const  JAVA_HOME=process.env.JAVA_HOME;
-const  NODE_HOME=process.env.NODE_HOME;
-const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
+const JAVA_HOME=process.env.JAVA_HOME;
+const NODE_HOME=process.env.NODE_HOME;
+const ZOSMF_HOST=process.env.ZOSMF_HOST;
+const ZOSMF_PORT=process.env.ZOSMF_PORT;
+const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 
 test.beforeAll(async () => {
   try {
@@ -61,7 +63,7 @@ test.describe('networkingTab', () => {
       connectionPage.clickContinueButton()
       planningPage.clickSaveValidate()
       await page.waitForTimeout(20000);
-      planningPage.fillPlanningPageWithRequiredFields(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
+      planningPage.fillPlanningPageWithRequiredFields(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
       await page.waitForTimeout(20000);
       planningPage.clickValidateLocations()
       await page.waitForTimeout(20000);
@@ -74,22 +76,6 @@ test.describe('networkingTab', () => {
     test.afterEach(async () => {
       await electronApp.close()
     })
-
-  test('Test Resume Progress', async ({ page }) => {
-    await page.waitForTimeout(8000);
-    await networkingPage.fillexternal_domainvalues("test.com",'7665');
-    await page.waitForTimeout(5000);
-    networkingPage.click_saveAndClose()
-    await page.waitForTimeout(8000);
-    connectionPage.click_resumeProgress()
-    await page.waitForTimeout(8000);
-    const port = await networkingPage.get_externalDomainport_value();
-    const domainName = await networkingPage.get_externalDomainName_value()
-    expect(port).toBe("7665");
-    expect(domainName).toBe("test.com");
-    const title = await networkingPage.returnTitleOfNetworkingPage();
-    expect(title).toBe(NETWORKING_TITLE);
-  })
 
   test('test title of page', async ({ page }) => {
    await page.waitForTimeout(5000);
@@ -196,17 +182,13 @@ test.describe('networkingTab', () => {
     await networkingPage.fillexternal_domainvalues(DOMAIN_NAME,EXTERNAL_PORT);
     await page.waitForTimeout(5000);
     networkingPage.click_saveAndClose()
-    await page.waitForTimeout(5000);
-    titlePage.navigateToConnectionTab()
-    connectionPage.clickContinueButton()
-    await page.waitForTimeout(5000);
-    planningPage.clickContinueToInstallation()
-    await page.waitForTimeout(5000);
-    networkingPage.movetoNetworkingPage()
+    await page.waitForTimeout(3000);
+    titlePage.clickOnResumeProgress();
     await page.waitForTimeout(15000);
+    const title = await networkingPage.returnTitleOfNetworkingPage();
+    expect(title).toBe(NETWORKING_TITLE);
     const port = await networkingPage.get_externalDomainport_value();
     const domainName = await networkingPage.get_externalDomainName_value();
-    console.log(port,domainName)
     expect(port).toBe(EXTERNAL_PORT);
     expect(domainName).toBe(DOMAIN_NAME);
     await page.waitForTimeout(5000);

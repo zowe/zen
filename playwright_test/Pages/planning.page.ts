@@ -62,10 +62,12 @@ class PlanningPage{
   }
 
   async clickZoweInstallationLink(){
+    await this.page.waitForTimeout(500);
     await this.zoweInstallationLink.click();
   }
 
   async getPlanningPageTitle(){
+    await this.page.waitForTimeout(1000);
     return await this.planningPageTitle.textContent();
   }
 
@@ -74,22 +76,27 @@ class PlanningPage{
   }
 
   async enterJobStatement(jobStatement: string){
+    await this.page.waitForTimeout(500);
     await this.jobStatement.fill(jobStatement);
   }
 
   async clickSaveAndValidate(){
+    await this.page.waitForTimeout(1000);
     await this.saveAndValidate.click({ timeout: 5000 });
   }
 
   async isSaveAndValidateGreenCheckVisible(){
+    await this.page.waitForTimeout(1000);
     return await this.saveAndValidateGreenCheck.isVisible({ timeout: 5000 });
   }
 
   async getErrorMessage(){
+    await this.page.waitForTimeout(1000);
     return await this.errorMessage.textContent();
   }
 
   async enterRuntimeDir(runtimeDir: any){
+    await this.page.waitForTimeout(500);
     await this.runtimeDir.clear({timeout: 2000})
     await this.runtimeDir.fill(runtimeDir);
   }
@@ -100,55 +107,66 @@ class PlanningPage{
   }
 
   async enterWorkspaceDir(workspaceDir: any){
+    await this.page.waitForTimeout(500);
     await this.workspaceDir.clear({timeout: 2000})
     await this.workspaceDir.fill(workspaceDir);
   }
 
   async enterLogsDir(logsDir: any){
+    await this.page.waitForTimeout(500);
     await this.logsDir.clear({timeout: 2000})
     await this.logsDir.fill(logsDir);
   }
 
   async enterExtensionsDir(extensionsDir: any){
+    await this.page.waitForTimeout(500);
     await this.extensionsDir.clear({timeout: 2000})
     await this.extensionsDir.fill(extensionsDir);
   }
 
   async enterRbacProfileIdentifier(rbacProfileIdentifier: any){
+    await this.page.waitForTimeout(500);
     await this.rbacProfileIdentifier.clear({timeout: 2000})
     await this.rbacProfileIdentifier.fill(rbacProfileIdentifier);
   }
 
   async enterJobName(jobName: any){
+    await this.page.waitForTimeout(500);
     await this.jobName.clear({timeout: 2000})
     await this.jobName.fill(jobName);
   }
 
   async enterJobPrefix(jobPrefix: any){
+    await this.page.waitForTimeout(500);
     await this.jobPrefix.clear({timeout: 2000})
     await this.jobPrefix.fill(jobPrefix);
   }
 
   async enterCookieIdentifier(cookieIdentifier: any){
+    await this.page.waitForTimeout(500);
     await this.cookieIdentifier.clear({timeout: 2000})
     await this.cookieIdentifier.fill(cookieIdentifier);
   }
 
   async enterJavaLocation(javaLocation: any){
+    await this.page.waitForTimeout(500);
     await this.javaLocation.clear({timeout: 2000})
     await this.javaLocation.fill(javaLocation);
   }
 
   async enterNodeJsLocation(nodeJsLocation: any){
+    await this.page.waitForTimeout(500);
     await this.nodeJsLocation.clear({timeout: 2000})
     await this.nodeJsLocation.fill(nodeJsLocation);
   }
 
   async isSetZosmfAttributeChecked(){
+    await this.page.waitForTimeout(1000);
     return await this.setZosmf.isChecked();
   }
 
   async checkSetZosmfAttribute(){
+    await this.page.waitForTimeout(1000);
     if (await this.isSetZosmfAttributeChecked() == false){
       await this.setZosmf.click();
     }
@@ -156,68 +174,84 @@ class PlanningPage{
   }
 
   async enterZosmfHost(zosmfHost: any){
+    await this.page.waitForTimeout(500);
     await this.zosmfHost.clear({timeout: 2000})
     await this.zosmfHost.fill(zosmfHost);
   }
 
   async enterZosmfPort(zosmfPort: any){
+    await this.page.waitForTimeout(500);
     await this.zosmfPort.clear({timeout: 2000})
     await this.zosmfPort.fill(zosmfPort);
   }
 
   async enterZosmfApplicationId(zosmfApplicationId: any){
+    await this.page.waitForTimeout(500);
     await this.zosmfApplicationId.clear({timeout: 2000})
     await this.zosmfApplicationId.fill(zosmfApplicationId);
   }
 
   async clickValidateLocations(){
+    await this.page.waitForTimeout(500);
     await this.validateLocations.click({timeout: 5000});
   }
 
   async isValidateLocationsGreenCheckVisible(){
+    await this.page.waitForTimeout(500);
     return await this.ValidateLocationsGreenCheck.isVisible();
   }
 
   async clickSaveAndClose(){
+    await this.page.waitForTimeout(500);
     await this.saveAndClose.click({timeout: 2000});
   }
 
   async clickPreviousStep(){
+    await this.page.waitForTimeout(500);
     await this.previousStep.click();
   }
 
   async clickContinueToInstallation(){
+    await this.page.waitForTimeout(500);
    await this.continueInstallationOptions.click();
   }
 
   async isContinueToInstallationDisabled(){
+    await this.page.waitForTimeout(500);
     return await this.continueInstallationOptions.isDisabled()
   }
 
   async getReadyToProceedMessage(){
+    await this.page.waitForTimeout(1000);
     return await this.readyToProceedMessage.textContent({ timeout: 2000 });
   }
 
   async isContinueToInstallationEnabled(){
+    await this.page.waitForTimeout(500);
     return await this.continueInstallationOptions.isEnabled()
   }
 
   async clickSaveValidate(){
+    await this.page.waitForTimeout(500);
     await this.jobStatement.fill("//HELLOJOB JOB 'HELLO, WORLD!',CLASS=A,MSGCLASS=A\n//STEP01   EXEC PGM=IEFBR14\n//SYSPRINT DD  SYSOUT=A\n//SYSIN    DD  DUMMY")
     await this.saveAndValidate.click();
   }
-   async fillPlanningPageWithRequiredFields(runtimeDir: any, workspaceDir: any, extensionDir: any, logDir: any, profileIdentifier:any, jobPrefix:any,jobname:any, javaLocation:any,nodejsLocation:any,zOSMFAppID:any){
+  async fillPlanningPageWithRequiredFields(runtimeDir: any, workspaceDir: any, extensionDir: any, logDir: any, profileIdentifier:any, jobPrefix:any,jobname:any, javaLocation:any,nodejsLocation:any,zOSMFHost:any,zOSMFPort:any,zOSMFAppID:any){
+    await this.page.waitForTimeout(2000);
     await this.clickSaveValidate();
-    await this.runtimeDir.fill(runtimeDir);
-    await this.workspaceDir.fill(workspaceDir);
-    await this.extensionsDir.fill(extensionDir);
-    await this.logsDir.fill(logDir);
-    await this.rbacProfileIdentifier.fill(profileIdentifier);
-    await this.jobName.fill(jobname);
-    await this.jobPrefix.fill(jobPrefix);
-    await this.javaLocation.fill(javaLocation);
-    await this.nodeJsLocation.fill(nodejsLocation);
-    await this.zosmfApplicationId.fill(zOSMFAppID);
+    await this.enterRuntimeDir(runtimeDir);
+    await this.enterWorkspaceDir(workspaceDir);
+    await this.enterLogsDir(logDir);
+    await this.enterExtensionsDir(extensionDir);
+    await this.enterRbacProfileIdentifier(profileIdentifier);
+    await this.enterJobName(jobname);
+    await this.enterJobPrefix(jobPrefix);
+    await this.enterJavaLocation(javaLocation);
+    await this.enterNodeJsLocation(nodejsLocation);
+    await this.enterZosmfHost(zOSMFHost);
+    await this.enterZosmfPort(zOSMFPort);
+    await this.enterZosmfApplicationId(zOSMFAppID);
+    await this.page.waitForTimeout(2000);
   }
 
 }

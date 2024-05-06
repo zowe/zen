@@ -23,9 +23,11 @@ const ZOWE_LOG_DIR=process.env.ZOWE_LOG_DIR;
 const ZOWE_WORKSPACE_DIR=process.env.ZOWE_WORKSPACE_DIR;
 const JOB_NAME= process.env.JOB_NAME;
 const JOB_PREFIX=process.env.JOB_PREFIX;
-const  JAVA_HOME=process.env.JAVA_HOME;
-const  NODE_HOME=process.env.NODE_HOME;
-const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
+const JAVA_HOME=process.env.JAVA_HOME;
+const NODE_HOME=process.env.NODE_HOME;
+const ZOSMF_HOST=process.env.ZOSMF_HOST;
+const ZOSMF_PORT=process.env.ZOSMF_PORT;
+const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 
 test.beforeAll(async () => {
   try {
@@ -56,7 +58,7 @@ test.describe('launchConfigTab', () => {
       await page.waitForTimeout(5000);
       connectionPage.clickContinueButton()
       await page.waitForTimeout(20000);
-      planningPage.fillPlanningPageWithRequiredFields(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
+      planningPage.fillPlanningPageWithRequiredFields(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
       await page.waitForTimeout(20000);
       planningPage.clickValidateLocations()
       await page.waitForTimeout(20000);
@@ -149,21 +151,18 @@ test.describe('launchConfigTab', () => {
      await page.waitForTimeout(5000);
     })
 
-  test('Test save and close', async ({ page }) => {
+  test('Test save and close and Resume Progress', async ({ page }) => {
     await page.waitForTimeout(5000);
     launchConfigPage.fillvalues('STRICT')
     launchConfigPage.fillvalues_logLevel('info')
     launchConfigPage.fillvaluescomponentConfig('warn')
     await page.waitForTimeout(5000);
     launchConfigPage.click_saveAndClose()
-    await page.waitForTimeout(5000);
-    titlePage.navigateToConnectionTab()
-    connectionPage.clickContinueButton()
-    await page.waitForTimeout(5000);
-    planningPage.clickContinueToInstallation()
-    await page.waitForTimeout(5000);
-    launchConfigPage.movetoLaunchConfigPage()
+    await page.waitForTimeout(3000);
+    titlePage.clickOnResumeProgress();
     await page.waitForTimeout(15000);
+    const title = await launchConfigPage.returnTitleOfConfPage();
+    expect(title).toBe(CONFPAGE_TITLE);
     const Validation_Value = await launchConfigPage.get_validation_value();
     const LogLevel_Value = await launchConfigPage.get_logLevel_value();
     const ComponentConfig_Value = await launchConfigPage.get_componentConfig_value();
@@ -223,19 +222,4 @@ test.describe('launchConfigTab', () => {
     const Errormsg = await launchConfigPage.get_validation_error_msg();
     expect(Errormsg).expect(VALIDATION_ERROR_MSG);
    })
-
-  test('Test Resume Progress', async ({ page }) => {
-    await page.waitForTimeout(5000);
-    launchConfigPage.fillvalues('COMPONENT-COMPAT')
-    await page.waitForTimeout(5000);
-    launchConfigPage.click_saveAndClose()
-    await page.waitForTimeout(8000);
-    connectionPage.click_resumeProgress()
-    await page.waitForTimeout(8000);
-    const componentConfigValue = await launchConfigPage.get_validation_value();
-    await page.waitForTimeout(5000);
-    expect(componentConfigValue).toBe('COMPONENT-COMPAT');
-    const title = await launchConfigPage.returnTitleOfConfPage();
-    expect(title).toBe(CONFPAGE_TITLE);
-  })
 });
