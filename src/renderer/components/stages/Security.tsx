@@ -82,11 +82,9 @@ const Security = () => {
     let nextPosition;
 
     if(getProgress('securityStatus')) {
-      console.log('security: start-security-progress');
       nextPosition = document.getElementById('security-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     } else {
-      console.log('security: container-box-id');
       nextPosition = document.getElementById('container-box-id');
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
