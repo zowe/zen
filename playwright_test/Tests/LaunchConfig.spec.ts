@@ -223,4 +223,19 @@ test.describe('launchConfigTab', () => {
     const Errormsg = await launchConfigPage.get_validation_error_msg();
     expect(Errormsg).expect(VALIDATION_ERROR_MSG);
    })
+
+  test('Test Resume Progress', async ({ page }) => {
+    await page.waitForTimeout(5000);
+    launchConfigPage.fillvalues('COMPONENT-COMPAT')
+    await page.waitForTimeout(5000);
+    launchConfigPage.click_saveAndClose()
+    await page.waitForTimeout(8000);
+    connectionPage.click_resumeProgress()
+    await page.waitForTimeout(8000);
+    const componentConfigValue = await launchConfigPage.get_validation_value();
+    await page.waitForTimeout(5000);
+    expect(componentConfigValue).toBe('COMPONENT-COMPAT');
+    const title = await launchConfigPage.returnTitleOfConfPage();
+    expect(title).toBe(CONFPAGE_TITLE);
+  })
 });

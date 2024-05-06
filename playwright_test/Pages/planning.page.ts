@@ -58,6 +58,7 @@ class PlanningPage{
     this.continueInstallationOptions = page.locator("//button[contains(text(), 'Continue to Installation Options')]")
     this.readyToProceedMessage = page.locator("//div[contains(@class,'MuiBox-root css-hieomr')]/p")
     this.errorMessage = page.locator("//div[contains(@class,'MuiAlert-message')]")
+    this.save_and_close =  page.locator('//button[contains(text(),"Save & close")]')
   }
 
   async clickZoweInstallationLink(){
@@ -66,6 +67,10 @@ class PlanningPage{
 
   async getPlanningPageTitle(){
     return await this.planningPageTitle.textContent();
+  }
+
+  async click_saveAndClose(){
+   this.save_and_close.click({ timeout: 2000 })
   }
 
   async enterJobStatement(jobStatement: string){
@@ -87,6 +92,11 @@ class PlanningPage{
   async enterRuntimeDir(runtimeDir: any){
     await this.runtimeDir.clear({timeout: 2000})
     await this.runtimeDir.fill(runtimeDir);
+  }
+
+  async getrRuntimeDir(){
+   const value = await this.runtimeDir.inputValue();
+   return value;
   }
 
   async enterWorkspaceDir(workspaceDir: any){

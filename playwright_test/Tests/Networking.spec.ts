@@ -75,6 +75,22 @@ test.describe('networkingTab', () => {
       await electronApp.close()
     })
 
+  test('Test Resume Progress', async ({ page }) => {
+    await page.waitForTimeout(8000);
+    await networkingPage.fillexternal_domainvalues("test.com",'7665');
+    await page.waitForTimeout(5000);
+    networkingPage.click_saveAndClose()
+    await page.waitForTimeout(8000);
+    connectionPage.click_resumeProgress()
+    await page.waitForTimeout(8000);
+    const port = await networkingPage.get_externalDomainport_value();
+    const domainName = await networkingPage.get_externalDomainName_value()
+    expect(port).toBe("7665");
+    expect(domainName).toBe("test.com");
+    const title = await networkingPage.returnTitleOfNetworkingPage();
+    expect(title).toBe(NETWORKING_TITLE);
+  })
+
   test('test title of page', async ({ page }) => {
    await page.waitForTimeout(5000);
    const title = await networkingPage.returnTitleOfNetworkingPage();

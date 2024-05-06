@@ -11,6 +11,8 @@ let page: Page;
 
 let electronApp: ElectronApplication
 const CERTIFICATE_TITLE = 'Certificates'
+const SECURITY_TITLE = 'Security'
+const APF_AUTH_TITLE ='APF Authorize Load Libraries'
 const ZOWE_ROOT_DIR = process.env.ZOWE_ROOT_DIR;
 const SSH_HOST = process.env.SSH_HOST;
 const SSH_PASSWD =  process.env.SSH_PASSWD;
@@ -38,7 +40,7 @@ test.beforeAll(async () => {
     await prepareEnvironment({ install: true, remove: false });
   } catch (error) {
     console.error('Error during environment preparation:', error);
-    process.exit(1); 
+    process.exit(1);
   }
 });
 
@@ -142,6 +144,7 @@ test.describe('securityTab', () => {
      expect(certificate_title).toBe(CERTIFICATE_TITLE);
     })
 
+
     test('Test previous button is enabled', async ({ page }) => {
      const is_prevButtonEnable = await securityPage.isPreviousButtonEnable();
      expect(is_prevButtonEnable).toBe(true);
@@ -221,4 +224,17 @@ test.describe('securityTab', () => {
      expect(stcZis_value).toBe(process.env.SECURITY_STC_ZIS);
      expect(aux_value).toBe(process.env.SECURITY_AUX);
     })
+
+   test('Test Resume Progress', async ({ page }) => {
+    await page.waitForTimeout(8000);
+    securityPage.fillAdmin('TESTDATA')
+    securityPage.click_saveAndClose()
+    await page.waitForTimeout(8000);
+    connectionPage.click_resumeProgress()
+    await page.waitForTimeout(8000);
+    const admin_value = await securityPage.get_admin_value();
+    expect(admin_value).toBe('TESTDATA');
+    const title = await securityPage.returnTitleOfSecurityPage();
+    expect(title).toBe(SECURITY_TITLE);
+  })
 })

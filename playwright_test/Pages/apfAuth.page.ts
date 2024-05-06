@@ -68,6 +68,7 @@ class ApfAuthPage{
     this.datasetPrefix = page.getByLabel('Prefix')
     this.authLoadLib = page.getByLabel('Auth Loadlib')
     this.authpluginLib = page.getByLabel('Auth Plugin Lib')
+    this.click_ApfAuth = page.locator('//span[text()="Apf Auth"]');
     this.skipInstallation = page.locator('//button[contains(text(),"Skip")]')
     this.run_zwe_init_apfauth =  page.locator('//button[contains(text(),"zwe init apfauth")]')
     this.view_yaml =  page.locator('//button[contains(text(),"View/Edit Yaml")]')
@@ -84,10 +85,13 @@ class ApfAuthPage{
     this.auth_plugin_lib_value = page.getByLabel('Zowe ZIS Plugins Load Library')
 
   }
-
+  async returnTitleOfApfAuthPage(){
+   const ApfAuthTitle = await this.APFAUTH_TITLE.textContent();
+   return ApfAuthTitle;
+  }
 
   async movetoApfAuthPage(){
-   await this.skipInstallation.click({timeout: 9000})
+   await this.click_ApfAuth.click({timeout: 9000})
   }
   async movetoInstallationPage(){
    await this.licenseAgreement.click({timeout: 9000})
