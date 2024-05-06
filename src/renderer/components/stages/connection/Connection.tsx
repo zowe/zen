@@ -33,12 +33,12 @@ import { setConnectionArgs, setConnectionValidationDetails, setHost, setPort,
                setUser, setPassword, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates} from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
-import { setActiveStep } from '../progress/activeStepSlice';
-import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from '../progress/activeStepSlice';
+import { setActiveStep, selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from '../progress/activeStepSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { getStageDetails } from "../../../../utils/StageDetails";
 import { initializeProgress } from "../progress/StageProgressStatus";
+import eventDispatcher from "../../../../utils/eventDispatcher";
 
 const Connection = () => {
 
@@ -59,9 +59,6 @@ const Connection = () => {
 
   useEffect(() => {
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
-    return () => {
-      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
-    }
   }, []);
 
   return (
@@ -128,12 +125,6 @@ const FTPConnectionForm = () => {
   const activeStepIndex = useAppSelector(selectActiveStepIndex);
   const isSubStep = useAppSelector(selectIsSubstep);
   const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
-  
-  useEffect(() => {
-    return () => {
-      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
-    }
-  }, [])
 
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
@@ -161,6 +152,10 @@ const FTPConnectionForm = () => {
         dispatch(setLoading(false));
       }); 
   };
+
+  const resumeProgress = () => {
+    eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
+  }
 
   return (
     <Box
@@ -308,6 +303,13 @@ const FTPConnectionForm = () => {
           </Button>
         </Box>
         <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div>
+
+        {connectionStatus && activeStepIndex>0 && <Tooltip title="Continue to Last Active Stage" arrow>
+          <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
+            <Button sx={{color: '#858081', boxShadow: 'none', margin: '0 0 0 10px', '&:hover': { backgroundColor: 'transparent' }, '&:click': { backgroundColor: 'transparent' }}} type="submit" onClick={() => resumeProgress()}>Resume</Button>
+            <div><ArrowCircleRightIcon sx={{ color: '#858081', fontSize: '1.4rem', marginTop: '5px', marginLeft: '0', cursor: 'pointer' }} onClick={() => resumeProgress()} /></div>
+          </Box>
+        </Tooltip>}
 
         <div style={{opacity: formProcessed ? '1' : '0'}}>
           {!connectionStatus && (validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error'))}
