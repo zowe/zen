@@ -132,13 +132,13 @@ const Planning = () => {
         // }
         // dispatch(setSchema(schema));
         let installationDir = '';
-        if (res.details.config?.zowe?.runtimeDirectory && res.details.config?.zowe?.workspaceDirectory) {
+        if (res.details?.zowe?.runtimeDirectory && res.details?.zowe?.workspaceDirectory) {
           const getParentDir = (path: string): string => path.split('/').filter((i: string, ind: number) => i || !ind).slice(0, -1).join('/');
-          const runtimeParent = getParentDir(res.details.config?.zowe?.runtimeDirectory);
-          const workspaceParent = getParentDir(res.details.config?.zowe?.workspaceDirectory);
+          const runtimeParent = getParentDir(res.details?.zowe?.runtimeDirectory);
+          const workspaceParent = getParentDir(res.details?.zowe?.workspaceDirectory);
           if (runtimeParent === workspaceParent) installationDir = runtimeParent;
         }
-        dispatch(setInstallationArgs({...installationArgs, installationDir: res.details.config?.zowe?.runtimeDirectory ?? ''}));
+        dispatch(setInstallationArgs({...installationArgs, installationDir: res.details?.zowe?.runtimeDirectory ?? ''}));
       }
     })
 
