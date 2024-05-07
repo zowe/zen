@@ -23,7 +23,7 @@ import { createTheme } from '@mui/material/styles';
 import { selectConnectionStatus, selectPlanningStatus, selectInstallationTypeStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, setReviewStatus } from './progress/progressSlice';
 import { setActiveStep } from './progress/activeStepSlice';
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { getStageDetails, getSubStageDetails } from "./progress/progressStore";
+import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
 
 import '../../styles/ReviewInstallation.css';
 
@@ -68,13 +68,22 @@ const ReviewInstallation = () => {
     const stageProgress = stageProgressStatus.every(status => status === true);
     const subStageProgress = subStageProgressStatus.every(status => status === true);
 
-    if(stageProgress && subStageProgress) {
-      dispatch(setNextStepEnabled(true));
-    } else {
-      dispatch(setNextStepEnabled(false));
+    const setStageSkipStatus = (status: boolean) => {
+      stages[STAGE_ID].isSkipped = status;
     }
 
-    dispatch(setReviewStatus(true));
+    const setDsInstallStageStatus = (status: boolean) => {
+      dispatch(setNextStepEnabled(status));
+      dispatch(setReviewStatus(status));
+    }
+
+    if(stageProgress && subStageProgress) {
+      setStageSkipStatus(false);
+      setDsInstallStageStatus(true);
+    } else {
+      setStageSkipStatus(true);
+      setDsInstallStageStatus(false);
+    }
 
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));

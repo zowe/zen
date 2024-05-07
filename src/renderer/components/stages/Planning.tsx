@@ -18,18 +18,18 @@ import Button from '@mui/material/Button';
 import ContainerCard from '../common/ContainerCard';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { setYaml, setSchema, setNextStepEnabled, setLoading, selectYaml } from '../configuration-wizard/wizardSlice';
-import { selectConnectionArgs, setConnectionArgs } from './connection/connectionSlice';
+import { selectConnectionArgs, setConnectionArgs, setJobStatementVal } from './connection/connectionSlice';
 import { setPlanningStatus, selectPlanningStatus } from './progress/progressSlice';
 import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from './installation/installationSlice';
-import { setJobStatement, setJobStatementValid, setJobStatementValidMsg, setLocationValidationDetails, selectJobStatement, selectJobStatementValid, selectJobStatementValidMsg, selectLocValidationDetails } from "./PlanningSlice";
+import { setJobStatement, setJobStatementValid, setJobStatementValidMsg, setLocationValidationDetails, setIsLocationValid, selectJobStatement, selectJobStatementValid, selectJobStatementValidMsg, selectLocValidationDetails } from "./PlanningSlice";
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { IResponse } from '../../../types/interfaces';
-import Alert from "@mui/material/Alert";
 import { alertEmitter } from "../Header";
 import { Checkbox, FormControlLabel } from "@mui/material";
 import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
-import { getStageDetails } from "../stages/progress/progressStore";
+import { getStageDetails } from "../../../utils/StageDetails";
+import { getProgress, getPlanningStageStatus, setPlanningValidationDetailsState, getPlanningValidationDetailsState } from "./progress/StageProgressStatus";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -48,7 +48,8 @@ const Planning = () => {
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const [localYaml, setLocalYaml] = useState(useAppSelector(selectYaml));
 
-  const jobStatementValid = useAppSelector(selectJobStatementValid);
+  // const jobStatementValid = useAppSelector(selectJobStatementValid);
+  const [jobStatementValid, setJobStatementValidation] = useState(getPlanningStageStatus()?.isJobStatementValid);
   const jobStatementValidMsg = useAppSelector(selectJobStatementValidMsg);
 
   const locationValidationDetails = useAppSelector(selectLocValidationDetails);
@@ -59,17 +60,17 @@ const Planning = () => {
 
   const [jobHeaderSaved, setJobHeaderSaved] = useState(false);
   const [isJobStatementUpdated, setIsJobStatementUpdated] = useState(false);
-  const [jobStatementValue, setJobStatementValue] = useState(useAppSelector(selectJobStatement));
+  // const [jobStatementValue, setJobStatementValue] = useState(useAppSelector(selectJobStatement));
+  const [jobStatementValue, setJobStatementValue] = useState(getPlanningStageStatus()?.jobStatement);
   
-  const [locationsValidated, setLocationsValidated] = useState(false);
+  const [locationsValidated, setLocationsValidated] = useState(getPlanningStageStatus()?.isLocationValid || false);
   const [isLocationsUpdated, setIsLocationsUpdated] = useState(false);
-  const [validationDetails, setValidationDetails] = useState({javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''});
+  const [validationDetails, setValidationDetails] = useState(getPlanningValidationDetailsState());
   const [showZosmfAttributes, setShowZosmfAttributes] = useState(true);
 
   const zoweVersion = useAppSelector(selectZoweVersion);
   const [installationArgs, setInstArgs] = useState(useAppSelector(selectInstallationArgs));
   const [requiredSpace, setRequiredSpace] = useState(1300); //in megabytes
-  // let localYaml: any = getZoweConfig();
 
   const [contentType, setContentType] = useState('output');
   const [editorVisible, setEditorVisible] = useState(false);
@@ -83,21 +84,29 @@ const Planning = () => {
   };
 
   useEffect(() => {
+    const nextPosition = document.getElementById('container-box-id');
+    nextPosition.scrollIntoView({behavior: 'smooth', block: 'start'});
+
+    if(getPlanningStageStatus()?.isJobStatementValid) {
+      setJobHeaderSaved(true);
+      if(getPlanningStageStatus()?.isLocationValid) {
+        setStep(2);
+      } else {
+        setStep(1);
+      }
+    }
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     }
-  })
+  }, [])
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    setPlanningState(getProgress('planningStatus'));
     // FIXME: Add a popup warning in case failed to get config files
     // FIXME: Save yaml and schema on disk to not to pull it each time?
     // REVIEW: Replace JobStatement text area with set of text fields?
 
-    if(jobStatementValid && !isJobStatementUpdated) {
-      saveJobHeader(null);
-      return;
-    }
+    dispatch(setJobStatementVal(jobStatementValue));
 
     window.electron.ipcRenderer.getZoweVersion().then((res: IResponse) => dispatch(setZoweVersion(res.status ? res.details : '' )));
 
@@ -142,14 +151,28 @@ const Planning = () => {
   }, []); 
 
   useEffect(() => {
-    dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
-    // dispatch(setNextStepEnabled(true));
+    setPlanningState(jobHeaderSaved && locationsValidated);
   }, [jobHeaderSaved, locationsValidated]);
 
   useEffect(() => {
     const nextPosition = document.getElementById(`position-${step}`);
     nextPosition.scrollIntoView({behavior: 'smooth'});
   }, [step]);
+
+  const setPlanningState = (status: boolean): void => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setPlanningStatus(status));
+  }
+
+  const setLocValidations = (status: boolean): void => {
+    setLocationsValidated(status);
+    dispatch(setIsLocationValid(status));
+  }
+
+  const setEditorContentAndType = (content: any, type: string): void => {
+    setEditorContent(content);
+    setContentType(type);
+  }
 
   const getENVVars = () => {
     return window.electron.ipcRenderer.getENVVars(connectionArgs).then((res: IResponse) => {
@@ -173,11 +196,10 @@ const Planning = () => {
   }
 
   const saveJobHeader = (e: any) => {
-    
+
     if(jobStatementValid && !isJobStatementUpdated) {
       setJobHeaderSaved(true);
-      setEditorContent(jobStatementValidMsg);
-      setContentType('output');
+      setEditorContentAndType(jobStatementValidMsg, 'output');
       if (step < 1) {
         setStep(1);
       }
@@ -191,8 +213,7 @@ const Planning = () => {
     window.electron.ipcRenderer.saveJobHeader(jobStatementValue)
       .then(() => getENVVars())
       .then((res: IResponse) => {
-        setEditorContent(res.details);
-        setContentType('output');
+        setEditorContentAndType(res.details, 'output');
         if (!res.status) { // Failure case
           dispatch(setJobStatementValidMsg(res.details));
           console.warn('Failed to verify job statement');
@@ -201,8 +222,7 @@ const Planning = () => {
           dispatch(setJobStatementValid(true));
           alertEmitter.emit('hideAlert');
           if(locationsValidated) {
-            dispatch(setPlanningStatus(true));
-            dispatch(setNextStepEnabled(true));
+            setPlanningState(true);
             setStep(2);
           } else if (step < 1) {
             setStep(1);
@@ -212,8 +232,7 @@ const Planning = () => {
         dispatch(setLoading(false));
       })
       .catch((err: Error) => {
-        setEditorContent(err.message);
-        setContentType('output');
+        setEditorContentAndType(err.message, 'output');
         console.warn(err);
         dispatch(setJobStatementValidMsg(err.message));
         dispatch(setJobStatementValid(false));
@@ -225,11 +244,11 @@ const Planning = () => {
   const validateLocations = (e: any, click?: boolean) => {
    
     if(planningStatus && !isLocationsUpdated && !click) {
-      setLocationsValidated(true);
+      setLocValidations(true);
+      setPlanningState(true);
       setValidationDetails(locationValidationDetails);
-      setEditorContent(jobStatementValidMsg);
-      setContentType('output');
-      dispatch(setNextStepEnabled(true));
+      setPlanningValidationDetailsState(locationValidationDetails);
+      setEditorContentAndType(jobStatementValidMsg, 'output');
       setStep(2);
       return;
     }
@@ -300,12 +319,13 @@ const Planning = () => {
       //   console.warn(res[2].details);
       // }
       setValidationDetails(details);
+      setPlanningValidationDetailsState(details);
       dispatch(setLocationValidationDetails(details))
       dispatch(setLoading(false));
       if (!details.error) {
         alertEmitter.emit('hideAlert');
-        setLocationsValidated(true);
-        dispatch(setPlanningStatus(true));
+        setLocValidations(true);
+        setPlanningState(true);
         setStep(2);
       } else {
         alertEmitter.emit('showAlert', details.error, 'error');
@@ -317,9 +337,10 @@ const Planning = () => {
     setIsJobStatementUpdated(true);
     setJobStatementValue(newJobStatement);
     setJobHeaderSaved(false);
-    setPlanningStatus(false);
+    setJobStatementValidation(false);
     dispatch(setJobStatement(newJobStatement));
-    dispatch(setPlanningStatus(false))
+    dispatch(setJobStatementValid(false));
+    setPlanningState(false);
     setStep(0);
   }
 
@@ -365,10 +386,11 @@ const Planning = () => {
   }
 
   return (
+    <div id="container-box-id">
     <React.Fragment><span id="position-0"></span>
     <ContainerCard title="Before you start" description="Prerequisites, requirements and roles needed to install.">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} content={editorContent}/>
-      <Box sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto'}}>
+      <Box id="conatiner-box-id" sx={{height: step === 0 ? 'calc(100vh - 200px)' : 'auto'}}>
         <Typography sx={{ mb: 2 }} color="text.secondary"> 
           {/* TODO: Allow to choose Zowe version here by click here, support for other instalation types? */}
           {zoweVersion ? `About to install latest Zowe version: ${zoweVersion} from the convenience build. Approximate required space: ${requiredSpace}MB` : ''}
@@ -741,6 +763,7 @@ All set, ready to proceed.`
         : <div/> }
     </ContainerCard>
     </React.Fragment>
+    </div>
   );
 };
 

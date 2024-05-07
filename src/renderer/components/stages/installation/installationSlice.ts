@@ -10,6 +10,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
+import { setInstallationTypeStatus, getInstallationTypeStatus } from '../progress/StageProgressStatus'; 
 
 export interface InstallationArgs {
   installationDir: string;
@@ -62,8 +63,8 @@ const initialState: InstallationState = {
     workspaceDir: '',
     logDir:'',
     extensionDir:'',
-    installationType: 'download',
-    userUploadedPaxPath: '',
+    installationType: getInstallationTypeStatus()?.installationType || 'download',
+    userUploadedPaxPath: getInstallationTypeStatus()?.userUploadedPaxPath || '',
     downloadDir: '',
     javaHome: '',
     nodeHome: '',
@@ -77,7 +78,7 @@ const initialState: InstallationState = {
     zosmfApplId: 'IZUDFLT'
   },
   zoweVersion: '',
-  licenseAgreement: false,
+  licenseAgreement: getInstallationTypeStatus()?.licenseAgreement || false,
 };
 
 export const installationSlice = createSlice({
@@ -92,14 +93,20 @@ export const installationSlice = createSlice({
     },
     setInstallationType: (state, action: PayloadAction<string>) => {
       state.installationArgs.installationType = action.payload;
+      setInstallationTypeStatus('installationType', action.payload)
+    },
+    setUserUploadedPaxPath: (state, action: PayloadAction<string>) => {
+      state.installationArgs.userUploadedPaxPath = action.payload;
+      setInstallationTypeStatus('userUploadedPaxPath', action.payload)
     },
     setLicenseAgreement: (state, action: PayloadAction<boolean>) => {
       state.licenseAgreement = action.payload;
+      setInstallationTypeStatus('licenseAgreement', action.payload)
     },
   }
 });
 
-export const { setInstallationArgs, setZoweVersion, setInstallationType, setLicenseAgreement} = installationSlice.actions;
+export const { setInstallationArgs, setZoweVersion, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath} = installationSlice.actions;
 
 export const selectInstallationArgs = (state: RootState) => state.installation.installationArgs;
 export const selectZoweVersion = (state: RootState) => state.installation.zoweVersion;
