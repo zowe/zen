@@ -37,7 +37,7 @@ import { setActiveStep, selectActiveStepIndex, selectIsSubstep, selectActiveSubS
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { getStageDetails } from "../../../../utils/StageDetails";
-import { initializeProgress } from "../progress/StageProgressStatus";
+import { initializeProgress, getActiveStage } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../utils/eventDispatcher";
 
 const Connection = () => {
@@ -122,9 +122,7 @@ const FTPConnectionForm = () => {
   const [formProcessed, toggleFormProcessed] = React.useState(false);
   const [validationDetails, setValidationDetails] = React.useState('');
 
-  const activeStepIndex = useAppSelector(selectActiveStepIndex);
-  const isSubStep = useAppSelector(selectIsSubstep);
-  const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
+  const { activeStepIndex, isSubStep, activeSubStepIndex } = getActiveStage();
 
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
