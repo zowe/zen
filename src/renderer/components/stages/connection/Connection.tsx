@@ -31,7 +31,7 @@ import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
 import { setConnectionArgs, setConnectionValidationDetails, setHost, setPort,
                setUser, setPassword, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates} from './connectionSlice';
-import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
+import { setYaml, setSchema, setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { setActiveStep, selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from '../progress/activeStepSlice';
 import { Container } from "@mui/material";
@@ -39,6 +39,8 @@ import { alertEmitter } from "../../Header";
 import { getStageDetails } from "../../../../utils/StageDetails";
 import { initializeProgress, getActiveStage } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../utils/eventDispatcher";
+import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from '../installation/installationSlice';
+import { EXAMPLE_YAML, YAML_SCHEMA } from "../../../config/constants";
 
 const Connection = () => {
 
@@ -152,7 +154,23 @@ const FTPConnectionForm = () => {
   };
 
   const resumeProgress = () => {
-    eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
+    window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+      if (res.status) {
+        dispatch(setYaml(res.details.config));
+        const schema = res.details.schema;
+        dispatch(setSchema(schema));
+      } else {
+        dispatch(setYaml(EXAMPLE_YAML));
+        dispatch(setSchema(YAML_SCHEMA));
+        window.electron.ipcRenderer.setConfig(EXAMPLE_YAML).then((res: IResponse) => {
+          // yaml response
+        });
+        window.electron.ipcRenderer.setSchema(YAML_SCHEMA).then((res: IResponse) => {
+          // schema response
+        });
+      }
+      eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
+    })
   }
 
   return (
