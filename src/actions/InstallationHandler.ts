@@ -121,7 +121,7 @@ class Installation {
       let zoweRuntimePath = installationArgs.installationType === "smpe" ? installationArgs.installationDir : installationArgs.installationDir + "/runtime";
       let readPaxYamlAndSchema = await this.readExYamlAndSchema(connectionArgs, zoweRuntimePath);
       if(readPaxYamlAndSchema.details.yaml){
-        const parseCatCommandFromJobOutput = function(catPath: string){
+        const parseExampleYamlFromPax = function(catPath: string){
           const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat ${catPath}\\r\\n`)
           if(jobOutputSplit[1]){
             const trimmedYamlSchema = jobOutputSplit[1].split(`+ echo 'Script finished.'`)[0].split(`Script finished.`);
@@ -130,7 +130,7 @@ class Installation {
           }
           return "";
         }
-        const yamlFromPax = parseCatCommandFromJobOutput(`${zoweRuntimePath}/example-zowe.yaml`);
+        const yamlFromPax = parseExampleYamlFromPax(`${zoweRuntimePath}/example-zowe.yaml`);
         const currentConfig: any = ConfigurationStore.getConfig();
         if(yamlFromPax){
           try {
@@ -188,7 +188,7 @@ class Installation {
 
         //No reason not to always set schema to latest if user is re-running installation
         if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
-          const parseSchemas = function(inputString: string, catPath: string){
+          const parseSchemaFromPax = function(inputString: string, catPath: string){
             const jobOutputSplit = inputString.split(`cat ${catPath}\\r\\n`)
             if(jobOutputSplit[1]){
               const trimmedYamlSchema = jobOutputSplit[1].split(`Script finished.`);
@@ -197,8 +197,8 @@ class Installation {
             return "";
           }
           try {
-            let yamlSchema = JSON.parse(parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
-            const serverCommon = JSON.parse(parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
+            let yamlSchema = JSON.parse(parseSchemaFromPax(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
+            const serverCommon = JSON.parse(parseSchemaFromPax(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
             // console.log('yaml schema:', parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
             // console.log('server common', parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
             if(yamlSchema && serverCommon){
