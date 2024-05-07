@@ -31,6 +31,7 @@ class Installation {
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
     const savingResult = await this.generateYamlFile(zoweConfig);
     if (!savingResult.status) {
+      console.log("failed to save yaml");
       return savingResult;
     }
     
@@ -337,13 +338,8 @@ class Installation {
     return {status: true, details: ''};
   }
 
-  async uploadYaml(connectionArgs: IIpcConnectionArgs, installDir: string) {
-    const tempPath = path.join(app.getPath("temp"), "zowe.yaml");
-    const filePath = path.join(installDir, "zowe.yaml");
-    await new FileTransfer().upload(connectionArgs, tempPath, filePath, DataType.BINARY)
-    const script = `chtag -t -c ISO8859-1 ${installDir}/zowe.yaml`;
-    const result = await new Script().run(connectionArgs, script);
-    return {status: result.rc === 0, details: result.jobOutput}
+  async uploadYaml(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse> {
+    return {status: false, details: 'Method not implemented.'}
   }
   
   async downloadPax(version: string): Promise<IResponse> {
@@ -377,6 +373,7 @@ export class FTPInstallation extends Installation {
   async uploadYaml(connectionArgs: IIpcConnectionArgs, installDir: string) {
     const tempPath = path.join(app.getPath("temp"), "zowe.yaml");
     const filePath = path.join(installDir, "zowe.yaml");
+    console.log(`Uploading ${tempPath} to ${filePath}`)
     await new FileTransfer().upload(connectionArgs, tempPath, filePath, DataType.BINARY)
     const script = `chtag -t -c ISO8859-1 ${installDir}/zowe.yaml`;
     const result = await new Script().run(connectionArgs, script);
