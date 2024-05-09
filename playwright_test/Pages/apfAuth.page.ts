@@ -81,20 +81,12 @@ class ApfAuthPage{
     this.auth_plugin_lib_value = page.getByLabel('Zowe ZIS Plugins Load Library')
 
   }
-<<<<<<< Updated upstream
-  async returnTitleOfApfAuthPage(){
-   const ApfAuthTitle = await this.APFAUTH_TITLE.textContent();
-   return ApfAuthTitle;
-  }
-
-=======
 
   async getApfAuthPageTitle(){
     await this.page.waitForTimeout(1000)
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
  
->>>>>>> Stashed changes
   async movetoApfAuthPage(){
    await this.click_ApfAuth.click({timeout: 9000})
   }

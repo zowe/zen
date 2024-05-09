@@ -84,7 +84,7 @@ test.describe('ApfAuthTab', () => {
      await page.waitForTimeout(8000);
      connectionPage.click_resumeProgress()
      await page.waitForTimeout(8000);
-     const title = await apfAuthPage.returnTitleOfApfAuthPage();
+     const title = await apfAuthPage.getApfAuthPageTitle();
      expect(title).toBe(APF_AUTH_TITLE);
      const datatsetPrefixValue = await apfAuthPage.get_datasetPrefix_value();
      const AuthLoadLib_Value = await apfAuthPage.get_authLoadLib_value();
