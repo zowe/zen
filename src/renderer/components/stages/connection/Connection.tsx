@@ -124,7 +124,7 @@ const FTPConnectionForm = () => {
   const [formProcessed, toggleFormProcessed] = React.useState(false);
   const [validationDetails, setValidationDetails] = React.useState('');
 
-  const { activeStepIndex, isSubStep, activeSubStepIndex } = getActiveStage();
+  const { activeStepIndex, isSubStep, activeSubStepIndex, date } = getActiveStage();
 
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
@@ -311,21 +311,56 @@ const FTPConnectionForm = () => {
       }
           
       <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row", paddingTop: '12px', paddingBottom: '12px'}}>
-        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
+
+      <div style={{ padding: '10px', width: '100%' }}>
+
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10px' }}>
+          <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '12px'}} onClick={processForm}>Validate credentials</Button>
+          <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          {connectionStatus && activeStepIndex>0 &&
+            <div style={{marginTop: '20px',background: 'white', fontSize: 'small', padding: '15px 0 15px 15px',width: '60%', boxShadow: '1px 1px 3px #a6a6a6'}}>
+              <Box sx={{display: 'flex', flexDirection: 'column'}}>
+
+                <div style={{paddingBottom: '10px', color: 'black'}}>
+                <Typography variant="subtitle1" component="div">Saved Installation</Typography>
+                </div>
+
+                <Box sx={{display: 'flex', flexDirection: 'row', marginTop: '10px'}}>
+                  <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {date}</div>
+                  <div style={{marginBottom: '1px', marginTop: '-5px'}}>
+                    <Tooltip title="Continue to Last Active Stage" arrow>
+                      <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '9px', padding: '4px'}} onClick={resumeProgress}>
+                        Resume Progress
+                      </Button>
+                    </Tooltip>
+                  </div>
+                </Box>
+
+              </Box>
+
+            </div>}
+        </div>
+
+      </div>
+
+        {/* <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
           <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '12px'}} 
             onClick={processForm}
           >
             Validate credentials
           </Button>
         </Box>
-        <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div>
+        <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div> */}
 
-        {connectionStatus && activeStepIndex>0 && <Tooltip title="Continue to Last Active Stage" arrow>
+        {/* {connectionStatus && activeStepIndex>0 && <Tooltip title="Continue to Last Active Stage" arrow>
           <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
             <Button sx={{color: '#0b0b0b', boxShadow: 'none', margin: '0 0 0 10px', '&:hover': { backgroundColor: 'transparent' }, '&:click': { backgroundColor: 'transparent' }}} type="submit" onClick={() => resumeProgress()}>Resume</Button>
             <div><ArrowCircleRightIcon sx={{ color: '#494949', fontSize: '1.4rem', marginTop: '5px', marginLeft: '0', cursor: 'pointer' }} onClick={() => resumeProgress()} /></div>
           </Box>
-        </Tooltip>}
+        </Tooltip>} */}
 
         <div style={{opacity: formProcessed ? '1' : '0'}}>
           {!connectionStatus && (validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error'))}
