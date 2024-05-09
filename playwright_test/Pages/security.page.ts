@@ -57,6 +57,7 @@ class SecurityPage{
     this.initSecurity = page.locator("//button[contains(text(), 'Initialize Security Config')]")
     this.close_button = page.locator('//button[contains(text(), "Close")]')
     this.certificateTab_title = page.locator('//div[text()="Certificates"]')
+    this.securityTab_title = page.locator('//div[text()="Security"]')
     this.continue_CertificateSelector = page.locator('//button[contains(text(), "Continue to Certificates Setup")]')
 
     this.admin = page.getByLabel('Admin');
@@ -94,6 +95,11 @@ class SecurityPage{
    await this.stc_zowe.fill(stc_zowe,{ timeout: 10000 })
    await this.stc_zis.fill(stc_zis,{ timeout: 10000 })
   }
+
+  async fillAdmin(admin:string){
+   await this.admin.fill(admin,{ timeout: 10000 })
+  }
+
   async initializeSecurity(){
    await this.initSecurity.click()
   }
@@ -184,7 +190,10 @@ class SecurityPage{
    const sysProg_value = await this.sys_prog.textContent();
    return sysProg_value;
   }
-
+ async returnTitleOfSecurityPage(){
+   const securityPage_title = await this.securityTab_title.textContent();
+   return securityPage_title;
+  }
 
 }
   export default SecurityPage;
