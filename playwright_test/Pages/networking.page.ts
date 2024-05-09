@@ -8,7 +8,7 @@ class NetworkingPage{
   fillLogLevel: Locator;
   readYaml: Locator;
   previous_step_button: Locator;
-  continue_ReviewSelector: Locator;
+  continueToApfAuthSetup: Locator;
   editor_title_element: Locator;
   licenseAgreement: Locator;
   acceptLicense: Locator;
@@ -100,7 +100,7 @@ class NetworkingPage{
     this.skip_button = page.locator('//button[contains(text(),"Skip")]');
     this.close_button = page.locator('//button[contains(text(), "Close")]');
     this.APFAUTH_TITLE = page.locator('//div[text()="APF Authorize Load Libraries"]');
-    this.continue_ReviewSelector = page.locator('//button[contains(text(), "Continue to APF Auth Setup")]');
+    this.continueToApfAuthSetup = page.locator('//button[contains(text(), "Continue to APF Auth Setup")]');
     this.installationTitle = page.locator('//div[text()="Installation"]');
   }
 
@@ -234,9 +234,15 @@ class NetworkingPage{
    return editor_title;
   }
 
-  async isContinueButtonDisable(){
-   return await this.continue_ReviewSelector.isDisabled({ timeout: 5000 });
+  async clickContinueToApfAuthSetup(){
+    await this.page.waitForTimeout(500)
+    await this.continueToApfAuthSetup.click();
   }
+
+  async isContinueButtonDisable(){
+   return await this.continueToApfAuthSetup.isDisabled({ timeout: 5000 });
+  }
+
   async click_saveAndClose(){
    this.save_and_close.click({ timeout: 2000 })
   }

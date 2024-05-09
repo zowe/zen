@@ -3,6 +3,7 @@ let electronApp: ElectronApplication
 
 class SecurityPage{
   page: Page;
+  pageTitle: Locator;
   writeConfig_greenCheckXpath: Locator;
   uploadYaml_greenCheckXpath: Locator;
   init_security_greenCheckXpath: Locator;
@@ -30,11 +31,12 @@ class SecurityPage{
   product: Locator;
   APFAUTH_TITLE: Locator;
   continueToComponentInstallation: Locator;
-
+  certificateTab_title: Locator;
 
 
   constructor(page: Page) {
     this.page = page;
+    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.writeConfig_greenCheckXpath = page.locator('#card-init-security-progress-card svg.MuiSvgIcon-colorSuccess')
     this.uploadYaml_greenCheckXpath = page.locator('#card-download-progress-card svg.MuiSvgIcon-colorSuccess')
     this.init_security_greenCheckXpath = page.locator("#card-success-progress-card svg.MuiSvgIcon-colorSuccess")
@@ -69,6 +71,11 @@ class SecurityPage{
     this.stc_zowe =  page.locator(this.stc_mainXpath + 'div[1]/div/div[1]/div/div/input');
     this.stc_zis =  page.locator(this.stc_mainXpath + 'div[1]/div/div[2]/div/div/input');
 
+  }
+
+  async getSecurityPageTitle(){
+    await this.page.waitForTimeout(1000)
+    return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
   async movetoSecurityPage(){

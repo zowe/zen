@@ -3,12 +3,13 @@ let electronApp: ElectronApplication
 
 class LaunchConfigPage{
   page: Page;
+  pageTitle: Locator;
   fillValidation: Locator;
   logLevel: Locator;
   fillLogLevel: Locator;
   readYaml: Locator;
   previous_step_button: Locator;
-  continue_ReviewSelector: Locator;
+  continueToReviewPage: Locator;
   editor_title_element: Locator;
   licenseAgreement: Locator;
   acceptLicense: Locator;
@@ -26,6 +27,7 @@ class LaunchConfigPage{
 
   constructor(page: Page) {
     this.page = page;
+    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.click_launchConfig = page.locator('//span[text()="Launch Config"]')
     this.validation = page.getByLabel('Validation');
     this.logLevel = page.getByLabel('LogLevel');
@@ -49,8 +51,13 @@ class LaunchConfigPage{
     this.skip_button = page.locator('//button[contains(text(),"Skip")]')
     this.close_button = page.locator('//button[contains(text(), "Close")]')
     this.certificateTab_title = page.locator('//div[text()="Certificates"]')
-    this.continue_ReviewSelector = page.locator('//button[contains(text(), "Review")]')
+    this.continueToReviewPage = page.locator('//button[contains(text(), "Review")]')
     this.errorMsg = page.locator('//p[text()="is a required property"]')
+  }
+
+  async getLaunchConfigurationPageTitle(){
+    await this.page.waitForTimeout(1000)
+    return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
   async movetoLaunchConfigPage(){
@@ -135,8 +142,14 @@ class LaunchConfigPage{
    return editor_title;
   }
 
+  
+  async clickContinueToReviewPage(){
+    await this.page.waitForTimeout(500)
+    await this.continueToReviewPage.click();
+  }
+
   async isContinueButtonDisable(){
-   return await this.continue_ReviewSelector.isDisabled({ timeout: 5000 });
+   return await this.continueToReviewPage.isDisabled({ timeout: 5000 });
   }
   async click_saveAndClose(){
    this.save_and_close.click({ timeout: 2000 })

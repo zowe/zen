@@ -3,6 +3,7 @@ let electronApp: ElectronApplication
 
 class ApfAuthPage{
   page: Page;
+  pageTitle: Locator;
   continueButtonSelector: Locator;
   userNameInputSelector: Locator;
   writeConfig_greenCheckXpath: Locator;
@@ -41,14 +42,9 @@ class ApfAuthPage{
   auth_plugin_lib_value:Locator;
   dataset_prefix_value:Locator;
 
-
-
-
-
-
-
   constructor(page: Page) {
     this.page = page;
+    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.continueButtonSelector = page.locator('.MuiButton-containedPrimary.MuiButton-sizeMedium')
     this.userNameInputSelector = page.locator('label:has-text("User Name") + div input#standard-required')
     this.writeConfig_greenCheckXpath = page.locator('#card-download-progress-card svg.MuiSvgIcon-colorSuccess')
@@ -85,11 +81,20 @@ class ApfAuthPage{
     this.auth_plugin_lib_value = page.getByLabel('Zowe ZIS Plugins Load Library')
 
   }
+<<<<<<< Updated upstream
   async returnTitleOfApfAuthPage(){
    const ApfAuthTitle = await this.APFAUTH_TITLE.textContent();
    return ApfAuthTitle;
   }
 
+=======
+
+  async getApfAuthPageTitle(){
+    await this.page.waitForTimeout(1000)
+    return await this.pageTitle.textContent({ timeout: 2000 });
+  }
+ 
+>>>>>>> Stashed changes
   async movetoApfAuthPage(){
    await this.click_ApfAuth.click({timeout: 9000})
   }
