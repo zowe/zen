@@ -124,7 +124,7 @@ const FTPConnectionForm = () => {
   const [formProcessed, toggleFormProcessed] = React.useState(false);
   const [validationDetails, setValidationDetails] = React.useState('');
 
-  const { activeStepIndex, isSubStep, activeSubStepIndex, date } = getActiveStage();
+  const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getActiveStage();
 
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
@@ -329,7 +329,7 @@ const FTPConnectionForm = () => {
                 </div>
 
                 <Box sx={{display: 'flex', flexDirection: 'row', marginTop: '10px'}}>
-                  <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {date}</div>
+                  <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {lastActiveDate}</div>
                   <div style={{marginBottom: '1px', marginTop: '-5px'}}>
                     <Tooltip title="Continue to Last Active Stage" arrow>
                       <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '9px', padding: '4px'}} onClick={resumeProgress}>

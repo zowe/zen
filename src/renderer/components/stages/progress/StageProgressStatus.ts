@@ -86,6 +86,7 @@ let apfAuthKey = 'apf_auth';
 let securityKey = 'security_init';
 let certificateKey = 'certificate_init';
 let planningValidationDetailsKey = `planning_validation_details`;
+let prevInstallationKey = `prev_installation`;
 
 const setKeys = (id: string) => {
   progressStateKey = `${progressStateKey}_${id}`;
@@ -313,7 +314,7 @@ export const getCompleteProgress = () : ProgressState => {
 export const setActiveStage = (stageId: number, isSubStage: boolean, date: string, subStageId?: number): void => {
   activeStatus.activeStepIndex = stageId;
   activeStatus.isSubStep = isSubStage;
-  activeStatus.date = date;
+  activeStatus.lastActiveDate = date;
 
   if(!isSubStage) {
     activeStatus.activeSubStepIndex = 0;
@@ -323,10 +324,21 @@ export const setActiveStage = (stageId: number, isSubStage: boolean, date: strin
   
   const flattenedData = flatten(activeStatus);
   localStorage.setItem(activeStateKey, JSON.stringify(flattenedData));
+  localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
 }
 
 export const getActiveStage = () : ActiveState => {
   const activeStage = localStorage.getItem(activeStateKey);
+  if(activeStage) {
+    const flattenedData = JSON.parse(activeStage);
+    return unflatten(flattenedData);
+  } else {
+    return activeStatus;
+  }
+}
+
+export const getPreviousInstallation = () : ActiveState => {
+  const activeStage = localStorage.getItem(prevInstallationKey);
   if(activeStage) {
     const flattenedData = JSON.parse(activeStage);
     return unflatten(flattenedData);

@@ -38,7 +38,9 @@ export interface ActiveState {
   activeStepIndex: number,
   isSubStep: boolean,
   activeSubStepIndex: number,
-  date?: string
+  lastActiveDate?: string,
+  host?: string,
+  user?: string
 }
 
 export interface DatasetInstallationState {

@@ -28,6 +28,9 @@ import { selectConnectionStatus} from './stages/progress/progressSlice';
 import  HorizontalLinearStepper  from './common/Stepper';
 import Wizard from './configuration-wizard/Wizard'
 import Connection from './stages/connection/Connection';
+import { ActiveState } from '../../types/stateInterfaces';
+import flatten from 'flat';
+import { getPreviousInstallation } from './stages/progress/StageProgressStatus';
 
 // REVIEW: Get rid of routing
 
@@ -85,15 +88,20 @@ const makeCard = (card: ICard) => {
 const Home = () => {
 
   const dispatch = useAppDispatch();
-  const activeStepIndex = useAppSelector(selectActiveStepIndex);
-  const isSubStep = useAppSelector(selectIsSubstep);
-  const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
   const connectionStatus = useAppSelector(selectConnectionStatus);
-  const lastActiveDate = useAppSelector(selectActiveStepDate);
-  const initJobStatement = useAppSelector(selectInitJobStatement);
-
   const [showWizard, setShowWizard] = useState(false);
   const [showLoginDialog, setShowLogin] = useState(false);
+
+  const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getPreviousInstallation();
+
+  const prevInstallationKey = "prev_installation";
+  const lastActiveState: ActiveState = {
+    activeStepIndex: 0,
+    isSubStep: false,
+    activeSubStepIndex: 0,
+  };
+  const [isNewInstallation, setIsNewInstallation] = useState(true);
+
   const stages: any = [];
 
   useEffect(() => {
@@ -121,6 +129,15 @@ const Home = () => {
         // TODO: Add support for other types
         console.warn('Connection types other than FTP are not supported yet');
       }
+
+      const lastInstallation = localStorage.getItem(prevInstallationKey);
+      if(!lastInstallation) {
+        const flattenedData = flatten(lastActiveState);
+        localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
+      } else {
+        setIsNewInstallation(false);
+      }
+
     });
     return () => {
       eventDispatcher.off('saveAndCloseEvent', () => setShowWizard(true));
@@ -155,7 +172,7 @@ const Home = () => {
           {cards.map(card => makeCard(card))}
         </div>
 
-        {connectionStatus && <div style={{marginBottom: '1px',marginTop: '120px',background: 'white', fontSize: 'small',marginLeft: 'calc(8% + 10px)', padding: '15px 0 15px 15px',width: 'calc(80% + 5px)', boxShadow: '1px 1px 3px #a6a6a6'}}>
+        {!isNewInstallation && <div style={{marginBottom: '1px',marginTop: '120px',background: 'white', fontSize: 'small',marginLeft: 'calc(8% + 10px)', padding: '15px 0 15px 15px',width: 'calc(80% + 5px)', boxShadow: '1px 1px 3px #a6a6a6'}}>
           <Box sx={{display: 'flex', flexDirection: 'column'}}>
 
             <div style={{paddingBottom: '10px', color: 'black'}}>

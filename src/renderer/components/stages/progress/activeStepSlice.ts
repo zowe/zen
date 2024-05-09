@@ -33,8 +33,8 @@ export const activeStepSlice = createSlice({
       state.activeStepIndex = action.payload.activeStepIndex;
       state.isSubStep = action.payload.isSubStep;
       state.activeSubStepIndex = action.payload.activeSubStepIndex;
-      state.date = getCurrentDate();
-      setActiveStage(action.payload.activeStepIndex, action.payload.isSubStep, state.date, action.payload.activeSubStepIndex);
+      state.lastActiveDate = getCurrentDate();
+      setActiveStage(action.payload.activeStepIndex, action.payload.isSubStep, state.lastActiveDate, action.payload.activeSubStepIndex);
     },
   }
 });
@@ -44,7 +44,7 @@ export const { setActiveStep } = activeStepSlice.actions;
 export const selectActiveStepIndex = (state: RootState) => state.activeStep.activeStepIndex;
 export const selectIsSubstep = (state: RootState) => state.activeStep.isSubStep;
 export const selectActiveSubStepIndex = (state: RootState) => state.activeStep.activeSubStepIndex;
-export const selectActiveStepDate = (state: RootState) => state.activeStep.date;
+export const selectActiveStepDate = (state: RootState) => state.activeStep.lastActiveDate;
 
 
 export default activeStepSlice.reducer;
