@@ -107,6 +107,7 @@ class NetworkingPage{
   async movetoNetworkingPage(){
    await this.licenseAgreement.click({timeout: 9000})
    await this.acceptLicense.click({timeout: 9000})
+   await this.page.waitForTimeout(5000)
    await this.continueToComponentInstallation.click({timeout: 5000})
    await this.click_networking.click({timeout: 5000})
   }

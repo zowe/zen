@@ -37,7 +37,7 @@ class InstallationPage{
     this.viewEditYaml = page.locator("//button[text()='View/Edit Yaml']")    
     this.viewSubmitJob = page.locator("//button[text()='View/Submit Job']")    
     this.viewJobOutput = page.locator("//button[text()='View Job Output']")    
-	  this.saveAndClose = page.locator("//button[text()='Save & close']")
+	this.saveAndClose = page.locator("//button[text()='Save & close']")
     this.previousStep = page.locator("//button[text()='Previous step']")
     this.skipInstallation = page.locator("//button[contains(text(),'Skip')]")    
     this.continueToNetworkSetup = page.locator("//button[text()='Continue to Network Setup']")
