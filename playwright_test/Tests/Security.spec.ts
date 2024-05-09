@@ -21,9 +21,11 @@ const ZOWE_LOG_DIR=process.env.ZOWE_LOG_DIR;
 const ZOWE_WORKSPACE_DIR=process.env.ZOWE_WORKSPACE_DIR;
 const JOB_NAME= process.env.JOB_NAME;
 const JOB_PREFIX=process.env.JOB_PREFIX;
-const  JAVA_HOME=process.env.JAVA_HOME;
-const  NODE_HOME=process.env.NODE_HOME;
-const  ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
+const JAVA_HOME=process.env.JAVA_HOME;
+const NODE_HOME=process.env.NODE_HOME;
+const ZOSMF_HOST=process.env.ZOSMF_HOST;
+const ZOSMF_PORT=process.env.ZOSMF_PORT;
+const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 const SECURITY_ADMIN= process.env.SECURITY_ADMIN;
 const SECURITY_STC = process.env.SECURITY_STC;
 const SECURITY_SYSPROG = process.env.SECURITY_SYSPROG;
@@ -66,7 +68,7 @@ test.describe('securityTab', () => {
       connectionPage.clickContinueButton()
       planningPage.clickSaveValidate()
       await page.waitForTimeout(20000);
-      planningPage.fillPlanningPageWithRequiredFields(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_APP_ID)
+      planningPage.fillPlanningPageWithRequiredFields(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
       await page.waitForTimeout(20000);
       planningPage.clickValidateLocations()
       await page.waitForTimeout(20000);
