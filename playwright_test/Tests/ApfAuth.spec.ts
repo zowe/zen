@@ -10,6 +10,8 @@ let page: Page;
 
 
 let electronApp: ElectronApplication
+const APF_AUTH_TITLE ='APF Authorize Load Libraries'
+const NETWORKING_TITLE = 'Networking'
 const INSTALLATION_TITLE = 'Installation'
 const SECURITY_TITLE = 'Security'
 const DATASET_PREFIX = 'IBMUSER.ZWEV1'
@@ -74,39 +76,56 @@ test.describe('ApfAuthTab', () => {
     test.afterEach(async () => {
      await electronApp.close()
    })
-//
-//     test('Verify title', async ({ page }) => {
-//       await page.waitForTimeout(5000);
-//       apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
-//       await page.waitForTimeout(5000);
-//       apfAuthPage.movetoApfAuthPage()
-//       await page.waitForTimeout(5000);
-//       await expect(apfAuthPage.datasetPrefix).toBeTruthy()
-//       await expect(apfAuthPage.authLoadLib).toBeTruthy()
-//       await expect(apfAuthPage.authpluginLib).toBeTruthy()
-//       await expect(apfAuthPage.run_zwe_init_apfauth).toBeTruthy()
-//       await expect(apfAuthPage.view_yaml).toBeTruthy()
-//       await expect(apfAuthPage.save_and_close).toBeTruthy()
-//       await expect(apfAuthPage.previous_step).toBeTruthy()
-//       await expect(apfAuthPage.skip_apf_auth).toBeTruthy()
-//       await expect(apfAuthPage.continue_security_setup).toBeTruthy()
-//
-//     })
-//     test('test apfAuth with empty data', async ({ page }) => {
-//       await page.waitForTimeout(5000);
-//       apfAuthPage.fillApfDetails('','','')
-//       await page.waitForTimeout(5000);
-//       apfAuthPage.movetoApfAuthPage()
-//       await page.waitForTimeout(5000);
-//       apfAuthPage.initializeApfauth()
-//       await page.waitForTimeout(5000);
-//       const isWriteConfig_check_visible = await apfAuthPage.isWriteConfigGreenCheckVisible();
-//       expect(isWriteConfig_check_visible).toBe(false);
-//       const isUploadConfig_check_visible = await apfAuthPage.isUploadConfig_check_visible();
-//       expect(isUploadConfig_check_visible).toBe(false);
-//       const isInitApf_check_visible = await apfAuthPage.isInitApf_check_visible();
-//       expect(isInitApf_check_visible).toBe(false);
-//     })
+    test('Test Resume Progress', async ({ page }) => {
+     await page.waitForTimeout(8000);
+     apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
+     await page.waitForTimeout(5000);
+     apfAuthPage.click_saveAndClose()
+     await page.waitForTimeout(8000);
+     connectionPage.click_resumeProgress()
+     await page.waitForTimeout(8000);
+     const title = await apfAuthPage.returnTitleOfApfAuthPage();
+     expect(title).toBe(APF_AUTH_TITLE);
+     const datatsetPrefixValue = await apfAuthPage.get_datasetPrefix_value();
+     const AuthLoadLib_Value = await apfAuthPage.get_authLoadLib_value();
+     const AuthPluginLib_Value = await apfAuthPage.get_authPluginLib_value();
+     expect(datatsetPrefixValue).toBe(DATASET_PREFIX);
+     expect(AuthLoadLib_Value).toBe(AUTH_LOAD_LIB);
+     expect(AuthPluginLib_Value).toBe(AUTH_PLUGIN_LIB);
+    })
+
+    test('Verify title', async ({ page }) => {
+      await page.waitForTimeout(5000);
+      apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
+      await page.waitForTimeout(5000);
+      apfAuthPage.movetoApfAuthPage()
+      await page.waitForTimeout(5000);
+      await expect(apfAuthPage.datasetPrefix).toBeTruthy()
+      await expect(apfAuthPage.authLoadLib).toBeTruthy()
+      await expect(apfAuthPage.authpluginLib).toBeTruthy()
+      await expect(apfAuthPage.run_zwe_init_apfauth).toBeTruthy()
+      await expect(apfAuthPage.view_yaml).toBeTruthy()
+      await expect(apfAuthPage.save_and_close).toBeTruthy()
+      await expect(apfAuthPage.previous_step).toBeTruthy()
+      await expect(apfAuthPage.skip_apf_auth).toBeTruthy()
+      await expect(apfAuthPage.continue_security_setup).toBeTruthy()
+
+    })
+    test('test apfAuth with empty data', async ({ page }) => {
+      await page.waitForTimeout(5000);
+      apfAuthPage.fillApfDetails('','','')
+      await page.waitForTimeout(5000);
+      apfAuthPage.movetoApfAuthPage()
+      await page.waitForTimeout(5000);
+      apfAuthPage.initializeApfauth()
+      await page.waitForTimeout(5000);
+      const isWriteConfig_check_visible = await apfAuthPage.isWriteConfigGreenCheckVisible();
+      expect(isWriteConfig_check_visible).toBe(false);
+      const isUploadConfig_check_visible = await apfAuthPage.isUploadConfig_check_visible();
+      expect(isUploadConfig_check_visible).toBe(false);
+      const isInitApf_check_visible = await apfAuthPage.isInitApf_check_visible();
+      expect(isInitApf_check_visible).toBe(false);
+    })
     test('test apfAuth with valid data', async ({ page }) => {
      await page.waitForTimeout(5000);
      apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
@@ -122,11 +141,12 @@ test.describe('ApfAuthTab', () => {
      const isInitApf_check_visible = await apfAuthPage.isInitApf_check_visible();
      expect(isInitApf_check_visible).toBe(true);
     })
+
     test('click Previous step', async ({ page }) => {
      await page.waitForTimeout(5000);
      apfAuthPage.movetoApfAuthPage()
      const title = await apfAuthPage.returnTitleOfPrevPage();
-     expect(title).toBe(INSTALLATION_TITLE);
+     expect(title).toBe(NETWORKING_TITLE);
     })
 
     test('test skip apfAuth button is enable', async ({ page }) => {
@@ -188,23 +208,18 @@ test.describe('ApfAuthTab', () => {
      await page.waitForTimeout(5000);
     })
 
-    test('Test save and close', async ({ page }) => {
+    test('Test save and close and Resume Progress', async ({ page }) => {
      await page.waitForTimeout(5000);
      apfAuthPage.fillApfDetails(DATASET_PREFIX,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
      await page.waitForTimeout(5000);
      apfAuthPage.movetoApfAuthPage()
      await page.waitForTimeout(5000);
      apfAuthPage.click_saveAndClose()
-     await page.waitForTimeout(5000);
-     titlePage.navigateToConnectionTab()
-     connectionPage.clickContinueButton()
-     await page.waitForTimeout(5000);
-     planningPage.clickContinueToInstallation()
-     await page.waitForTimeout(5000);
-     apfAuthPage.movetoInstallationPage()
-     await page.waitForTimeout(5000);
-     apfAuthPage.movetoApfAuthPage()
-     await page.waitForTimeout(5000);
+     await page.waitForTimeout(3000);
+     titlePage.clickOnResumeProgress();
+     await page.waitForTimeout(15000);
+     const title = await securityPage.returnTitleOfSecurityPage();
+     expect(title).toBe(SECURITY_TITLE);
      const datatsetPrefixValue = await apfAuthPage.get_datasetPrefix_value();
      const authPluginLibValue = await apfAuthPage.get_authPluginLib_value();
      const authLoadLibValue = await apfAuthPage.get_authLoadLib_value();
@@ -212,4 +227,6 @@ test.describe('ApfAuthTab', () => {
      expect(authLoadLibValue).toBe(AUTH_LOAD_LIB);
      expect(authPluginLibValue).toBe(AUTH_PLUGIN_LIB);
     })
+
+
 })

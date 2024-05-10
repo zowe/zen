@@ -15,7 +15,8 @@ import { Box, Card, CardContent, CardMedia, Typography, Button, DialogContent, D
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
-import { setConnectionArgs, selectConnectionArgs } from './stages/connection/connectionSlice';
+import { setConnectionArgs, selectConnectionArgs, selectInitJobStatement } from './stages/connection/connectionSlice';
+import { setJobStatement } from './stages/PlanningSlice';
 import { setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { Tooltip } from '@mui/material';
@@ -89,6 +90,7 @@ const Home = () => {
   const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
   const connectionStatus = useAppSelector(selectConnectionStatus);
   const lastActiveDate = useAppSelector(selectActiveStepDate);
+  const initJobStatement = useAppSelector(selectInitJobStatement);
 
   const [showWizard, setShowWizard] = useState(false);
   const [showLoginDialog, setShowLogin] = useState(false);
@@ -106,12 +108,15 @@ const Home = () => {
     window.electron.ipcRenderer.findPreviousInstallations().then((res: IResponse) => {
       const connectionStore = res.details;
       if (connectionStore["connection-type"] === 'ftp') {
+        const jobStatement = connectionStore['ftp-details'].jobStatement.trim() || useAppSelector(selectInitJobStatement);
         console.log(JSON.stringify(connectionStore['ftp-details'],null,2));
         const connectionArgs: IIpcConnectionArgs = {
           ...connectionStore["ftp-details"],
           password: "",
-          connectionType: 'ftp'}; 
+          connectionType: 'ftp',
+          jobStatement: jobStatement};
         dispatch(setConnectionArgs(connectionArgs));
+        dispatch(setJobStatement(jobStatement));
       } else {
         // TODO: Add support for other types
         console.warn('Connection types other than FTP are not supported yet');

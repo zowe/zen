@@ -57,7 +57,7 @@ test.describe('PlanningTab', () => {
     test.afterEach(async () => {
       await electronApp.close()
       })
-    
+
     test('Test all required fields on Planning Tab', async () => {
       expect(planningPage.planningPageTitle).toBeTruthy();
       expect(planningPage.zoweInstallationLink).toBeTruthy();
@@ -78,21 +78,21 @@ test.describe('PlanningTab', () => {
       planningPage.clickSaveAndValidate();
       await page.waitForTimeout(20000);
       const error_Message = await planningPage.getErrorMessage()
-      expect (error_Message).toBe(ERROR_MESSAGE);     
+      expect (error_Message).toBe(ERROR_MESSAGE);
       const isGreen_check_visible = await planningPage.isSaveAndValidateGreenCheckVisible();
       expect(isGreen_check_visible).toBe(false);
     })
-  
+
     test('Test Empty Job Statement and Save Validate', async () => {
       planningPage.enterJobStatement('');
       planningPage.clickSaveAndValidate();
       await page.waitForTimeout(20000);
       const error_Message = await planningPage.getErrorMessage()
-      expect (error_Message).toBe(ERROR_MESSAGE);     
+      expect (error_Message).toBe(ERROR_MESSAGE);
       const isGreen_check_visible = await planningPage.isSaveAndValidateGreenCheckVisible();
       expect(isGreen_check_visible).toBe(false);
     })
-  
+
     test('Test all required fields on Planning Tab After Job Validation', async () => {
       planningPage.enterJobStatement(JOB_STATEMENT);
       planningPage.clickSaveAndValidate();
@@ -118,7 +118,7 @@ test.describe('PlanningTab', () => {
       const is_Continue_Button_disable = await planningPage.isContinueToInstallationDisabled();
       expect(is_Continue_Button_disable).toBe(true);
     })
-  
+
     test('Test Validate Locations with Valid Data', async () => {
       planningPage.enterJobStatement(JOB_STATEMENT);
       planningPage.clickSaveAndValidate();
@@ -147,9 +147,9 @@ test.describe('PlanningTab', () => {
       await page.waitForTimeout(2000);
       planningPage.enterZosmfHost(ZOSMF_HOST);
       await page.waitForTimeout(2000);
-      planningPage.enterZosmfPort(ZOSMF_PORT);     
+      planningPage.enterZosmfPort(ZOSMF_PORT);
       await page.waitForTimeout(2000);
-      planningPage.enterZosmfApplicationId(ZOSMF_APP_ID);
+      planningPage.enterZosmfApplicationId(ZOSMF_APPID);
       await page.waitForTimeout(2000);
       planningPage.clickValidateLocations();
       await page.waitForTimeout(20000);
@@ -160,7 +160,7 @@ test.describe('PlanningTab', () => {
       planningPage.clickContinueToInstallation();
       await page.waitForTimeout(2000);
       const installationType_title = await installationTypePage.getInstallationTypePageTitle()
-      expect (installationType_title).toBe(INSTALLATION_TYPE_TITLE);     
+      expect (installationType_title).toBe(INSTALLATION_TYPE_TITLE);
     })
 
     test('Test Validate Locations with Invalid Data', async () => {
@@ -192,7 +192,7 @@ test.describe('PlanningTab', () => {
       await page.waitForTimeout(2000);
       planningPage.enterZosmfHost(ZOSMF_HOST);
       await page.waitForTimeout(2000);
-      planningPage.enterZosmfPort(987776);     
+      planningPage.enterZosmfPort(987776);
       await page.waitForTimeout(2000);
       planningPage.enterZosmfApplicationId('ABCDDDETT');
       await page.waitForTimeout(2000);
@@ -241,9 +241,11 @@ test.describe('PlanningTab', () => {
       await page.waitForTimeout(3000);
       titlePage.clickOnResumeProgress();
       await page.waitForTimeout(5000);
+      const title = await planningPage.getPlanningPageTitle();
+      expect(title).toBe(PLANNING_TITLE);
       const is_GreenCheck_Visible = await planningPage.isValidateLocationsGreenCheckVisible();
       expect(is_GreenCheck_Visible).toBe(true);
       const is_Continue_Button_enable = await planningPage.isContinueToInstallationEnabled();
       expect(is_Continue_Button_enable).toBe(true);
-    }) 
+    })
   })
