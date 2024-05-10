@@ -30,14 +30,15 @@ import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
 import { setConnectionArgs, setConnectionValidationDetails, setHost, setPort,
-               setUser, setPassword, setJobStatement, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates} from './connectionSlice';
+               setUser, setPassword, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates} from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { setActiveStep } from '../progress/activeStepSlice';
 import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from '../progress/activeStepSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
-import { getStageDetails } from "../progress/progressStore";
+import { getStageDetails } from "../../../../services/StageDetails";
+import { initializeProgress } from "../progress/StageProgressStatus";
 
 const Connection = () => {
 
@@ -152,6 +153,7 @@ const FTPConnectionForm = () => {
         dispatch(setConnectionStatus(res.status));
         if(res.status) {
           dispatch(setNextStepEnabled(true));
+          initializeProgress(connectionArgs.host, connectionArgs.user);
         }
         toggleFormProcessed(true);
         setValidationDetails(res.details);

@@ -19,13 +19,11 @@ import { setConnectionArgs, selectConnectionArgs } from './stages/connection/con
 import { setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { Tooltip } from '@mui/material';
-import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import installationImg from '../assets/installation.png'
 import installationDryImg from '../assets/installation-dry-run.png'
 import eventDispatcher from "../../services/eventDispatcher";
-import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from './stages/progress/activeStepSlice';
+import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex, selectActiveStepDate} from './stages/progress/activeStepSlice';
 import { selectConnectionStatus} from './stages/progress/progressSlice';
-import { selectActiveStepDate} from './stages/progress/activeStepSlice';
 import  HorizontalLinearStepper  from './common/Stepper';
 import Wizard from './configuration-wizard/Wizard'
 import Connection from './stages/connection/Connection';
