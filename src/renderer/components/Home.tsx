@@ -155,21 +155,13 @@ const Home = () => {
 
   return (
     <>
-      <Dialog onClose={() => {}} open={showLoginDialog} style={{fontSize: '14px'}} fullWidth={true} maxWidth={"lg"}>
-        <DialogTitle>Re-enter FTP Credentials</DialogTitle>
-        <Connection/>
-        <DialogActions>
-          <Button onClick={() => setShowLogin(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
-
       {!showWizard && <div className="home-container" style={{ display: 'flex', flexDirection: 'column' }}>
 
         <div style={{ position: 'absolute', left: '-9999px' }}>
           <HorizontalLinearStepper stages={stages} />
         </div>
 
-        {!connectionStatus && <div style={{marginBottom: '50px'}}></div>}
+        {!connectionStatus && <div style={{marginBottom: '20px'}}></div>}
 
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginLeft: '8%' }}>
           {cards.map(card => makeCard(card))}
