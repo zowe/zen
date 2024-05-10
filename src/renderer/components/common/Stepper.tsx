@@ -30,7 +30,7 @@ import eventDispatcher from '../../../utils/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import Home from '../Home';
-import { getProgress } from '../stages/progress/StageProgressStatus';
+import { getProgress, getCompleteProgress } from '../stages/progress/StageProgressStatus';
 
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
@@ -45,21 +45,23 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const INIT_STAGE_ID = 3;
   const REVIEW_STAGE_ID = 4;
 
+  const completeProgress = getCompleteProgress();
+
   const stageProgressStatus = [
     useSelector(selectConnectionStatus),
-    useSelector(selectPlanningStatus),
-    useSelector(selectInstallationTypeStatus),
-    useSelector(selectInitializationStatus),
-    useSelector(selectReviewStatus),
+    completeProgress.planningStatus,
+    completeProgress.installationTypeStatus,
+    completeProgress.initializationStatus,
+    completeProgress.reviewStatus
   ];
 
   const subStageProgressStatus = [
-    useSelector(selectDatasetInstallationStatus),
-    useSelector(selectNetworkingStatus),
-    useSelector(selectApfAuthStatus),
-    useSelector(selectSecurityStatus),
-    useSelector(selectCertificateStatus), 
-    useSelector(selectLaunchConfigStatus), 
+    completeProgress.datasetInstallationStatus,
+    completeProgress.networkingStatus,
+    completeProgress.apfAuthStatus,
+    completeProgress.securityStatus,
+    completeProgress.certificateStatus,
+    completeProgress.launchConfigStatus
   ]
   
   const TYPE_YAML = "yaml";

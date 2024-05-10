@@ -156,8 +156,6 @@ const FTPConnectionForm = () => {
   };
 
   const resumeProgress = () => {
-    const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getActiveStage();
-    eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       if (res.status) {
         dispatch(setYaml(res.details.config));
@@ -173,6 +171,8 @@ const FTPConnectionForm = () => {
           // schema response
         });
       }
+      const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getActiveStage();
+      eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
       setIsResume(false);
     })
   }
