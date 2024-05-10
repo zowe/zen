@@ -82,19 +82,8 @@ test.describe('ReviewTab', () => {
     planningPage.clickContinueToInstallation()
     await page.waitForTimeout(2000);
     installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
-    installationTypePage.clickContinueToInstallation()
     await page.waitForTimeout(2000);
-    installationPage.clickSkipInstallation()
-    await page.waitForTimeout(2000);
-    networkingPage.clickContinueToApfAuthSetup()
-    await page.waitForTimeout(2000);
-    apfAuthPage.click_skipApfAuth()
-    await page.waitForTimeout(2000);
-    securityPage.click_skipSecurity()
-    await page.waitForTimeout(2000);
-    certificatesPage.clickSkipCertificates()
-    await page.waitForTimeout(2000);
-    launchConfigPage.clickContinueToReviewPage()
+    reviewPage.clickReviewInstallationTab();
     await page.waitForTimeout(2000);
   })
 
@@ -122,55 +111,71 @@ test.describe('ReviewTab', () => {
     expect(is_Finish_Button_disable).toBe(true);
 	})
 
-  test('Test Navigation to all pages', async ({ page }) => {
+  test('Test Navigation to Connection page', async ({ page }) => {
     await page.waitForTimeout(5000);
     reviewPage.clickConnectionTab();
     await page.waitForTimeout(2000);
     const connection_title = await connectionPage.getConnectionPageTitle();
     expect(connection_title).toBe(CONNECTION_PAGE_TITLE);
-    reviewPage.clickReviewInstallationTab();
+  })
+
+  test('Test Navigation to Planning page', async ({ page }) => {
     await page.waitForTimeout(2000);
     reviewPage.clickPlanningTab();
     await page.waitForTimeout(2000);
     const planning_title = await planningPage.getPlanningPageTitle();
     expect(planning_title).toBe(PLANNING_PAGE_TITLE);
-    reviewPage.clickReviewInstallationTab();
+  })
+
+  test('Test Navigation to Installation Type page', async ({ page }) => {
     await page.waitForTimeout(2000);
     reviewPage.clickInstallationTypeTab();
     await page.waitForTimeout(2000);
     const installation_type_title = await installationTypePage.getInstallationTypePageTitle();
     expect(installation_type_title).toBe(INSTALLATION_TYPE_PAGE_TITLE);
-    reviewPage.clickReviewInstallationTab();
+  })
+
+  test('Test Navigation to Installation page', async ({ page }) => {
     await page.waitForTimeout(2000);
     reviewPage.clickInstallationTab();
     await page.waitForTimeout(2000);
     const installation_title = await installationPage.getInstallationPageTitle();
     expect(installation_title).toBe(INSTALLATION_PAGE_TITLE);
-    reviewPage.clickReviewInstallationTab();
+  })
+
+  test('Test Navigation to Networking page', async ({ page }) => {
     await page.waitForTimeout(2000);
     reviewPage.clickNetworkingTab();
     await page.waitForTimeout(2000);
     const networking_title = await networkingPage.returnTitleOfNetworkingPage();
     expect(networking_title).toBe(NETWORKING_PAGE_TITLE);
-    reviewPage.clickReviewInstallationTab();
+  })
+
+  test('Test Navigation to Apf Auth page', async ({ page }) => {
     await page.waitForTimeout(2000);
     reviewPage.clickApfAuthTab();
     await page.waitForTimeout(2000);
     const apfAuth_title = await apfAuthPage.getApfAuthPageTitle();
     expect(apfAuth_title).toBe(APF_AUTH_PAGE_TITLE);
-    reviewPage.clickReviewInstallationTab();
+  })
+
+  test('Test Navigation to Security page', async ({ page }) => {
     await page.waitForTimeout(2000);
     reviewPage.clickSecurityTab();
     await page.waitForTimeout(2000);
     const security_title = await securityPage.getSecurityPageTitle();
     expect(security_title).toBe(SECURITY_PAGE_TITLE);
-    reviewPage.clickReviewInstallationTab();
+  })
+
+  test('Test Navigation to Certificates page', async ({ page }) => {
     await page.waitForTimeout(2000);
     reviewPage.clickCertificatesTab();
     await page.waitForTimeout(2000);
     const certificates_title = await certificatesPage.getCertificatesPageTitle();
     expect(certificates_title).toBe(CERTIFICATES_PAGE_TITLE);
-    reviewPage.clickReviewInstallationTab();
+  })
+
+  test('Test Navigation to Launch Config page', async ({ page }) => {
     await page.waitForTimeout(2000);
     reviewPage.clickLaunchConfigTab();
     await page.waitForTimeout(2000);
@@ -180,7 +185,7 @@ test.describe('ReviewTab', () => {
     await page.waitForTimeout(2000);
     const review_title = await reviewPage.getReviewPageTitle();
     expect(review_title).toBe(REVIEW_PAGE_TITLE);
-	})
+  })
 
   test('Test Successful Operations Tabs', async ({ page }) => {
     await page.waitForTimeout(5000);
