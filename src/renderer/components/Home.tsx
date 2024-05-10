@@ -15,7 +15,7 @@ import { Box, Card, CardContent, CardMedia, Typography, Button, DialogContent, D
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
-import { setConnectionArgs, selectConnectionArgs, selectInitJobStatement } from './stages/connection/connectionSlice';
+import { setConnectionArgs, setResumeProgress, selectInitJobStatement } from './stages/connection/connectionSlice';
 import { setJobStatement } from './stages/PlanningSlice';
 import { setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
@@ -103,9 +103,13 @@ const Home = () => {
   const [isNewInstallation, setIsNewInstallation] = useState(true);
 
   const stages: any = [];
+  const defaultTooltip: string = "Continue to the last Active Stage";
+  const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
 
   useEffect(() => {
     eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));
+
+
     window.electron.ipcRenderer.checkZoweCLI().then((res: IResponse) => {
       if (res.status) {
         dispatch(setZoweCLIVersion(res.details));
@@ -146,20 +150,19 @@ const Home = () => {
 
   const resumeProgress = () => {
     setShowWizard(true);
-    setShowLogin(!connectionStatus);
-    eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
+    dispatch(setResumeProgress(!connectionStatus));
   }
 
   return (
     <>
-      <Dialog onClose={() => {}} open={showLoginDialog} style={{fontSize: '14px'}} fullWidth={true}
-        maxWidth={"lg"}>
+      <Dialog onClose={() => {}} open={showLoginDialog} style={{fontSize: '14px'}} fullWidth={true} maxWidth={"lg"}>
         <DialogTitle>Re-enter FTP Credentials</DialogTitle>
-         <Connection />
-         <DialogActions>
+        <Connection/>
+        <DialogActions>
           <Button onClick={() => setShowLogin(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+
       {!showWizard && <div className="home-container" style={{ display: 'flex', flexDirection: 'column' }}>
 
         <div style={{ position: 'absolute', left: '-9999px' }}>
@@ -182,7 +185,7 @@ const Home = () => {
             <Box sx={{display: 'flex', flexDirection: 'row', marginTop: '10px'}}>
               <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {lastActiveDate}</div>
               <div style={{marginBottom: '1px', marginTop: '-5px'}}>
-                <Tooltip title="Continue to Last Active Stage" arrow>
+                <Tooltip title={resumeTooltip} arrow>
                   <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '9px', padding: '4px'}} onClick={resumeProgress}>
                     Resume Progress
                   </Button>

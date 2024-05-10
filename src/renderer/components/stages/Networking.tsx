@@ -127,7 +127,7 @@ const Networking = () => {
   const theme = createTheme();
 
   const stageLabel = 'Initialization';
-  const subStageLabel = 'APF Auth';
+  const subStageLabel = 'Networking';
 
   const STAGE_ID = getStageDetails(stageLabel).id;
   const SUB_STAGES = !!getStageDetails(stageLabel).subStages;

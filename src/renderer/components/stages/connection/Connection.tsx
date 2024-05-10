@@ -30,10 +30,9 @@ import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
 import { setConnectionArgs, setConnectionValidationDetails, setHost, setPort,
-               setUser, setPassword, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates} from './connectionSlice';
+               setUser, setPassword, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress} from './connectionSlice';
 import { setYaml, setSchema, setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
-import { setActiveStep, selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from '../progress/activeStepSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { getStageDetails } from "../../../../utils/StageDetails";
@@ -124,7 +123,7 @@ const FTPConnectionForm = () => {
   const [formProcessed, toggleFormProcessed] = React.useState(false);
   const [validationDetails, setValidationDetails] = React.useState('');
 
-  const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getActiveStage();
+  const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
 
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
@@ -145,6 +144,9 @@ const FTPConnectionForm = () => {
         if(res.status) {
           dispatch(setNextStepEnabled(true));
           initializeProgress(connectionArgs.host, connectionArgs.user);
+          if(isResume) {
+            resumeProgress();
+          }
         }
         toggleFormProcessed(true);
         setValidationDetails(res.details);
@@ -154,6 +156,8 @@ const FTPConnectionForm = () => {
   };
 
   const resumeProgress = () => {
+    const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getActiveStage();
+    eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       if (res.status) {
         dispatch(setYaml(res.details.config));
@@ -169,7 +173,7 @@ const FTPConnectionForm = () => {
           // schema response
         });
       }
-      eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
+      setIsResume(false);
     })
   }
 
@@ -312,55 +316,15 @@ const FTPConnectionForm = () => {
           
       <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row", paddingTop: '12px', paddingBottom: '12px'}}>
 
-      <div style={{ padding: '10px', width: '100%' }}>
-
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10px' }}>
-          <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '12px'}} onClick={processForm}>Validate credentials</Button>
-          <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div>
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          {connectionStatus && activeStepIndex>0 &&
-            <div style={{marginTop: '20px',background: 'white', fontSize: 'small', padding: '15px 0 15px 15px',width: '60%', boxShadow: '1px 1px 3px #a6a6a6'}}>
-              <Box sx={{display: 'flex', flexDirection: 'column'}}>
-
-                <div style={{paddingBottom: '10px', color: 'black'}}>
-                <Typography variant="subtitle1" component="div">Saved Installation</Typography>
-                </div>
-
-                <Box sx={{display: 'flex', flexDirection: 'row', marginTop: '10px'}}>
-                  <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {lastActiveDate}</div>
-                  <div style={{marginBottom: '1px', marginTop: '-5px'}}>
-                    <Tooltip title="Continue to Last Active Stage" arrow>
-                      <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '9px', padding: '4px'}} onClick={resumeProgress}>
-                        Resume Progress
-                      </Button>
-                    </Tooltip>
-                  </div>
-                </Box>
-
-              </Box>
-
-            </div>}
-        </div>
-
-      </div>
-
-        {/* <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
+        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
           <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '12px'}} 
             onClick={processForm}
           >
-            Validate credentials
+            {isResume && `Validate credentials & Resume`}
+            {!isResume && `Validate credentials`}
           </Button>
         </Box>
-        <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div> */}
-
-        {/* {connectionStatus && activeStepIndex>0 && <Tooltip title="Continue to Last Active Stage" arrow>
-          <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
-            <Button sx={{color: '#0b0b0b', boxShadow: 'none', margin: '0 0 0 10px', '&:hover': { backgroundColor: 'transparent' }, '&:click': { backgroundColor: 'transparent' }}} type="submit" onClick={() => resumeProgress()}>Resume</Button>
-            <div><ArrowCircleRightIcon sx={{ color: '#494949', fontSize: '1.4rem', marginTop: '5px', marginLeft: '0', cursor: 'pointer' }} onClick={() => resumeProgress()} /></div>
-          </Box>
-        </Tooltip>} */}
+        <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div>
 
         <div style={{opacity: formProcessed ? '1' : '0'}}>
           {!connectionStatus && (validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error'))}

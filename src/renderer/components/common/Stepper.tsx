@@ -81,6 +81,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   }, []); 
 
   const updateActiveStepListener = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
+    console.log("INSIDE UPDATE ACTIVE STEP LISTENER");
     setActiveStep(newActiveStep);
     const newSubStep = isSubStep ? subStepIndex : 0;
     setActiveSubStep(newSubStep);
