@@ -1427,7 +1427,7 @@ const Installation = () => {
       setYaml(window.electron.ipcRenderer.getConfig());
       setShowProgress(true);
       dispatch(setLoading(false));
-      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
+      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, true).then((res: IResponse) => {
         if(!res.status){ //errors during runInstallation()
           alertEmitter.emit('showAlert', res.details, 'error');
         }
