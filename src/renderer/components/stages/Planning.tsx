@@ -344,7 +344,7 @@ const Planning = () => {
     setStep(0);
   }
 
-  const formChangeHandler = (key?: string, value?: string, installationArg?: string) => {
+  const formChangeHandler = (key?: string, value?: (string | number), installationArg?: string) => {
     setIsLocationsUpdated(true);
     setPlanningStatus(false);
     setLocationsValidated(false);
@@ -369,7 +369,7 @@ const Planning = () => {
     setLocalYaml(updatedYaml);
   }
 
-  const updateAndReturnYaml = (key: string, value: string) => {
+  const updateAndReturnYaml = (key: string, value: string | number) => {
     const keys = key.split('.');
     const updatedYaml: any = { ...localYaml };
 
@@ -706,7 +706,7 @@ Please customize the job statement below to match your system requirements.
                       type="number"
                       value={localYaml?.zOSMF?.port || installationArgs.zosmfPort}
                       onChange={(e) => {
-                        formChangeHandler("zOSMF.port", e.target.value, "zosmfPort");
+                        formChangeHandler("zOSMF.port", Number(e.target.value), "zosmfPort");
                         if(localYaml){
                           window.electron.ipcRenderer.setConfigByKey('zOSMF.port', Number(e.target.value)).then((res: any) => {
                             // console.log('updated zowe.zOSMF.port')
