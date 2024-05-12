@@ -53,7 +53,7 @@ const Installation = () => {
     "title": "Zowe configuration file",
     "description": "Configuration file for Zowe (zowe.org) version 2.",
     "type": "object",
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "zowe": {
         "type": "object",
@@ -1243,7 +1243,7 @@ const Installation = () => {
   const [schema] = useState(typeof reduxSchema === "object" && Object.keys(reduxSchema).length > 0 ? reduxSchema : FALLBACK_SCHEMA);
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const [setupSchema, setSetupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.dataset);
+  const [setupSchema, setSetupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.dataset || FALLBACK_SCHEMA.properties?.zowe?.properties?.setup?.properties?.dataset);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || {
       prefix: "IBMUSER.ZWEV2",
       proclib: "USER.PROCLIB",
@@ -1308,10 +1308,9 @@ const Installation = () => {
     setIsFormInit(true);
 
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-      if(!res.status){
+      if(res.details === undefined){
         //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux but not on disk
         dispatch(setYaml(FALLBACK_YAML))
-        dispatch(setSchema(FALLBACK_SCHEMA));
       }
     })
 
