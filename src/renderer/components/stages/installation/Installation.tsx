@@ -1314,6 +1314,13 @@ const Installation = () => {
         dispatch(setSchema(FALLBACK_SCHEMA));
       }
     })
+
+    window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+      if(res.details === undefined){
+        //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux
+        dispatch(setSchema(FALLBACK_SCHEMA));
+      }
+    })
     
     if(installationType === 'smpe') {
       const status = getProgress('datasetInstallationStatus');
