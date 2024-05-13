@@ -1244,18 +1244,7 @@ const Installation = () => {
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const [setupSchema, setSetupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.dataset || FALLBACK_SCHEMA.properties?.zowe?.properties?.setup?.properties?.dataset);
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || {
-      prefix: "IBMUSER.ZWEV2",
-      proclib: "USER.PROCLIB",
-      parmlib: "IBMUSER.ZWEV2.CUST.PARMLIB",
-      parmlibMembers: {
-        zis: "ZWESIP00"
-      },
-      jcllib: "IBMUSER.ZWEV2.CUST.JCLLIB",
-      loadlib: "IBMUSER.ZWEV2.SZWELOAD",
-      authLoadlib: "IBMUSER.ZWEV2.SZWEAUTH",
-      authPluginLib: "IBMUSER.ZWEV2.CUST.ZWESAPL"
-  });
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || FALLBACK_YAML?.zowe?.setup?.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('datasetInstallationStatus'));
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -1266,7 +1255,7 @@ const Installation = () => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
 
-  const installationArgs = useAppSelector(selectInstallationArgs);
+  const [installationArgs, setInstArgs] = useState(useAppSelector(selectInstallationArgs));
   const version = useAppSelector(selectZoweVersion);
   let timer: any;
   const installationType = getInstallationTypeStatus().installationType;
@@ -1308,9 +1297,66 @@ const Installation = () => {
     setIsFormInit(true);
 
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-      if(res.details === undefined){
+      function mergeInstallationArgsAndYaml(yaml: any){
+        let yamlObj = JSON.parse(JSON.stringify(yaml));
+        console.log('merging yaml obj:', JSON.stringify(yamlObj));
+        delete yamlObj.installationArgs;
+        if (installationArgs.installationDir) {
+          yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
+        }
+        if (installationArgs.workspaceDir) {
+          yamlObj.zowe.workspaceDirectory = installationArgs.workspaceDir;
+        }
+        if (installationArgs.logDir) {
+          yamlObj.zowe.logDirectory = installationArgs.logDir;
+        }
+        if (installationArgs.extensionDir) {
+          yamlObj.zowe.extensionDirectory = installationArgs.extensionDir;
+        }
+        if (installationArgs.rbacProfile) {
+          yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
+        }
+        if (installationArgs.jobName) {
+          yamlObj.zowe.job.name = installationArgs.jobName;
+        }
+        if (installationArgs.jobPrefix) {
+          yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
+        }
+        if (installationArgs.cookieId) {
+          yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
+        }
+        if (installationArgs.javaHome) {
+          yamlObj.java.home = installationArgs.javaHome;
+        }
+        if (installationArgs.nodeHome) {
+          yamlObj.node.home = installationArgs.nodeHome;
+        }
+        if (installationArgs.zosmfHost) {
+          yamlObj.zOSMF.host = installationArgs.zosmfHost;
+        }
+        if (installationArgs.zosmfPort) {
+          yamlObj.zOSMF.port = Number(installationArgs.zosmfPort);
+        }
+        if (installationArgs.zosmfApplId) {
+          yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
+        }
+        return yamlObj;
+      }
+      if(res.details.zowe === undefined){
         //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux but not on disk
-        dispatch(setYaml(FALLBACK_YAML))
+        let yamlObj = mergeInstallationArgsAndYaml(FALLBACK_YAML);
+        console.log('setting yaml:', yamlObj);
+        setLYaml(yamlObj)
+        dispatch(setYaml(yamlObj))
+      } else {
+        console.log('got config:', JSON.stringify(res.details));
+        let yamlObj = mergeInstallationArgsAndYaml(res.details);
+        if(res.details.zowe?.setup?.dataset === undefined){
+          console.log('setting yaml:',{...yamlObj, zowe: {...yamlObj.zowe, setup: {dataset: FALLBACK_YAML.zowe.setup.dataset}} });
+          dispatch(setYaml({...yamlObj, zowe: {...yamlObj.zowe, setup: {dataset: FALLBACK_YAML.zowe.setup.dataset}} }));
+        } else {
+          dispatch(setYaml(yamlObj));
+        }
       }
     })
 
@@ -1427,7 +1473,7 @@ const Installation = () => {
       setYaml(window.electron.ipcRenderer.getConfig());
       setShowProgress(true);
       dispatch(setLoading(false));
-      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, true).then((res: IResponse) => {
+      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
         if(!res.status){ //errors during runInstallation()
           alertEmitter.emit('showAlert', res.details, 'error');
         }
