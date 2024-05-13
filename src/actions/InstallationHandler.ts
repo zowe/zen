@@ -102,7 +102,7 @@ class Installation {
           return {status: false, details: `Error unpaxing Zowe archive: ${unpax.details}`};
         }
       }
-
+      let yamlObj
       let zoweRuntimePath = installationArgs.installationType === "smpe" ? installationArgs.installationDir : installationArgs.installationDir + "/runtime";
       let readPaxYamlAndSchema = await this.readExYamlAndSchema(connectionArgs, zoweRuntimePath);
       if(readPaxYamlAndSchema.details.yaml){
@@ -119,7 +119,7 @@ class Installation {
         const currentConfig: any = ConfigurationStore.getConfig();
         if(yamlFromPax){
           try {
-            let yamlObj = parse(yamlFromPax);
+            yamlObj = parse(yamlFromPax);
             if (installationArgs.installationDir) {
               yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
             }
@@ -160,10 +160,14 @@ class Installation {
               yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
             }
             if (currentConfig) {
+              // console.log("current config:", JSON.stringify(currentConfig));
+              // console.log("yamlObj: ", JSON.stringify(yamlObj));
               yamlObj = {...currentConfig, ...yamlObj}
+              console.log("merged yamlObj: ", JSON.stringify(yamlObj));
             }
             if (zoweConfig) {
-              yamlObj = {...zoweConfig, ...currentConfig}
+              console.log("zoweConfig:", JSON.stringify(zoweConfig));
+              yamlObj = {...zoweConfig, ...yamlObj}
             }
             console.log('Setting merged yaml:', JSON.stringify(yamlObj));
             ConfigurationStore.setConfig(yamlObj);
@@ -179,7 +183,7 @@ class Installation {
           const parseSchemaFromPax = function(inputString: string, catPath: string){
             const jobOutputSplit = inputString.split(`cat ${catPath}\\r\\n`)
             if(jobOutputSplit[1]){
-              const trimmedYamlSchema = jobOutputSplit[1].split(`Script finished.`);
+              const trimmedYamlSchema = jobOutputSplit[1].split(`Script finished.`)[0].split(`Script finished.`);
               return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`).replaceAll(`\\\\"`, `\\"`);
             }
             return "";
@@ -227,7 +231,7 @@ class Installation {
       let initMvs;
       if(installation.status){
         console.log("running zwe init mvs...");
-         initMvs = await this.initMVS(connectionArgs, SMPE_INSTALL ? installationArgs.installationDir : installationArgs.installationDir + '/runtime');
+         initMvs = await this.initMVS(connectionArgs, installationArgs.installationDir);
         ProgressStore.set('installation.initMVS', initMvs.status);
       } else {
         initMvs = {status: false, details: `zwe install step failed, unable to run zwe init mvs.`}
@@ -238,7 +242,7 @@ class Installation {
         return {status: false, details: `Error running zwe init mvs: ${initMvs.details}`};
       }      
 
-      return {status: download.status && uploadYaml.status && upload.status && unpax.status && installation.status && initMvs.status, details: 'Zowe install successful.'};
+      return {status: download.status && uploadYaml.status && upload.status && unpax.status && installation.status && initMvs.status, details: {message: 'Zowe install successful.', mergedYaml: yamlObj}};
     } catch (error) {
       return {status: false, details: error.message};
     }
