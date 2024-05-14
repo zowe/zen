@@ -24,8 +24,9 @@ import { useAppSelector } from '../../hooks';
 import InitApfAuth from '../stages/InitApfAuth';
 import Networking from '../stages/Networking';
 import LaunchConfig from '../stages/LaunchConfig';
+import { getWizardStages } from '../stages/progress/StageProgressStatus';
 
-export const stages = [
+let stages = [
   {id: 0, label: 'Connection', component: <Connection/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1, nextButton: 'Continue', statusKey: 'connectionStatus'},
   {id: 1, label: 'Planning', component: <Planning/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: true, steps: 3, nextButton: 'Continue to Installation Options', statusKey: 'planningStatus'},
   {id: 2, label: 'Installation Type', component: <InstallationType/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1, nextButton: 'Continue to Components Installation', statusKey: 'installationTypeStatus'},
@@ -40,6 +41,11 @@ export const stages = [
   {id: 4, label: 'Review Installation', component: <ReviewInstallation/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Finish Installation', statusKey: 'reviewStatus'},
   {id: 5, label: 'Finish Installation', component: <FinishInstallation/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1, statusKey: 'finishStatus'},
 ]
+
+const tempStages = getWizardStages();
+stages = tempStages ? tempStages : stages;
+
+export {stages};
 
 const Wizard = ({initialization}: {initialization: boolean}) => {
   return (

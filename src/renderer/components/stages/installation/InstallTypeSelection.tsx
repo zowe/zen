@@ -20,8 +20,9 @@ import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
 import { getStageDetails } from "../../../../utils/StageDetails";
-import { getInstallationTypeStatus } from "../progress/StageProgressStatus";
+import { getInstallationTypeStatus, setWizardStages } from "../progress/StageProgressStatus";
 import { connect } from "http2";
+import { stages } from "../../configuration-wizard/Wizard";
 
 const InstallationType = () => {
 
@@ -44,6 +45,7 @@ const InstallationType = () => {
   useEffect(() => {
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+      setWizardStages(stages);
     }
   }, []);
 

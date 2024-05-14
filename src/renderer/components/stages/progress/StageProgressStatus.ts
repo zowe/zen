@@ -87,6 +87,7 @@ let securityKey = 'security_init';
 let certificateKey = 'certificate_init';
 let planningValidationDetailsKey = `planning_validation_details`;
 let prevInstallationKey = `prev_installation`;
+let wizardStagesKey = `wizard_stages`;
 
 const setKeys = (id: string) => {
   progressStateKey = `${progressStateKey}_${id}`;
@@ -98,6 +99,7 @@ const setKeys = (id: string) => {
   securityKey = `${securityKey}_${id}`;
   certificateKey = `${certificateKey}_${id}`;
   planningValidationDetailsKey = `${planningValidationDetailsKey}_${id}`;
+  wizardStagesKey = `${wizardStagesKey}_${id}`;
 }
 
 export const initializeProgress = (host: string, user: string) => {
@@ -157,6 +159,12 @@ export const initializeProgress = (host: string, user: string) => {
     const flattenedData = flatten(planningValidationDetailsStatus);
     localStorage.setItem(planningValidationDetailsKey, JSON.stringify(flattenedData));
   }
+
+  // const wizardStages = localStorage.getItem(wizardStagesKey);
+  // if(!wizardStages) {
+  //   const flattenedData = flatten(wizardStages);
+  //   localStorage.setItem(wizardStages, JSON.stringify(flattenedData));
+  // }
 }
 
 export const setPlanningValidationDetailsState = (planningValidationsDetails: PlanningValidationDetails): void => {
@@ -344,6 +352,20 @@ export const getPreviousInstallation = () : ActiveState => {
     return unflatten(flattenedData);
   } else {
     return activeStatus;
+  }
+}
+
+export const setWizardStages = (stages: any[]): void => {
+  localStorage.setItem(wizardStagesKey, JSON.stringify(flatten(stages)));
+}
+
+export const getWizardStages = (): any => {
+  const wizardStages = localStorage.getItem(wizardStagesKey);
+  if(wizardStages) {
+    const flattenedData = JSON.parse(wizardStages);
+    return unflatten(flattenedData);
+  } else {
+    return null;
   }
 }
 
