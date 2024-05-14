@@ -28,6 +28,7 @@ class Installation {
     zoweConfig: any,
     skipDownload: boolean
   ): Promise<IResponse> {
+    const currentConfig: any = ConfigurationStore.getConfig();
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
     const savingResult = await this.generateYamlFile(zoweConfig);
     if (!savingResult.status) {
@@ -116,54 +117,53 @@ class Installation {
           return "";
         }
         const yamlFromPax = parseExampleYamlFromPax(`${zoweRuntimePath}/example-zowe.yaml`);
-        const currentConfig: any = ConfigurationStore.getConfig();
         if(yamlFromPax){
           try {
             yamlObj = parse(yamlFromPax);
-            if (installationArgs.installationDir) {
-              yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
-            }
-            if (installationArgs.workspaceDir) {
-              yamlObj.zowe.workspaceDirectory = installationArgs.workspaceDir;
-            }
-            if (installationArgs.logDir) {
-              yamlObj.zowe.logDirectory = installationArgs.logDir;
-            }
-            if (installationArgs.extensionDir) {
-              yamlObj.zowe.extensionDirectory = installationArgs.extensionDir;
-            }
-            if (installationArgs.rbacProfile) {
-              yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
-            }
-            if (installationArgs.jobName) {
-              yamlObj.zowe.job.name = installationArgs.jobName;
-            }
-            if (installationArgs.jobPrefix) {
-              yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
-            }
-            if (installationArgs.cookieId) {
-              yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
-            }
-            if (installationArgs.javaHome) {
-              yamlObj.java.home = installationArgs.javaHome;
-            }
-            if (installationArgs.nodeHome) {
-              yamlObj.node.home = installationArgs.nodeHome;
-            }
-            if (installationArgs.zosmfHost) {
-              yamlObj.zOSMF.host = installationArgs.zosmfHost;
-            }
-            if (installationArgs.zosmfPort) {
-              yamlObj.zOSMF.port = installationArgs.zosmfPort;
-            }
-            if (installationArgs.zosmfApplId) {
-              yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
-            }
             if (currentConfig) {
-              // console.log("current config:", JSON.stringify(currentConfig));
+              console.log("current config:", JSON.stringify(currentConfig));
               // console.log("yamlObj: ", JSON.stringify(yamlObj));
               yamlObj = {...currentConfig, ...yamlObj}
               console.log("merged yamlObj: ", JSON.stringify(yamlObj));
+            }
+            if (yamlObj.zowe.runtimeDirectory === undefined && installationArgs.installationDir) {
+              yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
+            }
+            if (yamlObj.zowe.workspaceDirectory === undefined && installationArgs.workspaceDir) {
+              yamlObj.zowe.workspaceDirectory = installationArgs.workspaceDir;
+            }
+            if (yamlObj.zowe.logDirectory === undefined && installationArgs.logDir) {
+              yamlObj.zowe.logDirectory = installationArgs.logDir;
+            }
+            if (yamlObj.zowe.extensionDirectory === undefined && installationArgs.extensionDir) {
+              yamlObj.zowe.extensionDirectory = installationArgs.extensionDir;
+            }
+            if (yamlObj.zowe.rbacProfileIdentifier === undefined && installationArgs.rbacProfile) {
+              yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
+            }
+            if (yamlObj.zowe.job.name === undefined && installationArgs.jobName) {
+              yamlObj.zowe.job.name = installationArgs.jobName;
+            }
+            if (yamlObj.zowe.job.prefix === undefined && installationArgs.jobPrefix) {
+              yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
+            }
+            if (yamlObj.zowe.cookieIdentifier === undefined && installationArgs.cookieId) {
+              yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
+            }
+            if (yamlObj.java.home === undefined && installationArgs.javaHome) {
+              yamlObj.java.home = installationArgs.javaHome;
+            }
+            if (yamlObj.node.home === undefined && installationArgs.nodeHome) {
+              yamlObj.node.home = installationArgs.nodeHome;
+            }
+            if (yamlObj.zOSMF.host === undefined && installationArgs.zosmfHost) {
+              yamlObj.zOSMF.host = installationArgs.zosmfHost;
+            }
+            if (yamlObj.zOSMF.port === undefined && installationArgs.zosmfPort) {
+              yamlObj.zOSMF.port = installationArgs.zosmfPort;
+            }
+            if (yamlObj.zOSMF.applId === undefined && installationArgs.zosmfApplId) {
+              yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
             }
             if (zoweConfig) {
               console.log("zoweConfig:", JSON.stringify(zoweConfig));
