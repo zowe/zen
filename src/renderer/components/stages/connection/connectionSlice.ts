@@ -11,6 +11,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
 import { IIpcConnectionArgs, IIpcConnectionArgsSecureOptions } from '../../../../types/interfaces';
+import { DEF_JOB_STATEMENT } from '../../common/Utils';
 
 export interface ConnectionState {
   connectionArgs: IIpcConnectionArgs;
@@ -26,7 +27,7 @@ const initialState: ConnectionState = {
     port: 21,
     user: '',
     password: '',
-    jobStatement: "//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,\n//         MSGLEVEL=(1,1),MSGCLASS=A",
+    jobStatement: DEF_JOB_STATEMENT,
     secure: false,
     secureOptions: {
       enableTrace: false,
