@@ -25,7 +25,7 @@ class Installation {
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,
     version: string,
-    zoweConfig: any, //this is likely only zowe.setup.dataset from Installation.tsx installButtonOnClick call
+    zoweConfig: any,
     skipDownload: boolean
   ): Promise<IResponse> {
     const currentConfig: any = ConfigurationStore.getConfig();
@@ -166,7 +166,7 @@ class Installation {
               yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
             }
             if (zoweConfig) {
-              yamlObj.zowe.setup.dataset = {... yamlObj.zowe.setup.dataset, ...zoweConfig};
+              yamlObj = {...yamlObj, ...zoweConfig};
             }
             console.log('Setting merged yaml:', JSON.stringify(yamlObj));
             ConfigurationStore.setConfig(yamlObj);

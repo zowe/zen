@@ -1296,7 +1296,7 @@ const Installation = () => {
 
     window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
       if(res != undefined){
-        // console.log("got installation args:", JSON.stringify(res));
+        console.log("got installation args:", JSON.stringify(res));
         setInstArgs((res as any));
       }
     })
@@ -1480,7 +1480,7 @@ const Installation = () => {
       setYaml(window.electron.ipcRenderer.getConfig());
       setShowProgress(true);
       dispatch(setLoading(false));
-      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, setupYaml, skipDownload ?? false).then((res: IResponse) => {
+      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
         if(!res.status){ //errors during runInstallation()
           alertEmitter.emit('showAlert', res.details, 'error');
         }
