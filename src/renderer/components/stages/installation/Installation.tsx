@@ -12,7 +12,7 @@ import React, {useCallback, useEffect, useRef, useState} from "react";
 import { Box, Button, FormControl, Typography, debounce } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading, setSchema } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion, selectInstallationType } from './installationSlice';
+import { selectInstallationArgs, selectZoweVersion, selectInstallationType, setInstallationArgs } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import { setDatasetInstallationStatus, setInitializationStatus } from "../progress/progressSlice";
 import { IResponse } from '../../../../types/interfaces';
@@ -1310,6 +1310,9 @@ const Installation = () => {
         delete yamlObj.installationArgs;
         if (installationArgs.installationDir) {
           yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
+        } else if(!installationArgs.installationDir && yamlObj.zowe.runtimeDirectory){
+          //setting this because it is needed many places in InstallationHandler.tsx. This whole architecture has become an absolute mess.
+          dispatch(setInstallationArgs({...installationArgs, installationDir: yamlObj.zowe.runtimeDirectory}));
         }
         if (installationArgs.workspaceDir) {
           yamlObj.zowe.workspaceDirectory = installationArgs.workspaceDir;
