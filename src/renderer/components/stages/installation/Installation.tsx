@@ -1294,6 +1294,13 @@ const Installation = () => {
       nextPosition.scrollIntoView({behavior: 'smooth'});
     }
 
+    window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
+      if(res != undefined){
+        // console.log("got installation args:", JSON.stringify(res));
+        setInstArgs((res as any));
+      }
+    })
+
     setIsFormInit(true);
 
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
@@ -1345,15 +1352,15 @@ const Installation = () => {
       if(res.details.zowe === undefined){
         //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux but not on disk
         let yamlObj = mergeInstallationArgsAndYaml(FALLBACK_YAML);
-        console.log('setting yaml:', yamlObj);
+        // console.log('setting yaml:', yamlObj);
         setLYaml(yamlObj)
         dispatch(setYaml(yamlObj))
       } else {
-        console.log('got config:', JSON.stringify(res.details));
+        // console.log('got config:', JSON.stringify(res.details));
         let yamlObj = mergeInstallationArgsAndYaml(res.details);
         if(res.details.zowe?.setup?.dataset === undefined){
-          console.log('setting yaml:',{...yamlObj, zowe: {...yamlObj.zowe, setup: {dataset: FALLBACK_YAML.zowe.setup.dataset}} });
-          dispatch(setYaml({...yamlObj, zowe: {...yamlObj.zowe, setup: {dataset: FALLBACK_YAML.zowe.setup.dataset}} }));
+          // console.log('setting yaml:',{...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} });
+          dispatch(setYaml({...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} }));
         } else {
           dispatch(setYaml(yamlObj));
         }
