@@ -12,8 +12,7 @@ import '../global.css';
 import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
 import { Box, Card, CardContent, CardMedia, Typography, Button, DialogContent, DialogActions } from '@mui/material';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
+import flatten, { unflatten } from 'flat';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
 import { setConnectionArgs, setResumeProgress, selectInitJobStatement } from './stages/connection/connectionSlice';
 import { setJobStatement } from './stages/PlanningSlice';
@@ -29,7 +28,6 @@ import  HorizontalLinearStepper  from './common/Stepper';
 import Wizard from './configuration-wizard/Wizard'
 import Connection from './stages/connection/Connection';
 import { ActiveState } from '../../types/stateInterfaces';
-import flatten from 'flat';
 import { getPreviousInstallation } from './stages/progress/StageProgressStatus';
 
 // REVIEW: Get rid of routing
@@ -100,10 +98,10 @@ const Home = () => {
     isSubStep: false,
     activeSubStepIndex: 0,
   };
-  const [isNewInstallation, setIsNewInstallation] = useState(true);
+  const [isNewInstallation, setIsNewInstallation] = useState(false);
 
   const stages: any = [];
-  const defaultTooltip: string = "Continue to the last Active Stage";
+  const defaultTooltip: string = "Resume";
   const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
 
   useEffect(() => {
@@ -135,12 +133,15 @@ const Home = () => {
       }
 
       const lastInstallation = localStorage.getItem(prevInstallationKey);
-      if(!lastInstallation) {
+      if (!lastInstallation) {
         const flattenedData = flatten(lastActiveState);
         localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
+        setIsNewInstallation(true);
       } else {
-        setIsNewInstallation(false);
+        const data: ActiveState = unflatten(JSON.parse(lastInstallation));
+        setIsNewInstallation(!(data && data.lastActiveDate));
       }
+
 
     });
     return () => {
