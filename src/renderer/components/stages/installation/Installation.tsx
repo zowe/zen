@@ -1489,6 +1489,7 @@ const Installation = () => {
         }
         if(res.details?.mergedYaml != undefined){
           dispatch(setYaml(res.details.mergedYaml));
+          window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
         }
         updateProgress(true);
         clearInterval(timer);
