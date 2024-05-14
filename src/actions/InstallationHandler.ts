@@ -166,7 +166,6 @@ class Installation {
               yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
             }
             if (zoweConfig) {
-              console.log("zoweConfig:", JSON.stringify(zoweConfig));
               yamlObj.zowe.setup.dataset = zoweConfig;
             }
             console.log('Setting merged yaml:', JSON.stringify(yamlObj));
