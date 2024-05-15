@@ -90,7 +90,7 @@ export const STORE_DEFAULT = {
   }
 };
 
-const store = new Store({cwd: 'zen-connection-store', schema: STORE_SCHEMA});
+const store = new Store({cwd: STORE_NAME, schema: STORE_SCHEMA});
 store.set({...STORE_DEFAULT, ...store.store});
 
 export class ConnectionStore extends DefaultStore {

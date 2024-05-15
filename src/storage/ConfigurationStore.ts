@@ -43,11 +43,12 @@ export class ConfigurationStore extends DefaultStore {
   }
 
   public static setConfigByKeyAndValidate(key: string, value: string | Array<string>, schema?: any): boolean {
-    if (!schema) {
-      schema = this.getSchema();
+    if (this.validateWithSchema(key, KEY_SCHEMA)) {
+      this.getStore().set(`config.${key}`, value);
+      return true;
     }
-    let schemaPart: any = schema?.properties;
-    return this.setAndValidate(key, value, schemaPart);
+    console.warn(`failed validate against schema config.${key}`);
+    return false;
   }
 
   public static deleteConfigByKey(key: any): void {

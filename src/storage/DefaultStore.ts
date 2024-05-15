@@ -20,14 +20,22 @@ export class DefaultStore {
     return new Store({cwd: STORE_NAME});
   }
 
-  public static validateWithSchema(key: string, schema: any): boolean {
+  public static validateWithSchema(key: string, schemaKey: any): boolean {
     const keys = key.split('.');
-    let schemaPart = schema;
-    for (const key of keys) {
-        if (!Object.prototype.hasOwnProperty.call(schemaPart, key)) {
+    const schema = this.getStore().get(schemaKey) as any;
+    if(schema && schema.properties){
+      let schemaPart: any = schema?.properties || undefined;
+      for (const key of keys) {
+        if (schemaPart != undefined && !Object.prototype.hasOwnProperty.call(schemaPart, key)) {
             return false;
         }
-        schemaPart = schemaPart[key].properties;        
+        if(schemaPart[key].properties){
+          schemaPart = schemaPart[key]?.properties || undefined;
+        } else {
+          return true;
+        }
+      }
+      return true;
     }
     return true;
   }
