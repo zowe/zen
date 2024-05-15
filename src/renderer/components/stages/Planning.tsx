@@ -30,6 +30,7 @@ import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
 import { getStageDetails } from "../../../utils/StageDetails";
 import { getProgress, getPlanningStageStatus, setPlanningValidationDetailsState, getPlanningValidationDetailsState } from "./progress/StageProgressStatus";
+import { FALLBACK_YAML } from "../../../utils/yamlSchemaDefaults";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -470,7 +471,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Workspace Directory"
                 variant="standard"
-                value={localYaml?.zowe?.workspaceDirectory || installationArgs.workspaceDir || "/global/zowe/workspace"}
+                value={localYaml?.zowe?.workspaceDirectory || installationArgs.workspaceDir || FALLBACK_YAML.zowe.workspaceDirectory}
                 inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   formChangeHandler("zowe.workspaceDirectory", e.target.value, "workspaceDir");
@@ -492,7 +493,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Log Directory"
                 variant="standard"
-                value={localYaml?.zowe?.logDirectory || installationArgs.logDir || "/global/zowe/logs"}
+                value={localYaml?.zowe?.logDirectory || installationArgs.logDir || FALLBACK_YAML.zowe.logDirectory}
                 inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   formChangeHandler("zowe.logDirectory", e.target.value, "logDir");
@@ -514,7 +515,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Extensions Directory"
                 variant="standard"
-                value={localYaml?.zowe?.extensionDirectory || installationArgs.extensionDir || "/global/zowe/extensions"}
+                value={localYaml?.zowe?.extensionDirectory || installationArgs.extensionDir || FALLBACK_YAML.zowe.extensionDirectory}
                 inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   formChangeHandler("zowe.extensionDirectory", e.target.value, "extensionDir");
@@ -682,7 +683,7 @@ Please customize the job statement below to match your system requirements.
                       style={{marginLeft: 0}}
                       label="z/OSMF Host"
                       variant="standard"
-                      value={localYaml?.zOSMF?.host || installationArgs.zosmfHost || "dvipa.my-company.com"}
+                      value={localYaml?.zOSMF?.host || installationArgs.zosmfHost || FALLBACK_YAML.zOSMF.host}
                       onChange={(e) => {
                         formChangeHandler("zOSMF.host", e.target.value, "zosmfHost");
                         if(localYaml){
