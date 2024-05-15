@@ -126,43 +126,43 @@ class Installation {
               yamlObj = {...currentConfig, ...yamlObj}
               console.log("merged yamlObj: ", JSON.stringify(yamlObj));
             }
-            if (yamlObj.zowe.runtimeDirectory === undefined && installationArgs.installationDir) {
+            if (installationArgs.installationDir) {
               yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
             }
-            if (yamlObj.zowe.workspaceDirectory === undefined && installationArgs.workspaceDir) {
+            if (installationArgs.workspaceDir) {
               yamlObj.zowe.workspaceDirectory = installationArgs.workspaceDir;
             }
-            if (yamlObj.zowe.logDirectory === undefined && installationArgs.logDir) {
+            if (installationArgs.logDir) {
               yamlObj.zowe.logDirectory = installationArgs.logDir;
             }
-            if (yamlObj.zowe.extensionDirectory === undefined && installationArgs.extensionDir) {
+            if (installationArgs.extensionDir) {
               yamlObj.zowe.extensionDirectory = installationArgs.extensionDir;
             }
-            if (yamlObj.zowe.rbacProfileIdentifier === undefined && installationArgs.rbacProfile) {
+            if (installationArgs.rbacProfile) {
               yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
             }
-            if (yamlObj.zowe.job.name === undefined && installationArgs.jobName) {
+            if (installationArgs.jobName) {
               yamlObj.zowe.job.name = installationArgs.jobName;
             }
-            if (yamlObj.zowe.job.prefix === undefined && installationArgs.jobPrefix) {
+            if (installationArgs.jobPrefix) {
               yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
             }
-            if (yamlObj.zowe.cookieIdentifier === undefined && installationArgs.cookieId) {
+            if (installationArgs.cookieId) {
               yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
             }
-            if (yamlObj.java.home === undefined && installationArgs.javaHome) {
+            if (installationArgs.javaHome) {
               yamlObj.java.home = installationArgs.javaHome;
             }
-            if (yamlObj.node.home === undefined && installationArgs.nodeHome) {
+            if (installationArgs.nodeHome) {
               yamlObj.node.home = installationArgs.nodeHome;
             }
-            if (yamlObj.zOSMF.host === undefined && installationArgs.zosmfHost) {
+            if (installationArgs.zosmfHost) {
               yamlObj.zOSMF.host = installationArgs.zosmfHost;
             }
-            if (yamlObj.zOSMF.port === undefined && installationArgs.zosmfPort) {
+            if (installationArgs.zosmfPort) {
               yamlObj.zOSMF.port = installationArgs.zosmfPort;
             }
-            if (yamlObj.zOSMF.applId === undefined && installationArgs.zosmfApplId) {
+            if (installationArgs.zosmfApplId) {
               yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
             }
             if (zoweConfig) {
