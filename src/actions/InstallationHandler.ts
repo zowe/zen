@@ -105,7 +105,7 @@ class Installation {
       }
       let yamlObj
       let zoweRuntimePath = installationArgs.installationType === "smpe" ? installationArgs.installationDir : installationArgs.installationDir + "/runtime";
-      let readPaxYamlAndSchema = await this.readExYamlAndSchema(connectionArgs, zoweRuntimePath);
+      let readPaxYamlAndSchema = await this.readExampleYamlAndSchema(connectionArgs, zoweRuntimePath);
       if(readPaxYamlAndSchema.details.yaml){
         const parseExampleYamlFromPax = function(catPath: string){
           const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat ${catPath}\\r\\n`)
@@ -353,7 +353,7 @@ class Installation {
     return {status: false, details: 'Method not implemented.'}
   }
 
-  async readExYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse>{
+  async readExampleYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse>{
     return {status: false, details: 'Method not implemented.'}
   }
   
@@ -414,7 +414,7 @@ export class FTPInstallation extends Installation {
     return {status: result.rc === 0, details: result.jobOutput}
   }
 
-  async readExYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string){
+  async readExampleYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string){
     const catYaml = `cat ${installDir}/example-zowe.yaml`;
     const yamlResult = await new Script().run(connectionArgs, catYaml);
     const catYamlSchema = `cat ${installDir}/schemas/zowe-yaml-schema.json`;
