@@ -255,12 +255,12 @@ const Planning = () => {
 
     e.preventDefault();
     setValidationDetails({...validationDetails, error: ''});
-    // if (!localYaml?.java?.home || !localYaml?.node?.home || !localYaml?.zowe?.runtimeDirectory) {
-    //   console.warn('Please fill in all values');
-    //   alertEmitter.emit('showAlert', 'Please fill in all values', 'error');
-    //   //showAlert('Please fill in all values', 'success', 5000);
-    //   return;
-    // }
+    if (!localYaml?.java?.home || !localYaml?.node?.home || !localYaml?.zowe?.runtimeDirectory) {
+      console.warn('Please fill in all values');
+      alertEmitter.emit('showAlert', 'Please fill in all values', 'error');
+      //showAlert('Please fill in all values', 'success', 5000);
+      return;
+    }
     dispatch(setLoading(true));
 
     // TODO: Possible feature for future: add to checkDir to see if existing Zowe install exists.
