@@ -26,7 +26,7 @@ import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../../utils/StageDetails"; 
-import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, setWizardStages } from "../progress/StageProgressStatus";
+import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
 
 const Installation = () => {
@@ -111,7 +111,6 @@ const Installation = () => {
 
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
-      setWizardStages(stages);
     }
   }, []);
 

@@ -36,11 +36,10 @@ import { setConnectionStatus,  selectConnectionStatus} from '../progress/progres
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { getStageDetails } from "../../../../utils/StageDetails";
-import { initializeProgress, getActiveStage, setWizardStages } from "../progress/StageProgressStatus";
+import { initializeProgress, getActiveStage } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../utils/eventDispatcher";
 import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from '../installation/installationSlice';
 import { EXAMPLE_YAML, YAML_SCHEMA } from "../../../config/constants";
-import { stages } from "../../configuration-wizard/Wizard";
 
 const Connection = () => {
 
@@ -125,12 +124,6 @@ const FTPConnectionForm = () => {
   const [validationDetails, setValidationDetails] = React.useState('');
 
   const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
-
-  useEffect(() => {
-    return () => {
-      setWizardStages(stages);
-    }
-  })
 
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
