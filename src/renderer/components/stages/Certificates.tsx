@@ -26,7 +26,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
-import { setProgress, getProgress, setCertificateInitState, getCertificateInitState } from "./progress/StageProgressStatus";
+import { setProgress, getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSkipStatus } from "./progress/StageProgressStatus";
 import { CertInitSubStepsState } from "../../../types/stateInterfaces";
 
 const Certificates = () => {
@@ -154,10 +154,16 @@ const Certificates = () => {
     }
   }
 
+  const setStageSkipStatus = (status: boolean) => {
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = status;
+    mapAndSetSkipStatus(SUB_STAGE_ID, status);
+  }
+
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
-    stages[STAGE_ID].isSkipped = !status;
+    setStageSkipStatus(!status);
+
     if(!status) {
       for (let key in certificateInitProgress) {
         certificateInitProgress[key as keyof(CertInitSubStepsState)] = false;

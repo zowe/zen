@@ -30,7 +30,7 @@ import eventDispatcher from '../../../utils/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import Home from '../Home';
-import { getProgress, getCompleteProgress } from '../stages/progress/StageProgressStatus';
+import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus } from '../stages/progress/StageProgressStatus';
 
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
@@ -83,7 +83,6 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   }, []); 
 
   const updateActiveStepListener = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
-    console.log("INSIDE UPDATE ACTIVE STEP LISTENER");
     setActiveStep(newActiveStep);
     const newSubStep = isSubStep ? subStepIndex : 0;
     setActiveSubStep(newSubStep);
@@ -118,6 +117,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const handleSkip = () => {
     stages[activeStep].isSkipped = true;
     stages[activeStep].subStages[activeSubStep].isSkipped = true;
+    mapAndSetSkipStatus(activeSubStep, true);
     handleNext();
   }
 
@@ -174,11 +174,11 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const getStepIcon = (error: any, stageId: number, isSubStep?: boolean, subStepId?: number) => {
     
-    if (!error || (isSubStep && getProgress(stages[stageId].subStages[subStepId].statusKey)) || (!isSubStep && getProgress(stages[stageId].statusKey))) {
+    if ((isSubStep && !mapAndGetSkipStatus(subStepId)) || !error || (isSubStep && getProgress(stages[stageId].subStages[subStepId].statusKey)) || (!isSubStep && getProgress(stages[stageId].statusKey))) {
       return <StepIcon icon={<CheckCircle sx={{ color: 'green', fontSize: '1.2rem' }} />} />;
     }
 
-    if ((error && activeStep>stageId && !isSubStep) || (error && isSubStep && stages[stageId].subStages[subStepId].isSkipped)) {
+    if ((isSubStep && mapAndGetSkipStatus(subStepId)) || (error && activeStep>stageId && !isSubStep) || (error && isSubStep && stages[stageId].subStages[subStepId].isSkipped)) {
       return <StepIcon icon={<Warning sx={{ color: 'orange', fontSize: '1.2rem' }} />} />;
     }
 

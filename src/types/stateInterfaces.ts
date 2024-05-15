@@ -71,6 +71,15 @@ export interface PlanningValidationDetails {
   error: string
 }
 
+export interface SkipState {
+  datasetInstallation: boolean,
+  networking: boolean,
+  apfAuth: boolean,
+  security: boolean,
+  certificate: boolean,
+  launchConfig: boolean
+}
+
 
 
 
