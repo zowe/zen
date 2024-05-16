@@ -174,7 +174,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const getStepIcon = (error: any, stageId: number, isSubStep?: boolean, subStepId?: number) => {
     
-    if ((isSubStep && !mapAndGetSkipStatus(subStepId)) || !error || (isSubStep && getProgress(stages[stageId].subStages[subStepId].statusKey)) || (!isSubStep && getProgress(stages[stageId].statusKey))) {
+    if (!error || (isSubStep && getProgress(stages[stageId].subStages[subStepId].statusKey)) || (!isSubStep && getProgress(stages[stageId].statusKey))) {
       return <StepIcon icon={<CheckCircle sx={{ color: 'green', fontSize: '1.2rem' }} />} />;
     }
 
