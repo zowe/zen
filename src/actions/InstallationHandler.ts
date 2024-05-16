@@ -105,7 +105,7 @@ class Installation {
       }
       let yamlObj
       let zoweRuntimePath = installationArgs.installationType === "smpe" ? installationArgs.installationDir : installationArgs.installationDir + "/runtime";
-      let readPaxYamlAndSchema = await this.readExampleYamlAndSchema(connectionArgs, zoweRuntimePath);
+      let readPaxYamlAndSchema = await this.readExYamlAndSchema(connectionArgs, zoweRuntimePath);
       if(readPaxYamlAndSchema.details.yaml){
         const parseExampleYamlFromPax = function(catPath: string){
           const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat ${catPath}\\r\\n`)
@@ -126,43 +126,43 @@ class Installation {
               yamlObj = {...currentConfig, ...yamlObj}
               console.log("merged yamlObj: ", JSON.stringify(yamlObj));
             }
-            if (installationArgs.installationDir) {
+            if (yamlObj.zowe.runtimeDirectory === undefined && installationArgs.installationDir) {
               yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
             }
-            if (installationArgs.workspaceDir) {
+            if (yamlObj.zowe.workspaceDirectory === undefined && installationArgs.workspaceDir) {
               yamlObj.zowe.workspaceDirectory = installationArgs.workspaceDir;
             }
-            if (installationArgs.logDir) {
+            if (yamlObj.zowe.logDirectory === undefined && installationArgs.logDir) {
               yamlObj.zowe.logDirectory = installationArgs.logDir;
             }
-            if (installationArgs.extensionDir) {
+            if (yamlObj.zowe.extensionDirectory === undefined && installationArgs.extensionDir) {
               yamlObj.zowe.extensionDirectory = installationArgs.extensionDir;
             }
-            if (installationArgs.rbacProfile) {
+            if (yamlObj.zowe.rbacProfileIdentifier === undefined && installationArgs.rbacProfile) {
               yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
             }
-            if (installationArgs.jobName) {
+            if (yamlObj.zowe.job.name === undefined && installationArgs.jobName) {
               yamlObj.zowe.job.name = installationArgs.jobName;
             }
-            if (installationArgs.jobPrefix) {
+            if (yamlObj.zowe.job.prefix === undefined && installationArgs.jobPrefix) {
               yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
             }
-            if (installationArgs.cookieId) {
+            if (yamlObj.zowe.cookieIdentifier === undefined && installationArgs.cookieId) {
               yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
             }
-            if (installationArgs.javaHome) {
+            if (yamlObj.java.home === undefined && installationArgs.javaHome) {
               yamlObj.java.home = installationArgs.javaHome;
             }
-            if (installationArgs.nodeHome) {
+            if (yamlObj.node.home === undefined && installationArgs.nodeHome) {
               yamlObj.node.home = installationArgs.nodeHome;
             }
-            if (installationArgs.zosmfHost) {
+            if (yamlObj.zOSMF.host === undefined && installationArgs.zosmfHost) {
               yamlObj.zOSMF.host = installationArgs.zosmfHost;
             }
-            if (installationArgs.zosmfPort) {
+            if (yamlObj.zOSMF.port === undefined && installationArgs.zosmfPort) {
               yamlObj.zOSMF.port = installationArgs.zosmfPort;
             }
-            if (installationArgs.zosmfApplId) {
+            if (yamlObj.zOSMF.applId === undefined && installationArgs.zosmfApplId) {
               yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
             }
             if (zoweConfig) {
@@ -353,7 +353,7 @@ class Installation {
     return {status: false, details: 'Method not implemented.'}
   }
 
-  async readExampleYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse>{
+  async readExYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string): Promise<IResponse>{
     return {status: false, details: 'Method not implemented.'}
   }
   
@@ -414,7 +414,7 @@ export class FTPInstallation extends Installation {
     return {status: result.rc === 0, details: result.jobOutput}
   }
 
-  async readExampleYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string){
+  async readExYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string){
     const catYaml = `cat ${installDir}/example-zowe.yaml`;
     const yamlResult = await new Script().run(connectionArgs, catYaml);
     const catYamlSchema = `cat ${installDir}/schemas/zowe-yaml-schema.json`;
