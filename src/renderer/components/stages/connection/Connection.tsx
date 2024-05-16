@@ -145,9 +145,7 @@ const FTPConnectionForm = () => {
           dispatch(setNextStepEnabled(true));
           initializeProgress(connectionArgs.host, connectionArgs.user);
           initStageSkipStatus();
-          if(isResume) {
-            resumeProgress();
-          }
+          setYamlAndConfig();
         }
         toggleFormProcessed(true);
         setValidationDetails(res.details);
@@ -156,9 +154,9 @@ const FTPConnectionForm = () => {
       }); 
   };
 
-  const resumeProgress = () => {
+  const setYamlAndConfig = () => {
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-      if (res.status) {
+      if (res && res.status && res.details) {
         dispatch(setYaml(res.details.config));
         const schema = res.details.schema;
         dispatch(setSchema(schema));
@@ -172,9 +170,12 @@ const FTPConnectionForm = () => {
           // schema response
         });
       }
-      const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getActiveStage();
-      eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
-      setIsResume(false);
+      const { activeStepIndex, isSubStep, activeSubStepIndex } = getActiveStage();
+
+      if(isResume) {
+        eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
+        setIsResume(false);
+      }
     })
   }
 
