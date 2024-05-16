@@ -80,7 +80,25 @@ export interface SkipState {
   launchConfig: boolean
 }
 
-
+export interface InstallationArgs {
+  installationDir: string;
+  workspaceDir: string;
+  logDir: string,
+  extensionDir: string,
+  installationType?: string;
+  downloadDir: string;
+  userUploadedPaxPath?: string;
+  javaHome: string;
+  nodeHome: string;
+  setupConfig: any;
+  jobName: string;
+  jobPrefix: string;
+  rbacProfile: string;
+  cookieId: string;
+  zosmfHost: string,
+  zosmfPort: string,
+  zosmfApplId: string
+};
 
 
 

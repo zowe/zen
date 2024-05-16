@@ -24,7 +24,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep, selectActiveStepIndex, selectActiveSubStepIndex, selectIsSubstep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
-import { setProgress, getProgress, setApfAuthState, getApfAuthState, mapAndSetSkipStatus } from "./progress/StageProgressStatus";
+import { setProgress, getProgress, setApfAuthState, getApfAuthState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 
 const InitApfAuth = () => {
@@ -61,7 +61,7 @@ const InitApfAuth = () => {
   const [initClicked, setInitClicked] = useState(false);
   const [reinit, setReinit] = useState(false);
 
-  const installationArgs = useAppSelector(selectInstallationArgs);
+  const installationArgs = getInstallationArguments();
   let timer: any;
 
   const section = 'dataset';

@@ -26,7 +26,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
-import { setProgress, getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSkipStatus } from "./progress/StageProgressStatus";
+import { setProgress, getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { CertInitSubStepsState } from "../../../types/stateInterfaces";
 
 const Certificates = () => {
@@ -44,7 +44,7 @@ const Certificates = () => {
   const schema = useAppSelector(selectSchema);
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const installationArgs = useAppSelector(selectInstallationArgs);
+  const installationArgs = getInstallationArguments();
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
   const verifyCertsSchema = schema ? {"type": "object", "properties": {"verifyCertificates": schema.properties.zowe.properties.verifyCertificates}} : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);

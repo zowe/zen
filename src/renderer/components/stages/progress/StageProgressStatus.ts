@@ -9,7 +9,7 @@
  */
 
 import { flatten, unflatten } from 'flat';
-import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, SkipState} from '../../../../types/stateInterfaces';
+import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, SkipState, InstallationArgs} from '../../../../types/stateInterfaces';
 import { stages } from '../../configuration-wizard/Wizard';
 
 const installationTypeStatus: InstallationType = {
@@ -87,6 +87,26 @@ const stepSkipStatus: SkipState = {
   launchConfig: false
 }
 
+const installationArgsStatus: InstallationArgs = {
+  installationDir: '',
+    workspaceDir: '',
+    logDir:'',
+    extensionDir:'',
+    installationType: 'download',
+    userUploadedPaxPath: '',
+    downloadDir: '',
+    javaHome: '',
+    nodeHome: '',
+    setupConfig: {},
+    jobName: 'ZWE1SV',
+    jobPrefix: 'ZWE1',
+    rbacProfile: '1',
+    cookieId: '1',
+    zosmfHost: '',
+    zosmfPort: '443',
+    zosmfApplId: 'IZUDFLT'
+}
+
 let progressStateKey = 'stage_progress';
 let activeStateKey = 'active_state';
 let planningStateKey = 'planning_stage';
@@ -98,6 +118,7 @@ let certificateKey = 'certificate_init';
 let planningValidationDetailsKey = `planning_validation_details`;
 let prevInstallationKey = `prev_installation`;
 let skipStateKey = `skip_state`;
+let installationArgsKey = `intallation_args`;
 
 let skipKeysArray: (keyof SkipState)[] = Object.keys(stepSkipStatus) as (keyof SkipState)[];
 
@@ -112,6 +133,7 @@ const setKeys = (id: string) => {
   certificateKey = `${certificateKey}_${id}`;
   planningValidationDetailsKey = `${planningValidationDetailsKey}_${id}`;
   skipStateKey = `${skipStateKey}_${id}`;
+  installationArgsKey = `${installationArgsKey}_${id}`;
 }
 
 export const initializeProgress = (host: string, user: string) => {
@@ -176,6 +198,12 @@ export const initializeProgress = (host: string, user: string) => {
   if(!stepSkipStatusState) {
     const flattenedData = flatten(stepSkipStatus);
     localStorage.setItem(skipStateKey, JSON.stringify(flattenedData));
+  }
+
+  const installationArgsState = localStorage.getItem(installationArgsKey);
+  if(!installationArgsState) {
+    const flattenedData = flatten(installationArgsStatus);
+    localStorage.setItem(installationArgsKey, JSON.stringify(flattenedData));
   }
 }
 
@@ -335,6 +363,22 @@ export const getPlanningStageStatus = (): PlanningState => {
     return unflatten(flattenedData);
   } else {
     return planningStageStatus;
+  }
+}
+
+export const setInstallationArguments = (newInstallationArgs: InstallationArgs): void => {
+  Object.assign(installationArgsStatus, newInstallationArgs);
+  const flattenedData = flatten(installationArgsStatus);
+  localStorage.setItem(installationArgsKey, JSON.stringify(flattenedData));
+}
+
+export const getInstallationArguments = () : InstallationArgs => {
+  const installArgs = localStorage.getItem(installationArgsKey);
+  if(installArgs) {
+    const flattenedData =  JSON.parse(installArgs);
+    return unflatten(flattenedData);
+  } else {
+    return installationArgsStatus;
   }
 }
 
