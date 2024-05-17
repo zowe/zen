@@ -57,7 +57,7 @@ class ReviewPage{
     this.securityTab = page.locator("//p[text()='Security']")    
     this.certificatesTab = page.locator("//p[text()='Certificates']")    
     this.launchConfigTab = page.locator("//p[text()='Launch Config']")    
-    this.viewEditYaml = page.locator("//button[text()='View/Edit Yaml']")    
+    this.viewEditYaml = page.locator("//button[text()='View Yaml']")    
     this.viewSubmitJob = page.locator("//button[text()='View/Submit Job']")    
     this.viewJobOutput = page.locator("//button[text()='View Job Output']")    
 	  this.saveAndClose = page.locator("//button[text()='Save & close']")

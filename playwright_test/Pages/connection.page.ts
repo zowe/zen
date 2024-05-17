@@ -10,6 +10,8 @@ class ConnectionPage{
   connectionPageTitle: Locator;
   continueButton: Locator;
   greenCheckIconSelector: Locator
+  save_and_close: Locator;
+  resumeProgress: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -20,14 +22,11 @@ class ConnectionPage{
     this.validateCredential = page.locator("//button[contains(text(), 'Validate credentials')]")
     this.connectionPageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.continueButton = page.locator('.MuiButton-containedPrimary.MuiButton-sizeMedium')
-    this.save_and_close =  page.locator('//button[contains(text(),"Save & close")]')
-    this.resumeProgress =  page.locator('//button[contains(text(),"Resume Progress")]')
-    this.continueButton = page.locator('.MuiButton-containedPrimary.MuiButton-sizeMedium')
+    this.save_and_close = page.locator('//button[contains(text(),"Save & close")]')
+    this.resumeProgress = page.locator('//button[contains(text(),"Resume Progress")]')
     this.greenCheckIconSelector = page.locator('.MuiContainer-root svg[data-testid="CheckCircleIcon"]')
-
-
-
   }
+
   async fillConnectionDetails(host: string, port: string, username: string, password: string){
     await this.page.waitForTimeout(1000);
     await this.host.fill(host)
@@ -72,12 +71,11 @@ class ConnectionPage{
   async click_saveAndClose(){
    this.save_and_close.click({ timeout: 5000 })
   }
+
   async isContinueButtonVisible() {
     return await this.continueButton.isDisabled();
   }
-  async clickContinueButton() {
-    return await this.continueButton.click();
-  }
+
   async isGreenCheckIconVisible() {
     return await this.greenCheckIconSelector.isHidden();
   }

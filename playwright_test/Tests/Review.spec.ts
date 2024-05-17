@@ -69,12 +69,13 @@ test.describe('ReviewTab', () => {
     reviewPage = new ReviewPage(page);
     titlePage.navigateToConnectionTab()
     connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
+    await page.waitForTimeout(5000);
     connectionPage.SubmitValidateCredential()
     await page.waitForTimeout(5000);
     connectionPage.clickContinueButton()
     await page.waitForTimeout(2000);
     planningPage.clickSaveValidate()
-    await page.waitForTimeout(20000);
+    await page.waitForTimeout(10000);
     planningPage.fillPlanningPageWithRequiredFields(RUNTIME_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
     await page.waitForTimeout(20000);
     planningPage.clickValidateLocations()
