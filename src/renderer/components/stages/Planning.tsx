@@ -582,7 +582,7 @@ Please customize the job statement below to match your system requirements.
                 variant="standard"
                 value={localYaml?.zowe?.job?.prefix || installationArgs.jobPrefix}
                 onChange={(e) => {
-                  formChangeHandler("zowe.job.prefix", e.target.value, "jobName");
+                  formChangeHandler("zowe.job.prefix", e.target.value, "jobPrefix");
                   if(localYaml){
                     window.electron.ipcRenderer.setConfigByKey('zowe.job.prefix', e.target.value).then((res: any) => {
                       // console.log('updated zowe.job.prefi')
