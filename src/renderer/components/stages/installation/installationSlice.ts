@@ -10,28 +10,11 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
-import { setInstallationTypeStatus, getInstallationTypeStatus } from '../progress/StageProgressStatus'; 
+import { setInstallationTypeStatus, getInstallationTypeStatus, setInstallationArguments } from '../progress/StageProgressStatus'; 
+import { InstallationArgs } from '../../../../types/stateInterfaces';
 
 interface InstallationState {
-  installationArgs: {
-    installationDir: string;
-    workspaceDir: string;
-    logDir: string,
-    extensionDir: string,
-    installationType?: string;
-    downloadDir: string;
-    userUploadedPaxPath?: string;
-    javaHome: string;
-    nodeHome: string;
-    setupConfig: any;
-    jobName: string;
-    jobPrefix: string;
-    rbacProfile: string;
-    cookieId: string;
-    zosmfHost: string,
-    zosmfPort: string,
-    zosmfApplId: string
-  };
+  installationArgs: InstallationArgs;
   zoweVersion: string;
   licenseAgreement: boolean;
 }
@@ -66,6 +49,7 @@ export const installationSlice = createSlice({
   reducers: {
     setInstallationArgs: (state, action: PayloadAction<any>) => {
       state.installationArgs = action.payload;
+      setInstallationArguments(action.payload);
     },
     setZoweVersion: (state, action: PayloadAction<string>) => {
       state.zoweVersion = action.payload;

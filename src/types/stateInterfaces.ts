@@ -38,7 +38,9 @@ export interface ActiveState {
   activeStepIndex: number,
   isSubStep: boolean,
   activeSubStepIndex: number,
-  date?: string
+  lastActiveDate?: string,
+  host?: string,
+  user?: string
 }
 
 export interface DatasetInstallationState {
@@ -69,7 +71,34 @@ export interface PlanningValidationDetails {
   error: string
 }
 
+export interface SkipState {
+  datasetInstallation: boolean,
+  networking: boolean,
+  apfAuth: boolean,
+  security: boolean,
+  certificate: boolean,
+  launchConfig: boolean
+}
 
+export interface InstallationArgs {
+  installationDir: string;
+  workspaceDir: string;
+  logDir: string,
+  extensionDir: string,
+  installationType?: string;
+  downloadDir: string;
+  userUploadedPaxPath?: string;
+  javaHome: string;
+  nodeHome: string;
+  setupConfig: any;
+  jobName: string;
+  jobPrefix: string;
+  rbacProfile: string;
+  cookieId: string;
+  zosmfHost: string,
+  zosmfPort: string,
+  zosmfApplId: string
+};
 
 
 

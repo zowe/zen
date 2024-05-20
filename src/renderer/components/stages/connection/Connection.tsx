@@ -30,15 +30,16 @@ import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
 import { setConnectionArgs, setConnectionValidationDetails, setHost, setPort,
-               setUser, setPassword, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates} from './connectionSlice';
-import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
+               setUser, setPassword, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress} from './connectionSlice';
+import { setYaml, setSchema, setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
-import { setActiveStep } from '../progress/activeStepSlice';
-import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex} from '../progress/activeStepSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
-import { getStageDetails } from "../../../../utils/StageDetails";
-import { initializeProgress } from "../progress/StageProgressStatus";
+import { getStageDetails, initStageSkipStatus } from "../../../../utils/StageDetails";
+import { initializeProgress, getActiveStage } from "../progress/StageProgressStatus";
+import eventDispatcher from "../../../../utils/eventDispatcher";
+import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from '../installation/installationSlice';
+import { EXAMPLE_YAML, YAML_SCHEMA } from "../../../config/constants";
 
 const Connection = () => {
 
@@ -59,9 +60,6 @@ const Connection = () => {
 
   useEffect(() => {
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
-    return () => {
-      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
-    }
   }, []);
 
   return (
@@ -125,15 +123,7 @@ const FTPConnectionForm = () => {
   const [formProcessed, toggleFormProcessed] = React.useState(false);
   const [validationDetails, setValidationDetails] = React.useState('');
 
-  const activeStepIndex = useAppSelector(selectActiveStepIndex);
-  const isSubStep = useAppSelector(selectIsSubstep);
-  const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
-  
-  useEffect(() => {
-    return () => {
-      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
-    }
-  }, [])
+  const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
 
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
@@ -154,6 +144,8 @@ const FTPConnectionForm = () => {
         if(res.status) {
           dispatch(setNextStepEnabled(true));
           initializeProgress(connectionArgs.host, connectionArgs.user);
+          initStageSkipStatus();
+          setYamlAndConfig();
         }
         toggleFormProcessed(true);
         setValidationDetails(res.details);
@@ -161,6 +153,31 @@ const FTPConnectionForm = () => {
         dispatch(setLoading(false));
       }); 
   };
+
+  const setYamlAndConfig = () => {
+    window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+      if (res && res.status && res.details) {
+        dispatch(setYaml(res.details.config));
+        const schema = res.details.schema;
+        dispatch(setSchema(schema));
+      } else {
+        dispatch(setYaml(EXAMPLE_YAML));
+        dispatch(setSchema(YAML_SCHEMA));
+        window.electron.ipcRenderer.setConfig(EXAMPLE_YAML).then((res: IResponse) => {
+          // yaml response
+        });
+        window.electron.ipcRenderer.setSchema(YAML_SCHEMA).then((res: IResponse) => {
+          // schema response
+        });
+      }
+      const { activeStepIndex, isSubStep, activeSubStepIndex } = getActiveStage();
+
+      if(isResume) {
+        eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
+        setIsResume(false);
+      }
+    })
+  }
 
   return (
     <Box
@@ -300,11 +317,13 @@ const FTPConnectionForm = () => {
       }
           
       <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row", paddingTop: '12px', paddingBottom: '12px'}}>
+
         <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
           <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '12px'}} 
             onClick={processForm}
           >
-            Validate credentials
+            {isResume && `Validate credentials & Resume`}
+            {!isResume && `Validate credentials`}
           </Button>
         </Box>
         <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div>
