@@ -28,6 +28,7 @@ const progressStatus: ProgressState = {
   apfAuthStatus: false,
   securityStatus: false,
   certificateStatus: false,
+  vsamStatus: false,
   launchConfigStatus: false,
   reviewStatus: false,
 }
@@ -71,6 +72,12 @@ const certificateInitStatus: CertInitSubStepsState = {
   zweInitCertificate: false
 }
 
+const vsamInitStatus: InitSubStepsState = {
+  writeYaml: false,
+  uploadYaml: false,
+  success: false
+}
+
 const planningValidationDetailsStatus: PlanningValidationDetails = {
   javaVersion: '',
   nodeVersion: '',
@@ -84,6 +91,7 @@ const stepSkipStatus: SkipState = {
   apfAuth: false,
   security: false,
   certificate: false,
+  vsam: false,
   launchConfig: false
 }
 
@@ -115,6 +123,7 @@ let datasetInstallationKey = 'dataset_installation';
 let apfAuthKey = 'apf_auth';
 let securityKey = 'security_init';
 let certificateKey = 'certificate_init';
+let vsamKey = 'vsam_init';
 let planningValidationDetailsKey = `planning_validation_details`;
 let prevInstallationKey = `prev_installation`;
 let skipStateKey = `skip_state`;
@@ -131,6 +140,7 @@ const setKeys = (id: string) => {
   apfAuthKey = `${apfAuthKey}_${id}`;
   securityKey = `${securityKey}_${id}`;
   certificateKey = `${certificateKey}_${id}`;
+  vsamKey = `${vsamKey}_${id}`;
   planningValidationDetailsKey = `${planningValidationDetailsKey}_${id}`;
   skipStateKey = `${skipStateKey}_${id}`;
   installationArgsKey = `${installationArgsKey}_${id}`;
@@ -188,6 +198,12 @@ export const initializeProgress = (host: string, user: string) => {
     localStorage.setItem(certificateKey, JSON.stringify(flattenedData));
   }
 
+  const vsamInitState = localStorage.getItem(vsamKey);
+  if(!vsamInitState) {
+    const flattenedData = flatten(vsamInitStatus);
+    localStorage.setItem(vsamKey, JSON.stringify(flattenedData));
+  }
+
   const planningValidationDetailsState = localStorage.getItem(certificateKey);
   if(!planningValidationDetailsState) {
     const flattenedData = flatten(planningValidationDetailsStatus);
@@ -219,6 +235,7 @@ export const mapAndGetSkipStatus = (subStageId: number): boolean => {
     skipStatus.apfAuth,
     skipStatus.security,
     skipStatus.certificate,
+    skipStatus.vsam,
     skipStatus.launchConfig
   ]
 
@@ -304,6 +321,21 @@ export const getCertificateInitState = (): CertInitSubStepsState => {
     return unflatten(flattenedData)
   } else {
     return certificateInitStatus;
+  }
+}
+
+export const setVsamInitStatus = (vsamInitSteps: InitSubStepsState): void => {
+  Object.assign(vsamInitStatus, vsamInitSteps);
+  localStorage.setItem(vsamKey, JSON.stringify(vsamInitStatus));
+}
+
+export const getVsamInitStatus = (): InitSubStepsState => {
+  const vsamInitState = localStorage.getItem(vsamKey);
+  if(vsamInitState) {
+    const flattenedData = JSON.parse(vsamInitState);
+    return unflatten(flattenedData)
+  } else {
+    return vsamInitStatus;
   }
 }
 
