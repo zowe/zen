@@ -16,6 +16,7 @@ export interface ConnectionState {
   connectionArgs: IIpcConnectionArgs;
   connectionValidationDetails: string;
   acceptCertificates: boolean;
+  resumeProgress: boolean;
 }
 
 //TODO also seen in ConnectionStore. Necessary or duplication?
@@ -40,6 +41,7 @@ const initialState: ConnectionState = {
   },
   connectionValidationDetails: 'connectionValidationDetails',
   acceptCertificates: false,
+  resumeProgress: false
 };
 
 export const connectionSlice = createSlice({
@@ -76,11 +78,14 @@ export const connectionSlice = createSlice({
     setAcceptCertificates: (state, action: PayloadAction<boolean>) => {
       state.acceptCertificates = action.payload;
     },
+    setResumeProgress: (state, action: PayloadAction<boolean>) => {
+      state.resumeProgress = action.payload;
+    }
   },
 });
 
 export const { setConnectionArgs, setHost, setPort,
-               setUser, setPassword, setJobStatementVal, setSecure, setSecureOptions, setConnectionValidationDetails, setAcceptCertificates,
+               setUser, setPassword, setJobStatementVal, setSecure, setSecureOptions, setConnectionValidationDetails, setAcceptCertificates, setResumeProgress,
              } = connectionSlice.actions;
 
 export const selectConnectionArgs = (state: RootState) => state.connection.connectionArgs;
@@ -88,5 +93,6 @@ export const selectConnectionSecure= (state: RootState) => state.connection.conn
 export const selectConnectionValidationDetails = (state: RootState) => state.connection.connectionValidationDetails;
 export const selectAcceptCertificates = (state: RootState) => state.connection.acceptCertificates;
 export const selectInitJobStatement = (state: RootState) => state.connection.connectionArgs.jobStatement;
+export const selectResumeProgress = (state: RootState) => state.connection.resumeProgress;
 
 export default connectionSlice.reducer;

@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+import { getSubStageSkipStatus } from '../renderer/components/stages/progress/StageProgressStatus';
 import { stages } from '../renderer/components/configuration-wizard/Wizard';
 
 export const getStageDetails = (stageLabel: string) => {
@@ -21,6 +22,29 @@ export const getSubStageDetails = (stageId: number, subStageLabel: string) => {
   return stage.subStages.find(subStage => subStage.label === subStageLabel);
  }
  return null;
+}
+
+export const initStageSkipStatus = (): void => {
+  const skipStatus = getSubStageSkipStatus();
+
+  const subStageSkipStatus = [
+    skipStatus.datasetInstallation,
+    skipStatus.networking,
+    skipStatus.apfAuth,
+    skipStatus.security,
+    skipStatus.certificate,
+    skipStatus.launchConfig
+  ];
+
+  let iterator = 0;
+  stages.map(stage => {
+    if(stage.subStages) {
+      stage.subStages.map(subStage => {
+        subStage.isSkipped = subStageSkipStatus[iterator];
+        iterator++;
+      })
+    }
+  })
 }
 
 

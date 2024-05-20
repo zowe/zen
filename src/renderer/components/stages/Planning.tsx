@@ -36,7 +36,6 @@ import { FALLBACK_YAML } from "../../../utils/yamlSchemaDefaults";
 // This is all I want to manually test for now. Future work can min/max this harder
 const JCL_UNIX_SCRIPT_CHARS = 55;
 
-
 const Planning = () => {
 
   const [stageLabel] = useState('Planning');

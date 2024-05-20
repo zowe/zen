@@ -26,7 +26,7 @@ import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../../utils/StageDetails"; 
-import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus } from "../progress/StageProgressStatus";
+import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
 import { FALLBACK_SCHEMA, FALLBACK_YAML } from "../../../../utils/yamlSchemaDefaults";
 
@@ -65,7 +65,7 @@ const Installation = () => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
 
-  const [installationArgs, setInstArgs] = useState(useAppSelector(selectInstallationArgs));
+  const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   const version = useAppSelector(selectZoweVersion);
   let timer: any;
   const installationType = getInstallationTypeStatus().installationType;
@@ -246,6 +246,7 @@ const Installation = () => {
   const setStageSkipStatus = (status: boolean) => {
     stages[stageId].subStages[subStageId].isSkipped = status;
     stages[stageId].isSkipped = status;
+    mapAndSetSkipStatus(subStageId, status);
   }
 
   const setDsInstallStageStatus = (status: boolean) => {
