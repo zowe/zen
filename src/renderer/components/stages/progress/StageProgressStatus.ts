@@ -324,12 +324,12 @@ export const getCertificateInitState = (): CertInitSubStepsState => {
   }
 }
 
-export const setVsamInitStatus = (vsamInitSteps: InitSubStepsState): void => {
+export const setVsamInitState = (vsamInitSteps: InitSubStepsState): void => {
   Object.assign(vsamInitStatus, vsamInitSteps);
   localStorage.setItem(vsamKey, JSON.stringify(vsamInitStatus));
 }
 
-export const getVsamInitStatus = (): InitSubStepsState => {
+export const getVsamInitState = (): InitSubStepsState => {
   const vsamInitState = localStorage.getItem(vsamKey);
   if(vsamInitState) {
     const flattenedData = JSON.parse(vsamInitState);
