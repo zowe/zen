@@ -18,6 +18,7 @@ export interface ProgressState {
   apfAuthStatus: boolean;
   securityStatus: boolean;
   certificateStatus: boolean;
+  vsamStatus: boolean;
   launchConfigStatus: boolean;
   reviewStatus: boolean;
 }
