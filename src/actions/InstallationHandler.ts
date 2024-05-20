@@ -221,6 +221,28 @@ class Installation {
     return {status: result.rc === 0, details: result.jobOutput}
   }
 
+  async initVsam(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string}, zoweConfig: any){
+    console.log('writing current yaml to disk');
+    const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
+    await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
+      if (err) {
+        console.warn("Can't save configuration to zowe.yaml");
+        return ProgressStore.set('vsam.writeYaml', false);
+      } 
+    });
+    ProgressStore.set('vsam.writeYaml', true);
+    console.log("uploading yaml...");
+    const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
+    if(!uploadYaml.status){
+      return ProgressStore.set('vsam.uploadYaml', false);;
+    }
+    ProgressStore.set('vsam.uploadYaml', uploadYaml.status);
+    const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'} && ./zwe init vsam --update-config -c ${installationArgs.installationDir}/zowe.yaml`;
+    const result = await new Script().run(connectionArgs, script);
+    ProgressStore.set('vsam.success', result.rc === 0);
+    return {status: result.rc === 0, details: result.jobOutput}
+  }
+
   async generateYamlFile(zoweConfig: object): Promise<IResponse> {
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
     await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
