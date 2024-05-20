@@ -78,6 +78,7 @@ export interface SkipState {
   apfAuth: boolean,
   security: boolean,
   certificate: boolean,
+  vsam: boolean,
   launchConfig: boolean
 }
 
