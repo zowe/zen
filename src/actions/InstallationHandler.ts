@@ -85,7 +85,7 @@ class Installation {
         }
       } else {
         //if the user has selected an SMPE or opted to upload their own pax, we simply set this status to true as no download is required
-        upload = download = {status: true, details: ''}
+        unpax = upload = download = {status: true, details: ''}
         ProgressStore.set('installation.download', true);
       }
 
