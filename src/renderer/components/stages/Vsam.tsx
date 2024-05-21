@@ -25,10 +25,10 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
-import { setProgress, getProgress, setVsamInitState, getSecurityInitState, mapAndSetSkipStatus, getInstallationArguments, getVsamInitState } from "./progress/StageProgressStatus";
+import { setProgress, getProgress, setVsamInitState, mapAndSetSkipStatus, getInstallationArguments, getVsamInitState } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 
-const Security = () => {
+const Vsam = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
@@ -114,7 +114,6 @@ const Security = () => {
       }, 3000);
 
       if(showProgress) {
-        console.log('vsam: if progress');
         const nextPosition = document.getElementById('start-vsam-progress');
         nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
@@ -163,7 +162,7 @@ const Security = () => {
     dispatch(setInitializationStatus(status));
     dispatch(setVsamStatus(status));
     dispatch(setNextStepEnabled(status));
-    setVsamInitializationProgress(getSecurityInitState());
+    setVsamInitializationProgress(getVsamInitState());
   }
 
   const toggleEditorVisibility = (type: any) => {
@@ -180,7 +179,7 @@ const Security = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.initVsamButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
       updateProgress(res.status);
       clearInterval(timer);
     }).catch((error: any) => {
@@ -222,14 +221,14 @@ const Security = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
-      <ContainerCard title="Security" description="Configure Zowe Security.">
+      <ContainerCard title="Vsam" description="Configure Zowe Vsam.">
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
           
           {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Security Config</Button>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Vsam Config</Button>
           </FormControl> : null}
 
 
@@ -239,16 +238,16 @@ const Security = () => {
             <ProgressCard label={`Write configuration file locally to temp directory`} id="init-vsam-progress-card" status={vsamInitProgress.writeYaml}/>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={vsamInitProgress.uploadYaml}/>
             <ProgressCard label={`Run zwe init vsam`} id="success-progress-card" status={vsamInitProgress.success}/>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize Security Config</Button>
+            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize Vsam Config</Button>
           </React.Fragment>
         }
         </Box>
         </Box>
-        <Box sx={{ height: showProgress ? '105vh' : 'auto', minHeight: showProgress ? '105vh' : '10vh' }} id="vsam-progress"></Box>
+        <Box sx={{ height: showProgress ? '35vh' : 'auto', minHeight: showProgress ? '35vh' : '10vh' }} id="vsam-progress"></Box>
 
       </ContainerCard>
     </div>
   );
 };
 
-export default Security;
+export default Vsam;
