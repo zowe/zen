@@ -116,7 +116,7 @@ const Installation = () => {
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       function mergeInstallationArgsAndYaml(yaml: any){
         let yamlObj = JSON.parse(JSON.stringify(yaml));
-        console.log('merging yaml obj:', JSON.stringify(yamlObj));
+        // console.log('merging yaml obj:', JSON.stringify(yamlObj));
         delete yamlObj.installationArgs;
         if (installationArgs.installationDir) {
           yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
@@ -294,7 +294,7 @@ const Installation = () => {
       setYaml(window.electron.ipcRenderer.getConfig());
       setShowProgress(true);
       dispatch(setLoading(false));
-      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
+      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, true).then((res: IResponse) => {
         if(!res.status){ //errors during runInstallation()
           alertEmitter.emit('showAlert', res.details, 'error');
         }
