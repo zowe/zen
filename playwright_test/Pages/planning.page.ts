@@ -29,6 +29,7 @@ class PlanningPage{
   continueInstallationOptions: Locator;
   readyToProceedMessage: Locator;
   errorMessage: Locator;
+  save_and_close: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -69,6 +70,11 @@ class PlanningPage{
   async getPlanningPageTitle(){
     await this.page.waitForTimeout(1000);
     return await this.planningPageTitle.textContent();
+  }
+
+  async getJobStatement(){
+    await this.page.waitForTimeout(1000);
+    return await this.jobStatement.textContent();
   }
 
   async click_saveAndClose(){
@@ -239,6 +245,7 @@ class PlanningPage{
   async fillPlanningPageWithRequiredFields(runtimeDir: any, workspaceDir: any, extensionDir: any, logDir: any, profileIdentifier:any, jobPrefix:any,jobname:any, javaLocation:any,nodejsLocation:any,zOSMFHost:any,zOSMFPort:any,zOSMFAppID:any){
     await this.page.waitForTimeout(2000);
     await this.clickSaveValidate();
+    await this.page.waitForTimeout(30000);
     await this.enterRuntimeDir(runtimeDir);
     await this.enterWorkspaceDir(workspaceDir);
     await this.enterLogsDir(logDir);
