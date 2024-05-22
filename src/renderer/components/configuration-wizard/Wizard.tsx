@@ -24,13 +24,16 @@ import { useAppSelector } from '../../hooks';
 import InitApfAuth from '../stages/InitApfAuth';
 import Networking from '../stages/Networking';
 import LaunchConfig from '../stages/LaunchConfig';
+import { getProgress } from '../stages/progress/StageProgressStatus';
+
+const mvsDatasetInitProgress = getProgress('datasetInstallationStatus');
 
 export const stages = [
   {id: 0, label: 'Connection', component: <Connection/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1, nextButton: 'Continue', statusKey: 'connectionStatus'},
   {id: 1, label: 'Planning', component: <Planning/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: true, steps: 3, nextButton: 'Continue to Installation Options', statusKey: 'planningStatus'},
   {id: 2, label: 'Installation Type', component: <InstallationType/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1, nextButton: 'Continue to Components Installation', statusKey: 'installationTypeStatus'},
   {id: 3, label: 'Initialization', component: <Initialization/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, subStages: [
-    {id: 0, label: 'Installation', component: <Installation/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Network Setup',  statusKey: 'datasetInstallationStatus'},
+    {id: 0, label: 'Installation', component: <Installation/>, hasJCL: true, isSkippable: mvsDatasetInitProgress ?? false, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Network Setup',  statusKey: 'datasetInstallationStatus'},
     {id: 1, label: 'Networking', component: <Networking/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to APF Auth Setup', statusKey: 'networkingStatus'},
     {id: 2, label: 'APF Auth', component: <InitApfAuth/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Security Setup', statusKey: 'apfAuthStatus'},
     {id: 3, label: 'Security', component: <Security/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Certificates Setup', statusKey: 'securityStatus'},
