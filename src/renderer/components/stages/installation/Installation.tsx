@@ -136,10 +136,10 @@ const Installation = () => {
         if (installationArgs.rbacProfile) {
           yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
         }
-        if (installationArgs.jobName) {
+        if ((yamlObj.zowe.job.name === undefined || yamlObj.zowe.job.name === '') && installationArgs.jobName) { //this undefined check is necessary because InstallationStage.jobName has a defualt, and therefore this would always overwrite the value in the config
           yamlObj.zowe.job.name = installationArgs.jobName;
         }
-        if (installationArgs.jobPrefix) {
+        if ((yamlObj.zowe.job.prefix === undefined || yamlObj.zowe.job.prefix === '') && installationArgs.jobPrefix) {
           yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
         }
         if (installationArgs.cookieId) {
@@ -154,10 +154,10 @@ const Installation = () => {
         if (installationArgs.zosmfHost) {
           yamlObj.zOSMF.host = installationArgs.zosmfHost;
         }
-        if (installationArgs.zosmfPort) {
+        if ((yamlObj.zOSMF.port === undefined || yamlObj.zOSMF.port === '') && installationArgs.zosmfPort) {
           yamlObj.zOSMF.port = Number(installationArgs.zosmfPort);
         }
-        if (installationArgs.zosmfApplId) {
+        if ((yamlObj.zOSMF.applId === undefined || yamlObj.zOSMF.applId === '') && installationArgs.zosmfApplId) {
           yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
         }
         return yamlObj;
