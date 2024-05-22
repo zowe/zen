@@ -311,7 +311,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
             }
             {stages[activeStep] && stages[activeStep].isSkippable &&
               <Button 
-                disabled={isNextStepEnabled}
+                disabled={stages[activeStep] && stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].isSkippable : stages[activeStep].isSkippable}
                 variant="contained" 
                 sx={{ textTransform: 'none', mr: 1 }} 
                 onClick={() => handleSkip()}
