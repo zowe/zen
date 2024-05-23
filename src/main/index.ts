@@ -118,6 +118,11 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('set-config-by-key-no-validate', async (_event, key: string, value) => {
+    const res = await ConfigurationStore.setConfigByKeyNoValidate(key, value);
+    return res;
+  });
+
   ipcMain.handle('get-zowe-version', async () => {
     const res = await PlanningActions.getZoweVersion();
     return res;

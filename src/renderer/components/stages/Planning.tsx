@@ -453,7 +453,7 @@ Please customize the job statement below to match your system requirements.
                 onChange={(e) => {
                   formChangeHandler("zowe.runtimeDirectory", e.target.value, "installationDir");
                   if(localYaml){
-                    window.electron.ipcRenderer.setConfigByKey('zowe.runtimeDirectory', e.target.value).then((res: any) => {
+                    window.electron.ipcRenderer.setConfigByKeyNoValidate('zowe.runtimeDirectory', e.target.value).then((res: any) => {
                       // console.log('updated zowe.runtimeDirectory')
                     })
                   }
@@ -475,7 +475,7 @@ Please customize the job statement below to match your system requirements.
                 onChange={(e) => {
                   formChangeHandler("zowe.workspaceDirectory", e.target.value, "workspaceDir");
                   if(localYaml){
-                    window.electron.ipcRenderer.setConfigByKey('zowe.workspaceDirectory', e.target.value).then((res: any) => {
+                    window.electron.ipcRenderer.setConfigByKeyNoValidate('zowe.workspaceDirectory', e.target.value).then((res: any) => {
                       // console.log('updated zowe.workspaceDirectory')
                     })
                   }
@@ -497,7 +497,7 @@ Please customize the job statement below to match your system requirements.
                 onChange={(e) => {
                   formChangeHandler("zowe.logDirectory", e.target.value, "logDir");
                   if(localYaml){
-                    window.electron.ipcRenderer.setConfigByKey('zowe.logDirectory', e.target.value).then((res: any) => {
+                    window.electron.ipcRenderer.setConfigByKeyNoValidate('zowe.logDirectory', e.target.value).then((res: any) => {
                       // console.log('updated zowe.logDirectory')
                     })
                   }
@@ -519,7 +519,7 @@ Please customize the job statement below to match your system requirements.
                 onChange={(e) => {
                   formChangeHandler("zowe.extensionDirectory", e.target.value, "extensionDir");
                   if(localYaml){
-                    window.electron.ipcRenderer.setConfigByKey('zowe.extensionDirectory', e.target.value).then((res: any) => {
+                    window.electron.ipcRenderer.setConfigByKeyNoValidate('zowe.extensionDirectory', e.target.value).then((res: any) => {
                       // console.log('updated zowe.extensionDirectory')
                     })
                   }
@@ -540,7 +540,7 @@ Please customize the job statement below to match your system requirements.
                 onChange={(e) => {
                   formChangeHandler("zowe.rbacProfileIdentifier", e.target.value, "rbacProfile" );
                   if(localYaml){
-                    window.electron.ipcRenderer.setConfigByKey('zowe.rbacProfileIdentifier', e.target.value).then((res: any) => {
+                    window.electron.ipcRenderer.setConfigByKeyNoValidate('zowe.rbacProfileIdentifier', e.target.value).then((res: any) => {
                       // console.log('updated zowe.rbacProfileIdentifier')
                     })
                   }
@@ -563,7 +563,7 @@ Please customize the job statement below to match your system requirements.
                 onChange={(e) => {
                   formChangeHandler("zowe.job.name", e.target.value, "jobName");
                   if(localYaml){
-                    window.electron.ipcRenderer.setConfigByKey('zowe.job.name', e.target.value).then((res: any) => {
+                    window.electron.ipcRenderer.setConfigByKeyNoValidate('zowe.job.name', e.target.value).then((res: any) => {
                       // console.log('updated zowe.job.name')
                     })
                   }
@@ -584,7 +584,7 @@ Please customize the job statement below to match your system requirements.
                 onChange={(e) => {
                   formChangeHandler("zowe.job.prefix", e.target.value, "jobPrefix");
                   if(localYaml){
-                    window.electron.ipcRenderer.setConfigByKey('zowe.job.prefix', e.target.value).then((res: any) => {
+                    window.electron.ipcRenderer.setConfigByKeyNoValidate('zowe.job.prefix', e.target.value).then((res: any) => {
                       // console.log('updated zowe.job.prefi')
                     })
                   }
@@ -605,7 +605,7 @@ Please customize the job statement below to match your system requirements.
                 onChange={(e) => {
                   formChangeHandler("zowe.cookieIdentifier", e.target.value, "cookieId");
                   if(localYaml){
-                    window.electron.ipcRenderer.setConfigByKey('zowe.cookieIdentifier', e.target.value).then((res: any) => {
+                    window.electron.ipcRenderer.setConfigByKeyNoValidate('zowe.cookieIdentifier', e.target.value).then((res: any) => {
                       // console.log('updated zowe.cookieIdentifier')
                     })
                   }
@@ -626,7 +626,7 @@ Please customize the job statement below to match your system requirements.
                 onChange={(e) => {
                   formChangeHandler("java.home", e.target.value, "javaHome");
                   if(localYaml){
-                    window.electron.ipcRenderer.setConfigByKey('java.home', e.target.value).then((res: any) => {
+                    window.electron.ipcRenderer.setConfigByKeyNoValidate('java.home', e.target.value).then((res: any) => {
                       // console.log('updated zowe.java.home')
                     })
                   }
@@ -647,7 +647,7 @@ Please customize the job statement below to match your system requirements.
                 onChange={(e) => {
                   formChangeHandler("node.home", e.target.value, "nodeHome");
                   if(localYaml){
-                    window.electron.ipcRenderer.setConfigByKey('node.home', e.target.value).then((res: any) => {
+                    window.electron.ipcRenderer.setConfigByKeyNoValidate('node.home', e.target.value).then((res: any) => {
                       // console.log('updated zowe.node.home')
                     })
                   }
@@ -686,7 +686,7 @@ Please customize the job statement below to match your system requirements.
                       onChange={(e) => {
                         formChangeHandler("zOSMF.host", e.target.value, "zosmfHost");
                         if(localYaml){
-                          window.electron.ipcRenderer.setConfigByKey('zOSMF.host', e.target.value).then((res: any) => {
+                          window.electron.ipcRenderer.setConfigByKeyNoValidate('zOSMF.host', e.target.value).then((res: any) => {
                             // console.log('updated zowe.zOSMF.host')
                           })
                         }
@@ -708,7 +708,7 @@ Please customize the job statement below to match your system requirements.
                       onChange={(e) => {
                         formChangeHandler("zOSMF.port", Number(e.target.value), "zosmfPort");
                         if(localYaml){
-                          window.electron.ipcRenderer.setConfigByKey('zOSMF.port', Number(e.target.value)).then((res: any) => {
+                          window.electron.ipcRenderer.setConfigByKeyNoValidate('zOSMF.port', Number(e.target.value)).then((res: any) => {
                             // console.log('updated zowe.zOSMF.port')
                           })
                         }
@@ -731,7 +731,7 @@ Please customize the job statement below to match your system requirements.
                       onChange={(e) => {
                         formChangeHandler("zOSMF.applId", e.target.value, "zosmfApplId");
                         if(localYaml){
-                          window.electron.ipcRenderer.setConfigByKey('zOSMF.applId', e.target.value).then((res: any) => {
+                          window.electron.ipcRenderer.setConfigByKeyNoValidate('zOSMF.applId', e.target.value).then((res: any) => {
                             // console.log('updated zowe.zOSMF.applId')
                           })
                         }
