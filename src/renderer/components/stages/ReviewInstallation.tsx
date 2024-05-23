@@ -24,6 +24,7 @@ import { selectConnectionStatus, selectPlanningStatus, selectInstallationTypeSta
 import { setActiveStep } from './progress/activeStepSlice';
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
+import { getCompleteProgress } from "./progress/StageProgressStatus";
 
 import '../../styles/ReviewInstallation.css';
 
@@ -43,20 +44,22 @@ const ReviewInstallation = () => {
 
   const theme = createTheme();
 
+  const completeProgress = getCompleteProgress();
+
   const stageProgressStatus = [
     useSelector(selectConnectionStatus),
-    useSelector(selectPlanningStatus),
-    useSelector(selectInstallationTypeStatus),
-    useSelector(selectInitializationStatus),
+    completeProgress.planningStatus,
+    completeProgress.installationTypeStatus,
+    completeProgress.initializationStatus,
   ];
   
   const subStageProgressStatus = [
-    useSelector(selectDatasetInstallationStatus),
-    useSelector(selectNetworkingStatus),
-    useSelector(selectApfAuthStatus),
-    useSelector(selectSecurityStatus),
-    useSelector(selectCertificateStatus),
-    useSelector(selectLaunchConfigStatus),
+    completeProgress.datasetInstallationStatus,
+    completeProgress.networkingStatus,
+    completeProgress.apfAuthStatus,
+    completeProgress.securityStatus,
+    completeProgress.certificateStatus,
+    completeProgress.launchConfigStatus
   ];
 
   const TYPE_YAML = "yaml";

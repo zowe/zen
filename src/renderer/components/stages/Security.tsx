@@ -26,7 +26,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
-import { setProgress, getProgress, setSecurityInitState, getSecurityInitState } from "./progress/StageProgressStatus";
+import { setProgress, getProgress, setSecurityInitState, getSecurityInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 
 const Security = () => {
@@ -58,7 +58,7 @@ const Security = () => {
   const [initClicked, setInitClicked] = useState(false);
   const [reinit, setReinit] = useState(false);
 
-  const installationArgs = useAppSelector(selectInstallationArgs);
+  const installationArgs = getInstallationArguments();
   const connectionArgs = useAppSelector(selectConnectionArgs);
   let timer: any;
 
@@ -82,11 +82,9 @@ const Security = () => {
     let nextPosition;
 
     if(getProgress('securityStatus')) {
-      console.log('security: start-security-progress');
       nextPosition = document.getElementById('security-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     } else {
-      console.log('security: container-box-id');
       nextPosition = document.getElementById('container-box-id');
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
@@ -149,10 +147,15 @@ const Security = () => {
     }
   }
 
+  const setStageSkipStatus = (status: boolean) => {
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = status;
+    mapAndSetSkipStatus(SUB_STAGE_ID, status);
+  }
+
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
-    stages[STAGE_ID].isSkipped = !status;
+    setStageSkipStatus(!status);
     if(!status) {
       for (let key in securityInitProgress) {
         securityInitProgress[key as keyof(InitSubStepsState)] = false;
