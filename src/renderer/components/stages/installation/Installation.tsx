@@ -109,76 +109,76 @@ const Installation = () => {
         console.log("got installation args:", JSON.stringify(res));
         setInstArgs((res as any));
       }
+      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+        function mergeInstallationArgsAndYaml(yaml: any){
+          let yamlObj = JSON.parse(JSON.stringify(yaml));
+          // console.log('merging yaml obj:', JSON.stringify(yamlObj));
+          delete yamlObj.installationArgs;
+          if (installationArgs.installationDir) {
+            yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
+          } else if(!installationArgs.installationDir && yamlObj.zowe.runtimeDirectory){
+            //setting this because it is needed many places in InstallationHandler.tsx. This whole architecture has become an absolute mess.
+            dispatch(setInstallationArgs({...installationArgs, installationDir: yamlObj.zowe.runtimeDirectory}));
+          }
+          if (installationArgs.workspaceDir) {
+            yamlObj.zowe.workspaceDirectory = installationArgs.workspaceDir;
+          }
+          if (installationArgs.logDir) {
+            yamlObj.zowe.logDirectory = installationArgs.logDir;
+          }
+          if (installationArgs.extensionDir) {
+            yamlObj.zowe.extensionDirectory = installationArgs.extensionDir;
+          }
+          if (installationArgs.rbacProfile) {
+            yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
+          }
+          if ((yamlObj.zowe.job.name === undefined || yamlObj.zowe.job.name === '') && installationArgs.jobName) { //this undefined check is necessary because InstallationStage.jobName has a defualt, and therefore this would always overwrite the value in the config
+            yamlObj.zowe.job.name = installationArgs.jobName;
+          }
+          if ((yamlObj.zowe.job.prefix === undefined || yamlObj.zowe.job.prefix === '') && installationArgs.jobPrefix) {
+            yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
+          }
+          if (installationArgs.cookieId) {
+            yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
+          }
+          if (installationArgs.javaHome) {
+            yamlObj.java.home = installationArgs.javaHome;
+          }
+          if (installationArgs.nodeHome) {
+            yamlObj.node.home = installationArgs.nodeHome;
+          }
+          if (installationArgs.zosmfHost) {
+            yamlObj.zOSMF.host = installationArgs.zosmfHost;
+          }
+          if ((yamlObj.zOSMF.port === undefined || yamlObj.zOSMF.port === '') && installationArgs.zosmfPort) {
+            yamlObj.zOSMF.port = Number(installationArgs.zosmfPort);
+          }
+          if ((yamlObj.zOSMF.applId === undefined || yamlObj.zOSMF.applId === '') && installationArgs.zosmfApplId) {
+            yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
+          }
+          return yamlObj;
+        }
+        if(res.details.zowe === undefined){
+          //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux but not on disk
+          let yamlObj = mergeInstallationArgsAndYaml(FALLBACK_YAML);
+          // console.log('setting yaml:', yamlObj);
+          setLYaml(yamlObj)
+          dispatch(setYaml(yamlObj))
+        } else {
+          // console.log('got config:', JSON.stringify(res.details));
+          let yamlObj = mergeInstallationArgsAndYaml(res.details);
+          if(res.details.zowe?.setup?.dataset === undefined){
+            // console.log('setting yaml:',{...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} });
+            dispatch(setYaml({...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} }));
+          } else {
+            dispatch(setYaml(yamlObj));
+            setSetupYaml(yamlObj.zowe.setup.dataset);
+          }
+        }
+      })
     })
 
     setIsFormInit(true);
-
-    window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-      function mergeInstallationArgsAndYaml(yaml: any){
-        let yamlObj = JSON.parse(JSON.stringify(yaml));
-        // console.log('merging yaml obj:', JSON.stringify(yamlObj));
-        delete yamlObj.installationArgs;
-        if (installationArgs.installationDir) {
-          yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
-        } else if(!installationArgs.installationDir && yamlObj.zowe.runtimeDirectory){
-          //setting this because it is needed many places in InstallationHandler.tsx. This whole architecture has become an absolute mess.
-          dispatch(setInstallationArgs({...installationArgs, installationDir: yamlObj.zowe.runtimeDirectory}));
-        }
-        if (installationArgs.workspaceDir) {
-          yamlObj.zowe.workspaceDirectory = installationArgs.workspaceDir;
-        }
-        if (installationArgs.logDir) {
-          yamlObj.zowe.logDirectory = installationArgs.logDir;
-        }
-        if (installationArgs.extensionDir) {
-          yamlObj.zowe.extensionDirectory = installationArgs.extensionDir;
-        }
-        if (installationArgs.rbacProfile) {
-          yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
-        }
-        if ((yamlObj.zowe.job.name === undefined || yamlObj.zowe.job.name === '') && installationArgs.jobName) { //this undefined check is necessary because InstallationStage.jobName has a defualt, and therefore this would always overwrite the value in the config
-          yamlObj.zowe.job.name = installationArgs.jobName;
-        }
-        if ((yamlObj.zowe.job.prefix === undefined || yamlObj.zowe.job.prefix === '') && installationArgs.jobPrefix) {
-          yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
-        }
-        if (installationArgs.cookieId) {
-          yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
-        }
-        if (installationArgs.javaHome) {
-          yamlObj.java.home = installationArgs.javaHome;
-        }
-        if (installationArgs.nodeHome) {
-          yamlObj.node.home = installationArgs.nodeHome;
-        }
-        if (installationArgs.zosmfHost) {
-          yamlObj.zOSMF.host = installationArgs.zosmfHost;
-        }
-        if ((yamlObj.zOSMF.port === undefined || yamlObj.zOSMF.port === '') && installationArgs.zosmfPort) {
-          yamlObj.zOSMF.port = Number(installationArgs.zosmfPort);
-        }
-        if ((yamlObj.zOSMF.applId === undefined || yamlObj.zOSMF.applId === '') && installationArgs.zosmfApplId) {
-          yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
-        }
-        return yamlObj;
-      }
-      if(res.details.zowe === undefined){
-        //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux but not on disk
-        let yamlObj = mergeInstallationArgsAndYaml(FALLBACK_YAML);
-        // console.log('setting yaml:', yamlObj);
-        setLYaml(yamlObj)
-        dispatch(setYaml(yamlObj))
-      } else {
-        // console.log('got config:', JSON.stringify(res.details));
-        let yamlObj = mergeInstallationArgsAndYaml(res.details);
-        if(res.details.zowe?.setup?.dataset === undefined){
-          // console.log('setting yaml:',{...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} });
-          dispatch(setYaml({...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} }));
-        } else {
-          dispatch(setYaml(yamlObj));
-        }
-      }
-    })
 
     window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
       if(res.details === undefined){
@@ -329,7 +329,7 @@ const Installation = () => {
         setStageConfig(false, errPath+' '+errMsg, updatedData);
       } else {
         const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}};
-        window.electron.ipcRenderer.setConfig(newYaml)
+        await window.electron.ipcRenderer.setConfig(newYaml)
         setStageConfig(true, '', updatedData);
       }
     }
@@ -354,7 +354,7 @@ const Installation = () => {
           {installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
         </Typography>
 
-        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && formError && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>
