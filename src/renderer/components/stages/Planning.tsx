@@ -360,7 +360,7 @@ const Planning = () => {
       const newInstallationArgs = { ...installationArgs, [installationArg]: value };
       dispatch(setInstallationArgs(newInstallationArgs));
       setInstArgs(newInstallationArgs);
-      window.electron.ipcRenderer.setConfigByKey("installationArgs", newInstallationArgs);
+      window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", newInstallationArgs);
     }
 
     const updatedYaml: any = updateAndReturnYaml(key, value)
