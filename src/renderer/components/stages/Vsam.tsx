@@ -86,6 +86,8 @@ const Vsam = () => {
     setShowProgress(initClicked || getProgress('vsamStatus'));
     let nextPosition;
 
+    datasetValidation(yaml?.components[`caching-service`]?.storage?.vsam?.name|| '');
+
     if(getProgress('vsamStatus')) {
       nextPosition = document.getElementById('vsam-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -253,12 +255,16 @@ const Vsam = () => {
     dispatch(setYaml(updatedYaml));
   };
 
+  const datasetValidation = (dsName: string) => {
+    const DsNamePattern = "^[a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}([.][a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}){0,21}$";
+    const regEx = new RegExp(DsNamePattern);
+    setIsDsNameValid(regEx.test(dsName));
+  }
+
 
   const cachingServiceChangeHandler = (newValue: string) => {
     alertEmitter.emit('hideAlert');
-    const DsNamePattern = "^[a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}([.][a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}){0,21}$";
-    const regEx = new RegExp(DsNamePattern);
-    setIsDsNameValid(regEx.test(newValue));
+    datasetValidation(newValue);
     handleUpdateVsamName(newValue);
   }
 
