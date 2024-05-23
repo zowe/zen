@@ -247,8 +247,21 @@ class Installation {
       ProgressStore.set('initVsam.uploadYaml', uploadYaml.status);
       const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init vsam -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
-      ProgressStore.set('initVsam.success', result.rc === 0);
-      return {status: result.rc === 0, details: result.jobOutput}
+
+      let errorFound = false;
+      let errorMessage = '';
+      const errorPattern = /Error ZWE.*/;
+      for (const key in result.jobOutput) {
+        const match = result.jobOutput[key].match(errorPattern);
+        if (match) {
+          errorFound = true;
+          errorMessage = match[0];
+          break;
+        }
+      }
+
+      ProgressStore.set('initVsam.success', result.rc === 0 && !errorFound);
+      return {status: result.rc === 0 && !errorFound, details: result.jobOutput, error: errorFound, errorMsg: errorMessage }
   }
 
   async generateYamlFile(zoweConfig: object): Promise<IResponse> {
