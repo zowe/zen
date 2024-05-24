@@ -12,7 +12,7 @@ import { useState, useEffect } from "react";
 import { Box, Button, FormControl } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progress/progressSlice';
-import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml, setSchema } from '../configuration-wizard/wizardSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -28,6 +28,7 @@ import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
 import { setProgress, getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { CertInitSubStepsState } from "../../../types/stateInterfaces";
+import { FALLBACK_YAML, FALLBACK_SCHEMA  } from "../../..//utils/yamlSchemaDefaults";
 
 const Certificates = () => {
 
@@ -41,7 +42,7 @@ const Certificates = () => {
   const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
 
   const dispatch = useAppDispatch();
-  const schema = useAppSelector(selectSchema);
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const installationArgs = getInstallationArguments();
@@ -87,6 +88,29 @@ const Certificates = () => {
   }
 
   useEffect(() => {
+
+    if(!yaml){
+      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setYaml(res.details));
+          setLYaml(res.details);
+        } else {
+          dispatch(setYaml(FALLBACK_YAML));
+          setLYaml(FALLBACK_YAML);
+        }
+      })
+    }
+
+    if(!schema){
+      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setSchema(res.details));
+        } else {
+          dispatch(setSchema(FALLBACK_SCHEMA));
+          setLocalSchema(FALLBACK_SCHEMA)
+        }
+      })
+    }
 
     if(getProgress('certificateStatus')) {
       const nextPosition = document.getElementById('start-certificate-progress');
