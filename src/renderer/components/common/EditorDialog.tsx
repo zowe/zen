@@ -18,6 +18,7 @@ import draft7MetaSchema from "ajv/dist/refs/json-schema-draft-07.json";
 import { parse, stringify } from "yaml";
 import { IResponse } from "../../../types/interfaces";
 import { DEV_NO_OUTPUT } from "./Utils";
+import { alertEmitter } from "../Header";
 
 const test_jcl = `
 //MYJOB   JOB (ACCT), 'My Job Description',
@@ -136,6 +137,14 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
     reader.readAsText(file);
   };
 
+  const handleClose = () => {
+    // Add your new functionality here
+    alertEmitter.emit('hideAlert');
+  
+    // Call the existing toggleEditorVisibility method
+    toggleEditorVisibility();
+  };
+
   const handleFileExport = () => {
     const content = editorContent;
     const blob = new Blob([content], { type: 'text/plain' });
@@ -179,7 +188,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
           )}
           {contentType === 'jcl' && <Button onClick={toggleEditorVisibility}>Submit Job</Button>}
           <Button onClick={handleFileExport}>Export</Button>
-          <Button onClick={toggleEditorVisibility}>Close</Button>
+          <Button onClick={handleClose}>Close</Button>
         </DialogActions>
       </Dialog> 
     </div>
