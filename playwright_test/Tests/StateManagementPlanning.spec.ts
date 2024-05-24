@@ -78,7 +78,9 @@ test.describe('State_Management_PlanningTab', () => {
   })
 
   test('Test Locations Validated and Planning Step Completed', async ({page}) => {
-    await page.waitForTimeout(5000)
+    await page.waitForTimeout(2000);
+    planningPage.clickSaveValidate();
+    await page.waitForTimeout(20000);
     planningPage.fillPlanningPageWithRequiredFields(RUNTIME_DIR, WORKSPACE_DIR,EXTENSIONS_DIR,LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
     await page.waitForTimeout(30000);
     planningPage.clickValidateLocations()
@@ -94,7 +96,9 @@ test.describe('State_Management_PlanningTab', () => {
   })
 
   test('Test Locations Not Validated and Planning Step Pending', async ({page}) => {
-    await page.waitForTimeout(5000)
+    await page.waitForTimeout(2000)
+    planningPage.clickSaveValidate();
+    await page.waitForTimeout(20000);
     planningPage.fillPlanningPageWithRequiredFields(RUNTIME_DIR, WORKSPACE_DIR,EXTENSIONS_DIR,LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
     await page.waitForTimeout(30000);
     planningPage.clickValidateLocations()

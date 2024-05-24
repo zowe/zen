@@ -244,8 +244,6 @@ class PlanningPage{
   }
   async fillPlanningPageWithRequiredFields(runtimeDir: any, workspaceDir: any, extensionDir: any, logDir: any, profileIdentifier:any, jobPrefix:any,jobname:any, javaLocation:any,nodejsLocation:any,zOSMFHost:any,zOSMFPort:any,zOSMFAppID:any){
     await this.page.waitForTimeout(2000);
-    await this.clickSaveValidate();
-    await this.page.waitForTimeout(30000);
     await this.enterRuntimeDir(runtimeDir);
     await this.enterWorkspaceDir(workspaceDir);
     await this.enterLogsDir(logDir);
