@@ -178,7 +178,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
     setActiveStep(newActiveStep);
     const newSubStep = isSubStep ? subStepIndex : 0;
-    if(subStepIndex > 0 && subStageProgressStatus[0] === true){ //only allow substages after installation to be navigated to if init mvs has been completed
+    if((subStepIndex > 0 && subStageProgressStatus[0] === true) || subStepIndex === 0){ //only allow substages after installation to be navigated to if init mvs has been completed
       setActiveSubStep(newSubStep);
     }
   }
