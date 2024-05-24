@@ -86,7 +86,10 @@ const Vsam = () => {
     setShowProgress(initClicked || getProgress('vsamStatus'));
     let nextPosition;
 
-    datasetValidation(yaml?.components[`caching-service`]?.storage?.vsam?.name|| '');
+    const vsamDatasetName = yaml?.components[`caching-service`]?.storage?.vsam?.name|| '';
+    if(vsamDatasetName) {
+      datasetValidation(vsamDatasetName);
+    }
 
     if(getProgress('vsamStatus')) {
       nextPosition = document.getElementById('vsam-progress');
