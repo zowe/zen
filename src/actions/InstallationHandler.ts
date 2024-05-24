@@ -81,7 +81,7 @@ class Installation {
         }
       } else {
         //if the user has selected an SMPE or opted to upload their own pax, we simply set this status to true as no download is required
-        download = {status: true, details: ''}
+        unpax = upload = download = {status: true, details: ''}
         ProgressStore.set('installation.download', true);
       }
 
@@ -89,22 +89,10 @@ class Installation {
         return {status: false, details: `Error downloading pax: ${download.details}`};
       }
 
-      console.log("uploading...");
-      if(installationArgs.installationType === "upload"){
-        //upload the PAX the user selected in the "Install Type" stage to the installation dir (from the planning stage)
-        console.log('Uploading user selected pax')
-        upload = await new FileTransfer().upload(connectionArgs, installationArgs.userUploadedPaxPath, path.join(installationArgs.installationDir, "zowe.pax"), DataType.BINARY)
-      } else if (installationArgs.installationType === "download"){
-        console.log('Uploading pax downloaded from jfrog')
-        upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);
-      }
-      ProgressStore.set('installation.upload', upload.status);
-
       if(!upload.status){
         return {status: false, details: `Error uploading pax: ${upload.details}`};
       }
 
-      unpax = {status: false, details: ""};
       if (!SMPE_INSTALL) {
         console.log("unpaxing...");
         unpax = await this.unpax(connectionArgs, installationArgs.installationDir); 
@@ -133,7 +121,7 @@ class Installation {
       let initMvs;
       if(installation.status){
         console.log("running zwe init mvs...");
-         initMvs = await this.initMVS(connectionArgs, SMPE_INSTALL ? installationArgs.installationDir : installationArgs.installationDir + '/runtime');
+         initMvs = await this.initMVS(connectionArgs, SMPE_INSTALL ? installationArgs.installationDir : installationArgs.installationDir);
         ProgressStore.set('installation.initMVS', initMvs.status);
       } else {
         initMvs = {status: false, details: `zwe install step failed, unable to run zwe init mvs.`}
