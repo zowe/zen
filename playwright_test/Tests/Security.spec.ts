@@ -11,6 +11,8 @@ let page: Page;
 
 let electronApp: ElectronApplication
 const CERTIFICATE_TITLE = 'Certificates'
+const SECURITY_TITLE = 'Security'
+const APF_AUTH_TITLE ='APF Authorize Load Libraries'
 const ZOWE_ROOT_DIR = process.env.ZOWE_ROOT_DIR;
 const SSH_HOST = process.env.SSH_HOST;
 const SSH_PASSWD =  process.env.SSH_PASSWD;
@@ -40,7 +42,7 @@ test.beforeAll(async () => {
     await prepareEnvironment({ install: true, remove: false });
   } catch (error) {
     console.error('Error during environment preparation:', error);
-    process.exit(1); 
+    process.exit(1);
   }
 });
 
@@ -144,6 +146,7 @@ test.describe('securityTab', () => {
      expect(certificate_title).toBe(CERTIFICATE_TITLE);
     })
 
+
     test('Test previous button is enabled', async ({ page }) => {
      const is_prevButtonEnable = await securityPage.isPreviousButtonEnable();
      expect(is_prevButtonEnable).toBe(true);
@@ -193,19 +196,16 @@ test.describe('securityTab', () => {
      await page.waitForTimeout(5000);
     })
 
-    test('Test save and close', async ({ page }) => {
+    test('Test save and close and Resume Progress', async ({ page }) => {
      await page.waitForTimeout(5000);
      securityPage.fillSecurityDetails('RACF',SECURITY_ADMIN,SECURITY_STC,SECURITY_SYSPROG,SECURITY_USER_ZIS,SECURITY_USER_ZOWE,SECURITY_AUX,SECURITY_STC_ZOWE,SECURITY_STC_ZIS)
      await page.waitForTimeout(5000);
      securityPage.click_saveAndClose()
-     await page.waitForTimeout(5000);
-     titlePage.navigateToConnectionTab()
-     connectionPage.clickContinueButton()
-     await page.waitForTimeout(5000);
-     planningPage.clickContinueToInstallation()
-     await page.waitForTimeout(5000);
-     securityPage.movetoSecurityPage()
+     await page.waitForTimeout(3000);
+     titlePage.clickOnResumeProgress();
      await page.waitForTimeout(15000);
+     const title = await securityPage.returnTitleOfSecurityPage();
+     expect(title).toBe(SECURITY_TITLE);
      const sysProg_value = await securityPage.get_sysProg_value();
      const admin_value = await securityPage.get_admin_value();
      const stc_value = await securityPage.get_stc_value();

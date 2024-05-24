@@ -151,21 +151,18 @@ test.describe('launchConfigTab', () => {
      await page.waitForTimeout(5000);
     })
 
-  test('Test save and close', async ({ page }) => {
+  test('Test save and close and Resume Progress', async ({ page }) => {
     await page.waitForTimeout(5000);
     launchConfigPage.fillvalues('STRICT')
     launchConfigPage.fillvalues_logLevel('info')
     launchConfigPage.fillvaluescomponentConfig('warn')
     await page.waitForTimeout(5000);
     launchConfigPage.click_saveAndClose()
-    await page.waitForTimeout(5000);
-    titlePage.navigateToConnectionTab()
-    connectionPage.clickContinueButton()
-    await page.waitForTimeout(5000);
-    planningPage.clickContinueToInstallation()
-    await page.waitForTimeout(5000);
-    launchConfigPage.movetoLaunchConfigPage()
+    await page.waitForTimeout(3000);
+    titlePage.clickOnResumeProgress();
     await page.waitForTimeout(15000);
+    const title = await launchConfigPage.returnTitleOfConfPage();
+    expect(title).toBe(CONFPAGE_TITLE);
     const Validation_Value = await launchConfigPage.get_validation_value();
     const LogLevel_Value = await launchConfigPage.get_logLevel_value();
     const ComponentConfig_Value = await launchConfigPage.get_componentConfig_value();

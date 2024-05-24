@@ -9,7 +9,8 @@
  */
 
 import { flatten, unflatten } from 'flat';
-import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails} from '../../../../types/stateInterfaces';
+import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, SkipState, InstallationArgs} from '../../../../types/stateInterfaces';
+import { stages } from '../../configuration-wizard/Wizard';
 
 const installationTypeStatus: InstallationType = {
   installationType: 'download',
@@ -77,6 +78,35 @@ const planningValidationDetailsStatus: PlanningValidationDetails = {
   error: ''
 }
 
+const stepSkipStatus: SkipState = {
+  datasetInstallation: false,
+  networking: false,
+  apfAuth: false,
+  security: false,
+  certificate: false,
+  launchConfig: false
+}
+
+const installationArgsStatus: InstallationArgs = {
+  installationDir: '',
+    workspaceDir: '',
+    logDir:'',
+    extensionDir:'',
+    installationType: 'download',
+    userUploadedPaxPath: '',
+    downloadDir: '',
+    javaHome: '',
+    nodeHome: '',
+    setupConfig: {},
+    jobName: 'ZWE1SV',
+    jobPrefix: 'ZWE1',
+    rbacProfile: '1',
+    cookieId: '1',
+    zosmfHost: '',
+    zosmfPort: '443',
+    zosmfApplId: 'IZUDFLT'
+}
+
 let progressStateKey = 'stage_progress';
 let activeStateKey = 'active_state';
 let planningStateKey = 'planning_stage';
@@ -86,6 +116,11 @@ let apfAuthKey = 'apf_auth';
 let securityKey = 'security_init';
 let certificateKey = 'certificate_init';
 let planningValidationDetailsKey = `planning_validation_details`;
+let prevInstallationKey = `prev_installation`;
+let skipStateKey = `skip_state`;
+let installationArgsKey = `intallation_args`;
+
+let skipKeysArray: (keyof SkipState)[] = Object.keys(stepSkipStatus) as (keyof SkipState)[];
 
 const setKeys = (id: string) => {
   progressStateKey = `${progressStateKey}_${id}`;
@@ -97,6 +132,8 @@ const setKeys = (id: string) => {
   securityKey = `${securityKey}_${id}`;
   certificateKey = `${certificateKey}_${id}`;
   planningValidationDetailsKey = `${planningValidationDetailsKey}_${id}`;
+  skipStateKey = `${skipStateKey}_${id}`;
+  installationArgsKey = `${installationArgsKey}_${id}`;
 }
 
 export const initializeProgress = (host: string, user: string) => {
@@ -155,6 +192,58 @@ export const initializeProgress = (host: string, user: string) => {
   if(!planningValidationDetailsState) {
     const flattenedData = flatten(planningValidationDetailsStatus);
     localStorage.setItem(planningValidationDetailsKey, JSON.stringify(flattenedData));
+  }
+
+  const stepSkipStatusState = localStorage.getItem(skipStateKey);
+  if(!stepSkipStatusState) {
+    const flattenedData = flatten(stepSkipStatus);
+    localStorage.setItem(skipStateKey, JSON.stringify(flattenedData));
+  }
+
+  const installationArgsState = localStorage.getItem(installationArgsKey);
+  if(!installationArgsState) {
+    const flattenedData = flatten(installationArgsStatus);
+    localStorage.setItem(installationArgsKey, JSON.stringify(flattenedData));
+  }
+}
+
+export const mapAndSetSkipStatus = (subStageId: number, value: boolean): void => {
+  setSubStageSkipStatus(skipKeysArray[subStageId], value);
+}
+
+export const mapAndGetSkipStatus = (subStageId: number): boolean => {
+  const skipStatus = getSubStageSkipStatus();
+  const skipStatusArray = [
+    skipStatus.datasetInstallation,
+    skipStatus.networking,
+    skipStatus.apfAuth,
+    skipStatus.security,
+    skipStatus.certificate,
+    skipStatus.launchConfig
+  ]
+
+  return skipStatusArray[subStageId];
+}
+
+export const setSubStageSkipStatus = (key: keyof SkipState, newValue: boolean): void => {
+  const skipStatus = localStorage.getItem(skipStateKey);
+  if (skipStatus) {
+    const flattenedData = JSON.parse(skipStatus);
+    const unFlattenedData = unflatten(flattenedData) as SkipState;
+    Object.assign(stepSkipStatus, unFlattenedData);
+  }
+  stepSkipStatus[key] = newValue;
+  const flattenedData = flatten(stepSkipStatus);
+  localStorage.setItem(skipStateKey, JSON.stringify(flattenedData));
+}
+
+export const getSubStageSkipStatus = () : SkipState => {
+  const skipStatus = localStorage.getItem(skipStateKey);
+  if(skipStatus) {
+    const flattenedData =  JSON.parse(skipStatus);
+    return unflatten(flattenedData);
+  } else {
+    return stepSkipStatus;
   }
 }
 
@@ -277,6 +366,22 @@ export const getPlanningStageStatus = (): PlanningState => {
   }
 }
 
+export const setInstallationArguments = (newInstallationArgs: InstallationArgs): void => {
+  Object.assign(installationArgsStatus, newInstallationArgs);
+  const flattenedData = flatten(installationArgsStatus);
+  localStorage.setItem(installationArgsKey, JSON.stringify(flattenedData));
+}
+
+export const getInstallationArguments = () : InstallationArgs => {
+  const installArgs = localStorage.getItem(installationArgsKey);
+  if(installArgs) {
+    const flattenedData =  JSON.parse(installArgs);
+    return unflatten(flattenedData);
+  } else {
+    return installationArgsStatus;
+  }
+}
+
 export const setProgress = (key: keyof ProgressState, newValue: boolean): void => {
   const progress = localStorage.getItem(progressStateKey);
   if (progress) {
@@ -313,7 +418,7 @@ export const getCompleteProgress = () : ProgressState => {
 export const setActiveStage = (stageId: number, isSubStage: boolean, date: string, subStageId?: number): void => {
   activeStatus.activeStepIndex = stageId;
   activeStatus.isSubStep = isSubStage;
-  activeStatus.date = date;
+  activeStatus.lastActiveDate = date;
 
   if(!isSubStage) {
     activeStatus.activeSubStepIndex = 0;
@@ -323,10 +428,21 @@ export const setActiveStage = (stageId: number, isSubStage: boolean, date: strin
   
   const flattenedData = flatten(activeStatus);
   localStorage.setItem(activeStateKey, JSON.stringify(flattenedData));
+  localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
 }
 
 export const getActiveStage = () : ActiveState => {
   const activeStage = localStorage.getItem(activeStateKey);
+  if(activeStage) {
+    const flattenedData = JSON.parse(activeStage);
+    return unflatten(flattenedData);
+  } else {
+    return activeStatus;
+  }
+}
+
+export const getPreviousInstallation = () : ActiveState => {
+  const activeStage = localStorage.getItem(prevInstallationKey);
   if(activeStage) {
     const flattenedData = JSON.parse(activeStage);
     return unflatten(flattenedData);

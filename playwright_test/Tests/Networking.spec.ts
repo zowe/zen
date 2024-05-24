@@ -182,17 +182,13 @@ test.describe('networkingTab', () => {
     await networkingPage.fillexternal_domainvalues(DOMAIN_NAME,EXTERNAL_PORT);
     await page.waitForTimeout(5000);
     networkingPage.click_saveAndClose()
-    await page.waitForTimeout(5000);
-    titlePage.navigateToConnectionTab()
-    connectionPage.clickContinueButton()
-    await page.waitForTimeout(5000);
-    planningPage.clickContinueToInstallation()
-    await page.waitForTimeout(5000);
-    networkingPage.movetoNetworkingPage()
+    await page.waitForTimeout(3000);
+    titlePage.clickOnResumeProgress();
     await page.waitForTimeout(15000);
+    const title = await networkingPage.returnTitleOfNetworkingPage();
+    expect(title).toBe(NETWORKING_TITLE);
     const port = await networkingPage.get_externalDomainport_value();
     const domainName = await networkingPage.get_externalDomainName_value();
-    console.log(port,domainName)
     expect(port).toBe(EXTERNAL_PORT);
     expect(domainName).toBe(DOMAIN_NAME);
     await page.waitForTimeout(5000);

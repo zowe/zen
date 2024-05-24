@@ -10,8 +10,6 @@
 
 import React, {useEffect} from "react";
 import { useAppDispatch } from '../../hooks';
-import Button from '@mui/material/Button';
-import ProgressCard from '../common/ProgressCard';
 import ContainerCard from '../common/ContainerCard';
 import { setActiveStep } from "./progress/activeStepSlice";
 

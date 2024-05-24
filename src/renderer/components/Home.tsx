@@ -12,10 +12,9 @@ import '../global.css';
 import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
 import { Box, Card, CardContent, CardMedia, Typography, Button, DialogContent, DialogActions } from '@mui/material';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
+import flatten, { unflatten } from 'flat';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
-import { setConnectionArgs, selectConnectionArgs, selectInitJobStatement } from './stages/connection/connectionSlice';
+import { setConnectionArgs, setResumeProgress, selectInitJobStatement } from './stages/connection/connectionSlice';
 import { setJobStatement } from './stages/PlanningSlice';
 import { setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
@@ -28,6 +27,8 @@ import { selectConnectionStatus} from './stages/progress/progressSlice';
 import  HorizontalLinearStepper  from './common/Stepper';
 import Wizard from './configuration-wizard/Wizard'
 import Connection from './stages/connection/Connection';
+import { ActiveState } from '../../types/stateInterfaces';
+import { getPreviousInstallation } from './stages/progress/StageProgressStatus';
 
 // REVIEW: Get rid of routing
 
@@ -85,19 +86,28 @@ const makeCard = (card: ICard) => {
 const Home = () => {
 
   const dispatch = useAppDispatch();
-  const activeStepIndex = useAppSelector(selectActiveStepIndex);
-  const isSubStep = useAppSelector(selectIsSubstep);
-  const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
   const connectionStatus = useAppSelector(selectConnectionStatus);
-  const lastActiveDate = useAppSelector(selectActiveStepDate);
-  const initJobStatement = useAppSelector(selectInitJobStatement);
-
   const [showWizard, setShowWizard] = useState(false);
   const [showLoginDialog, setShowLogin] = useState(false);
+
+  const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getPreviousInstallation();
+
+  const prevInstallationKey = "prev_installation";
+  const lastActiveState: ActiveState = {
+    activeStepIndex: 0,
+    isSubStep: false,
+    activeSubStepIndex: 0,
+  };
+  const [isNewInstallation, setIsNewInstallation] = useState(false);
+
   const stages: any = [];
+  const defaultTooltip: string = "Resume";
+  const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
 
   useEffect(() => {
     eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));
+
+
     window.electron.ipcRenderer.checkZoweCLI().then((res: IResponse) => {
       if (res.status) {
         dispatch(setZoweCLIVersion(res.details));
@@ -121,6 +131,18 @@ const Home = () => {
         // TODO: Add support for other types
         console.warn('Connection types other than FTP are not supported yet');
       }
+
+      const lastInstallation = localStorage.getItem(prevInstallationKey);
+      if (!lastInstallation) {
+        const flattenedData = flatten(lastActiveState);
+        localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
+        setIsNewInstallation(true);
+      } else {
+        const data: ActiveState = unflatten(JSON.parse(lastInstallation));
+        setIsNewInstallation(!(data && data.lastActiveDate));
+      }
+
+
     });
     return () => {
       eventDispatcher.off('saveAndCloseEvent', () => setShowWizard(true));
@@ -129,33 +151,24 @@ const Home = () => {
 
   const resumeProgress = () => {
     setShowWizard(true);
-    setShowLogin(!connectionStatus);
-    eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
+    dispatch(setResumeProgress(!connectionStatus));
   }
 
   return (
     <>
-      <Dialog onClose={() => {}} open={showLoginDialog} style={{fontSize: '14px'}} fullWidth={true}
-        maxWidth={"lg"}>
-        <DialogTitle>Re-enter FTP Credentials</DialogTitle>
-         <Connection />
-         <DialogActions>
-          <Button onClick={() => setShowLogin(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
       {!showWizard && <div className="home-container" style={{ display: 'flex', flexDirection: 'column' }}>
 
         <div style={{ position: 'absolute', left: '-9999px' }}>
           <HorizontalLinearStepper stages={stages} />
         </div>
 
-        {!connectionStatus && <div style={{marginBottom: '50px'}}></div>}
+        {!connectionStatus && <div style={{marginBottom: '20px'}}></div>}
 
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginLeft: '8%' }}>
           {cards.map(card => makeCard(card))}
         </div>
 
-        {connectionStatus && <div style={{marginBottom: '1px',marginTop: '120px',background: 'white', fontSize: 'small',marginLeft: 'calc(8% + 10px)', padding: '15px 0 15px 15px',width: 'calc(80% + 5px)', boxShadow: '1px 1px 3px #a6a6a6'}}>
+        {!isNewInstallation && <div style={{marginBottom: '1px',marginTop: '120px',background: 'white', fontSize: 'small',marginLeft: 'calc(8% + 10px)', padding: '15px 0 15px 15px',width: 'calc(80% + 5px)', boxShadow: '1px 1px 3px #a6a6a6'}}>
           <Box sx={{display: 'flex', flexDirection: 'column'}}>
 
             <div style={{paddingBottom: '10px', color: 'black'}}>
@@ -165,7 +178,7 @@ const Home = () => {
             <Box sx={{display: 'flex', flexDirection: 'row', marginTop: '10px'}}>
               <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {lastActiveDate}</div>
               <div style={{marginBottom: '1px', marginTop: '-5px'}}>
-                <Tooltip title="Continue to Last Active Stage" arrow>
+                <Tooltip title={resumeTooltip} arrow>
                   <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '9px', padding: '4px'}} onClick={resumeProgress}>
                     Resume Progress
                   </Button>
