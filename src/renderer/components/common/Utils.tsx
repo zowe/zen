@@ -16,4 +16,5 @@ export const TYPE_YAML = "yaml";
 export const TYPE_JCL = "jcl";
 export const TYPE_OUTPUT = "output";
 
+export const DEV_NO_OUTPUT = "No output to display."
 export const DEF_JOB_STATEMENT = `//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,\n//         MSGLEVEL=(1,1),MSGCLASS=A`;

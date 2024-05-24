@@ -17,6 +17,7 @@ import MonacoEditorComponent from "../common/MonacoEditor";
 import draft7MetaSchema from "ajv/dist/refs/json-schema-draft-07.json";
 import { parse, stringify } from "yaml";
 import { IResponse } from "../../../types/interfaces";
+import { DEV_NO_OUTPUT } from "./Utils";
 
 const test_jcl = `
 //MYJOB   JOB (ACCT), 'My Job Description',
@@ -55,7 +56,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
       }
       if(contentType == 'output') {
         window.electron.ipcRenderer.getStandardOutput().then((res: IResponse) => {
-          setEditorContent(res)
+          setEditorContent(res || DEV_NO_OUTPUT) // We may not always have output to show (for ex: no encountered error or run commands)
         });
       }
     }
