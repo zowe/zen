@@ -343,7 +343,7 @@ const Planning = () => {
     setStep(0);
   }
 
-  const formChangeHandler = (key?: string, value?: string, installationArg?: string) => {
+  const formChangeHandler = (key?: string, value?: any, installationArg?: string) => {
     setIsLocationsUpdated(true);
     setPlanningStatus(false);
     setLocationsValidated(false);
@@ -429,12 +429,7 @@ Please customize the job statement below to match your system requirements.
       </Box>
       {step > 0 
         ?
-          <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}} 
-            // onBlur={async (e) => { dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? localYaml)) }} onChange={(e) => {
-            // dispatch(setYaml(localYaml));
-            // formChangeHandler();
-            // }}
-          >
+          <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}} >
           <Typography id="position-1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
             {`Now let's define some properties like z/OS Unix locations, identifiers, and z/OSMF details (optional).`}
           </Typography>
@@ -684,7 +679,7 @@ Please customize the job statement below to match your system requirements.
                       type="number"
                       value={localYaml?.zOSMF?.port || installationArgs.zosmfPort}
                       onChange={(e) => {
-                        formChangeHandler("zOSMF.port", e.target.value, "zosmfPort");
+                        formChangeHandler("zOSMF.port", Number(e.target.value), "zosmfPort");
                         window.electron.ipcRenderer.setConfigByKey('zOSMF.port', Number(e.target.value)).then((res: any) => {
                           // console.log('updated zowe.zOSMF.port')
                         })
