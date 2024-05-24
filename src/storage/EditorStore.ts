@@ -10,7 +10,7 @@
 
 import Store from 'electron-store';
 import { DefaultStore } from './DefaultStore';
-import { TYPE_JCL, TYPE_OUTPUT, TYPE_YAML } from '../renderer/components/common/Utils';
+import { TYPE_JCL, TYPE_OUTPUT, TYPE_YAML } from '../renderer/components/common/Constants';
 
 const STORE_DEFAULT = {
   [TYPE_OUTPUT]: "",

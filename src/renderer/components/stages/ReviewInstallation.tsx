@@ -20,11 +20,13 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import eventDispatcher from '../../../services/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
-import { selectConnectionStatus, selectPlanningStatus, selectInstallationTypeStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, setReviewStatus } from './progress/progressSlice';
+import { selectConnectionStatus, setReviewStatus } from './progress/progressSlice';
 import { setActiveStep } from './progress/activeStepSlice';
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { getStageDetails } from "../../../services/StageDetails";
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Utils';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Constants';
+import { getCompleteProgress } from "./progress/StageProgressStatus";
+
 import '../../styles/ReviewInstallation.css';
 
 const ReviewInstallation = () => {
@@ -43,20 +45,22 @@ const ReviewInstallation = () => {
 
   const theme = createTheme();
 
+  const completeProgress = getCompleteProgress();
+
   const stageProgressStatus = [
     useSelector(selectConnectionStatus),
-    useSelector(selectPlanningStatus),
-    useSelector(selectInstallationTypeStatus),
-    useSelector(selectInitializationStatus),
+    completeProgress.planningStatus,
+    completeProgress.installationTypeStatus,
+    completeProgress.initializationStatus,
   ];
   
   const subStageProgressStatus = [
-    useSelector(selectDatasetInstallationStatus),
-    useSelector(selectNetworkingStatus),
-    useSelector(selectApfAuthStatus),
-    useSelector(selectSecurityStatus),
-    useSelector(selectCertificateStatus),
-    useSelector(selectLaunchConfigStatus),
+    completeProgress.datasetInstallationStatus,
+    completeProgress.networkingStatus,
+    completeProgress.apfAuthStatus,
+    completeProgress.securityStatus,
+    completeProgress.certificateStatus,
+    completeProgress.launchConfigStatus
   ];
 
 

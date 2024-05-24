@@ -25,9 +25,9 @@ import { alertEmitter } from "../Header";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep, selectActiveStepIndex, selectActiveSubStepIndex, selectIsSubstep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { setProgress, getProgress, setApfAuthState, getApfAuthState } from "./progress/StageProgressStatus";
+import { setProgress, getProgress, setApfAuthState, getApfAuthState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
-import { JCL_UNIX_SCRIPT_OK } from "../common/Utils";
+import { JCL_UNIX_SCRIPT_OK } from "../common/Constants";
 
 const InitApfAuth = () => {
 
@@ -58,7 +58,7 @@ const InitApfAuth = () => {
   const [initClicked, setInitClicked] = useState(false);
   const [reinit, setReinit] = useState(false);
 
-  const installationArgs = useAppSelector(selectInstallationArgs);
+  const installationArgs = getInstallationArguments();
   let timer: any;
 
   const ajv = new Ajv();
@@ -143,10 +143,16 @@ const InitApfAuth = () => {
     }
   }
 
+  const setStageSkipStatus = (status: boolean) => {
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = status;
+    mapAndSetSkipStatus(SUB_STAGE_ID, status);
+  }
+
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
-    stages[STAGE_ID].isSkipped = !status;
+    setStageSkipStatus(!status);
+
     if(!status) {
       for (let key in apfAuthInitProgress) {
         apfAuthInitProgress[key as keyof(InitSubStepsState)] = false;

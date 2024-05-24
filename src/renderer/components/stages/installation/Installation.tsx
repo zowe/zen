@@ -25,9 +25,9 @@ import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK } from '../../common/Utils';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK } from '../../common/Constants';
 import { getStageDetails, getSubStageDetails } from "../../../../services/StageDetails"; 
-import { getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus } from "../progress/StageProgressStatus";
+import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
 
 const Installation = () => {
@@ -62,7 +62,7 @@ const Installation = () => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
 
-  const installationArgs = useAppSelector(selectInstallationArgs);
+  const installationArgs = getInstallationArguments();
   const version = useAppSelector(selectZoweVersion);
   let timer: any;
   const installationType = getInstallationTypeStatus().installationType;
@@ -155,6 +155,7 @@ const Installation = () => {
   const setStageSkipStatus = (status: boolean) => {
     stages[stageId].subStages[subStageId].isSkipped = status;
     stages[stageId].isSkipped = status;
+    mapAndSetSkipStatus(subStageId, status);
   }
 
   const setDsInstallStageStatus = (status: boolean) => {

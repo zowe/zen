@@ -26,9 +26,9 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setCertificateInitState, getCertificateInitState } from "./progress/StageProgressStatus";
+import { setProgress, getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { CertInitSubStepsState } from "../../../types/stateInterfaces";
-import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT } from "../common/Utils";
+import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT } from "../common/Constants";
 
 const Certificates = () => {
 
@@ -45,7 +45,7 @@ const Certificates = () => {
   const schema = useAppSelector(selectSchema);
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const installationArgs = useAppSelector(selectInstallationArgs);
+  const installationArgs = getInstallationArguments();
   const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
   const verifyCertsSchema = schema ? {"type": "object", "properties": {"verifyCertificates": schema.properties.zowe.properties.verifyCertificates}} : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
@@ -149,10 +149,16 @@ const Certificates = () => {
     }
   }
 
+  const setStageSkipStatus = (status: boolean) => {
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = status;
+    mapAndSetSkipStatus(SUB_STAGE_ID, status);
+  }
+
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !status;
-    stages[STAGE_ID].isSkipped = !status;
+    setStageSkipStatus(!status);
+
     if(!status) {
       for (let key in certificateInitProgress) {
         certificateInitProgress[key as keyof(CertInitSubStepsState)] = false;

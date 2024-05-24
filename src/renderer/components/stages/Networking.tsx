@@ -20,7 +20,7 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT } from "../common/Utils";
+import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT } from "../common/Constants";
 
 function PatternPropertiesForm(props: any){
   const [elements, setElements] = useState([]);
@@ -128,7 +128,7 @@ const Networking = () => {
   const theme = createTheme();
 
   const stageLabel = 'Initialization';
-  const subStageLabel = 'APF Auth';
+  const subStageLabel = 'Networking';
 
   const STAGE_ID = getStageDetails(stageLabel).id;
   const SUB_STAGES = !!getStageDetails(stageLabel).subStages;

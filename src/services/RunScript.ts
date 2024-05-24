@@ -11,7 +11,7 @@
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
 import { parseUnixScriptByNumOfChars, startBPXBATCHAndShellSession } from "./ServiceUtils";
-import { JCL_UNIX_SCRIPT_OK } from "../renderer/components/common/Utils";
+import { JCL_UNIX_SCRIPT_OK } from "../renderer/components/common/Constants";
 
 export class Script {
 
