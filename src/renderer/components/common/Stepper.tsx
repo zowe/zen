@@ -55,14 +55,14 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     completeProgress.reviewStatus
   ];
 
-  const subStageProgressStatus = [
+  const [subStageProgressStatus, setProgressStatus] = useState([
     completeProgress.datasetInstallationStatus,
     completeProgress.networkingStatus,
     completeProgress.apfAuthStatus,
     completeProgress.securityStatus,
     completeProgress.certificateStatus,
     completeProgress.launchConfigStatus
-  ]
+  ])
   
   const TYPE_YAML = "yaml";
   const TYPE_JCL = "jcl";
@@ -76,9 +76,18 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const [editorContent, setEditorContent] = useState('');
 
   useEffect(() => {
+    const mvsCompleteListener = (completed: boolean) => {
+      setProgressStatus([true, completeProgress.networkingStatus,
+        completeProgress.apfAuthStatus,
+        completeProgress.securityStatus,
+        completeProgress.certificateStatus,
+        completeProgress.launchConfigStatus])
+    };
     eventDispatcher.on('updateActiveStep', updateActiveStepListener);
+    eventDispatcher.on('initMvsComplete', mvsCompleteListener);
     return () => {
       eventDispatcher.off('updateActiveStep', updateActiveStepListener);
+      eventDispatcher.off('initMvsComplete', mvsCompleteListener);
     };
   }, []); 
 

@@ -29,6 +29,7 @@ import { getStageDetails, getSubStageDetails } from "../../../../utils/StageDeta
 import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
 import { FALLBACK_SCHEMA, FALLBACK_YAML } from "../../../../utils/yamlSchemaDefaults";
+import eventDispatcher from '../../../../utils/eventDispatcher';
 
 const Installation = () => {
 
@@ -240,6 +241,7 @@ const Installation = () => {
     if(allAttributesTrue) {
       dispatch(setNextStepEnabled(true));
       dispatch(setDatasetInstallationStatus(true));
+      eventDispatcher.emit('initMvsComplete', true)
     }
   }
 
