@@ -235,6 +235,24 @@ const Vsam = () => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
+    handleUpdateYaml(data);
+  }
+
+  const handleUpdateYaml = (data: any) => {
+    const updatedYaml = {
+      ...yaml,
+      zowe: {
+        ...yaml.zowe,
+        setup: {
+          ...yaml.zowe.setup,
+          vsam: {
+            ...data,
+          }
+        }
+      }
+    };
+    setLYaml(updatedYaml);
+    dispatch(setYaml(updatedYaml));
   }
 
   const handleUpdateVsamName = (newName: string) => {
