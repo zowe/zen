@@ -41,7 +41,7 @@ export const wizardSlice = createSlice({
     setYaml: (state, action: PayloadAction<any>) => {
       state.yaml = action.payload;
       window.electron.ipcRenderer.setConfig(action.payload).then((res: IResponse) => {
-        // response
+        // Response
       });
     },
     setSchema: (state, action: PayloadAction<any>) => {

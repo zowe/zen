@@ -222,29 +222,33 @@ const Vsam = () => {
         if(validate.errors) {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
-          setStageConfig(false, errPath+' '+errMsg, newData);
+          setStageConfig(false, errPath+' '+errMsg, newData, data);
         } else {
           window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, vsam: newData}}});
-          setStageConfig(true, '', newData);
+          setStageConfig(true, '', newData, data);
         }
       }
     }
   };
 
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
+  const setStageConfig = (isValid: boolean, errorMsg: string, data: any, updatedYaml?: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
-    handleUpdateYaml(data);
+    if(updatedYaml?.zowe) {
+      setLYaml(updatedYaml);
+    }
+    handleUpdateYaml(data, updatedYaml);
   }
 
-  const handleUpdateYaml = (data: any) => {
+  const handleUpdateYaml = (data: any, newYaml: any) => {
+    const currentYaml = newYaml?.zowe ? newYaml : yaml;
     const updatedYaml = {
-      ...yaml,
+      ...currentYaml,
       zowe: {
-        ...yaml.zowe,
+        ...currentYaml.zowe,
         setup: {
-          ...yaml.zowe.setup,
+          ...currentYaml.zowe.setup,
           vsam: {
             ...data,
           }
