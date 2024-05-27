@@ -184,13 +184,20 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('init-vsam', async (event, connectionArgs, installationArgs, zoweConfig) => {
+    const res = await installActions.initVsam(connectionArgs, installationArgs, zoweConfig);
+    return res;
+  });
 
   ipcMain.handle('get-init-security-progress', async () => {
     const res = ProgressStore.getAll()['initSecurity'];
     return res;
   });
 
-
+  ipcMain.handle('get-init-vsam-progress', async () => {
+    const res = ProgressStore.getAll()['initVsam'];
+    return res;
+  });
 
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
