@@ -18,6 +18,7 @@ export interface ProgressState {
   apfAuthStatus: boolean;
   securityStatus: boolean;
   certificateStatus: boolean;
+  vsamStatus: boolean;
   launchConfigStatus: boolean;
   reviewStatus: boolean;
 }
@@ -77,6 +78,7 @@ export interface SkipState {
   apfAuth: boolean,
   security: boolean,
   certificate: boolean,
+  vsam: boolean,
   launchConfig: boolean
 }
 

@@ -53,6 +53,11 @@ export class InstallActions {
     return this.strategy.initSecurity(connectionArgs, installationArgs, zoweConfig);
   }
 
+  initVsam(connectionArgs: IIpcConnectionArgs,
+    installationArgs: {installationDir: string, installationType: string}, zoweConfig: object): Promise<IResponse> {
+    return this.strategy.initVsam(connectionArgs, installationArgs, zoweConfig);
+  }
+
   apfAuth(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string, installationType: string}, zoweConfig: object): Promise<IResponse> {
     return this.strategy.apfAuth(connectionArgs, installationArgs, zoweConfig);

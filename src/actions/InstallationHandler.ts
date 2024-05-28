@@ -317,6 +317,49 @@ class Installation {
     return {status: result.rc === 0, details: result.jobOutput}
   }
 
+  public async initVsam(connectionArgs: IIpcConnectionArgs,
+    installationArgs: {installationDir: string, installationType: string}, zoweConfig: object): Promise<IResponse>{
+
+      // Initialize Progress Store For Vsam
+      ProgressStore.set('initVsam.writeYaml', false);
+      ProgressStore.set('initVsam.uploadYaml', false);
+      ProgressStore.set('initVsam.success', false);
+
+      console.log('writing current yaml to disk');
+      const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
+      await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
+        if (err) {
+          console.warn("Can't save configuration to zowe.yaml");
+          ProgressStore.set('initVsam.writeYaml', false);
+          return {status: false, details: `Can't save configuration to zowe.yaml`};
+        }
+      });
+      ProgressStore.set('initVsam.writeYaml', true);
+      console.log("uploading yaml...");
+      const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
+      if(!uploadYaml.status){
+        return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
+      }
+      ProgressStore.set('initVsam.uploadYaml', uploadYaml.status);
+      const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init vsam -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+      const result = await new Script().run(connectionArgs, script);
+
+      let errorFound = false;
+      let errorMessage = '';
+      const errorPattern = /Error ZWE.*/;
+      for (const key in result.jobOutput) {
+        const match = result.jobOutput[key].match(errorPattern);
+        if (match) {
+          errorFound = true;
+          errorMessage = match[0];
+          break;
+        }
+      }
+
+      ProgressStore.set('initVsam.success', result.rc === 0 && !errorFound);
+      return {status: result.rc === 0 && !errorFound, details: result.jobOutput, error: errorFound, errorMsg: errorMessage }
+  }
+
   async generateYamlFile(zoweConfig: object): Promise<IResponse> {
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
     await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
