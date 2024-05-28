@@ -91,12 +91,18 @@ contextBridge.exposeInMainWorld('electron', {
     initSecurityButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
       return ipcRenderer.invoke("init-security", connectionArgs, installationArgs, zoweConfig);
     },
+    initVsamButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
+      return ipcRenderer.invoke("init-vsam", connectionArgs, installationArgs, zoweConfig);
+    },
     getInitSecurityProgress(){
       return ipcRenderer.invoke("get-init-security-progress");
     },
+    getInitVsamProgress(){
+      return ipcRenderer.invoke("get-init-vsam-progress");
+    },
     on(channel: string, func: any) {
       // REVIEW: Used to have channel validation with ipcRenderer.send, do we need something similar for ipcRenderer.invoke?
-      const validChannels = ['install-mvs', 'init-security'];
+      const validChannels = ['install-mvs', 'init-security', 'init-vsam'];
       if (validChannels.includes(channel)) {
         ipcRenderer.on(channel, (event, ...args) => func(...args));
       }

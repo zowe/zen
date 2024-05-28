@@ -23,6 +23,7 @@ import { selectLoading } from './wizardSlice';
 import { useAppSelector } from '../../hooks';
 import InitApfAuth from '../stages/InitApfAuth';
 import Networking from '../stages/Networking';
+import Vsam from '../stages/Vsam';
 import LaunchConfig from '../stages/LaunchConfig';
 
 export const stages = [
@@ -34,8 +35,9 @@ export const stages = [
     {id: 1, label: 'Networking', component: <Networking/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to APF Auth Setup', statusKey: 'networkingStatus'},
     {id: 2, label: 'APF Auth', component: <InitApfAuth/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Security Setup', statusKey: 'apfAuthStatus'},
     {id: 3, label: 'Security', component: <Security/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Certificates Setup', statusKey: 'securityStatus'},
-    {id: 4, label: 'Certificates', component: <Certificates/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Launch Setup', statusKey: 'certificateStatus'},
-    {id: 5, label: 'Launch Config', component: <LaunchConfig/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Instance Setup', statusKey: 'launchConfigStatus'},
+    {id: 4, label: 'Certificates', component: <Certificates/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Vsam Setup', statusKey: 'certificateStatus'},
+    {id: 5, label: 'Vsam', component: <Vsam/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Launch Setup', statusKey: 'vsamStatus'},
+    {id: 6, label: 'Launch Config', component: <LaunchConfig/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Instance Setup', statusKey: 'launchConfigStatus'},
   ], nextButton: 'Review', statusKey: 'initializationStatus'},
   {id: 4, label: 'Review Installation', component: <ReviewInstallation/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Finish Installation', statusKey: 'reviewStatus'},
   {id: 5, label: 'Finish Installation', component: <FinishInstallation/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1, statusKey: 'finishStatus'},
