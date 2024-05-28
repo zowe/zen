@@ -41,5 +41,7 @@ export interface IIpcConnectionArgs {
 export interface IResponse {
   status: boolean;
   details: any;
+  error?: boolean;
+  errorMsg?: string;
 }
 
