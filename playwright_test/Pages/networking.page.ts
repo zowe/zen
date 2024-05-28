@@ -21,8 +21,7 @@ class NetworkingPage{
   close_button:Locator;
   CONFPAGE_TITLE: Locator;
   continueToComponentInstallation: Locator;
-
-
+  contiuneToApfAuth: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -101,7 +100,7 @@ class NetworkingPage{
     this.close_button = page.locator('//button[contains(text(), "Close")]');
     this.APFAUTH_TITLE = page.locator('//div[text()="APF Authorize Load Libraries"]');
     this.continue_ReviewSelector = page.locator('//button[contains(text(), "Continue to APF Auth Setup")]');
-    this.installationTitle = page.locator('//div[text()="Installation"]');
+    this.contiuneToApfAuth = page.locator('//button[text()="Continue to APF Auth Setup"]');
   }
 
   async movetoNetworkingPage(){
@@ -193,6 +192,7 @@ class NetworkingPage{
   async delete_DomainNameField(){
    await this.deleteDomainName.click();
    }
+   
   async add_DomainNameField(){
     await this.addDomainField.click()
   }
@@ -211,7 +211,10 @@ class NetworkingPage{
   async is_skipNetworkingButtonEnable(){
    return await this.skip_button.isEnabled({ timeout: 5000 });
   }
-
+  async clickContinueToApfAuth(){
+    this.contiuneToApfAuth.click({ timeout: 2000 })
+   }
+ 
   async click_skipNetworking(){
    await this.skip_button.click({ timeout: 2000 });
    const apfAuth_title = await this.APFAUTH_TITLE.textContent();

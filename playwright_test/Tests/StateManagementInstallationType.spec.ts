@@ -3,11 +3,11 @@ import TitlePage from '../Pages/title.page.ts';
 import ConnectionPage from '../Pages/connection.page.ts';
 import PlanningPage from '../Pages/planning.page.ts';
 import InstallationTypePage from '../Pages/installationType.page.ts';
+import InstallationPage from '../Pages/installation.page.ts';
+import NetworkingPage from '../Pages/networking.page.ts';
 let page: Page;
 
 let electronApp: ElectronApplication
-const PLANNING_TITLE = 'Before you start';
-const INSTALLATION_PAGE_TITLE = 'Installation';
 const RUNTIME_DIR = process.env.ZOWE_ROOT_DIR;
 const SSH_HOST = process.env.SSH_HOST;
 const SSH_PASSWD =  process.env.SSH_PASSWD;
@@ -24,12 +24,23 @@ const ZOSMF_HOST=process.env.ZOSMF_HOST;
 const ZOSMF_PORT=process.env.ZOSMF_PORT;
 const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 const UPLOAD_PAX_PATH= process.env.ZOWE_ROOT_DIR
+const NETWORKING_PAGE_TITLE = 'Networking'
+const DATASET_PREFIX= process.env.DATASET_PREFIX;
+const PROC_LIB = process.env.PROC_LIB;
+const PARM_LIB = process.env.PARM_LIB;
+const ZIS = process.env.SECURITY_STC_ZIS;
+const JCL_LIB = process.env.JCL_LIB;
+const LOAD_LIB = process.env.LOAD_LIB;
+const AUTH_LOAD_LIB = process.env.AUTH_LOAD_LIB;
+const AUTH_PLUGIN_LIB = process.env.AUTH_PLUGIN_LIB;
 
 test.describe('InstallationTypeTab', () => {
   let connectionPage: ConnectionPage;
   let titlePage : TitlePage;
   let installationTypePage : InstallationTypePage;
   let planningPage : PlanningPage;
+  let installationPage : InstallationPage;
+  let networkingPage : NetworkingPage
 
   async function launch_Zen_and_Navigate_to_Installation_Type_Tab({ page }) {
     test.setTimeout(900000);
@@ -39,10 +50,13 @@ test.describe('InstallationTypeTab', () => {
     titlePage = new TitlePage(page);
     planningPage = new PlanningPage(page);
     installationTypePage = new InstallationTypePage(page);
-    titlePage.navigateToConnectionTab()
+    installationPage = new InstallationPage(page);
+    networkingPage = new NetworkingPage(page);
+    await page.waitForTimeout(5000)
+    titlePage.navigateToConnectionTab();
     connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
-    await page.waitForTimeout(2000);
-    connectionPage.SubmitValidateCredential()
+    await page.waitForTimeout(5000);
+    connectionPage.SubmitValidateCredential();
     await page.waitForTimeout(5000);
     connectionPage.clickContinueButton()
     await page.waitForTimeout(2000);
@@ -132,4 +146,103 @@ test.describe('InstallationTypeTab', () => {
     expect(Is_Continue_Button_Enable).toBe(true);
   })
 
+  test('Test Installation Completed with Download Pax', async ({ page }) => {
+    await page.waitForTimeout(5000);
+    installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
+    installationTypePage.clickContinueToInstallation()
+    await page.waitForTimeout(5000);
+    installationPage.enterPrefix(DATASET_PREFIX)
+    installationPage.enterProcLib(PROC_LIB)
+    installationPage.enterParmLib(PARM_LIB)
+    installationPage.enterZis(ZIS)
+    installationPage.enterJclLib(JCL_LIB)
+    installationPage.enterLoadLib(LOAD_LIB)
+    installationPage.enterAuthLoadLib(AUTH_LOAD_LIB)
+    installationPage.enterAuthPluginLib(AUTH_PLUGIN_LIB)
+    installationPage.clickInstallMvsDatasets();
+    await page.waitForTimeout(1800000);
+    const is_Continue_Button_enable = await installationPage.isContinueToNetworkSetupEnabled();
+    expect(is_Continue_Button_enable).toBe(true);
+    installationPage.clickContinueToNetworkSetup();
+    await page.waitForTimeout(2000);
+    const networkSetup_title = await networkingPage.returnTitleOfNetworkingPage()
+    expect (networkSetup_title).toBe(NETWORKING_PAGE_TITLE);     
+    await electronApp.close()
+    await launch_Zen_and_Navigate_to_Installation_Type_Tab({page})
+    installationTypePage.clickContinueToInstallation()
+    await page.waitForTimeout(2000);
+    expect(is_Continue_Button_enable).toBe(true);
+  })
+
+  test('Test Installation Completed with Upload Pax', async ({ page }) => {
+    await page.waitForTimeout(5000);
+    installationTypePage.uploadZowePaxAndNavigateToInstallationPage(UPLOAD_PAX_PATH)
+    installationTypePage.clickContinueToInstallation()
+    await page.waitForTimeout(5000);
+    installationPage.enterPrefix(DATASET_PREFIX)
+    installationPage.enterProcLib(PROC_LIB)
+    installationPage.enterParmLib(PARM_LIB)
+    installationPage.enterZis(ZIS)
+    installationPage.enterJclLib(JCL_LIB)
+    installationPage.enterLoadLib(LOAD_LIB)
+    installationPage.enterAuthLoadLib(AUTH_LOAD_LIB)
+    installationPage.enterAuthPluginLib(AUTH_PLUGIN_LIB)
+    installationPage.clickInstallMvsDatasets();
+    await page.waitForTimeout(1800000);
+    const is_Continue_Button_enable = await installationPage.isContinueToNetworkSetupEnabled();
+    expect(is_Continue_Button_enable).toBe(true);
+    installationPage.clickContinueToNetworkSetup();
+    await page.waitForTimeout(2000);
+    const networkSetup_title = await networkingPage.returnTitleOfNetworkingPage()
+    expect (networkSetup_title).toBe(NETWORKING_PAGE_TITLE);     
+    await electronApp.close()
+    await launch_Zen_and_Navigate_to_Installation_Type_Tab({page})
+    installationTypePage.clickContinueToInstallation()
+    await page.waitForTimeout(2000);
+    expect(is_Continue_Button_enable).toBe(true);
+  })
+
+  test('Test Installation Pending with Download Pax', async ({ page }) => {
+    await page.waitForTimeout(5000);
+    installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
+    installationTypePage.clickContinueToInstallation()
+    await page.waitForTimeout(5000);
+    installationPage.enterPrefix(DATASET_PREFIX)
+    installationPage.enterProcLib(PROC_LIB)
+    installationPage.enterParmLib(PARM_LIB)
+    installationPage.enterZis(ZIS)
+    installationPage.enterJclLib(JCL_LIB)
+    installationPage.enterLoadLib(LOAD_LIB)
+    installationPage.enterAuthLoadLib(AUTH_LOAD_LIB)
+    installationPage.enterAuthPluginLib(AUTH_PLUGIN_LIB)
+    const is_Continue_Button_disable = await installationPage.isContinueToNetworkSetupDisabled();
+    expect(is_Continue_Button_disable).toBe(true);
+    await electronApp.close()
+    await launch_Zen_and_Navigate_to_Installation_Type_Tab({page})
+    installationTypePage.clickContinueToInstallation()
+    await page.waitForTimeout(2000);
+    expect(is_Continue_Button_disable).toBe(true);
+  })
+
+  test('Test Installation Pending with Upload Pax', async ({ page }) => {
+    await page.waitForTimeout(5000);
+    installationTypePage.uploadZowePaxAndNavigateToInstallationPage(UPLOAD_PAX_PATH)
+    installationTypePage.clickContinueToInstallation()
+    await page.waitForTimeout(5000);
+    installationPage.enterPrefix(DATASET_PREFIX)
+    installationPage.enterProcLib(PROC_LIB)
+    installationPage.enterParmLib(PARM_LIB)
+    installationPage.enterZis(ZIS)
+    installationPage.enterJclLib(JCL_LIB)
+    installationPage.enterLoadLib(LOAD_LIB)
+    installationPage.enterAuthLoadLib(AUTH_LOAD_LIB)
+    installationPage.enterAuthPluginLib(AUTH_PLUGIN_LIB)
+    const is_Continue_Button_disable = await installationPage.isContinueToNetworkSetupDisabled();
+    expect(is_Continue_Button_disable).toBe(true);
+    await electronApp.close()
+    await launch_Zen_and_Navigate_to_Installation_Type_Tab({page})
+    installationTypePage.clickContinueToInstallation()
+    await page.waitForTimeout(2000);
+    expect(is_Continue_Button_disable).toBe(true);
+  })
 })
