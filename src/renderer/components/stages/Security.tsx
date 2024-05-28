@@ -90,7 +90,6 @@ const Security = () => {
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
-
     updateProgress(getProgress('securityStatus'));
     setInit(true);
 
@@ -119,7 +118,6 @@ const Security = () => {
       }, 3000);
 
       if(showProgress) {
-        console.log('security: if progress');
         const nextPosition = document.getElementById('start-security-progress');
         nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
@@ -282,7 +280,7 @@ window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installati
         }
         </Box>
         </Box>
-        <Box sx={{ height: showProgress ? '105vh' : 'auto', minHeight: showProgress ? '105vh' : '10vh' }} id="security-progress"></Box>
+        <Box sx={{ height: showProgress ? '125vh' : 'auto', minHeight: showProgress ? '125vh' : '10vh' }} id="security-progress"></Box>
 
       </ContainerCard>
     </div>

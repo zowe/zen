@@ -23,6 +23,7 @@ const initialState: ProgressState = {
   apfAuthStatus: getProgress('apfAuthStatus') || false,
   securityStatus: getProgress('securityStatus') || false,
   certificateStatus: getProgress('certificateStatus') || false,
+  vsamStatus: getProgress('vsamStatus') || false,
   launchConfigStatus: getProgress('launchConfigStatus') || false,
   reviewStatus: getProgress('reviewStatus') || false
 }
@@ -78,6 +79,10 @@ export const progressSlice = createSlice({
       state.certificateStatus = action.payload;
       setProgress('certificateStatus', action.payload);
     },
+    setVsamStatus: (state, action: PayloadAction<boolean>) => {
+      state.vsamStatus = action.payload;
+      setProgress('vsamStatus', action.payload);
+    },
     setLaunchConfigStatus: (state, action: PayloadAction<boolean>) => {
       state.launchConfigStatus = action.payload;
       setProgress('launchConfigStatus', action.payload);
@@ -89,7 +94,7 @@ export const progressSlice = createSlice({
   }
 });
 
-export const { setConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setInitializationStatus, setDatasetInstallationStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus, setLaunchConfigStatus, setReviewStatus } = progressSlice.actions;
+export const { setConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setInitializationStatus, setDatasetInstallationStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus, setVsamStatus, setLaunchConfigStatus, setReviewStatus } = progressSlice.actions;
 
 export const selectConnectionStatus = (state: RootState) => state.progress.connectionStatus;
 export const selectPlanningStatus = (state: RootState) => state.progress.planningStatus;
@@ -100,6 +105,7 @@ export const selectNetworkingStatus= (state: RootState) => state.progress.networ
 export const selectApfAuthStatus = (state: RootState) => state.progress.apfAuthStatus;
 export const selectSecurityStatus = (state: RootState) => state.progress.securityStatus;
 export const selectCertificateStatus = (state: RootState) => state.progress.certificateStatus;
+export const selectVsamStatus = (state: RootState) => state.progress.vsamStatus;
 export const selectLaunchConfigStatus = (state: RootState) => state.progress.launchConfigStatus;
 export const selectReviewStatus = (state: RootState) => state.progress.reviewStatus;
 

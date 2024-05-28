@@ -60,6 +60,7 @@ const ReviewInstallation = () => {
     completeProgress.apfAuthStatus,
     completeProgress.securityStatus,
     completeProgress.certificateStatus,
+    completeProgress.vsamStatus,
     completeProgress.launchConfigStatus
   ];
 

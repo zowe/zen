@@ -120,7 +120,6 @@ const Certificates = () => {
     }
 
     if(showProgress) {
-      console.log('security: if progress');
       const nextPosition = document.getElementById('start-certificate-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -276,7 +275,7 @@ const Certificates = () => {
           </React.Fragment>
         }
         </Box>
-        <Box sx={{ height: showProgress ? '30vh' : 'auto', minHeight: showProgress ? '30vh' : '10vh' }} id="certificate-progress"></Box>
+        <Box sx={{ height: showProgress ? '40vh' : 'auto', minHeight: showProgress ? '40vh' : '10vh' }} id="certificate-progress"></Box>
       </ContainerCard>
     </div>
   );
