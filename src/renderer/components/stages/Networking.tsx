@@ -729,7 +729,7 @@ const Networking = () => {
       </Box>
       <ContainerCard title="Networking" description="Zowe networking configurations."> 
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
-        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <p style={{fontSize: "24px"}}>External Domains <IconButton onClick={(e) => {
             let domains = [...yaml.zowe?.externalDomains, ""];
