@@ -51,6 +51,11 @@ export class ConfigurationStore extends DefaultStore {
     return false;
   }
 
+  public static setConfigByKeyNoValidate(key: string, value: string | Array<string>): boolean {
+    this.getStore().set(`config.${key}`, value);
+    return true;
+  }
+
   public static deleteConfigByKey(key: any): void {
     this.delete(`${KEY_CONFIG}.${key}`);
   }

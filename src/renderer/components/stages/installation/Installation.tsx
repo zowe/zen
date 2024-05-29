@@ -11,8 +11,8 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import { Box, Button, FormControl, Typography, debounce } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
-import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion, selectInstallationType } from './installationSlice';
+import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading, setSchema } from '../../configuration-wizard/wizardSlice';
+import { selectInstallationArgs, selectZoweVersion, selectInstallationType, setInstallationArgs } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import { setDatasetInstallationStatus, setInitializationStatus } from "../progress/progressSlice";
 import { IResponse } from '../../../../types/interfaces';
@@ -25,10 +25,11 @@ import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK } from '../../common/Constants';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK, FALLBACK_SCHEMA, FALLBACK_YAML } from '../../common/Constants';
 import { getStageDetails, getSubStageDetails } from "../../../../services/StageDetails"; 
 import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
+import eventDispatcher from '../../../../services/eventDispatcher';
 
 const Installation = () => {
 
@@ -47,11 +48,15 @@ const Installation = () => {
   const stageId = 3;
   const subStageId = 0;
   const dispatch = useAppDispatch();
-  const schema = useAppSelector(selectSchema);
+  // this schema will be used in the case where the user, for some reason, clicks "skip installation" without downloading or uploading a Zowe pax
+  // Maybe we shouldnt allow the user to skip the installation stage??
+
+  const reduxSchema = useAppSelector(selectSchema);
+  const [schema] = useState(typeof reduxSchema === "object" && Object.keys(reduxSchema).length > 0 ? reduxSchema : FALLBACK_SCHEMA);
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
+  const [setupSchema, setSetupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.dataset || FALLBACK_SCHEMA.properties?.zowe?.properties?.setup?.properties?.dataset);
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || FALLBACK_YAML?.zowe?.setup?.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('datasetInstallationStatus'));
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -62,7 +67,7 @@ const Installation = () => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
 
-  const installationArgs = getInstallationArguments();
+  const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   const version = useAppSelector(selectZoweVersion);
   let timer: any;
   const installationType = getInstallationTypeStatus().installationType;
@@ -94,8 +99,89 @@ const Installation = () => {
       nextPosition.scrollIntoView({behavior: 'smooth'});
     }
 
+    window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
+      if(res != undefined){
+        // console.log("got installation args:", JSON.stringify(res));
+        setInstArgs((res as any));
+      }
+      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+        function mergeInstallationArgsAndYaml(yaml: any){
+          let yamlObj = JSON.parse(JSON.stringify(yaml));
+          // console.log('merging yaml obj:', JSON.stringify(yamlObj));
+          delete yamlObj.installationArgs;
+          if (installationArgs.installationDir) {
+            yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
+          } else if(!installationArgs.installationDir && yamlObj.zowe.runtimeDirectory){
+            //setting this because it is needed many places in InstallationHandler.tsx. This whole architecture has become an absolute mess.
+            dispatch(setInstallationArgs({...installationArgs, installationDir: yamlObj.zowe.runtimeDirectory}));
+          }
+          if (installationArgs.workspaceDir) {
+            yamlObj.zowe.workspaceDirectory = installationArgs.workspaceDir;
+          }
+          if (installationArgs.logDir) {
+            yamlObj.zowe.logDirectory = installationArgs.logDir;
+          }
+          if (installationArgs.extensionDir) {
+            yamlObj.zowe.extensionDirectory = installationArgs.extensionDir;
+          }
+          if (installationArgs.rbacProfile) {
+            yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
+          }
+          if ((yamlObj.zowe.job.name === undefined || yamlObj.zowe.job.name === '') && installationArgs.jobName) { //this undefined check is necessary because InstallationStage.jobName has a defualt, and therefore this would always overwrite the value in the config
+            yamlObj.zowe.job.name = installationArgs.jobName;
+          }
+          if ((yamlObj.zowe.job.prefix === undefined || yamlObj.zowe.job.prefix === '') && installationArgs.jobPrefix) {
+            yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
+          }
+          if (installationArgs.cookieId) {
+            yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
+          }
+          if (installationArgs.javaHome) {
+            yamlObj.java.home = installationArgs.javaHome;
+          }
+          if (installationArgs.nodeHome) {
+            yamlObj.node.home = installationArgs.nodeHome;
+          }
+          if (installationArgs.zosmfHost) {
+            yamlObj.zOSMF.host = installationArgs.zosmfHost;
+          }
+          if ((yamlObj.zOSMF.port === undefined || yamlObj.zOSMF.port === '') && installationArgs.zosmfPort) {
+            yamlObj.zOSMF.port = Number(installationArgs.zosmfPort);
+          }
+          if ((yamlObj.zOSMF.applId === undefined || yamlObj.zOSMF.applId === '') && installationArgs.zosmfApplId) {
+            yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
+          }
+          return yamlObj;
+        }
+        if(res.details.zowe === undefined){
+          //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux but not on disk
+          let yamlObj = mergeInstallationArgsAndYaml(FALLBACK_YAML);
+          // console.log('setting yaml:', yamlObj);
+          setLYaml(yamlObj)
+          dispatch(setYaml(yamlObj))
+        } else {
+          // console.log('got config:', JSON.stringify(res.details));
+          let yamlObj = mergeInstallationArgsAndYaml(res.details);
+          if(res.details.zowe?.setup?.dataset === undefined){
+            // console.log('setting yaml:',{...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} });
+            dispatch(setYaml({...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} }));
+          } else {
+            dispatch(setYaml(yamlObj));
+            setSetupYaml(yamlObj.zowe.setup.dataset);
+          }
+        }
+      })
+    })
+
     setIsFormInit(true);
 
+    window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+      if(res.details === undefined){
+        //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux
+        dispatch(setSchema(FALLBACK_SCHEMA));
+      }
+    })
+    
     if(installationType === 'smpe') {
       const status = getProgress('datasetInstallationStatus');
       setStageSkipStatus(!status);
@@ -149,6 +235,7 @@ const Installation = () => {
     if(allAttributesTrue) {
       dispatch(setNextStepEnabled(true));
       dispatch(setDatasetInstallationStatus(true));
+      eventDispatcher.emit('initMvsComplete', true)
     }
   }
 
@@ -207,8 +294,11 @@ const Installation = () => {
         setYaml(window.electron.ipcRenderer.getConfig());
         setShowProgress(true);
         dispatch(setLoading(false));
-        const config = (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml;
         window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
+          if(res.details?.mergedYaml != undefined){
+            dispatch(setYaml(res.details.mergedYaml));
+            window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
+          }
           // Some parts of Zen pass the response as a string directly into the object
           if (res.status == false && typeof res.details == "string") {
             res.details = { 3: res.details };
@@ -268,7 +358,7 @@ const Installation = () => {
         setStageConfig(false, errPath+' '+errMsg, updatedData);
       } else {
         const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}};
-        window.electron.ipcRenderer.setConfig(newYaml)
+        await window.electron.ipcRenderer.setConfig(newYaml)
         setStageConfig(true, '', updatedData);
       }
     }
@@ -293,7 +383,7 @@ const Installation = () => {
         {installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install the MVS data sets, please provide the HLQ below.\n`}
         </Typography>
 
-        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && formError && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>

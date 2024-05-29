@@ -54,14 +54,14 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     completeProgress.reviewStatus
   ];
 
-  const subStageProgressStatus = [
+  const [subStageProgressStatus, setProgressStatus] = useState([
     completeProgress.datasetInstallationStatus,
     completeProgress.networkingStatus,
     completeProgress.apfAuthStatus,
     completeProgress.securityStatus,
     completeProgress.certificateStatus,
     completeProgress.launchConfigStatus
-  ]
+  ])
   
 
 
@@ -73,9 +73,18 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const [editorContent, setEditorContent] = useState('');
 
   useEffect(() => {
+    const mvsCompleteListener = (completed: boolean) => {
+      setProgressStatus([true, completeProgress.networkingStatus,
+        completeProgress.apfAuthStatus,
+        completeProgress.securityStatus,
+        completeProgress.certificateStatus,
+        completeProgress.launchConfigStatus])
+    };
     eventDispatcher.on('updateActiveStep', updateActiveStepListener);
+    eventDispatcher.on('initMvsComplete', mvsCompleteListener);
     return () => {
       eventDispatcher.off('updateActiveStep', updateActiveStepListener);
+      eventDispatcher.off('initMvsComplete', mvsCompleteListener);
     };
   }, []); 
 
@@ -166,7 +175,9 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
     setActiveStep(newActiveStep);
     const newSubStep = isSubStep ? subStepIndex : 0;
-    setActiveSubStep(newSubStep);
+    if((subStepIndex > 0 && subStageProgressStatus[0] === true) || subStepIndex === 0){ //only allow substages after installation to be navigated to if init mvs has been completed
+      setActiveSubStep(newSubStep);
+    }
   }
 
   const getStepIcon = (error: any, stageId: number, isSubStep?: boolean, subStepId?: number) => {
@@ -306,7 +317,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
             }
             {stages[activeStep] && stages[activeStep].isSkippable &&
               <Button 
-                disabled={isNextStepEnabled}
+                disabled={stages[activeStep] && stages[activeStep].subStages ? !stages[activeStep].subStages[activeSubStep].isSkippable : !stages[activeStep].isSkippable}
                 variant="contained" 
                 sx={{ textTransform: 'none', mr: 1 }} 
                 onClick={() => handleSkip()}

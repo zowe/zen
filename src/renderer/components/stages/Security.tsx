@@ -11,7 +11,7 @@
 import { useState, useEffect } from "react";
 import { Box, Button, FormControl } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectOutput, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml, setSchema } from '../configuration-wizard/wizardSlice';
 import { setSecurityStatus, setInitializationStatus, selectSecurityStatus, selectInitializationStatus } from './progress/progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
@@ -28,7 +28,7 @@ import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { setProgress, getProgress, setSecurityInitState, getSecurityInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
-import { JCL_UNIX_SCRIPT_OK } from '../common/Constants';
+import { JCL_UNIX_SCRIPT_OK, FALLBACK_SCHEMA, FALLBACK_YAML } from '../common/Constants';
 import { alertEmitter } from "../Header";
 
 const Security = () => {
@@ -45,7 +45,7 @@ const Security = () => {
   const theme = createTheme();
 
   const dispatch = useAppDispatch();
-  const schema = useAppSelector(selectSchema);
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security ?? {product: 'RACF'});
@@ -78,6 +78,29 @@ const Security = () => {
   }
 
   useEffect(() => {
+
+    if(!yaml){
+      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setYaml(res.details));
+          setLYaml(res.details);
+        } else {
+          dispatch(setYaml(FALLBACK_YAML));
+          setLYaml(FALLBACK_YAML);
+        }
+      })
+    }
+
+    if(!schema){
+      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setSchema(res.details));
+        } else {
+          dispatch(setSchema(FALLBACK_SCHEMA));
+          setLocalSchema(FALLBACK_SCHEMA)
+        }
+      })
+    }
 
     setShowProgress(initClicked || getProgress('securityStatus'));
     let nextPosition;
@@ -260,7 +283,7 @@ window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installati
       </Box>
       <ContainerCard title="Security" description="Configure Zowe Security.">
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
-        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
           
