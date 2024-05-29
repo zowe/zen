@@ -271,10 +271,10 @@ window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installati
 
           <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-security-progress">
           {!showProgress ? null :
-          <React.Fragment> {/* we do || false to prevent run-time issue with not initialized data. local storage, first time app init issue? */}
-            <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={securityInitProgress?.writeYaml || false}/>
-            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={securityInitProgress?.uploadYaml || false}/>
-            <ProgressCard label={`Run zwe init security`} id="success-progress-card" status={securityInitProgress?.success || false}/>
+          <React.Fragment> 
+            <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={securityInitProgress?.writeYaml}/>
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={securityInitProgress?.uploadYaml}/>
+            <ProgressCard label={`Run zwe init security`} id="success-progress-card" status={securityInitProgress?.success}/>
             <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize Security Config</Button>
           </React.Fragment>
         }

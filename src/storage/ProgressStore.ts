@@ -39,6 +39,8 @@ const STORE_DEFAULT = {
   }
 };
 const STORE_NAME = 'zen-progress-store';
+const store = new Store({cwd: STORE_NAME});
+store.set(STORE_DEFAULT);
 
 export class ProgressStore extends DefaultStore {
 

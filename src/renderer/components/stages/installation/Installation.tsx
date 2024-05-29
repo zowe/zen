@@ -303,13 +303,13 @@ const Installation = () => {
         </FormControl> : null}
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : '0'}} id="start-installation-progress">
         {!showProgress ? null :
-          <React.Fragment> {/* we do || false to prevent run-time issue with not initialized data. local storage, first time app init issue? */}
-            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={mvsDatasetInitProgress?.uploadYaml || false}/>
-            <ProgressCard label="Download convenience build pax locally" id="download-progress-card" status={mvsDatasetInitProgress?.download || false}/>
-            <ProgressCard label={`Upload pax file to ${installationArgs.installationDir}`} id="upload-progress-card" status={mvsDatasetInitProgress?.upload || false}/>
-            <ProgressCard label="Unpax installation files" id="unpax-progress-card" status={mvsDatasetInitProgress?.unpax || false}/>
-            <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={mvsDatasetInitProgress?.install || false}/>
-            <ProgressCard label="Run MVS dataset initialization script (zwe init mvs)" id="install-progress-card" status={mvsDatasetInitProgress?.initMVS  || false}/>
+          <React.Fragment> 
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={mvsDatasetInitProgress?.uploadYaml}/>
+            <ProgressCard label="Download convenience build pax locally" id="download-progress-card" status={mvsDatasetInitProgress?.download}/>
+            <ProgressCard label={`Upload pax file to ${installationArgs.installationDir}`} id="upload-progress-card" status={mvsDatasetInitProgress?.upload}/>
+            <ProgressCard label="Unpax installation files" id="unpax-progress-card" status={mvsDatasetInitProgress?.unpax}/>
+            <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={mvsDatasetInitProgress?.install}/>
+            <ProgressCard label="Run MVS dataset initialization script (zwe init mvs)" id="install-progress-card" status={mvsDatasetInitProgress?.initMVS }/>
             <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationType === 'smpe' ? 'Save' : 'Reinstall MVS datasets'}</Button>
           </React.Fragment>
         }

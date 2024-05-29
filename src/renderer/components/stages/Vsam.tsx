@@ -332,10 +332,10 @@ const Vsam = () => {
 
           <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-vsam-progress">
             {!showProgress ? null :
-            <React.Fragment> {/* we do || false to prevent run-time issue with not initialized data. local storage, first time app init issue? */}
-              <ProgressCard label={`Write configuration file locally to temp directory`} id="init-vsam-progress-card" status={vsamInitProgress?.writeYaml || false}/>
-              <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={vsamInitProgress?.uploadYaml || false}/>
-              <ProgressCard label={`Run zwe init vsam`} id="success-progress-card" status={vsamInitProgress?.success || false}/>
+            <React.Fragment> 
+              <ProgressCard label={`Write configuration file locally to temp directory`} id="init-vsam-progress-card" status={vsamInitProgress?.writeYaml}/>
+              <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={vsamInitProgress?.uploadYaml}/>
+              <ProgressCard label={`Run zwe init vsam`} id="success-progress-card" status={vsamInitProgress?.success}/>
               <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!isDsNameValid} onClick={e => reinitialize(e)}>Reinitialize Vsam Config</Button>
             </React.Fragment>
             }
