@@ -37,8 +37,14 @@ contextBridge.exposeInMainWorld('electron', {
     setConfigByKey(key: string, value: any) {
       return ipcRenderer.invoke("set-config-by-key", key, value);
     },
+    setConfigByKeyNoValidate(key: string, value: any) {
+      return ipcRenderer.invoke("set-config-by-key-no-validate", key, value);
+    },
     setSchema(schema: any) {
       return ipcRenderer.invoke("set-schema", schema);
+    },
+    getSchema() {
+      return ipcRenderer.invoke("get-schema");
     },
     checkZoweCLI() {
       return ipcRenderer.invoke("check-zowe-cli");
@@ -91,12 +97,18 @@ contextBridge.exposeInMainWorld('electron', {
     initSecurityButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
       return ipcRenderer.invoke("init-security", connectionArgs, installationArgs, zoweConfig);
     },
+    initVsamButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
+      return ipcRenderer.invoke("init-vsam", connectionArgs, installationArgs, zoweConfig);
+    },
     getInitSecurityProgress(){
       return ipcRenderer.invoke("get-init-security-progress");
     },
+    getInitVsamProgress(){
+      return ipcRenderer.invoke("get-init-vsam-progress");
+    },
     on(channel: string, func: any) {
       // REVIEW: Used to have channel validation with ipcRenderer.send, do we need something similar for ipcRenderer.invoke?
-      const validChannels = ['install-mvs', 'init-security'];
+      const validChannels = ['install-mvs', 'init-security', 'init-vsam'];
       if (validChannels.includes(channel)) {
         ipcRenderer.on(channel, (event, ...args) => func(...args));
       }

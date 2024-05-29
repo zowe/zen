@@ -11,7 +11,7 @@
 import { useState, useEffect } from "react";
 import { Box, Button, Checkbox, FormControlLabel, IconButton, SvgIcon, SvgIconProps, TextField } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectYaml, setNextStepEnabled, setSchema, setYaml } from '../configuration-wizard/wizardSlice';
 import ContainerCard from '../common/ContainerCard';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
@@ -20,6 +20,8 @@ import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
+import { IResponse } from "../../../types/interfaces";
+import { FALLBACK_SCHEMA, FALLBACK_YAML } from "../../../utils/yamlSchemaDefaults";
 
 function PatternPropertiesForm(props: any){
   const [elements, setElements] = useState([]);
@@ -652,8 +654,29 @@ const Networking = () => {
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
   useEffect(() => {
+    if(!yaml){
+      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setYaml(res.details));
+          setLYaml(res.details);
+        } else {
+          dispatch(setYaml(FALLBACK_YAML));
+          setLYaml(FALLBACK_YAML);
+        }
+      })
+    }
+
+    if(!schema){
+      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setSchema(res.details));
+        } else {
+          dispatch(setSchema(FALLBACK_SCHEMA));
+        }
+      })
+    }
     const nextPosition = document.getElementById('container-box-id');
-    nextPosition.scrollIntoView({behavior: 'smooth'});
+    if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
 
     dispatch(setNextStepEnabled(true));
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = false;
@@ -706,7 +729,7 @@ const Networking = () => {
       </Box>
       <ContainerCard title="Networking" description="Zowe networking configurations."> 
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
-        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <p style={{fontSize: "24px"}}>External Domains <IconButton onClick={(e) => {
             let domains = [...yaml.zowe?.externalDomains, ""];
