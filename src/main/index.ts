@@ -92,13 +92,19 @@ const createWindow = (): void => {
   });
 
   ipcMain.handle('get-config', async (event) => {
-    const res: any = await PlanningActions.getConfig();
-    return res;
+    const res: any = await ConfigurationStore.getConfig();
+    return {status: true, details: res};
   });
 
   ipcMain.handle('set-schema', async (event, schema: any) => {
     const res: any = await ConfigurationStore.setSchema(schema);
     return res;
+  });
+
+
+  ipcMain.handle('get-schema', async (event, schema: any) => {
+    const res: any = await ConfigurationStore.getSchema();
+    return {status: true, details: res};
   });
 
 
@@ -109,6 +115,11 @@ const createWindow = (): void => {
 
   ipcMain.handle('set-config-by-key', async (_event, key: string, value) => {
     const res = await ConfigurationStore.setConfigByKey(key, value);
+    return res;
+  });
+
+  ipcMain.handle('set-config-by-key-no-validate', async (_event, key: string, value) => {
+    const res = await ConfigurationStore.setConfigByKeyNoValidate(key, value);
     return res;
   });
 
