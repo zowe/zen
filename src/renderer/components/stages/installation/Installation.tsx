@@ -127,10 +127,10 @@ const Installation = () => {
           if (installationArgs.rbacProfile) {
             yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
           }
-          if ((yamlObj.zowe.job.name === undefined || yamlObj.zowe.job.name === '') && installationArgs.jobName) { //this undefined check is necessary because InstallationStage.jobName has a defualt, and therefore this would always overwrite the value in the config
+          if ((yamlObj.zowe.job?.name === undefined || yamlObj.zowe.job?.name === '') && installationArgs.jobName) { //this undefined check is necessary because InstallationStage.jobName has a defualt, and therefore this would always overwrite the value in the config
             yamlObj.zowe.job.name = installationArgs.jobName;
           }
-          if ((yamlObj.zowe.job.prefix === undefined || yamlObj.zowe.job.prefix === '') && installationArgs.jobPrefix) {
+          if ((yamlObj.zowe.job?.prefix === undefined || yamlObj.zowe.job?.prefix === '') && installationArgs.jobPrefix) {
             yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
           }
           if (installationArgs.cookieId) {
