@@ -37,8 +37,14 @@ contextBridge.exposeInMainWorld('electron', {
     setConfigByKey(key: string, value: any) {
       return ipcRenderer.invoke("set-config-by-key", key, value);
     },
+    setConfigByKeyNoValidate(key: string, value: any) {
+      return ipcRenderer.invoke("set-config-by-key-no-validate", key, value);
+    },
     setSchema(schema: any) {
       return ipcRenderer.invoke("set-schema", schema);
+    },
+    getSchema() {
+      return ipcRenderer.invoke("get-schema");
     },
     checkZoweCLI() {
       return ipcRenderer.invoke("check-zowe-cli");
