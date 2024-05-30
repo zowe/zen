@@ -22,6 +22,7 @@ const initialState: ProgressState = {
   networkingStatus: getProgress('networkingStatus') || false,
   apfAuthStatus: getProgress('apfAuthStatus') || false,
   securityStatus: getProgress('securityStatus') || false,
+  stcsStatus: getProgress('stcsStatus') || false,
   certificateStatus: getProgress('certificateStatus') || false,
   vsamStatus: getProgress('vsamStatus') || false,
   launchConfigStatus: getProgress('launchConfigStatus') || false,
