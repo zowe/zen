@@ -225,7 +225,7 @@ class Installation {
       ProgressStore.set('initStcs.uploadYaml', uploadYaml.status);
       const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init stc -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
-      ProgressStore.set('inittcs.success', result.rc === 0);
+      ProgressStore.set('initStcs.success', result.rc === 0);
       return {status: result.rc === 0, details: result.jobOutput}
   }
 

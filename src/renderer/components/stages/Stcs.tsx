@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Box, Button, FormControl } from '@mui/material';
+import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import { setStcsStatus, setInitializationStatus, selectStcsStatus, selectInitializationStatus } from './progress/progressSlice';
@@ -28,6 +28,7 @@ import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
 import { setProgress, getProgress, setStcsInitState, getStcsInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
+import { alertEmitter } from "../Header";
 
 const Stcs = () => {
 
@@ -57,12 +58,15 @@ const Stcs = () => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
   const [reinit, setReinit] = useState(false);
+  const [initErrorMsg, setInitErrorMsg] = useState('');
 
   const installationArgs = getInstallationArguments();
   const connectionArgs = useAppSelector(selectConnectionArgs);
   let timer: any;
 
   const section = 'stcs';
+
+  const defaultErrorMessage = "Please ensure that the values for security.stcs attributes are accurate.";
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -93,6 +97,7 @@ const Stcs = () => {
     setInit(true);
 
     return () => {
+      alertEmitter.emit('hideAlert');
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
@@ -179,11 +184,17 @@ const Stcs = () => {
   }
 
   const process = (event: any) => {
+    alertEmitter.emit('hideAlert');
+
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
     window.electron.ipcRenderer.initStcsButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
         updateProgress(res.status);
+        if(res.error) {
+          setInitErrorMsg(`${res ? res.errorMsg : ''} ${defaultErrorMessage}`);
+          alertEmitter.emit('showAlert', res.errorMsg+" "+defaultErrorMessage, 'error');
+        }
         clearInterval(timer);
       }).catch((error: any) => {
         clearInterval(timer);
@@ -224,12 +235,50 @@ const Stcs = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
-      <ContainerCard title="Stcs" description="Configure Zowe Stcs.">
+      <ContainerCard title="Stcs" description="Install Zowe Main Started Tasks.">
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
+        <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', color: 'text.secondary', fontSize: '13px' }}>
+          {`Please review the following started task (STC) configuration values from the security stage before initializing stcs.\n`}
+        </Typography>
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
           
+          <Box sx={{ width: '60vw' }}>
+            <TextField
+                sx={{
+                '& .MuiInputBase-root': { height: '60px', minWidth: '72ch', fontFamily: 'monospace' },
+                }}
+                label="Zowe"
+                multiline
+                maxRows={6}
+                value={setupYaml?.zowe ?? "ZWESLSTC"}
+                variant="filled"
+                disabled
+            />
+            <TextField
+                sx={{
+                '& .MuiInputBase-root': { height: '60px', minWidth: '72ch', fontFamily: 'monospace' },
+                }}
+                label="Zis"
+                multiline
+                maxRows={6}
+                value={setupYaml?.zis ?? "ZWESISTC"}
+                variant="filled"
+                disabled
+            />
+            <TextField
+                sx={{
+                '& .MuiInputBase-root': { height: '60px', minWidth: '72ch', fontFamily: 'monospace' },
+                }}
+                label="Aux"
+                multiline
+                maxRows={6}
+                value={setupYaml?.aux ?? "ZWESASTC"}
+                variant="filled"
+                disabled
+            />
+        </Box>
+
           {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Stcs Config</Button>
           </FormControl> : null}
