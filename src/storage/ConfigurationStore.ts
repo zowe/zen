@@ -68,6 +68,11 @@ export class ConfigurationStore {
     return false;
   }
 
+  public static setConfigByKeyNoValidate(key: string, value: string | Array<string>): boolean {
+    store.set(`config.${key}`, value);
+    return true;
+  }
+
   public static deleteConfigByKey(key: any): void {
     store.delete(`config.${key}`);
   }

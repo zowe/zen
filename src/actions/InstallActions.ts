@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+import { InstallationArgs } from '../renderer/components/stages/installation/installationSlice';
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { FTPInstallation, CLIInstallation } from './InstallationHandler';
 
@@ -42,7 +43,7 @@ export class InstallActions {
 
   runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
+    installationArgs: InstallationArgs,
     version: string, zoweConfig: any, skipDownload: boolean): Promise<IResponse> {
     return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig, skipDownload);
   }
