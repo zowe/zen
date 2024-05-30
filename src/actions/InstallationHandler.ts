@@ -199,6 +199,36 @@ class Installation {
       return {status: result.rc === 0, details: result.jobOutput}
   }
 
+  public async initStcs(connectionArgs: IIpcConnectionArgs,
+    installationArgs: {installationDir: string, installationType: string}, zoweConfig: object): Promise<IResponse>{
+
+      // Initialize Progress Store For Vsam
+      ProgressStore.set('initStcs.writeYaml', false);
+      ProgressStore.set('initStcs.uploadYaml', false);
+      ProgressStore.set('initStcs.success', false);
+
+      console.log('writing current yaml to disk');
+      const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
+      await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
+        if (err) {
+            console.warn("Can't save configuration to zowe.yaml");
+            ProgressStore.set('initStcs.writeYaml', false);
+            return {status: false, details: `Can't save configuration to zowe.yaml`};
+        }
+      });
+      ProgressStore.set('initStcs.writeYaml', true);
+      console.log("uploading yaml...");
+      const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
+      if(!uploadYaml.status){
+        return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
+      }
+      ProgressStore.set('initStcs.uploadYaml', uploadYaml.status);
+      const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init stc -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+      const result = await new Script().run(connectionArgs, script);
+      ProgressStore.set('inittcs.success', result.rc === 0);
+      return {status: result.rc === 0, details: result.jobOutput}
+  }
+
   async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string}, zoweConfig: any){
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
