@@ -11,7 +11,7 @@
 import { useState, useEffect } from "react";
 import { Box, Button, FormControl } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progress/progressSlice';
+import { setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progress/progressSlice';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';

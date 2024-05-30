@@ -20,8 +20,6 @@ import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/progress/progressSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, selectReviewStatus } from '../stages/progress/progressSlice';
-import { selectInstallationTypeStatus } from '../stages/progress/progressSlice';
 import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progress/activeStepSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
@@ -60,6 +58,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     completeProgress.networkingStatus,
     completeProgress.apfAuthStatus,
     completeProgress.securityStatus,
+    completeProgress.stcsStatus,
     completeProgress.certificateStatus,
     completeProgress.launchConfigStatus
   ]

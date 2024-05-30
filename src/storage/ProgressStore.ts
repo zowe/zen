@@ -31,6 +31,11 @@ const storeDefault = {
     "uploadYaml": false,
     "success": false
   },
+  "initStcs": {
+    "writeYaml": false,
+    "uploadYaml": false,
+    "success": false
+  },
   "certificate": {
     "writeYaml": false,
     "uploadYaml": false,
