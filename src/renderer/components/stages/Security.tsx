@@ -206,40 +206,39 @@ const Security = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-updateProgress(true);
-window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
-        // Some parts of Zen pass the response as a string directly into the object
-        if (res.status == false && typeof res.details == "string") {
-          res.details = { 3: res.details };
-        }
-        if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe init security
-          alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
-          window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
-            toggleEditorVisibility("output");
-          })
-          updateProgress(false);
-          securityProceedActions(false);
-          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-          clearInterval(timer);
-        } else {
-          securityProceedActions(res.status);
-          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
-          clearInterval(timer);
-        }
-      }).catch((err: any) => {
-        // TODO: Test this
-        //alertEmitter.emit('showAlert', err.toString(), 'error');
+    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
+      // Some parts of Zen pass the response as a string directly into the object
+      if (res.status == false && typeof res.details == "string") {
+        res.details = { 3: res.details };
+      }
+      if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe init security
+        alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
+        window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
+          toggleEditorVisibility("output");
+        })
         updateProgress(false);
-        clearInterval(timer);
         securityProceedActions(false);
         stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-        stages[STAGE_ID].isSkipped = true;
-        if (typeof err === "string") {
-          console.warn('zwe init security failed', err);
-        } else {
-          console.warn('zwe init security failed', err?.toString()); // toString() throws run-time error on undefined or null
-        }
-      });
+        clearInterval(timer);
+      } else {
+        securityProceedActions(res.status);
+        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+        clearInterval(timer);
+      }
+    }).catch((err: any) => {
+      // TODO: Test this
+      //alertEmitter.emit('showAlert', err.toString(), 'error');
+      updateProgress(false);
+      clearInterval(timer);
+      securityProceedActions(false);
+      stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+      stages[STAGE_ID].isSkipped = true;
+      if (typeof err === "string") {
+        console.warn('zwe init security failed', err);
+      } else {
+        console.warn('zwe init security failed', err?.toString()); // toString() throws run-time error on undefined or null
+      }
+    });
   }
 
   // True - a proceed, False - blocked

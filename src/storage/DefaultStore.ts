@@ -12,10 +12,12 @@ import Store from 'electron-store';
 
 const STORE_NAME = 'zen-default-store';
 
-// Note: This default class is for other Stores to inherit (this is not a Store for "defaults")
+// This default class is for other Stores to inherit (this is not a Store for "defaults")
 export class DefaultStore {
 
-  // This method is intended to be overridden by subclasses
+  /* Note: All Stores that inherit DefaultStore must: 
+  a) override this method with store name 
+  b) use only this method to reference store object */
   protected static getStore(): Store {
     return new Store({cwd: STORE_NAME});
   }
@@ -50,10 +52,14 @@ export class DefaultStore {
 
   public static set(key: string, value: any): boolean {
     try {
-      this.getStore().set(key, value);
+      if (value === undefined || typeof value === 'function' || typeof value === 'symbol') {
+        console.warn(`Attempted to overwrite ${key} with undefined, function, or symbol`);
+      } else {
+        this.getStore().set(key, value);
+      }
       return true;
     } catch (err) {
-      console.warn(`failed to add ${key} error: `, err);
+      console.warn(`Failed to add ${key} Error: `, err);
       return false;
     }
   }
@@ -62,7 +68,7 @@ export class DefaultStore {
     if (this.validateWithSchema(key, schema)) {
       return this.set(key, value);
     }
-    console.warn(`failed validate against schema config.${key}`);
+    console.warn(`Failed to validate against schema config.${key}`);
     return false;
   }
 
