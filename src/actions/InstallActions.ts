@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { InstallationArgs } from '../renderer/components/stages/installation/installationSlice';
+import { InstallationArgs } from '../types/stateInterfaces';
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { FTPInstallation, CLIInstallation } from './InstallationHandler';
 
