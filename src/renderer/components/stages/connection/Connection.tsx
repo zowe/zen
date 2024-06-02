@@ -36,7 +36,7 @@ import { alertEmitter } from "../../Header";
 import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
 import { initializeProgress, getActiveStage } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../services/eventDispatcher";
-import { EXAMPLE_YAML, YAML_SCHEMA } from "../../common/Constants";
+import { FALLBACK_YAML, FALLBACK_SCHEMA } from "../../common/Constants";
 
 const Connection = () => {
 
@@ -155,12 +155,12 @@ const FTPConnectionForm = () => {
         const schema = res.details.schema;
         dispatch(setSchema(schema));
       } else {
-        dispatch(setYaml(EXAMPLE_YAML));
-        dispatch(setSchema(YAML_SCHEMA));
-        window.electron.ipcRenderer.setConfig(EXAMPLE_YAML).then((res: IResponse) => {
+        dispatch(setYaml(FALLBACK_YAML));
+        dispatch(setSchema(FALLBACK_SCHEMA));
+        window.electron.ipcRenderer.setConfig(FALLBACK_YAML).then((res: IResponse) => {
           // yaml response
         });
-        window.electron.ipcRenderer.setSchema(YAML_SCHEMA).then((res: IResponse) => {
+        window.electron.ipcRenderer.setSchema(FALLBACK_SCHEMA).then((res: IResponse) => {
           // schema response
         });
       }
