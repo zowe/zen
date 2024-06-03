@@ -80,7 +80,6 @@ jobs:
         uses: actions/checkout@v3
       - name: '[prep 4] Install'
         run: |
-          python3 -m pip install setuptools
           npm install     
       - name: '[prep 5] Package'
         run: |
