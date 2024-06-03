@@ -17,7 +17,7 @@ import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ProgressStore } from "../storage/ProgressStore";
 import * as fs from 'fs';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
-import { InstallationArgs } from "../types/stateInterfaces";
+import { InstallationArgs } from '../types/stateInterfaces';
 
 class Installation {
 
