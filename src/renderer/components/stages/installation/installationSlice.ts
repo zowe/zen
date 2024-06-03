@@ -13,27 +13,6 @@ import { RootState } from '../../../store';
 import { setInstallationTypeStatus, getInstallationTypeStatus, setInstallationArguments } from '../progress/StageProgressStatus'; 
 import { InstallationArgs } from '../../../../types/stateInterfaces';
 
-export interface InstallationArgs {
-  installationDir: string;
-  workspaceDir: string;
-  logDir: string,
-  extensionDir: string,
-  installationType?: string;
-  downloadDir: string;
-  userUploadedPaxPath?: string;
-  smpeDir?: string;
-  javaHome: string;
-  nodeHome: string;
-  setupConfig: any;
-  jobName: string;
-  jobPrefix: string;
-  rbacProfile: string;
-  cookieId: string;
-  zosmfHost: string,
-  zosmfPort: string,
-  zosmfApplId: string
-}
-
 interface InstallationState {
   installationArgs: InstallationArgs;
   zoweVersion: string;
