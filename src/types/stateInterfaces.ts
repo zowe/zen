@@ -12,6 +12,7 @@ export interface ProgressState {
   connectionStatus: boolean;
   planningStatus: boolean;
   installationTypeStatus: boolean;
+  downloadUnpaxStatus: boolean;
   initializationStatus: boolean;
   datasetInstallationStatus: boolean;
   networkingStatus: boolean;
@@ -33,6 +34,15 @@ export interface InstallationType {
   installationType: string;
   licenseAgreement: boolean;
   userUploadedPaxPath: string;
+}
+
+export interface DownloadUnpaxState {
+  uploadYaml: boolean;
+  download: boolean,
+  upload: boolean,
+  unpax: boolean,
+  getExampleYaml: boolean,
+  getSchemas: boolean
 }
 
 export interface ActiveState {
@@ -73,6 +83,7 @@ export interface PlanningValidationDetails {
 }
 
 export interface SkipState {
+  downloadUnpax: boolean,
   datasetInstallation: boolean,
   networking: boolean,
   apfAuth: boolean,

@@ -13,11 +13,16 @@ import Store from 'electron-store';
 // TODO: Store overall progress and restore up to last successful step
 
 const storeDefault = {
-  "installation": {
+  "downloadUnpax": {
     "uploadYaml": false,
     "download": false,
     "upload": false,
     "unpax": false,
+    "getExampleYaml": false,
+    "getSchemas": false,
+  },
+  "installation": {
+    "uploadYaml": false,
     "install": false,
     "initMVS": false
   },
