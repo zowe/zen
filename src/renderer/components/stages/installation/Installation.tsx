@@ -274,7 +274,7 @@ const Installation = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const process = (event: any, skipDownload?: boolean) => {
+  const process = (event: any) => {
 
     if(!(installationType === 'smpe')) {
       setInitClicked(true);
@@ -293,7 +293,7 @@ const Installation = () => {
       setYaml(window.electron.ipcRenderer.getConfig());
       setShowProgress(true);
       dispatch(setLoading(false));
-      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, true).then((res: IResponse) => {
+      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
         if(!res.status){ //errors during runInstallation()
           alertEmitter.emit('showAlert', res.details, 'error');
         }
