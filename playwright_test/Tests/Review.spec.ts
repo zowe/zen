@@ -25,37 +25,37 @@ const REVIEW_PAGE_TITLE = 'Review Installation';
 const FINISH_INSTALLATION_PAGE_TITLE = 'Finish Installation'
 const RUNTIME_DIR = process.env.ZOWE_ROOT_DIR;
 const SSH_HOST = process.env.SSH_HOST;
-const SSH_PASSWD =  process.env.SSH_PASSWD;
+const SSH_PASSWD = process.env.SSH_PASSWD;
 const SSH_PORT = process.env.SSH_PORT;
 const SSH_USER = process.env.SSH_USER;
-const ZOWE_EXTENSION_DIR= process.env.ZOWE_EXTENSION_DIR;
-const ZOWE_LOG_DIR=process.env.ZOWE_LOG_DIR;
-const ZOWE_WORKSPACE_DIR=process.env.ZOWE_WORKSPACE_DIR;
-const JOB_NAME= process.env.JOB_NAME;
-const JOB_PREFIX=process.env.JOB_PREFIX;
-const JAVA_HOME=process.env.JAVA_HOME;
-const NODE_HOME=process.env.NODE_HOME;
-const ZOSMF_HOST=process.env.ZOSMF_HOST;
-const ZOSMF_PORT=process.env.ZOSMF_PORT;
-const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
+const ZOWE_EXTENSION_DIR = process.env.ZOWE_EXTENSION_DIR;
+const ZOWE_LOG_DIR = process.env.ZOWE_LOG_DIR;
+const ZOWE_WORKSPACE_DIR = process.env.ZOWE_WORKSPACE_DIR;
+const JOB_NAME = process.env.JOB_NAME;
+const JOB_PREFIX = process.env.JOB_PREFIX;
+const JAVA_HOME = process.env.JAVA_HOME;
+const NODE_HOME = process.env.NODE_HOME;
+const ZOSMF_HOST = process.env.ZOSMF_HOST;
+const ZOSMF_PORT = process.env.ZOSMF_PORT;
+const ZOSMF_APP_ID = process.env.ZOSMF_APP_ID;
 
 test.describe('ReviewTab', () => {
-  let titlePage : TitlePage;
+  let titlePage: TitlePage;
   let connectionPage: ConnectionPage;
-  let planningPage : PlanningPage;
-  let installationTypePage : InstallationTypePage;
-  let installationPage : InstallationPage;
-  let networkingPage : NetworkingPage
-  let apfAuthPage : ApfAuthPage
-  let securityPage : SecurityPage
-  let certificatesPage : CertificatesPage;
-  let launchConfigPage : LaunchConfigPage;
-  let reviewPage : ReviewPage;
+  let planningPage: PlanningPage;
+  let installationTypePage: InstallationTypePage;
+  let installationPage: InstallationPage;
+  let networkingPage: NetworkingPage
+  let apfAuthPage: ApfAuthPage
+  let securityPage: SecurityPage
+  let certificatesPage: CertificatesPage;
+  let launchConfigPage: LaunchConfigPage;
+  let reviewPage: ReviewPage;
 
   test.beforeEach(async ({ page }) => {
     test.setTimeout(900000);
     electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
-    page= await electronApp.firstWindow()
+    page = await electronApp.firstWindow()
     titlePage = new TitlePage(page);
     connectionPage = new ConnectionPage(page);
     planningPage = new PlanningPage(page);
@@ -68,17 +68,13 @@ test.describe('ReviewTab', () => {
     launchConfigPage = new LaunchConfigPage(page);
     reviewPage = new ReviewPage(page);
     titlePage.navigateToConnectionTab()
-    connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
-    await page.waitForTimeout(5000);
-    connectionPage.SubmitValidateCredential()
+    connectionPage.performLogin(SSH_HOST, SSH_PORT, SSH_USER, SSH_PASSWD)
     await page.waitForTimeout(5000);
     connectionPage.clickContinueButton()
     await page.waitForTimeout(2000);
-    planningPage.clickSaveValidate()
+    planningPage.insertValidateJobStatement()
     await page.waitForTimeout(10000);
-    planningPage.fillPlanningPageWithRequiredFields(RUNTIME_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
-    await page.waitForTimeout(20000);
-    planningPage.clickValidateLocations()
+    planningPage.validatePlanningStageLocations(RUNTIME_DIR, ZOWE_WORKSPACE_DIR, ZOWE_EXTENSION_DIR, ZOWE_LOG_DIR, '1', JOB_NAME, JOB_PREFIX, JAVA_HOME, NODE_HOME, ZOSMF_HOST, ZOSMF_PORT, ZOSMF_APP_ID)
     await page.waitForTimeout(20000);
     planningPage.clickContinueToInstallation()
     await page.waitForTimeout(2000);
@@ -110,7 +106,7 @@ test.describe('ReviewTab', () => {
     expect(reviewPage.previousStep).toBeTruthy()
     const is_Finish_Button_disable = await reviewPage.isFinishInstallationDisabled();
     expect(is_Finish_Button_disable).toBe(true);
-	})
+  })
 
   test('Test Navigation to Connection page', async ({ page }) => {
     await page.waitForTimeout(5000);
@@ -248,7 +244,7 @@ test.describe('ReviewTab', () => {
     await page.waitForTimeout(2000);
   })
 
-  test('Test Save and Close and Resume Progress', async ({page}) => {
+  test('Test Save and Close and Resume Progress', async ({ page }) => {
     await page.waitForTimeout(5000);
     reviewPage.clickSaveAndClose();
     await page.waitForTimeout(3000);
@@ -256,5 +252,5 @@ test.describe('ReviewTab', () => {
     await page.waitForTimeout(5000);
     const title = await reviewPage.getReviewPageTitle();
     expect(title).toBe(REVIEW_PAGE_TITLE);
-  }) 
+  })
 })

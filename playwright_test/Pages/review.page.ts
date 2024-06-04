@@ -1,6 +1,7 @@
-import { Page,Locator } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
+import CommonPage from './common.page';
 
-class ReviewPage{
+class ReviewPage {
   page: Page;
   pageTitle: Locator;
   reviewInstallationTab: Locator;
@@ -41,8 +42,8 @@ class ReviewPage{
     this.planningTab = page.locator("//p[text()='Planning']")
     this.installationTypeTab = page.locator("//p[text()='Installation Type']")
     this.initializationTab = page.locator("//p[text()='Initialization']")
-    this.installationTab = page.locator("//p[text()='Installation']")    
-    this.networkingTab = page.locator("//p[text()='Networking']")    
+    this.installationTab = page.locator("//p[text()='Installation']")
+    this.networkingTab = page.locator("//p[text()='Networking']")
     this.connectionTabSuccessfulIcon = page.locator("//p[text()='Connection']/following-sibling::*[@data-testid='CheckCircleIcon']")
     this.planningTabSuccessfulIcon = page.locator("//p[text()='Planning']/following-sibling::*[@data-testid='CheckCircleIcon']")
     this.installationTypeTabSuccessfulIcon = page.locator("//p[text()='Installation Type']/following-sibling::*[@data-testid='CheckCircleIcon']")
@@ -53,126 +54,130 @@ class ReviewPage{
     this.securityTabPendingIcon = page.locator("//p[text()='Security']/following-sibling::*[@data-testid='WarningIcon']")
     this.certificatesTabPendingIcon = page.locator("//p[text()='Certificates']/following-sibling::*[@data-testid='WarningIcon']")
     this.launchConfigTabPendingIcon = page.locator("//p[text()='Launch Config']/following-sibling::*[@data-testid='WarningIcon']")
-    this.apfAuthTab = page.locator("//p[text()='APF Auth']")    
-    this.securityTab = page.locator("//p[text()='Security']")    
-    this.certificatesTab = page.locator("//p[text()='Certificates']")    
-    this.launchConfigTab = page.locator("//p[text()='Launch Config']")    
-    this.viewEditYaml = page.locator("//button[text()='View Yaml']")    
-    this.viewSubmitJob = page.locator("//button[text()='View/Submit Job']")    
-    this.viewJobOutput = page.locator("//button[text()='View Job Output']")    
-	  this.saveAndClose = page.locator("//button[text()='Save & close']")
+    this.apfAuthTab = page.locator("//p[text()='APF Auth']")
+    this.securityTab = page.locator("//p[text()='Security']")
+    this.certificatesTab = page.locator("//p[text()='Certificates']")
+    this.launchConfigTab = page.locator("//p[text()='Launch Config']")
+    this.viewEditYaml = page.locator("//button[text()='View Yaml']")
+    this.viewSubmitJob = page.locator("//button[text()='View/Submit Job']")
+    this.viewJobOutput = page.locator("//button[text()='View Job Output']")
+    this.saveAndClose = page.locator("//button[text()='Save & close']")
     this.previousStep = page.locator("//button[text()='Previous step']")
-    this.finishInstallation = page.locator("//button[text()='Finish Installation']")    
+    this.finishInstallation = page.locator("//button[text()='Finish Installation']")
     this.editorTitleElement = page.locator("//h2[text()='Editor']")
     this.closeEditorButton = page.locator("//button[text()='Close']")
   }
 
-  async getReviewPageTitle(){
-    await this.page.waitForTimeout(1000)
+  commonPage = new CommonPage();
+
+  async getReviewPageTitle() {
+    await this.commonPage.waitForElement(this.pageTitle)
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
-  async clickReviewInstallationTab(){
-    await this.page.waitForTimeout(500)
+  async clickReviewInstallationTab() {
+    await this.commonPage.waitForElement(this.reviewInstallationTab)
     await this.reviewInstallationTab.click();
   }
 
-  async clickConnectionTab(){
-    await this.page.waitForTimeout(500)
+  async clickConnectionTab() {
+    await this.commonPage.waitForElement(this.connectionTab)
     await this.connectionTab.click();
   }
 
-  async clickPlanningTab(){
-    await this.page.waitForTimeout(500)
+  async clickPlanningTab() {
+    await this.commonPage.waitForElement(this.planningTab)
     await this.planningTab.click();
   }
 
-  async clickInstallationTypeTab(){
-    await this.page.waitForTimeout(500)
+  async clickInstallationTypeTab() {
+    await this.commonPage.waitForElement(this.installationTypeTab)
     await this.installationTypeTab.click();
   }
 
-  async clickInstallationTab(){
-    await this.page.waitForTimeout(500)
+  async clickInstallationTab() {
+    await this.commonPage.waitForElement(this.installationTab)
     await this.installationTab.click();
   }
 
-  async clickNetworkingTab(){
-    await this.page.waitForTimeout(500)
+  async clickNetworkingTab() {
+    await this.commonPage.waitForElement(this.networkingTab)
     await this.networkingTab.click();
   }
 
-  async clickApfAuthTab(){
-    await this.page.waitForTimeout(500)
+  async clickApfAuthTab() {
+    await this.commonPage.waitForElement(this.apfAuthTab)
     await this.apfAuthTab.click();
   }
 
-  async clickSecurityTab(){
-    await this.page.waitForTimeout(500)
+  async clickSecurityTab() {
+    await this.commonPage.waitForElement(this.securityTab)
     await this.securityTab.click();
   }
 
-  async clickCertificatesTab(){
-    await this.page.waitForTimeout(500)
+  async clickCertificatesTab() {
+    await this.commonPage.waitForElement(this.certificatesTab)
     await this.certificatesTab.click();
   }
 
-  async clickLaunchConfigTab(){
-    await this.page.waitForTimeout(500)
+  async clickLaunchConfigTab() {
+    await this.commonPage.waitForElement(this.launchConfigTab)
     await this.launchConfigTab.click();
   }
 
-  async clickViewEditYaml(){
-    await this.page.waitForTimeout(500)
+  async clickViewEditYaml() {
+    await this.commonPage.waitForElement(this.viewEditYaml)
     await this.viewEditYaml.click();
   }
 
-  async clickViewSubmitJob(){
-    await this.page.waitForTimeout(500)
+  async clickViewSubmitJob() {
+    await this.commonPage.waitForElement(this.viewSubmitJob)
     await this.viewSubmitJob.click();
   }
 
-  async clickViewJobOutput(){
-    await this.page.waitForTimeout(500)
+  async clickViewJobOutput() {
+    await this.commonPage.waitForElement(this.viewJobOutput)
     await this.viewJobOutput.click();
     await this.page.waitForTimeout(2000);
   }
 
-  async clickSaveAndClose(){
-    await this.page.waitForTimeout(500)
-    await this.saveAndClose.click({timeout: 2000});
+  async clickSaveAndClose() {
+    await this.commonPage.waitForElement(this.saveAndClose)
+    await this.saveAndClose.click({ timeout: 2000 });
   }
 
-  async clickPreviousStep(){
-    await this.page.waitForTimeout(500)
+  async clickPreviousStep() {
+    await this.commonPage.waitForElement(this.previousStep)
     await this.previousStep.click();
   }
 
-  async clickFinishInstallation(){
-    await this.page.waitForTimeout(500)
+  async clickFinishInstallation() {
+    await this.commonPage.waitForElement(this.finishInstallation)
     await this.finishInstallation.click();
   }
 
-  async isFinishInstallationDisabled(){
-    await this.page.waitForTimeout(500)
+  async isFinishInstallationDisabled() {
+    await this.commonPage.waitForElement(this.finishInstallation)
     return await this.finishInstallation.isDisabled()
   }
 
-  async isFinishInstallationEnabled(){
-    await this.page.waitForTimeout(500)
+  async isFinishInstallationEnabled() {
+    await this.commonPage.waitForElement(this.finishInstallation)
     return await this.finishInstallation.isEnabled()
   }
 
-  async open_monacoEditor(){
-    await this.page.waitForTimeout(1000)
+  async open_monacoEditor() {
+    await this.commonPage.waitForElement(this.viewEditYaml)
     this.viewEditYaml.click({ timeout: 2000 })
+    await this.commonPage.waitForElement(this.editorTitleElement)
     const editor_title = await this.editorTitleElement.textContent();
     return editor_title;
   }
 
-  async clickCloseEditor(){
-    await this.page.waitForTimeout(500)
+  async clickCloseEditor() {
+    await this.commonPage.waitForElement(this.closeEditorButton)
     await this.closeEditorButton.click();
   }
+
 }
-  export default ReviewPage;
+export default ReviewPage;

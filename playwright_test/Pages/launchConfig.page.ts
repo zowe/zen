@@ -1,7 +1,7 @@
-import { Page,ElectronApplication, Locator,_electron as electron } from '@playwright/test';
-let electronApp: ElectronApplication
+import { Page, Locator } from '@playwright/test';
+import CommonPage from './common.page';
 
-class LaunchConfigPage{
+class LaunchConfigPage {
   page: Page;
   pageTitle: Locator;
   fillValidation: Locator;
@@ -13,17 +13,22 @@ class LaunchConfigPage{
   editor_title_element: Locator;
   licenseAgreement: Locator;
   acceptLicense: Locator;
-  skip_button:Locator;
-  view_yaml:Locator;
-  view_submit_job:Locator;
-  view_job_output:Locator;
-  save_and_close:Locator;
-  previous_step:Locator;
-  close_button:Locator;
+  skip_button: Locator;
+  view_yaml: Locator;
+  view_submit_job: Locator;
+  view_job_output: Locator;
+  save_and_close: Locator;
+  previous_step: Locator;
+  close_button: Locator;
   CONFPAGE_TITLE: Locator;
   continueToComponentInstallation: Locator;
-
-
+  click_launchConfig: Locator;
+  validation: Locator;
+  componentConfig: Locator;
+  fillConfigLaunchValue: Locator;
+  viewAndSubmitJob: Locator;
+  certificateTab_title: Locator;
+  errorMsg: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -43,10 +48,10 @@ class LaunchConfigPage{
     this.licenseAgreement = page.locator('//button[contains(text(), "License Agreement")]')
     this.acceptLicense = page.locator('//html/body/div[2]/div[3]/div/div[2]/button[1]')
     this.continueToComponentInstallation = page.locator('//button[contains(text(), "Continue to Components Installation")]')
-    this.view_yaml =  page.locator('//button[contains(text(),"View Yaml")]')
-    this.viewAndSubmitJob =  page.locator('//button[contains(text(), "Preview Job")]')
-    this.view_job_output =  page.locator('//button[contains(text(), "Submit Job")]')
-    this.save_and_close =  page.locator('//button[contains(text(),"Save & close")]')
+    this.view_yaml = page.locator('//button[contains(text(),"View Yaml")]')
+    this.viewAndSubmitJob = page.locator('//button[contains(text(), "Preview Job")]')
+    this.view_job_output = page.locator('//button[contains(text(), "Submit Job")]')
+    this.save_and_close = page.locator('//button[contains(text(),"Save & close")]')
     this.previous_step = page.locator('//button[contains(text(),"Previous step")]')
     this.skip_button = page.locator('//button[contains(text(),"Skip")]')
     this.close_button = page.locator('//button[contains(text(), "Close")]')
@@ -55,152 +60,182 @@ class LaunchConfigPage{
     this.errorMsg = page.locator('//p[text()="is a required property"]')
   }
 
-  async getLaunchConfigurationPageTitle(){
-    await this.page.waitForTimeout(1000)
+  commonPage = new CommonPage();
+
+  async getLaunchConfigurationPageTitle() {
+    await this.commonPage.waitForElement(this.pageTitle)
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
-  async movetoLaunchConfigPage(){
-   await this.licenseAgreement.click({timeout: 9000})
-   await this.acceptLicense.click({timeout: 9000})
-   await this.continueToComponentInstallation.click({timeout: 5000})
-   await this.click_launchConfig.click({timeout: 5000})
-  }
-  async returnTitleOfConfPage(){
-   const apfAuth_title = await this.CONFPAGE_TITLE.textContent();
-   return apfAuth_title;
-  }
-  async fillvalues(validation:string){
-   await this.page.fill('input[id="#/properties/configmgr/properties/validation"]', validation, { timeout: 10000 });
-  }
-  async fillvalues_logLevel(logLevel:string){
-   await this.fillLogLevel.fill(logLevel,{ timeout: 10000 })
-   }
-  async fillvaluescomponentConfig(componentConfig:string){
-    await this.fillConfigLaunchValue.fill(componentConfig,{ timeout: 10000 })
-
-  }
-  async get_validation_value(){
-  const inputLocator = await this.page.locator('input[id="#/properties/configmgr/properties/validation"]');
-  const value = await inputLocator.inputValue();
-  console.log('Input field value:', value);
-  return value;
+  async movetoLaunchConfigPage() {
+    await this.commonPage.waitForElement(this.licenseAgreement)
+    await this.licenseAgreement.click({ timeout: 9000 })
+    await this.commonPage.waitForElement(this.acceptLicense)
+    await this.acceptLicense.click({ timeout: 9000 })
+    await this.commonPage.waitForElement(this.continueToComponentInstallation)
+    await this.continueToComponentInstallation.click({ timeout: 5000 })
+    await this.commonPage.waitForElement(this.click_launchConfig)
+    await this.click_launchConfig.click({ timeout: 5000 })
   }
 
-  async get_validation_error_msg(){
-   const errorText = await this.page.locator('//p[text()="is a required property"]').textContent();
-   console.log(errorText);
-   return errorText;
+  async returnTitleOfConfPage() {
+    await this.commonPage.waitForElement(this.CONFPAGE_TITLE)
+    const apfAuth_title = await this.CONFPAGE_TITLE.textContent();
+    return apfAuth_title;
   }
 
- async get_logLevel_value(){
-   const value = await this.fillLogLevel.inputValue();
-   console.log('Input field value:', value);
-   return value;
-  }
-  async get_componentConfig_value(){
-  const value = await this.fillConfigLaunchValue.inputValue();
-   console.log('Input field value:', value);
-   return value;
+  async fillvalues(validation: string) {
+    await this.page.fill('input[id="#/properties/configmgr/properties/validation"]', validation, { timeout: 10000 });
   }
 
-  async viewYaml(){
+  async fillvalues_logLevel(logLevel: string) {
+    await this.commonPage.waitForElement(this.fillLogLevel)
+    await this.fillLogLevel.clear({ timeout: 2000 })
+    await this.fillLogLevel.fill(logLevel, { timeout: 10000 })
+  }
+
+  async fillvaluescomponentConfig(componentConfig: string) {
+    await this.commonPage.waitForElement(this.fillConfigLaunchValue)
+    await this.fillConfigLaunchValue.clear({ timeout: 2000 })
+    await this.fillConfigLaunchValue.fill(componentConfig, { timeout: 10000 })
+  }
+
+  async get_validation_value() {
+    const inputLocator = this.page.locator('input[id="#/properties/configmgr/properties/validation"]');
+    await this.commonPage.waitForElement(inputLocator)
+    const value = await inputLocator.inputValue();
+    return value;
+  }
+
+  async get_validation_error_msg() {
+    const errorText = await this.page.locator('//p[text()="is a required property"]').textContent();
+    return errorText;
+  }
+
+  async get_logLevel_value() {
+    await this.commonPage.waitForElement(this.fillLogLevel)
+    const value = await this.fillLogLevel.inputValue();
+    return value;
+  }
+
+  async get_componentConfig_value() {
+    const value = await this.fillConfigLaunchValue.inputValue();
+    return value;
+  }
+
+  async viewYaml() {
+    await this.commonPage.waitForElement(this.view_yaml)
     await this.view_yaml.click({ timeout: 5000 })
   }
-  async closeButton(){
-   this.close_button.click({ timeout: 2000 })
-  }
-  async click_viewAndSubmitJob(){
-   this.viewAndSubmitJob.click({ timeout: 2000 })
-  }
-  async click_previewJob(){
-   this.view_job_output.click({ timeout: 2000 })
-  }
-  async is_skipLaunchConfigButtonEnable(){
-   return await this.skip_button.isEnabled({ timeout: 5000 });
+
+  async closeButton() {
+    await this.commonPage.waitForElement(this.close_button)
+    this.close_button.click({ timeout: 2000 })
   }
 
-  async click_skipLaunhConfig(){
-   await this.skip_button.click({ timeout: 2000 });
-   const certificatePage_title = await this.certificateTab_title.textContent();
-   return certificatePage_title;
+  async click_viewAndSubmitJob() {
+    await this.commonPage.waitForElement(this.viewAndSubmitJob)
+    this.viewAndSubmitJob.click({ timeout: 2000 })
   }
 
-  async isPreviousButtonEnable(){
-   return await this.previous_step.isEnabled({ timeout: 50000 });
+  async click_previewJob() {
+    await this.commonPage.waitForElement(this.view_job_output)
+    this.view_job_output.click({ timeout: 2000 })
   }
 
-  async returnTitleOfPrevPage(){
-   await this.previous_step_button.click({ timeout: 2000 });
-   const certificate_title = await this.certificateTab_title.textContent();
-   return certificate_title;
+  async is_skipLaunchConfigButtonEnable() {
+    await this.commonPage.waitForElement(this.skip_button)
+    return await this.skip_button.isEnabled({ timeout: 5000 });
   }
 
-  async open_monacoEditor(){
-   this.view_yaml.click({ timeout: 5000 })
-   const editor_title = await this.editor_title_element.textContent();
-   return editor_title;
+  async click_skipLaunhConfig() {
+    await this.commonPage.waitForElement(this.skip_button)
+    await this.skip_button.click({ timeout: 2000 });
+    await this.commonPage.waitForElement(this.certificateTab_title)
+    const certificatePage_title = await this.certificateTab_title.textContent();
+    return certificatePage_title;
   }
 
-  
-  async clickContinueToReviewPage(){
-    await this.page.waitForTimeout(500)
+  async isPreviousButtonEnable() {
+    await this.commonPage.waitForElement(this.previous_step)
+    return await this.previous_step.isEnabled({ timeout: 50000 });
+  }
+
+  async returnTitleOfPrevPage() {
+    await this.commonPage.waitForElement(this.previous_step_button)
+    await this.previous_step_button.click({ timeout: 2000 });
+    await this.commonPage.waitForElement(this.certificateTab_title)
+    const certificate_title = await this.certificateTab_title.textContent();
+    return certificate_title;
+  }
+
+  async open_monacoEditor() {
+    await this.commonPage.waitForElement(this.view_yaml)
+    this.view_yaml.click({ timeout: 5000 })
+    await this.commonPage.waitForElement(this.editor_title_element)
+    const editor_title = await this.editor_title_element.textContent();
+    return editor_title;
+  }
+
+  async clickContinueToReviewPage() {
+    await this.commonPage.waitForElement(this.continueToReviewPage)
     await this.continueToReviewPage.click();
   }
 
-  async isContinueButtonDisable(){
-   return await this.continueToReviewPage.isDisabled({ timeout: 5000 });
+  async isContinueButtonDisable() {
+    await this.commonPage.waitForElement(this.continueToReviewPage)
+    return await this.continueToReviewPage.isDisabled({ timeout: 5000 });
   }
-  async click_saveAndClose(){
-   this.save_and_close.click({ timeout: 2000 })
+
+  async click_saveAndClose() {
+    await this.commonPage.waitForElement(this.save_and_close)
+    this.save_and_close.click({ timeout: 2000 })
   }
+  
   async read_yaml() {
     let previousScrollHeight = 0;
     let allText = '';
 
     while (true) {
-        // Extract text from all div.view-line elements
-        const newText = await this.page.evaluate(() => {
-            const viewLines = document.querySelectorAll('.view-lines .view-line');
-            let text = '';
-            viewLines.forEach((line) => {
-                text += line.textContent + '\n';
-            });
-            return text;
+      // Extract text from all div.view-line elements
+      const newText = await this.page.evaluate(() => {
+        const viewLines = document.querySelectorAll('.view-lines .view-line');
+        let text = '';
+        viewLines.forEach((line) => {
+          text += line.textContent + '\n';
         });
+        return text;
+      });
 
-        // Append the new text to the existing text
-        allText += newText;
-        console.log(allText)
+      // Append the new text to the existing text
+      allText += newText;
 
-        // Scroll a little to load more content
-        await this.page.evaluate(() => {
-            const editor = document.querySelector('.monaco-scrollable-element.editor-scrollable.vs');
-            editor.scrollTop += 100; // Adjust the scroll amount as needed
-        });
+      // Scroll a little to load more content
+      await this.page.evaluate(() => {
+        const editor = document.querySelector('.monaco-scrollable-element.editor-scrollable.vs');
+        editor.scrollTop += 100; // Adjust the scroll amount as needed
+      });
 
-        // Wait for a brief moment for new content to load
-        await this.page.waitForTimeout(1000); // Adjust timeout as needed
+      // Wait for a brief moment for new content to load
+      await this.page.waitForTimeout(1000); // Adjust timeout as needed
 
-        // Get the current scroll height
-        const currentScrollHeight = await this.page.evaluate(() => {
-            const editor = document.querySelector('.monaco-scrollable-element.editor-scrollable.vs');
-            return editor.scrollHeight;
-        });
+      // Get the current scroll height
+      const currentScrollHeight = await this.page.evaluate(() => {
+        const editor = document.querySelector('.monaco-scrollable-element.editor-scrollable.vs');
+        return editor.scrollHeight;
+      });
 
-        // If the scroll height hasn't changed since the last iteration, we've reached the end
-        if (currentScrollHeight === previousScrollHeight) {
-            break;
-        }
+      // If the scroll height hasn't changed since the last iteration, we've reached the end
+      if (currentScrollHeight === previousScrollHeight) {
+        break;
+      }
 
-        // Update the previous scroll height for the next iteration
-        previousScrollHeight = currentScrollHeight;
+      // Update the previous scroll height for the next iteration
+      previousScrollHeight = currentScrollHeight;
     }
 
-    console.log('All text:', allText);
     return allText;
-}
+  }
 
-
 }
- export default LaunchConfigPage;
+export default LaunchConfigPage;
