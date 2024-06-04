@@ -41,6 +41,12 @@ export class InstallActions {
       return this.strategy.initCertificates(connectionArgs, installationArgs, zoweConfig)
   }
 
+  downloadUnpax(connectionArgs: IIpcConnectionArgs,
+    installationArgs: InstallationArgs,
+    version: string, zoweConfig: any): Promise<IResponse> {
+    return this.strategy.downloadUnpax(connectionArgs, installationArgs, version, zoweConfig);
+  }
+
   runInstallation (
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,

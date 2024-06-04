@@ -21,12 +21,11 @@ import { InstallationArgs } from '../types/stateInterfaces';
 
 class Installation {
 
-  public async runInstallation (
+  public async downloadUnpax (
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,
     version: string,
     zoweConfig: any,
-    skipDownload: boolean
   ): Promise<IResponse> {
     const currentConfig: any = ConfigurationStore.getConfig();
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
@@ -39,55 +38,50 @@ class Installation {
     try {
       console.log("uploading yaml...");
       const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
-      ProgressStore.set('installation.uploadYaml', uploadYaml.status);
+      ProgressStore.set('downloadUnpax.uploadYaml', uploadYaml.status);
 
       if(!uploadYaml.status){
         return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
 
       let download, upload, unpax;
-      if(!skipDownload){
-        if(installationArgs.installationType === "download"){
-          console.log("downloading...", version);
-          download = await this.downloadPax(version);
-          ProgressStore.set('installation.download', download.status);
-        } else {
-          //if the user has selected an SMPE or opted to upload their own pax, we simply set this status to true as no download is required
-          download = {status: true, details: ''}
-          ProgressStore.set('installation.download', true);
-        }
-
-        if(!download.status){
-          return {status: false, details: `Error downloading pax: ${download.details}`};
-        }
-
-        console.log("uploading...");
-        if(installationArgs.installationType === "upload"){
-          //upload the PAX the user selected in the "Install Type" stage to the installation dir (from the planning stage)
-          console.log('Uploading user selected pax')
-          upload = await new FileTransfer().upload(connectionArgs, installationArgs.userUploadedPaxPath, path.join(installationArgs.installationDir, "zowe.pax"), DataType.BINARY)
-        } else if (installationArgs.installationType === "download"){
-          console.log('Uploading pax downloaded from jfrog')
-          upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);
-        }
-        ProgressStore.set('installation.upload', upload.status);
-
-        if(!upload.status){
-          return {status: false, details: `Error uploading pax: ${upload.details}`};
-        }
-
-        console.log("unpaxing...");
-        unpax = await this.unpax(connectionArgs, installationArgs.installationDir); 
-        ProgressStore.set('installation.unpax', unpax.status);
-
-        if(!unpax.status){
-          return {status: false, details: `Error unpaxing Zowe archive: ${unpax.details}`};
-        }
+      if(installationArgs.installationType === "download"){
+        console.log("downloading...", version);
+        download = await this.downloadPax(version);
+        ProgressStore.set('downloadUnpax.download', download.status);
       } else {
         //if the user has selected an SMPE or opted to upload their own pax, we simply set this status to true as no download is required
-        unpax = upload = download = {status: true, details: ''}
-        ProgressStore.set('installation.download', true);
+        download = {status: true, details: ''}
+        ProgressStore.set('downloadUnpax.download', true);
       }
+
+      if(!download.status){
+        return {status: false, details: `Error downloading pax: ${download.details}`};
+      }
+
+      console.log("uploading...");
+      if(installationArgs.installationType === "upload"){
+        //upload the PAX the user selected in the "Install Type" stage to the installation dir (from the planning stage)
+        console.log('Uploading user selected pax')
+        upload = await new FileTransfer().upload(connectionArgs, installationArgs.userUploadedPaxPath, path.join(installationArgs.installationDir, "zowe.pax"), DataType.BINARY)
+      } else if (installationArgs.installationType === "download"){
+        console.log('Uploading pax downloaded from jfrog')
+        upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);
+      }
+      ProgressStore.set('downloadUnpax.upload', upload.status);
+
+      if(!upload.status){
+        return {status: false, details: `Error uploading pax: ${upload.details}`};
+      }
+
+      console.log("unpaxing...");
+      unpax = await this.unpax(connectionArgs, installationArgs.installationDir); 
+      ProgressStore.set('downloadUnpax.unpax', unpax.status);
+
+      if(!unpax.status){
+        return {status: false, details: `Error unpaxing Zowe archive: ${unpax.details}`};
+      }
+    
 
       if(!download.status){
         return {status: false, details: `Error downloading pax: ${download.details}`};
@@ -100,7 +94,7 @@ class Installation {
       if (!SMPE_INSTALL) {
         console.log("unpaxing...");
         unpax = await this.unpax(connectionArgs, installationArgs.installationDir); 
-        ProgressStore.set('installation.unpax', unpax.status);
+        ProgressStore.set('downloadUnpax.unpax', unpax.status);
 
         if (!unpax.status) {
           return {status: false, details: `Error unpaxing Zowe archive: ${unpax.details}`};
@@ -109,6 +103,7 @@ class Installation {
       let yamlObj
       let zoweRuntimePath = installationArgs.installationType === "smpe" ? installationArgs.installationDir : installationArgs.installationDir + "/runtime";
       let readPaxYamlAndSchema = await this.readExampleYamlAndSchema(connectionArgs, zoweRuntimePath);
+      let parsedSchema = false, parsedYaml = false;
       if(readPaxYamlAndSchema.details.yaml){
         const parseExampleYamlFromPax = function(catPath: string){
           const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat ${catPath}\\r\\n`)
@@ -173,11 +168,14 @@ class Installation {
             }
             console.log('Setting merged yaml:', JSON.stringify(yamlObj));
             ConfigurationStore.setConfig(yamlObj);
+            ProgressStore.set('downloadUnpax.getExampleYaml', true);
           } catch(e) {
             console.log('error parsing example-zowe.yaml:', e);
+            ProgressStore.set('downloadUnpax.getExampleYaml', false);
           }
         } else {
           console.log("no yaml found from pax");
+          ProgressStore.set('downloadUnpax.getExampleYaml', false);
         }
 
         //No reason not to always set schema to latest if user is re-running installation
@@ -207,12 +205,44 @@ class Installation {
               }
               console.log('Setting schema from runtime dir:', JSON.stringify(yamlSchema));
               ConfigurationStore.setSchema(yamlSchema);
+              ProgressStore.set('downloadUnpax.getSchemas', true);
             }
           } catch (e) {
             console.log('error setting schema from pax:', e);
+            ProgressStore.set('downloadUnpax.getSchemas', false);
           }
         }
         
+      }
+
+      return {status: download.status && uploadYaml.status && upload.status && unpax.status, details: {message: 'Zowe unpax successful.', mergedYaml: yamlObj}};
+    } catch (error) {
+      return {status: false, details: error.message};
+    }
+  }
+
+  public async runInstallation (
+    connectionArgs: IIpcConnectionArgs, 
+    installationArgs: InstallationArgs,
+    version: string,
+    zoweConfig: any,
+    skipDownload: boolean
+  ): Promise<IResponse> {
+    const currentConfig: any = ConfigurationStore.getConfig();
+    const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
+    const savingResult = await this.generateYamlFile(zoweConfig);
+    if (!savingResult.status) {
+      console.log("failed to save yaml");
+      return savingResult;
+    }
+    
+    try {
+      console.log("uploading yaml...");
+      const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
+      ProgressStore.set('installation.uploadYaml', uploadYaml.status);
+
+      if(!uploadYaml.status){
+        return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
 
       let installation;
@@ -244,7 +274,7 @@ class Installation {
         return {status: false, details: `Error running zwe init mvs: ${initMvs.details}`};
       }      
 
-      return {status: download.status && uploadYaml.status && upload.status && unpax.status && installation.status && initMvs.status, details: {message: 'Zowe install successful.', mergedYaml: yamlObj}};
+      return {status: installation.status && initMvs.status, details: {message: 'Zowe install successful.'}};
     } catch (error) {
       return {status: false, details: error.message};
     }
