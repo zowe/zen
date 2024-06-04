@@ -28,13 +28,16 @@ import { alertEmitter } from "../Header";
 import { Checkbox, FormControlLabel } from "@mui/material";
 import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
-import { getStageDetails } from "../../../utils/StageDetails";
+import { getStageDetails } from "../../../services/StageDetails";
 import { getProgress, getPlanningStageStatus, setPlanningValidationDetailsState, getPlanningValidationDetailsState } from "./progress/StageProgressStatus";
-import { FALLBACK_YAML } from "../../../utils/yamlSchemaDefaults";
+import { FALLBACK_YAML } from "../common/Constants";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
 const JCL_UNIX_SCRIPT_CHARS = 55;
+
+
+// TODO: Planning stage has no schema validation. Current schema validation method relies on just existence of property (removed)
 
 const Planning = () => {
 
@@ -216,8 +219,9 @@ const Planning = () => {
         setEditorContentAndType(res.details, 'output');
         if (!res.status) { // Failure case
           dispatch(setJobStatementValidMsg(res.details));
-          console.warn('Failed to verify job statement');
-          alertEmitter.emit('showAlert', 'Failed to verify job statement', 'error');
+          console.warn('Failed to verify job statement', res.details);
+          // TODO: This more detailed reason, for why Job submission failed, may be large and should be opened in an Editor
+          alertEmitter.emit('showAlert', 'Failed to verify job statement ' + res.details, 'error');
         } else { // Success JCL case
           dispatch(setJobStatementValid(true));
           alertEmitter.emit('hideAlert');
@@ -328,6 +332,7 @@ const Planning = () => {
         setPlanningState(true);
         setStep(2);
       } else {
+        dispatch(setPlanningStatus(false));
         alertEmitter.emit('showAlert', details.error, 'error');
       }
     })
@@ -433,7 +438,7 @@ Please customize the job statement below to match your system requirements.
         ?
           <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}} >
           <Typography id="position-1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-            {`Now let's define some properties like z/OS Unix locations, identifiers, and z/OSMF details (optional).`}
+            {`Now let's define some properties like z/OS Unix locations, identifiers, and (optionally) z/OSMF details.`}
           </Typography>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <div style={{ flex: 1 }}>
@@ -617,7 +622,7 @@ Please customize the job statement below to match your system requirements.
                 id="java-home-input"
                 required
                 style={{marginLeft: 0}}
-                label="Java location"
+                label="Java Location"
                 variant="standard"
                 value={localYaml?.java?.home || installationArgs.javaHome}
                 onChange={(e) => {
@@ -638,7 +643,7 @@ Please customize the job statement below to match your system requirements.
                 id="node-home-input"
                 required
                 style={{marginLeft: 0}}
-                label="Node.js location"
+                label="Node.js Location"
                 variant="standard"
                 value={localYaml?.node?.home || installationArgs.nodeHome}
                 onChange={(e) => {

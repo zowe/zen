@@ -25,10 +25,11 @@ import React from "react";
 import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
+import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { setProgress, getProgress, setSecurityInitState, getSecurityInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
-import { FALLBACK_SCHEMA, FALLBACK_YAML } from "../../../utils/yamlSchemaDefaults";
+import { JCL_UNIX_SCRIPT_OK, FALLBACK_SCHEMA, FALLBACK_YAML } from '../common/Constants';
+import { alertEmitter } from "../Header";
 
 const Security = () => {
 
@@ -61,9 +62,8 @@ const Security = () => {
 
   const installationArgs = getInstallationArguments();
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  let timer: any;
 
-  const section = 'security';
+  let timer: any;
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -207,13 +207,45 @@ const Security = () => {
     updateProgress(false);
     event.preventDefault();
     window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
-        updateProgress(res.status);
-        clearInterval(timer);
-      }).catch((error: any) => {
-        clearInterval(timer);
+      // Some parts of Zen pass the response as a string directly into the object
+      if (res.status == false && typeof res.details == "string") {
+        res.details = { 3: res.details };
+      }
+      if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe init security
+        alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
+        window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
+          toggleEditorVisibility("output");
+        })
         updateProgress(false);
-        console.warn('zwe init security failed');
-      });
+        securityProceedActions(false);
+        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+        clearInterval(timer);
+      } else {
+        securityProceedActions(res.status);
+        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+        clearInterval(timer);
+      }
+    }).catch((err: any) => {
+      // TODO: Test this
+      //alertEmitter.emit('showAlert', err.toString(), 'error');
+      updateProgress(false);
+      clearInterval(timer);
+      securityProceedActions(false);
+      stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+      stages[STAGE_ID].isSkipped = true;
+      if (typeof err === "string") {
+        console.warn('zwe init security failed', err);
+      } else {
+        console.warn('zwe init security failed', err?.toString()); // toString() throws run-time error on undefined or null
+      }
+    });
+  }
+
+  // True - a proceed, False - blocked
+  const securityProceedActions = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setSecurityStatus(status));
+    dispatch(setInitializationStatus(status));
   }
 
   const handleFormChange = (data: any) => {
@@ -261,10 +293,10 @@ const Security = () => {
 
           <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-security-progress">
           {!showProgress ? null :
-          <React.Fragment>
-            <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={securityInitProgress.writeYaml}/>
-            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={securityInitProgress.uploadYaml}/>
-            <ProgressCard label={`Run zwe init security`} id="success-progress-card" status={securityInitProgress.success}/>
+          <React.Fragment> 
+            <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={securityInitProgress?.writeYaml}/>
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={securityInitProgress?.uploadYaml}/>
+            <ProgressCard label={`Run zwe init security`} id="success-progress-card" status={securityInitProgress?.success}/>
             <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize Security Config</Button>
           </React.Fragment>
         }

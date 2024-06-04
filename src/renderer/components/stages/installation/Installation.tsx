@@ -25,11 +25,11 @@ import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
-import { getStageDetails, getSubStageDetails } from "../../../../utils/StageDetails"; 
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK, FALLBACK_SCHEMA, FALLBACK_YAML } from '../../common/Constants';
+import { getStageDetails, getSubStageDetails } from "../../../../services/StageDetails"; 
 import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
-import { FALLBACK_SCHEMA, FALLBACK_YAML } from "../../../../utils/yamlSchemaDefaults";
-import eventDispatcher from '../../../../utils/eventDispatcher';
+import eventDispatcher from '../../../../services/eventDispatcher';
 
 const Installation = () => {
 
@@ -67,13 +67,6 @@ const Installation = () => {
   const version = useAppSelector(selectZoweVersion);
   let timer: any;
   const installationType = getInstallationTypeStatus().installationType;
-
-  const section = 'dataset';
-  // const initConfig = getConfiguration(section);
-
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -130,10 +123,10 @@ const Installation = () => {
           if (installationArgs.rbacProfile) {
             yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
           }
-          if ((yamlObj.zowe.job.name === undefined || yamlObj.zowe.job.name === '') && installationArgs.jobName) { //this undefined check is necessary because InstallationStage.jobName has a defualt, and therefore this would always overwrite the value in the config
+          if ((yamlObj.zowe.job?.name === undefined || yamlObj.zowe.job?.name === '') && installationArgs.jobName) { //this undefined check is necessary because InstallationStage.jobName has a defualt, and therefore this would always overwrite the value in the config
             yamlObj.zowe.job.name = installationArgs.jobName;
           }
-          if ((yamlObj.zowe.job.prefix === undefined || yamlObj.zowe.job.prefix === '') && installationArgs.jobPrefix) {
+          if ((yamlObj.zowe.job?.prefix === undefined || yamlObj.zowe.job?.prefix === '') && installationArgs.jobPrefix) {
             yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
           }
           if (installationArgs.cookieId) {
@@ -284,26 +277,59 @@ const Installation = () => {
     dispatch(setLoading(true));
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
-    if(installationType === 'smpe'){
-      setStageSkipStatus(false);
-      setDsInstallStageStatus(true);
+    Promise.all([
+      window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.setup.dataset', setupYaml),
+    ]).then(async () => {
       dispatch(setLoading(false));
-      setShowProgress(false);
-    } else {
-      setYaml(window.electron.ipcRenderer.getConfig());
-      setShowProgress(true);
-      dispatch(setLoading(false));
-      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
-        if(!res.status){ //errors during runInstallation()
-          alertEmitter.emit('showAlert', res.details, 'error');
-        }
-        updateProgress(true);
-        clearInterval(timer);
-      }).catch(() => {
-        clearInterval(timer);
-        updateProgress(false);
-      });
-    }
+      if(installationType === 'smpe'){
+        setStageSkipStatus(false);
+        setDsInstallStageStatus(true);
+        dispatch(setLoading(false));
+        setShowProgress(false);
+      } else {
+        setYaml(window.electron.ipcRenderer.getConfig());
+        setShowProgress(true);
+        dispatch(setLoading(false)); /* change skipDownload ?? false --> true to skip upload/download steps for quicker development */
+        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
+          // Some parts of Zen pass the response as a string directly into the object
+          if (res.status == false && typeof res.details == "string") {
+            res.details = { 3: res.details };
+          }
+          if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe install
+            alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
+            window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
+              toggleEditorVisibility("output");
+            })
+            updateProgress(false);
+            installProceedActions(false);
+            stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+            clearInterval(timer);
+          } else {
+            installProceedActions(res.status);
+            stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+            clearInterval(timer);
+          }
+        }).catch((err: any) => {
+          clearInterval(timer);
+          updateProgress(false);
+          installProceedActions(false);
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+          stages[STAGE_ID].isSkipped = true;
+          if (typeof err === "string") {
+            console.warn('Installation failed', err);
+          } else {
+            console.warn('Installation failed', err?.toString()); // toString() throws run-time error on undefined or null
+          }
+        });
+      }
+    })
+  }
+
+  // True - a proceed, False - blocked
+  const installProceedActions = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setDatasetInstallationStatus(status));
+    dispatch(setInitializationStatus(status));
   }
 
   const debouncedChange = useCallback(
@@ -346,7 +372,7 @@ const Installation = () => {
       <ContainerCard title="Installation" description="Provide installation details."> 
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
-          {installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install MVS data sets, please provide HLQ below\n`}
+        {installationType === 'smpe' ? `Please input the corresponding values used during the SMPE installation process.` : `Ready to download Zowe ${version} and deploy it to the ${installationArgs.installationDir}\nThen we will install the MVS data sets, please provide the HLQ below.\n`}
         </Typography>
 
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>

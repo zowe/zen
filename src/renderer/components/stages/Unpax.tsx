@@ -17,7 +17,7 @@ import { selectInstallationArgs, selectZoweVersion} from './installation/install
 import { selectConnectionArgs } from './connection/connectionSlice';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { setActiveStep } from "./progress/activeStepSlice"; 
-import { getStageDetails } from "../../../utils/StageDetails";
+import { getStageDetails } from "../../../services/StageDetails";
 import { setDownloadUnpaxStatus } from './progress/progressSlice';
 import { getDownloadUnpaxState, getInstallationTypeStatus, getProgress, setDownloadUnpaxState } from "./progress/StageProgressStatus";
 import React from "react";
