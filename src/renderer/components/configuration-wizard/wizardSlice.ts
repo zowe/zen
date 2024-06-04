@@ -10,6 +10,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
+import { IResponse } from '../../../types/interfaces';
 
 interface WizardState {
   loading: boolean;
@@ -39,6 +40,9 @@ export const wizardSlice = createSlice({
     },
     setYaml: (state, action: PayloadAction<any>) => {
       state.yaml = action.payload;
+      window.electron.ipcRenderer.setConfig(action.payload).then((res: IResponse) => {
+        // Response
+      });
     },
     setSchema: (state, action: PayloadAction<any>) => {
       state.schema = action.payload;

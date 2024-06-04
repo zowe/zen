@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+import { InstallationArgs } from '../types/stateInterfaces';
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { FTPInstallation, CLIInstallation } from './InstallationHandler';
 
@@ -42,7 +43,7 @@ export class InstallActions {
 
   runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string},
+    installationArgs: InstallationArgs,
     version: string, zoweConfig: any, skipDownload: boolean): Promise<IResponse> {
     return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig, skipDownload);
   }
@@ -50,6 +51,11 @@ export class InstallActions {
   initSecurity(connectionArgs: IIpcConnectionArgs,
     installationArgs: {installationDir: string, installationType: string}, zoweConfig: object): Promise<IResponse> {
     return this.strategy.initSecurity(connectionArgs, installationArgs, zoweConfig);
+  }
+
+  initVsam(connectionArgs: IIpcConnectionArgs,
+    installationArgs: {installationDir: string, installationType: string}, zoweConfig: object): Promise<IResponse> {
+    return this.strategy.initVsam(connectionArgs, installationArgs, zoweConfig);
   }
 
   apfAuth(connectionArgs: IIpcConnectionArgs,

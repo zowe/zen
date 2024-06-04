@@ -21,6 +21,8 @@ import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
+import { FALLBACK_YAML } from "../../../utils/yamlSchemaDefaults";
+import { IResponse } from "../../..//types/interfaces";
 
 const LaunchConfig = () => {
 
@@ -453,6 +455,18 @@ const LaunchConfig = () => {
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
   useEffect(() => {
+
+    if(!yaml){
+      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setYaml(res.details));
+          setLYaml(res.details);
+        } else {
+          dispatch(setYaml(FALLBACK_YAML));
+          setLYaml(FALLBACK_YAML);
+        }
+      })
+    }
     const nextPosition = document.getElementById('container-box-id');
     nextPosition.scrollIntoView({behavior: 'smooth'});
 

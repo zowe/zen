@@ -12,7 +12,7 @@ import { useState, useEffect } from "react";
 import { Box, Button, FormControl } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progress/progressSlice';
-import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml, setSchema } from '../configuration-wizard/wizardSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -28,6 +28,7 @@ import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
 import { setProgress, getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { CertInitSubStepsState } from "../../../types/stateInterfaces";
+import { FALLBACK_YAML, FALLBACK_SCHEMA  } from "../../..//utils/yamlSchemaDefaults";
 
 const Certificates = () => {
 
@@ -41,7 +42,7 @@ const Certificates = () => {
   const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
 
   const dispatch = useAppDispatch();
-  const schema = useAppSelector(selectSchema);
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const installationArgs = getInstallationArguments();
@@ -88,6 +89,29 @@ const Certificates = () => {
 
   useEffect(() => {
 
+    if(!yaml){
+      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setYaml(res.details));
+          setLYaml(res.details);
+        } else {
+          dispatch(setYaml(FALLBACK_YAML));
+          setLYaml(FALLBACK_YAML);
+        }
+      })
+    }
+
+    if(!schema){
+      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setSchema(res.details));
+        } else {
+          dispatch(setSchema(FALLBACK_SCHEMA));
+          setLocalSchema(FALLBACK_SCHEMA)
+        }
+      })
+    }
+
     if(getProgress('certificateStatus')) {
       const nextPosition = document.getElementById('start-certificate-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -125,7 +149,6 @@ const Certificates = () => {
     }
 
     if(showProgress) {
-      console.log('security: if progress');
       const nextPosition = document.getElementById('start-certificate-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -187,7 +210,7 @@ const Certificates = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details.config ?? yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
       updateProgress(res.status);
       clearInterval(timer);
       }).catch(() => {
@@ -263,7 +286,7 @@ const Certificates = () => {
       </Box>
       <ContainerCard title="Certificates" description="Configure Zowe Certificates."> 
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
-        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
           <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/>
@@ -281,7 +304,7 @@ const Certificates = () => {
           </React.Fragment>
         }
         </Box>
-        <Box sx={{ height: showProgress ? '30vh' : 'auto', minHeight: showProgress ? '30vh' : '10vh' }} id="certificate-progress"></Box>
+        <Box sx={{ height: showProgress ? '40vh' : 'auto', minHeight: showProgress ? '40vh' : '10vh' }} id="certificate-progress"></Box>
       </ContainerCard>
     </div>
   );

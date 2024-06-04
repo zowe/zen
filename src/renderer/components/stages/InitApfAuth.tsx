@@ -11,7 +11,7 @@
 import React, {useEffect, useState} from "react";
 import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled, setLoading } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setLoading, setYaml, setSchema } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { setApfAuthStatus, setInitializationStatus, selectApfAuthStatus, selectInitializationStatus } from './progress/progressSlice';
 import { IResponse } from '../../../types/interfaces';
@@ -26,6 +26,7 @@ import { setActiveStep, selectActiveStepIndex, selectActiveSubStepIndex, selectI
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
 import { setProgress, getProgress, setApfAuthState, getApfAuthState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
+import { FALLBACK_SCHEMA, FALLBACK_YAML } from "../../../utils/yamlSchemaDefaults";
 
 const InitApfAuth = () => {
 
@@ -45,8 +46,8 @@ const InitApfAuth = () => {
   const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
 
   const dispatch = useAppDispatch();
-  const schema = useAppSelector(selectSchema);
-  const yaml = useAppSelector(selectYaml);
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
@@ -82,6 +83,29 @@ const InitApfAuth = () => {
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
   useEffect(() => {
+    if(!yaml){
+      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setYaml(res.details));
+          setLYaml(res.details);
+        } else {
+          dispatch(setYaml(FALLBACK_YAML));
+          setLYaml(FALLBACK_YAML);
+        }
+      })
+    }
+
+    if(!schema){
+      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setSchema(res.details));
+        } else {
+          dispatch(setSchema(FALLBACK_SCHEMA));
+          setLocalSchema(FALLBACK_SCHEMA);
+        }
+      })
+    }
+
     let nextPosition;
     if(getProgress('apfAuthStatus')) {
       nextPosition = document.getElementById('start-apf-progress');
@@ -292,7 +316,7 @@ const InitApfAuth = () => {
           </React.Fragment>
         }
         </Box>
-        <Box sx={{ height: showProgress ? '55vh' : 'auto', minHeight: '30vh' }} id="apf-progress"></Box>
+        <Box sx={{ height: showProgress ? '60vh' : 'auto', minHeight: '60vh' }} id="apf-progress"></Box>
       </ContainerCard>
     </div>
     
