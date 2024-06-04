@@ -18,10 +18,8 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/progress/progressSlice';
-import { useAppSelector, useAppDispatch } from '../../hooks';
+import { useAppSelector } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, selectReviewStatus } from '../stages/progress/progressSlice';
-import { selectInstallationTypeStatus } from '../stages/progress/progressSlice';
 import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progress/activeStepSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
@@ -29,12 +27,11 @@ import savedInstall from '../../assets/saved-install-green.png';
 import eventDispatcher from '../../../utils/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import Home from '../Home';
 import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus } from '../stages/progress/StageProgressStatus';
 
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
-import { stages } from '../configuration-wizard/Wizard';
+import { getStageDetails } from '../../../utils/StageDetails';
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
 
@@ -42,8 +39,8 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const connectionStatus = useSelector(selectConnectionStatus);
 
-  const INIT_STAGE_ID = 3;
-  const REVIEW_STAGE_ID = 4;
+  const INIT_STAGE_ID = getStageDetails('Initialization').id;;
+  const REVIEW_STAGE_ID = getStageDetails('Review Installation').id;
 
   const completeProgress = getCompleteProgress();
 
@@ -51,6 +48,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     useSelector(selectConnectionStatus),
     completeProgress.planningStatus,
     completeProgress.installationTypeStatus,
+    completeProgress.downloadUnpaxStatus,
     completeProgress.initializationStatus,
     completeProgress.reviewStatus
   ];
@@ -125,8 +123,10 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const handleSkip = () => {
     stages[activeStep].isSkipped = true;
-    stages[activeStep].subStages[activeSubStep].isSkipped = true;
-    mapAndSetSkipStatus(activeSubStep, true);
+    if(stages[activeStep].subStages){
+      stages[activeStep].subStages[activeSubStep].isSkipped = true;
+      mapAndSetSkipStatus(activeSubStep, true);
+    }
     handleNext();
   }
 
