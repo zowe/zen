@@ -163,6 +163,11 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('download-unpax', async (event, connectionArgs, installationArgs, version, zoweConfig) => {
+    const res = await installActions.downloadUnpax(connectionArgs, installationArgs, version, zoweConfig);
+    return res;
+  });
+
   ipcMain.handle('init-certificates', async (event, connectionArgs, installationArgs, zoweConfig) => {
     const res = await installActions.runInitCertificates(connectionArgs, installationArgs, zoweConfig);
     return res;
@@ -182,6 +187,11 @@ const createWindow = (): void => {
 
   ipcMain.handle('get-installation-progress', async () => {
     const res = ProgressStore.getAll()['installation'];
+    return res;
+  });
+
+  ipcMain.handle('get-download-unpax-progress', async () => {
+    const res = ProgressStore.getAll()['downloadUnpax'];
     return res;
   });
 
