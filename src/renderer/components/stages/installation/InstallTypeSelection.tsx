@@ -19,7 +19,7 @@ import { selectConnectionArgs } from '../connection/connectionSlice';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
-import { getStageDetails } from "../../../../utils/StageDetails";
+import { getStageDetails } from "../../../../services/StageDetails";
 import { getInstallationTypeStatus } from "../progress/StageProgressStatus";
 import { connect } from "http2";
 

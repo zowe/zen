@@ -21,12 +21,13 @@ import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { selectInstallationArgs } from "./installation/installationSlice";
 import { createTheme } from '@mui/material/styles';
+import { alertEmitter } from "../Header";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep, selectActiveStepIndex, selectActiveSubStepIndex, selectIsSubstep } from "./progress/activeStepSlice";
-import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
+import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { setProgress, getProgress, setApfAuthState, getApfAuthState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
-import { FALLBACK_SCHEMA, FALLBACK_YAML } from "../../../utils/yamlSchemaDefaults";
+import { JCL_UNIX_SCRIPT_OK, FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
 
 const InitApfAuth = () => {
 
@@ -41,15 +42,10 @@ const InitApfAuth = () => {
 
   const theme = createTheme();
 
-  const activeStep = useAppSelector(selectActiveStepIndex);
-  const isSubStep = useAppSelector(selectIsSubstep);
-  const activeSubStepIndex = useAppSelector(selectActiveSubStepIndex);
-
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('apfAuthStatus'));
   const [init, setInit] = useState(false);
@@ -64,8 +60,6 @@ const InitApfAuth = () => {
 
   const installationArgs = getInstallationArguments();
   let timer: any;
-
-  const section = 'dataset';
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -211,17 +205,50 @@ const InitApfAuth = () => {
     updateProgress(false);
     event.preventDefault();
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
-        updateProgress(res.status);
+         // Some parts of Zen pass the response as a string directly into the object
+         if (res.status == false && typeof res.details == "string") {
+          res.details = { 3: res.details };
+        }
+        if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe init apfAuth
+          alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
+          window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
+            toggleEditorVisibility("output");
+          })
+          updateProgress(false); //res.status may not necessarily be false, even if things go wrong
+          apfAuthProceedActions(false);
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+          clearInterval(timer);
+        } else {
+          updateProgress(res.status);
+          apfAuthProceedActions(res.status);
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+          clearInterval(timer);
+        }
+      }).catch((err: any) => {
         clearInterval(timer);
-      }).catch(() => {
-        clearInterval(timer);
+        apfAuthProceedActions(false);
         updateProgress(false);
-        console.warn('zwe init apfauth failed');
+        // TODO: Test this
+        //alertEmitter.emit('showAlert', err.toString(), 'error');
+        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+        stages[STAGE_ID].isSkipped = true;
+        if (typeof err === "string") {
+          console.warn('zwe init apfauth failed', err);
+        } else {
+          console.warn('zwe init apfauth failed', err?.toString()); // toString() throws run-time error on undefined or null
+        }
       });
   }
 
+  // True - a proceed, False - blocked
+  const apfAuthProceedActions = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setApfAuthStatus(status));
+    dispatch(setInitializationStatus(status));
+  }
+
   const formChangeHandler = (data: any, isYamlUpdated?: boolean) => {
-    let updatedData = init ? (Object.keys(yaml?.zowe.setup.dataset).length > 0 ? yaml?.zowe.setup.dataset : data) : (data ? data : yaml?.zowe.setup.datasetg);
+    let updatedData = init ? (Object.keys(yaml?.zowe.setup.dataset).length > 0 ? yaml?.zowe.setup.dataset : data) : (data ? data : yaml?.zowe.setup.dataset);
     
     setInit(false);
 
@@ -266,7 +293,7 @@ const InitApfAuth = () => {
       <ContainerCard title="APF Authorize Load Libraries" description="Run the `zwe init apfauth` command to APF authorize load libraries.">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={formChangeHandler}/>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', marginBottom: '50px', color: 'text.secondary', fontSize: '13px' }}>
-          {`Please review the following dataset setup configuration values before pressing run.\n`}
+        {`Please review the following dataset setup configuration values before pressing run. If you need to make changes, go back to the previous step.\n`}
         </Typography>
         <Box sx={{ width: '60vw' }}>
             <TextField
@@ -308,10 +335,10 @@ const InitApfAuth = () => {
         </FormControl> : null}
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-apf-progress">
         {!showProgress ? null :
-          <React.Fragment>
-            <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfAuthInitProgress.writeYaml}/>
-            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={apfAuthInitProgress.uploadYaml}/>
-            <ProgressCard label={`Run zwe init apfauth command`} id="upload-progress-card" status={apfAuthInitProgress.success}/>
+          <React.Fragment> 
+            <ProgressCard label="Write configuration file locally to temp directory" id="download-progress-card" status={apfAuthInitProgress?.writeYaml}/>
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={apfAuthInitProgress?.uploadYaml}/>
+            <ProgressCard label={`Run zwe init apfauth command`} id="upload-progress-card" status={apfAuthInitProgress?.success}/>
             <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize APF Authorizations</Button>
           </React.Fragment>
         }

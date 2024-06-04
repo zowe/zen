@@ -24,7 +24,7 @@ import React from "react";
 import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
+import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { setProgress, getProgress, setVsamInitState, mapAndSetSkipStatus, getInstallationArguments, getVsamInitState } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
@@ -332,10 +332,10 @@ const Vsam = () => {
 
           <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-vsam-progress">
             {!showProgress ? null :
-            <React.Fragment>
-              <ProgressCard label={`Write configuration file locally to temp directory`} id="init-vsam-progress-card" status={vsamInitProgress.writeYaml}/>
-              <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={vsamInitProgress.uploadYaml}/>
-              <ProgressCard label={`Run zwe init vsam`} id="success-progress-card" status={vsamInitProgress.success}/>
+            <React.Fragment> 
+              <ProgressCard label={`Write configuration file locally to temp directory`} id="init-vsam-progress-card" status={vsamInitProgress?.writeYaml}/>
+              <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={vsamInitProgress?.uploadYaml}/>
+              <ProgressCard label={`Run zwe init vsam`} id="success-progress-card" status={vsamInitProgress?.success}/>
               <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!isDsNameValid} onClick={e => reinitialize(e)}>Reinitialize Vsam Config</Button>
             </React.Fragment>
             }

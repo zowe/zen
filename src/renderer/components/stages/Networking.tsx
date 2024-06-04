@@ -16,12 +16,12 @@ import ContainerCard from '../common/ContainerCard';
 import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
-import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
+import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
+import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
-import { FALLBACK_SCHEMA, FALLBACK_YAML } from "../../../utils/yamlSchemaDefaults";
 
 function PatternPropertiesForm(props: any){
   const [elements, setElements] = useState([]);
@@ -634,9 +634,7 @@ const Networking = () => {
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
 
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
+
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");

@@ -13,6 +13,8 @@ import Header from "../renderer/components/Header"
 import { AlertColor } from "@mui/material/Alert";
 import zos from 'zos-node-accessor';
 
+// Note: This file is not usable by the Renderer
+
 export const JCL_UNIX_SCRIPT_CHARS = 70;
 
 export const JCL_JOBNAME_DEFAULT = "ZENJOB";
@@ -34,6 +36,7 @@ export async function checkDirExists(config: IIpcConnectionArgs, dir: string): P
     const list = await client.listDataset(dir);
     return !!list;
   } catch (error) {
+    console.warn(error);
     return false;
   } finally {
     client.close();
