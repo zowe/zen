@@ -13,13 +13,8 @@ import { DefaultStore } from './DefaultStore';
 
 // TODO: Store overall progress and restore up to last successful step
 
-<<<<<<< HEAD
-const storeDefault = {
-  "downloadUnpax": {
-=======
 const STORE_DEFAULT = {
-  "installation": {
->>>>>>> origin/v2.x/staging
+  "downloadUnpax": {
     "uploadYaml": false,
     "download": false,
     "upload": false,
