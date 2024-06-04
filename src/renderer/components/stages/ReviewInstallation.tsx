@@ -20,7 +20,7 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import eventDispatcher from '../../../utils/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
-import { selectConnectionStatus, selectPlanningStatus, selectInstallationTypeStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, setReviewStatus } from './progress/progressSlice';
+import { selectConnectionStatus, setReviewStatus } from './progress/progressSlice';
 import { setActiveStep } from './progress/activeStepSlice';
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
@@ -51,6 +51,7 @@ const ReviewInstallation = () => {
     completeProgress.planningStatus,
     completeProgress.installationTypeStatus,
     completeProgress.initializationStatus,
+    completeProgress.downloadUnpaxStatus
   ];
   
   const subStageProgressStatus = [
