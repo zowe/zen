@@ -46,8 +46,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
 
   useEffect(() => {
     setEditorVisible(isEditorVisible);
-    /* TODO: 1. All of these should use the Editor store (from ipcRenderer)
-    2. Should use an array for the Store to house separate outputs (Security vs Certificates for example) */
+    /* TODO: Should use an array for the Store to house separate outputs (Security vs Certificates for example) */
     if(isEditorVisible) { 
        if(contentType == 'yaml') {
         setEditorContent(stringify(setupYaml));
@@ -138,10 +137,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
   };
 
   const handleClose = () => {
-    // Add your new functionality here
     alertEmitter.emit('hideAlert');
-  
-    // Call the existing toggleEditorVisibility method
     toggleEditorVisibility();
   };
 
