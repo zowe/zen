@@ -195,7 +195,7 @@ const Installation = () => {
     setShowProgress(installationType!=='smpe' && (initClicked || getProgress('datasetInstallationStatus')));
 
     if(initClicked) {
-      const nextPosition = document.getElementById('start-installation-progress');
+      const nextPosition = document.getElementById('installation-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
       setStateUpdated(!stateUpdated);
       dispatch(setDatasetInstallationStatus(false));
@@ -394,7 +394,7 @@ const Installation = () => {
         }
         </Box>
         <Box sx={{ height: '0', minHeight: '0' }} id="save-installation-progress"></Box>
-        <Box sx={{ height: showProgress ? '55vh' : 'auto', minHeight: '55vh' }} id="installation-progress"></Box>
+        <Box sx={{ height: showProgress ? '20vh' : 'auto', minHeight: '55vh' }} id="installation-progress"></Box>
       </ContainerCard>
     </div>
   );
