@@ -294,7 +294,7 @@ const Installation = () => {
         setYaml(window.electron.ipcRenderer.getConfig());
         setShowProgress(true);
         dispatch(setLoading(false)); /* change skipDownload ?? false --> true to skip upload/download steps for quicker development */
-        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, true).then((res: IResponse) => {
+        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
           if(res.details?.mergedYaml != undefined){
             dispatch(setYaml(res.details.mergedYaml));
             window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
