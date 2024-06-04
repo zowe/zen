@@ -43,9 +43,6 @@ const Installation = () => {
   const theme = createTheme();
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
-
-  const stageId = 3;
-  const subStageId = 0;
   const dispatch = useAppDispatch();
   // this schema will be used in the case where the user, for some reason, clicks "skip installation" without downloading or uploading a Zowe pax
   // Maybe we shouldnt allow the user to skip the installation stage??
@@ -205,7 +202,7 @@ const Installation = () => {
     setShowProgress(installationType!=='smpe' && (initClicked || getProgress('datasetInstallationStatus')));
 
     if(initClicked) {
-      const nextPosition = document.getElementById('installation-progress');
+      const nextPosition = document.getElementById('start-installation-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
       setStateUpdated(!stateUpdated);
       dispatch(setDatasetInstallationStatus(false));
@@ -246,9 +243,9 @@ const Installation = () => {
   }
 
   const setStageSkipStatus = (status: boolean) => {
-    stages[stageId].subStages[subStageId].isSkipped = status;
-    stages[stageId].isSkipped = status;
-    mapAndSetSkipStatus(subStageId, status);
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = status;
+    mapAndSetSkipStatus(SUB_STAGE_ID, status);
   }
 
   const setDsInstallStageStatus = (status: boolean) => {
@@ -296,13 +293,9 @@ const Installation = () => {
       setYaml(window.electron.ipcRenderer.getConfig());
       setShowProgress(true);
       dispatch(setLoading(false));
-      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
+      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, true).then((res: IResponse) => {
         if(!res.status){ //errors during runInstallation()
           alertEmitter.emit('showAlert', res.details, 'error');
-        }
-        if(res.details?.mergedYaml != undefined){
-          dispatch(setYaml(res.details.mergedYaml));
-          window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
         }
         updateProgress(true);
         clearInterval(timer);
@@ -368,9 +361,6 @@ const Installation = () => {
         {!showProgress ? null :
           <React.Fragment>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={mvsDatasetInitProgress.uploadYaml}/>
-            <ProgressCard label="Download convenience build pax locally" id="download-progress-card" status={mvsDatasetInitProgress.download}/>
-            <ProgressCard label={`Upload pax file to ${installationArgs.installationDir}`} id="upload-progress-card" status={mvsDatasetInitProgress.upload}/>
-            <ProgressCard label="Unpax installation files" id="unpax-progress-card" status={mvsDatasetInitProgress.unpax}/>
             <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={mvsDatasetInitProgress.install}/>
             <ProgressCard label="Run MVS dataset initialization script (zwe init mvs)" id="install-progress-card" status={mvsDatasetInitProgress.initMVS}/>
             <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationType === 'smpe' ? 'Save' : 'Reinstall MVS datasets'}</Button>

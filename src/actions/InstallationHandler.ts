@@ -226,7 +226,6 @@ class Installation {
     installationArgs: InstallationArgs,
     version: string,
     zoweConfig: any,
-    skipDownload: boolean
   ): Promise<IResponse> {
     const currentConfig: any = ConfigurationStore.getConfig();
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";

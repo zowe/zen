@@ -50,8 +50,8 @@ export class InstallActions {
   runInstallation (
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,
-    version: string, zoweConfig: any, skipDownload: boolean): Promise<IResponse> {
-    return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig, skipDownload);
+    version: string, zoweConfig: any ): Promise<IResponse> {
+    return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
   }
 
   initSecurity(connectionArgs: IIpcConnectionArgs,
