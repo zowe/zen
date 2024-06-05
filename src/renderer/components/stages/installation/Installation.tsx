@@ -350,7 +350,7 @@ const Installation = () => {
       } else {
         const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}};
         setLYaml(newYaml);
-        await window.electron.ipcRenderer.setConfig(newYaml)
+        window.electron.ipcRenderer.setConfig(newYaml)
         setStageConfig(true, '', updatedData);
       }
     }
