@@ -166,15 +166,6 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
       return;
     }
 
-    // To not access the stage if any previous stage is not completed
-    for (let i = 0; i < newActiveStep; i++) {
-      const statusAtIndex = stageProgressStatus[i];
-      // We can access 'Review Installation' if Initialization in not completed since it can be skipped
-      if (!statusAtIndex && !(newActiveStep == REVIEW_STAGE_ID && i == INIT_STAGE_ID)) {
-        return;
-      }
-    }
-
     setActiveStep(newActiveStep);
     const newSubStep = isSubStep ? subStepIndex : 0;
     if((subStepIndex > 0 && subStageProgressStatus[0] === true) || subStepIndex === 0){ //only allow substages after installation to be navigated to if init mvs has been completed
