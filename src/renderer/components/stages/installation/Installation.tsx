@@ -87,7 +87,7 @@ const Installation = () => {
         const nextPosition = document.getElementById('start-installation-progress');
         nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
-        const nextPosition = document.getElementById('save-installation-progress');
+        const nextPosition = document.getElementById('start-installation-progress');
         nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'start' });
       }
     } else {
@@ -261,12 +261,11 @@ const Installation = () => {
 
   const process = (event: any) => {
 
-    if(!(installationType === 'smpe')) {
-      setInitClicked(true);
-      updateProgress(false);
-    }
+    setInitClicked(true);
+    updateProgress(false);
     event.preventDefault();
     dispatch(setLoading(true));
+    setMvsDatasetInitProgress(datasetInstallationStatus)
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
     Promise.all([
@@ -275,7 +274,6 @@ const Installation = () => {
       dispatch(setLoading(false));
       setYaml(window.electron.ipcRenderer.getConfig());
       setShowProgress(true);
-      setMvsDatasetInitProgress(datasetInstallationStatus)
       dispatch(setLoading(false)); /* change skipDownload ?? false --> true to skip upload/download steps for quicker development */
       window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
         // Some parts of Zen pass the response as a string directly into the object
