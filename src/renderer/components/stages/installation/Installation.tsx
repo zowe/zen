@@ -176,6 +176,8 @@ const Installation = () => {
         dispatch(setSchema(FALLBACK_SCHEMA));
       }
     })
+
+    dispatch(setNextStepEnabled(getProgress('datasetInstallationStatus')));
     
     if(installationType === 'smpe') {
       const status = getProgress('datasetInstallationStatus');
@@ -211,10 +213,12 @@ const Installation = () => {
   }, [mvsDatasetInitProgress]);
 
   useEffect(() => {
+    const stageComplete = mvsDatasetInitProgress.uploadYaml && mvsDatasetInitProgress.initMVS && mvsDatasetInitProgress.install;
     if(!getProgress('datasetInstallationStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
           setMvsDatasetInitializationProgress(res);
+          setDatasetInstallationStatus(res)
         })
       }, 3000);
     }
@@ -280,47 +284,42 @@ const Installation = () => {
       window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.setup.dataset', setupYaml),
     ]).then(async () => {
       dispatch(setLoading(false));
-      if(installationType === 'smpe'){
-        setStageSkipStatus(false);
-        setDsInstallStageStatus(true);
-        dispatch(setLoading(false));
-        setShowProgress(false);
-      } else {
-        setYaml(window.electron.ipcRenderer.getConfig());
-        setShowProgress(true);
-        dispatch(setLoading(false)); /* change skipDownload ?? false --> true to skip upload/download steps for quicker development */
-        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
-          // Some parts of Zen pass the response as a string directly into the object
-          if (res.status == false && typeof res.details == "string") {
-            res.details = { 3: res.details };
-          }
-          if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe install
-            alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
-            window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
-              toggleEditorVisibility("output");
-            })
-            updateProgress(false);
-            installProceedActions(false);
-            stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-            clearInterval(timer);
-          } else {
-            installProceedActions(res.status);
-            stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
-            clearInterval(timer);
-          }
-        }).catch((err: any) => {
-          clearInterval(timer);
+      setYaml(window.electron.ipcRenderer.getConfig());
+      setShowProgress(true);
+      dispatch(setLoading(false)); /* change skipDownload ?? false --> true to skip upload/download steps for quicker development */
+      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
+        // Some parts of Zen pass the response as a string directly into the object
+        if (res.status == false && typeof res.details == "string") {
+          res.details = { 3: res.details };
+        }
+        if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe install
+          alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
+          window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
+            toggleEditorVisibility("output");
+          })
           updateProgress(false);
           installProceedActions(false);
           stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-          stages[STAGE_ID].isSkipped = true;
-          if (typeof err === "string") {
-            console.warn('Installation failed', err);
-          } else {
-            console.warn('Installation failed', err?.toString()); // toString() throws run-time error on undefined or null
-          }
-        });
-      }
+          clearInterval(timer);
+        } else {
+          installProceedActions(res.status);
+          updateProgress(true)
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+          clearInterval(timer);
+        }
+      }).catch((err: any) => {
+        clearInterval(timer);
+        updateProgress(false);
+        installProceedActions(false);
+        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+        stages[STAGE_ID].isSkipped = true;
+        if (typeof err === "string") {
+          console.warn('Installation failed', err);
+        } else {
+          console.warn('Installation failed', err?.toString()); // toString() throws run-time error on undefined or null
+        }
+      });
+      
     })
   }
 
@@ -380,7 +379,7 @@ const Installation = () => {
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationType === 'smpe' ? 'Save' : 'Install MVS datasets'}</Button>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{'Install MVS datasets'}</Button>
           {/* <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e, true)}>{installationType === 'smpe' ? 'Save' : 'SKIP DOWNLOAD and Install MVS datasets'}</Button> */}
         </FormControl> : null}
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : '0'}} id="start-installation-progress">
@@ -389,7 +388,7 @@ const Installation = () => {
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={mvsDatasetInitProgress.uploadYaml}/>
             <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={mvsDatasetInitProgress.install}/>
             <ProgressCard label="Run MVS dataset initialization script (zwe init mvs)" id="install-progress-card" status={mvsDatasetInitProgress.initMVS}/>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationType === 'smpe' ? 'Save' : 'Reinstall MVS datasets'}</Button>
+            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{'Reinstall MVS datasets'}</Button>
           </React.Fragment>
         }
         </Box>
