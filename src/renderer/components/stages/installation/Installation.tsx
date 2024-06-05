@@ -247,6 +247,7 @@ const Installation = () => {
 
   const setDsInstallStageStatus = (status: boolean) => {
     dispatch(setNextStepEnabled(status));
+    dispatch(setNextStepEnabled(true));
     dispatch(setInitializationStatus(status));
     dispatch(setDatasetInstallationStatus(status));
   }
@@ -336,6 +337,7 @@ const Installation = () => {
   // True - a proceed, False - blocked
   const installProceedActions = (status: boolean) => {
     dispatch(setNextStepEnabled(status));
+    dispatch(setNextStepEnabled(true));
     dispatch(setDatasetInstallationStatus(status));
     dispatch(setInitializationStatus(status));
   }
