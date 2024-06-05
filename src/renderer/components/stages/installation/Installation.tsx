@@ -182,9 +182,7 @@ const Installation = () => {
     if(installationType === 'smpe') {
       const status = getProgress('datasetInstallationStatus');
       setStageSkipStatus(!status);
-      setDsInstallStageStatus(status);
-    } else {
-      updateProgress(getProgress('datasetInstallationStatus'));
+      installProceedActions(status);
     }
 
     return () => {
@@ -199,7 +197,6 @@ const Installation = () => {
       const nextPosition = document.getElementById('installation-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
       setStateUpdated(!stateUpdated);
-      dispatch(setDatasetInstallationStatus(false));
     }
   }, [initClicked]);
 
@@ -218,7 +215,7 @@ const Installation = () => {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
           setMvsDatasetInitializationProgress(res);
-          setDatasetInstallationStatus(res)
+          dispatch(setDatasetInstallationStatus(stageComplete))
         })
       }, 3000);
     }
@@ -243,13 +240,6 @@ const Installation = () => {
     stages[STAGE_ID].isSkipped = status;
     mapAndSetSkipStatus(SUB_STAGE_ID, status);
   }
-
-  const setDsInstallStageStatus = (status: boolean) => {
-    dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(status));
-    dispatch(setDatasetInstallationStatus(status));
-  }
-
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
     setStageSkipStatus(!status);
@@ -261,8 +251,8 @@ const Installation = () => {
     }
     const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    setDsInstallStageStatus(status);
-    setMvsDatasetInitializationProgress(getDatasetInstallationState());
+    installProceedActions(status);
+    // setMvsDatasetInitializationProgress(getDatasetInstallationState());
   }
 
   const toggleEditorVisibility = (type: any) => {
@@ -302,8 +292,7 @@ const Installation = () => {
           stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
           clearInterval(timer);
         } else {
-          installProceedActions(res.status);
-          updateProgress(true)
+          updateProgress(res.status)
           stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
           clearInterval(timer);
         }
