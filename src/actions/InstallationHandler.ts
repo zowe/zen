@@ -119,10 +119,10 @@ class Installation {
           try {
             yamlObj = parse(yamlFromPax);
             if (currentConfig) {
-              console.log("current config:", JSON.stringify(currentConfig));
+              // console.log("current config:", JSON.stringify(currentConfig));
               // console.log("yamlObj: ", JSON.stringify(yamlObj));
               yamlObj = {...currentConfig, ...yamlObj}
-              console.log("merged yamlObj: ", JSON.stringify(yamlObj));
+              // console.log("merged yamlObj: ", JSON.stringify(yamlObj));
             }
             if (yamlObj.zowe.runtimeDirectory === undefined && installationArgs.installationDir) {
               yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
@@ -203,7 +203,7 @@ class Installation {
                 delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
                 yamlSchema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverCommon.$defs.ipv4
               }
-              console.log('Setting schema from runtime dir:', JSON.stringify(yamlSchema));
+              // console.log('Setting schema from runtime dir:', JSON.stringify(yamlSchema));
               ConfigurationStore.setSchema(yamlSchema);
               ProgressStore.set('downloadUnpax.getSchemas', true);
             }
