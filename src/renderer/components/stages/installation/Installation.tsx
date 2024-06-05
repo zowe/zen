@@ -159,7 +159,6 @@ const Installation = () => {
           // console.log('got config:', JSON.stringify(res.details));
           let yamlObj = mergeInstallationArgsAndYaml(res.details);
           if(res.details.zowe?.setup?.dataset === undefined){
-            // console.log('setting yaml:',{...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} });
             dispatch(setYaml({...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} }));
           } else {
             dispatch(setYaml(yamlObj));
@@ -350,6 +349,7 @@ const Installation = () => {
         setStageConfig(false, errPath+' '+errMsg, updatedData);
       } else {
         const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}};
+        setLYaml(newYaml);
         await window.electron.ipcRenderer.setConfig(newYaml)
         setStageConfig(true, '', updatedData);
       }
