@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Box, Button, FormControl } from '@mui/material';
+import { Box, Button, FormControl, FormHelperText, MenuItem, Select } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progress/progressSlice';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml, setSchema } from '../configuration-wizard/wizardSlice';
@@ -46,10 +46,10 @@ const Certificates = () => {
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const installationArgs = getInstallationArguments();
-  const setupSchema = schema ? schema.properties.zowe.properties.setup.properties.certificate : "";
+  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
   const verifyCertsSchema = schema ? {"type": "object", "properties": {"verifyCertificates": schema.properties.zowe.properties.verifyCertificates}} : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
-  const [verifyCertsYaml, setVerifyCertsYaml] = useState({verifyCertificates: yaml?.zowe?.verifyCertificates})
+  const [verifyCerts, setVerifyCerts] = useState(yaml?.zowe?.verifyCertificates ?? "STRICT");
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [showProgress, setShowProgress] = useState(getProgress('certificateStatus'));
@@ -200,18 +200,18 @@ const Certificates = () => {
     process(event);
   }
 
-  const process = async(event: any) => {
+  const process = (event: any) => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
       updateProgress(res.status);
       clearInterval(timer);
-      }).catch(() => {
-        clearInterval(timer);
-        updateProgress(false);
-        console.warn('zwe init certificate failed');
-      });
+    }).catch(() => {
+      clearInterval(timer);
+      updateProgress(false);
+      console.warn('zwe init certificate failed');
+    });
   }
 
   const toggleEditorVisibility = (type: any) => {
@@ -219,8 +219,11 @@ const Certificates = () => {
     setEditorVisible(!editorVisible);
   };
   
-  const handleFormChange = (data: any, isYamlUpdated?: boolean) => {
-    const newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe.setup.certificate) : (data.zowe?.setup?.certificate ? data.zowe.setup.certificate : data);
+  const handleFormChange = (data: any) => {
+    if(data?.zowe?.verifyCertificates){
+      setVerifyCerts(data.zowe.verifyCertificates);
+    }
+    let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data?.zowe?.setup?.certificate) : (data?.zowe?.setup?.certificate ? data?.zowe?.setup?.certificate : data);
     setIsFormInit(false);
 
     if (newData) {
@@ -231,39 +234,14 @@ const Certificates = () => {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData);
-          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml?.zowe, setup: {...yaml?.zowe?.setup, certificate: newData}}});
         } else {
-          // setConfiguration(section, newData, true);
-          setLYaml((prevYaml: any) => ({
-            ...prevYaml, zowe: {...yaml?.zowe, setup: {...yaml?.zowe?.setup, certificate: newData}}
-          }))
-          // dispatch(setYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}}))
-          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml?.zowe, setup: {...yaml?.zowe?.setup, certificate: newData}}});
+          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
           setStageConfig(true, '', newData);
         }
       }
     }
   };
 
-  const handleVerifyCertsChange = (e: any) => {
-    if(e.verifyCertificates){
-      if(validateVerifyCertSchema){
-        validateVerifyCertSchema(e);
-        if(validateVerifyCertSchema.errors) {
-          const errPath = validateVerifyCertSchema.errors[0].schemaPath;
-          const errMsg = validateVerifyCertSchema.errors[0].message;
-          setIsFormValid(false);
-          setFormError(errPath+' '+errMsg);
-          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.verifyCertificates}})
-          dispatch(setNextStepEnabled(false));
-        } else {
-          setVerifyCertsYaml({'verifyCertificates': e.verifyCertificates});
-          setIsFormValid(true);
-          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.verifyCertificates}})
-        }
-      }
-    }
-  }
 
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
@@ -283,7 +261,31 @@ const Certificates = () => {
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
-          <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/>
+          {/* <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/> */}
+          <p style={{fontSize: "24px"}}>Verify Certificates</p>
+          <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={verifyCerts}
+              onChange={(e) => {
+                window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value}});
+                setVerifyCerts(e.target.value);
+              }}
+            >
+              {schema?.properties?.zowe?.properties?.verifyCertificates.enum && schema?.properties?.zowe?.properties?.verifyCertificates.enum.map((option: any, index: any) => {
+                return <MenuItem value={option} key={`menu-item-${index}`}>{option}</MenuItem>
+              })
+              }
+              {/* Fallback menu items which should never be reached */}
+              {(schema?.properties?.zowe?.properties?.verifyCertificates.enum === undefined || schema?.properties?.zowe?.properties?.verifyCertificates.enum.length === 0) &&
+                <><MenuItem value={"STRICT"}>STRICT</MenuItem>
+                <MenuItem value={"NONSTRICT"}>NONSTRICT</MenuItem>
+                <MenuItem value={"DISABLED"}>DISABLED</MenuItem></>
+              }
+            </Select>
+            <FormHelperText>{schema?.properties?.zowe?.properties?.verifyCertificates.description}</FormHelperText>
+          </FormControl>
           {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Zowe Certificates</Button>
           </FormControl> : null}
