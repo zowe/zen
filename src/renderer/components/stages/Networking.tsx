@@ -739,7 +739,6 @@ const Networking = () => {
           {yaml.zowe.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box key={`box-` + index} sx={{display: "flex", flexDirection: "row"}}><TextField
             variant="standard"
             value={domain}
-            key={domain}
             onChange={async (e) => {
               let domains = [...yaml.zowe?.externalDomains];
               domains[index] = e.target.value;
