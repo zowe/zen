@@ -109,7 +109,7 @@ const Unpax = () => {
   }, []);
 
   return (<>
-      {installValue === "smpe" && <ContainerCard title="Continue to Installation" description=""> 
+      {installValue === "smpe" && <ContainerCard title="Continue to Initialization" description="">
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
             {`The SMP/E process has already downloaded the required Zowe runtime files. Please click skip or continue.`}
           </Typography>
