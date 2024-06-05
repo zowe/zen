@@ -27,7 +27,7 @@ import savedInstall from '../../assets/saved-install-green.png';
 import eventDispatcher from '../../../services/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Constants';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL } from '../common/Constants';
 import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus } from '../stages/progress/StageProgressStatus';
 
 import '../../styles/Stepper.css';
@@ -40,8 +40,8 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const connectionStatus = useSelector(selectConnectionStatus);
 
-  const INIT_STAGE_ID = getStageDetails('Initialization').id;;
-  const REVIEW_STAGE_ID = getStageDetails('Review Installation').id;
+  const INIT_STAGE_ID = getStageDetails(INIT_STAGE_LABEL).id;
+  const REVIEW_STAGE_ID = getStageDetails(REVIEW_INSTALL_STAGE_LABEL).id;
 
   const completeProgress = getCompleteProgress();
 

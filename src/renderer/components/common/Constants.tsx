@@ -19,6 +19,22 @@ export const TYPE_OUTPUT = "output";
 export const DEF_NO_OUTPUT = "No output to display."
 export const DEF_JOB_STATEMENT = `//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,\n//         MSGLEVEL=(1,1),MSGCLASS=A`;
 
+export const CONNECTION_STAGE_LABEL = "Connection";
+export const PLANNING_STAGE_LABEL = "Planning";
+export const INSTALLATION_TYPE_STAGE_LABEL = "Installation Type";
+export const UNPAX_STAGE_LABEL = "Unpax";
+export const INIT_STAGE_LABEL = "Initialization";
+export const INSTALL_STAGE_LABEL = "Installation";
+export const NETWORKING_STAGE_LABEL = "Networking";
+export const APF_AUTH_STAGE_LABEL = "APF Auth";
+export const SECURITY_STAGE_LABEL = "Security";
+export const CERTIFICATES_STAGE_LABEL = "Certificates";
+export const VSAM_STAGE_LABEL = "Vsam";
+export const LAUNCH_CONFIG_STAGE_LABEL = "Launch Config";
+export const REVIEW_INSTALL_STAGE_LABEL = "Review Installation";
+export const FINISH_INSTALL_STAGE_LABEL = "Finish Installation";
+
+
 export const FALLBACK_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
   "$id": "https://zowe.org/schemas/v2/server-base",
