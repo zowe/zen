@@ -78,13 +78,17 @@ jobs:
           node-version: 18
       - name: '[Prep 3] Checkout'
         uses: actions/checkout@v3
-      - name: '[prep 4] Install'
+      - name: '[Prep 4] Install Python 3.11.4 for appdmg compatibility'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11.4'
+      - name: '[prep 5] Install'
         run: |
           npm install     
-      - name: '[prep 5] Package'
+      - name: '[prep 6] Package'
         run: |
           npm run make  
-      - name: '[prep 6] Publish'
+      - name: '[prep 7] Publish'
         uses: zowe-actions/zlux-builds/zen/publish@v2.x/main
         with: 
           os: macos
