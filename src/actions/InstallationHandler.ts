@@ -22,7 +22,9 @@ import { InstallationArgs } from '../types/stateInterfaces';
 function removeRuntimeFromPath(path: string)
 {
     var the_arr = path.split('/');
-    the_arr.pop();
+    if(the_arr[the_arr.length - 1].toLowerCase() === 'runtime'){
+      the_arr.pop();
+    }
     return( the_arr.join('/') );
 }
 
