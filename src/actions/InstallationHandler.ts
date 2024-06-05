@@ -166,7 +166,7 @@ class Installation {
             if (zoweConfig) {
               yamlObj = {...yamlObj, ...zoweConfig};
             }
-            console.log('Setting merged yaml:', JSON.stringify(yamlObj));
+            // console.log('Setting merged yaml:', JSON.stringify(yamlObj));
             ConfigurationStore.setConfig(yamlObj);
             ProgressStore.set('downloadUnpax.getExampleYaml', true);
           } catch(e) {
