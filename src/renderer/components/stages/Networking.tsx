@@ -38,7 +38,7 @@ function PatternPropertiesForm(props: any){
       for (let i = 0; i < keys.length && i < LOOP_LIMIT; i++) { //i = go through each property of the yaml
         if (props.schema.properties[keys[i]].patternProperties != undefined) { //only for rendering patternProperties
           if(typeof yaml[keys[i]] === "object" && Object.keys(yaml[keys[i]]).length > 0) {
-            newElements.push(<p key={keys[i]} style={{fontSize: "24px"}}>{keys[i]}</p>);
+            newElements.push(<p key={`title-p-` + keys[i]} style={{fontSize: "24px"}}>{keys[i]}</p>);
             const patterns = Object.keys(props.schema.properties[keys[i]].patternProperties); //get all user defined regex patterns
             for(let j = 0; j <  patterns.length && j < LOOP_LIMIT; j++){ //j = go through each pattern
               const pattern = new RegExp(patterns[j]);
@@ -50,8 +50,8 @@ function PatternPropertiesForm(props: any){
                     // console.log('matched pattern ' + pattern + ' to ' + toMatch[k] + ' for key' + keys[i]);
                     const matchedProps = Object.keys(yamlValue[toMatch[k]]);
                     if(matchedProps.length > 0) {
-                      newElements.push(<span><strong>{toMatch[k]}</strong></span>)
-                      newElements.push(<br />);
+                      newElements.push(<span key={`span-component-name-${k}-${toMatch[k]}`}><strong>{toMatch[k]}</strong></span>)
+                      newElements.push(<br key={`span-br-${k}-${toMatch[k]}`}/>);
                       // console.log('matchedProps:', matchedProps);
                       for(let l = 0; l < matchedProps.length && l < LOOP_LIMIT; l++){
                         // pattern = patterns[j] = current regex pattern from patternProperties
@@ -62,7 +62,7 @@ function PatternPropertiesForm(props: any){
                           case 'boolean':
                             newElements.push(<FormControlLabel
                               label={matchedProps[l]}
-                              key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
+                              key={`toggle-` + keys[i] + '.' + toMatch[k] + '.' + matchedProps[l] + '-' + (i+k+l)}
                               control={<Checkbox checked={yaml[keys[i]][toMatch[k]][matchedProps[l]]} onChange={async (e) => {
                                 // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
                                 const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}};
@@ -71,13 +71,13 @@ function PatternPropertiesForm(props: any){
                                 dispatch(setYaml(newYaml));
                               }}/>}
                             />)
-                            newElements.push(<br />);
+                            newElements.push(<br key={`br-`+ keys[i] + '.' + toMatch[k] + '.' + matchedProps[l] + '-' + (i+k+l)}/>);
                             break;
                           case 'number':
                               newElements.push(<TextField
                                 label={matchedProps[l]}
                                 variant="standard"
-                                key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l] + '.'  + yaml[keys[i]][toMatch[k]][matchedProps[l]]}
+                                key={'number' + keys[i] + '.' + toMatch[k] + '.' + matchedProps[l] + '.'  + yaml[keys[i]][toMatch[k]][matchedProps[l]]}
                                 value={yaml[keys[i]][toMatch[k]][matchedProps[l]]}
                                 onChange={async (e) => {
                                   const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
@@ -90,7 +90,7 @@ function PatternPropertiesForm(props: any){
                             break;
                         }
                       }
-                      newElements.push(<br />);
+                      newElements.push(<br key={`section-br-${i}-${j}-${k}`} />);
                     }
                   }
                 }
@@ -721,24 +721,25 @@ const Networking = () => {
   return (
     yaml && schema && <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
+        <Button key="yaml" variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
+        <Button key="jcl" variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
+        <Button key="job" variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Networking" description="Zowe networking configurations."> 
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <p style={{fontSize: "24px"}}>External Domains <IconButton onClick={(e) => {
+          <p key="external-domains" style={{fontSize: "24px"}}>External Domains <IconButton onClick={(e) => {
             let domains = [...yaml.zowe?.externalDomains, ""];
             const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
             window.electron.ipcRenderer.setConfig(newYaml )
             dispatch(setYaml(newYaml))
             setLYaml(newYaml);
           }}><AddIcon /></IconButton></p>
-          {yaml.zowe.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box sx={{display: "flex", flexDirection: "row"}}><TextField
+          {yaml.zowe.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box key={`box-` + index} sx={{display: "flex", flexDirection: "row"}}><TextField
             variant="standard"
             value={domain}
+            key={domain}
             onChange={async (e) => {
               let domains = [...yaml.zowe?.externalDomains];
               domains[index] = e.target.value;
