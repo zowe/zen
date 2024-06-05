@@ -141,7 +141,7 @@ const Unpax = () => {
       </ContainerCard>}
       {installValue === "upload" && <ContainerCard title="Upload Zowe Pax" description=""> 
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-            {`Zen will upload and unpax the Zowe runtime files from ${paxPath}`}
+            {`Zen will upload and unpax the Zowe runtime files from ${paxPath}. Skip this step if you have already uploaded a Zowe pax.`}
           </Typography>
           {!showProgress && <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
             <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} 

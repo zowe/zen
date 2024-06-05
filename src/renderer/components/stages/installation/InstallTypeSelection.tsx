@@ -53,11 +53,7 @@ const InstallationType = () => {
     }
     
   }, [installValue, paxPath, installationArgs, agreeLicense]);
-
-  useEffect(() => {
-    dispatch(setDownloadUnpaxStatus(false));
-  }, [paxPath])
-
+  
   const updateProgress = (status: boolean): void => {
     dispatch(setInstallationTypeStatus(status))
     dispatch(setNextStepEnabled(status));
