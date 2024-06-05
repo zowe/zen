@@ -27,7 +27,7 @@ import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
 import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK, FALLBACK_SCHEMA, FALLBACK_YAML } from '../../common/Constants';
 import { getStageDetails, getSubStageDetails } from "../../../../services/StageDetails"; 
-import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments } from "../progress/StageProgressStatus";
+import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments, datasetInstallationStatus } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
 import eventDispatcher from '../../../../services/eventDispatcher';
 
@@ -191,7 +191,7 @@ const Installation = () => {
   }, []);
 
   useEffect(() => {
-    setShowProgress(installationType!=='smpe' && (initClicked || getProgress('datasetInstallationStatus')));
+    setShowProgress((initClicked || getProgress('datasetInstallationStatus')));
 
     if(initClicked) {
       const nextPosition = document.getElementById('installation-progress');
@@ -205,13 +205,12 @@ const Installation = () => {
     if(allAttributesTrue) {
       dispatch(setNextStepEnabled(true));
       dispatch(setDatasetInstallationStatus(true));
-      setShowProgress(installationType!=='smpe' && (initClicked || getProgress('datasetInstallationStatus')));
     }
   }, [mvsDatasetInitProgress]);
 
   useEffect(() => {
     const stageComplete = mvsDatasetInitProgress.uploadYaml && mvsDatasetInitProgress.initMVS && mvsDatasetInitProgress.install;
-    if(!getProgress('datasetInstallationStatus') && initClicked) {
+    if(!stageComplete && showProgress) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
           setMvsDatasetInitializationProgress(res);
@@ -222,7 +221,7 @@ const Installation = () => {
     return () => {
       clearInterval(timer);
     };
-  }, [showProgress, stateUpdated]);
+  }, [showProgress, stateUpdated, mvsDatasetInitProgress]);
 
   const setMvsDatasetInitializationProgress = (datasetInitState: DatasetInstallationState) => {
     setMvsDatasetInitProgress(datasetInitState);
@@ -276,6 +275,7 @@ const Installation = () => {
       dispatch(setLoading(false));
       setYaml(window.electron.ipcRenderer.getConfig());
       setShowProgress(true);
+      setMvsDatasetInitProgress(datasetInstallationStatus)
       dispatch(setLoading(false)); /* change skipDownload ?? false --> true to skip upload/download steps for quicker development */
       window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
         // Some parts of Zen pass the response as a string directly into the object
@@ -292,7 +292,7 @@ const Installation = () => {
           stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
           clearInterval(timer);
         } else {
-          updateProgress(res.status)
+          updateProgress(res.status);
           stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
           clearInterval(timer);
         }

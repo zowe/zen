@@ -55,7 +55,7 @@ const planningStageStatus: PlanningState = {
   isLocationValid: false,
 }
 
-const datasetInstallationStatus: DatasetInstallationState = {
+export const datasetInstallationStatus: DatasetInstallationState = {
   uploadYaml: false,
   install: false,
   initMVS: false
