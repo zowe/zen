@@ -313,9 +313,9 @@ class Installation {
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
       await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
         if (err) {
-            console.warn("Can't save configuration to zowe.yaml");
-            ProgressStore.set('initStcs.writeYaml', false);
-            return {status: false, details: `Can't save configuration to zowe.yaml`};
+          console.warn("Can't save configuration to zowe.yaml");
+          ProgressStore.set('initStcs.writeYaml', false);
+          return {status: false, details: `Can't save configuration to zowe.yaml`};
         }
       });
       ProgressStore.set('initStcs.writeYaml', true);
@@ -327,8 +327,21 @@ class Installation {
       ProgressStore.set('initStcs.uploadYaml', uploadYaml.status);
       const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init stc -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
-      ProgressStore.set('initStcs.success', result.rc === 0);
-      return {status: result.rc === 0, details: result.jobOutput}
+      let errorFound = false;
+      let errorMessage = '';
+      const errorPattern = /Error ZWE.*/;
+      for (const key in result.jobOutput) {
+        const match = result.jobOutput[key].match(errorPattern);
+        if (match) {
+          errorFound = true;
+          errorMessage = match[0];
+          break;
+        }
+      }
+
+      ProgressStore.set('initStcs.success', result.rc === 0 && !errorFound);
+      return {status: result.rc === 0 && !errorFound, details: result.jobOutput, error: errorFound, errorMsg: errorMessage }
+
   }
 
   async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string}, zoweConfig: any){
