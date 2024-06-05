@@ -25,7 +25,7 @@ import React from "react";
 import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
+import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { setProgress, getProgress, setStcsInitState, getStcsInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
@@ -65,8 +65,11 @@ const Stcs = () => {
   let timer: any;
 
   const section = 'stcs';
+  const DEFAULT_ZOWE = 'ZWESLSTC';
+  const DEFAULT_ZIS = 'ZWESISTC';
+  const DEFAULT_AUX = 'ZWESASTC';
 
-  const defaultErrorMessage = "Please ensure that the values for security.stcs attributes are accurate.";
+  const defaultErrorMessage = "Please ensure that the values for security.stcs attributes and dataset.proclib are accurate.";
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -95,6 +98,14 @@ const Stcs = () => {
 
     updateProgress(getProgress('stcsStatus'));
     setInit(true);
+
+    if(!setupYaml) {
+      const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: {...yaml.zowe.setup.security, stcs: {zowe: DEFAULT_ZOWE, zis: DEFAULT_ZIS, aux: DEFAULT_AUX}}}}};
+      window.electron.ipcRenderer.setConfig(newYaml);
+      setSetupYaml({zowe: DEFAULT_ZOWE, zis: DEFAULT_ZIS, aux: DEFAULT_AUX});
+      setLYaml(newYaml);
+      dispatch(setYaml(newYaml));
+    }
 
     return () => {
       alertEmitter.emit('hideAlert');
@@ -251,7 +262,7 @@ const Stcs = () => {
                 label="Zowe"
                 multiline
                 maxRows={6}
-                value={setupYaml?.zowe ?? "ZWESLSTC"}
+                value={setupYaml?.zowe ?? DEFAULT_ZOWE}
                 variant="filled"
                 disabled
             />
@@ -262,7 +273,7 @@ const Stcs = () => {
                 label="Zis"
                 multiline
                 maxRows={6}
-                value={setupYaml?.zis ?? "ZWESISTC"}
+                value={setupYaml?.zis ?? DEFAULT_ZIS}
                 variant="filled"
                 disabled
             />
@@ -273,7 +284,7 @@ const Stcs = () => {
                 label="Aux"
                 multiline
                 maxRows={6}
-                value={setupYaml?.aux ?? "ZWESASTC"}
+                value={setupYaml?.aux ?? DEFAULT_AUX}
                 variant="filled"
                 disabled
             />
