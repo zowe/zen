@@ -83,13 +83,8 @@ const Installation = () => {
   useEffect(() => {
 
     if(getProgress("datasetInstallationStatus")) {
-      if(installationType !== 'smpe') {
-        const nextPosition = document.getElementById('start-installation-progress');
-        nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        const nextPosition = document.getElementById('start-installation-progress');
-        nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'start' });
-      }
+      const nextPosition = document.getElementById('save-installation-progress');
+      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
     } else {
       const nextPosition = document.getElementById('container-box-id');
       nextPosition.scrollIntoView({behavior: 'smooth'});
@@ -375,12 +370,11 @@ const Installation = () => {
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={mvsDatasetInitProgress.uploadYaml}/>
             <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={mvsDatasetInitProgress.install}/>
             <ProgressCard label="Run MVS dataset initialization script (zwe init mvs)" id="install-progress-card" status={mvsDatasetInitProgress.initMVS}/>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{'Reinstall MVS datasets'}</Button>
+            <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{'Reinstall MVS datasets'}</Button>
           </React.Fragment>
         }
         </Box>
-        <Box sx={{ height: '0', minHeight: '0' }} id="save-installation-progress"></Box>
-        <Box sx={{ height: showProgress ? '20vh' : 'auto', minHeight: '55vh' }} id="installation-progress"></Box>
+        <Box sx={{ height: '35vh', minHeight: '0', bottom: '0' }} id="save-installation-progress"></Box>
       </ContainerCard>
     </div>
   );
