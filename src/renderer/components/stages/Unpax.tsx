@@ -44,7 +44,7 @@ const Unpax = () => {
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const version = useAppSelector(selectZoweVersion);
 
-  const installationArgs = useAppSelector(selectInstallationArgs);
+  const [installationArgs, setInstArgs] = useState(useAppSelector(selectInstallationArgs));
   let timer: any;
 
   useEffect(() => {
@@ -89,6 +89,11 @@ const Unpax = () => {
   }
 
   useEffect(() => {
+      window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
+        if(res != undefined){
+          setInstArgs((res as any));
+        }
+      })
       let nextPosition;
       if(getProgress('downloadUnpaxStatus')) {
         nextPosition = document.getElementById('download-progress-card');
@@ -136,13 +141,13 @@ const Unpax = () => {
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
             {`Zen will upload and unpax the Zowe runtime files from ${paxPath}`}
           </Typography>
-          <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
+          {!showProgress && <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
             <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} 
               onClick={(e) => process(e)}
             >
               Begin Upload
             </Button>
-          </Box>
+          </Box>}
           {showProgress && 
             <React.Fragment>
               <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={downloadUnpaxProgress.uploadYaml}/>
