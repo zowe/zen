@@ -16,7 +16,7 @@ import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ConfigurationStore } from "../storage/ConfigurationStore";
 import { parse } from 'yaml';
 import * as https from 'https';
-import { checkDirExists, makeDir } from '../services/utils'
+import { checkDirExists, makeDir } from '../services/ServiceUtils'
 
 export class PlanningActions {
 
@@ -132,8 +132,8 @@ export class PlanningActions {
     });
   }
 
-public static async setConfigByKey(key: string, value: string | Array<string>): Promise<IResponse> {
-    const status = ConfigurationStore.setConfigByKey(key, value);
+  public static async setConfigByKeyAndValidate(key: string, value: string | Array<string>): Promise<IResponse> {
+    const status = ConfigurationStore.setConfigByKeyAndValidate(key, value);
     return {status, details: ''};
   }
 

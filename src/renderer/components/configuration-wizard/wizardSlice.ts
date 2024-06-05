@@ -16,6 +16,7 @@ interface WizardState {
   loading: boolean;
   nextStepEnabled: boolean;
   yaml: any;
+  output: string | undefined;
   schema: any;
   zoweCLIVersion: string;
 }
@@ -26,6 +27,7 @@ const initialState: WizardState = {
   yaml: {},
   schema: {},
   zoweCLIVersion: '',
+  output: '',
 };
 
 export const wizardSlice = createSlice({
@@ -50,11 +52,15 @@ export const wizardSlice = createSlice({
     setZoweCLIVersion: (state, action: PayloadAction<string>) => {
       state.zoweCLIVersion = action.payload;
     },
+    setOutput: (state, action: PayloadAction<any>) => {
+      state.output = action.payload
+    }
   },
 });
-export const { setLoading, setYaml, setSchema, setNextStepEnabled, setZoweCLIVersion } = wizardSlice.actions;
+export const { setLoading, setYaml, setOutput, setSchema, setNextStepEnabled, setZoweCLIVersion } = wizardSlice.actions;
 export const selectLoading = (state: RootState) => state.wizard.loading;
 export const selectYaml = (state: RootState) => state.wizard.yaml;
+export const selectOutput = (state: RootState) => state.wizard.output;
 export const selectSchema = (state: RootState) => state.wizard.schema;
 export const selectNextStepEnabled = (state: RootState) => state.wizard.nextStepEnabled;
 export const selectZoweCLIVersion = (state: RootState) => state.wizard.zoweCLIVersion;

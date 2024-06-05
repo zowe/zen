@@ -24,15 +24,14 @@ import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progr
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
 import savedInstall from '../../assets/saved-install-green.png';
-import eventDispatcher from '../../../utils/eventDispatcher';
+import eventDispatcher from '../../../services/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import Home from '../Home';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Constants';
 import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus } from '../stages/progress/StageProgressStatus';
 
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
-import { stages } from '../configuration-wizard/Wizard';
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
 
@@ -63,9 +62,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     completeProgress.launchConfigStatus
   ])
   
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
+
 
   const [activeStep, setActiveStep] =  initialization ? useState(0) : useState(useAppSelector(selectActiveStepIndex));
   const [activeSubStep, setActiveSubStep] = initialization ? useState(0) : useState(useAppSelector(selectActiveSubStepIndex));
@@ -246,7 +243,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
                 {backgroundColor: '#E0E0E0', 
                 padding: '10px 20px 25px', 
                 position: 'relative', 
-                marginBottom: '-27px', 
+                marginBottom: '-30px', 
                 borderTopRightRadius: '7px', 
                 borderTopLeftRadius: '7px',
                 boxShadow: 'rgb(0 0 0 / 15%) 0px 6px 4px -1px inset'} : {}}>

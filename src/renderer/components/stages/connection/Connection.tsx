@@ -24,8 +24,6 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import secureIcon from '../../../assets/secure.png';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
-import { Tooltip } from '@mui/material';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
@@ -35,18 +33,14 @@ import { setYaml, setSchema, setLoading, setNextStepEnabled, selectZoweCLIVersio
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
-import { getStageDetails, initStageSkipStatus } from "../../../../utils/StageDetails";
+import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
 import { initializeProgress, getActiveStage } from "../progress/StageProgressStatus";
-import eventDispatcher from "../../../../utils/eventDispatcher";
-import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from '../installation/installationSlice';
-import { EXAMPLE_YAML, YAML_SCHEMA } from "../../../config/constants";
+import eventDispatcher from "../../../../services/eventDispatcher";
+import { FALLBACK_YAML, FALLBACK_SCHEMA } from "../../common/Constants";
 
 const Connection = () => {
 
   const stageLabel = 'Connection';
-
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
 
   const dispatch = useAppDispatch();
   const zoweCLIVersion = useAppSelector(selectZoweCLIVersion);
@@ -161,12 +155,12 @@ const FTPConnectionForm = () => {
         const schema = res.details.schema;
         dispatch(setSchema(schema));
       } else {
-        dispatch(setYaml(EXAMPLE_YAML));
-        dispatch(setSchema(YAML_SCHEMA));
-        window.electron.ipcRenderer.setConfig(EXAMPLE_YAML).then((res: IResponse) => {
+        dispatch(setYaml(FALLBACK_YAML));
+        dispatch(setSchema(FALLBACK_SCHEMA));
+        window.electron.ipcRenderer.setConfig(FALLBACK_YAML).then((res: IResponse) => {
           // yaml response
         });
-        window.electron.ipcRenderer.setSchema(YAML_SCHEMA).then((res: IResponse) => {
+        window.electron.ipcRenderer.setSchema(FALLBACK_SCHEMA).then((res: IResponse) => {
           // schema response
         });
       }
@@ -246,7 +240,7 @@ const FTPConnectionForm = () => {
                 setIsFtpConnection(e.target.checked);
               }} 
             />}
-            label="(Recommended, optional) Use FTP with TLS."
+            label="(Recommended) Use FTP with TLS."
             labelPlacement="start"
           />
         </Container>
@@ -307,7 +301,7 @@ const FTPConnectionForm = () => {
                 }}
               />
             }
-            label="Accept all certificates."
+            label="(Not recommended) Accept all certificates."
             labelPlacement="start"
           />
         </Container>

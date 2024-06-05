@@ -21,7 +21,7 @@ import { useAppDispatch, useAppSelector } from '../hooks';
 import { Tooltip } from '@mui/material';
 import installationImg from '../assets/installation.png'
 import installationDryImg from '../assets/installation-dry-run.png'
-import eventDispatcher from "../../utils/eventDispatcher";
+import eventDispatcher from "../../services/eventDispatcher";
 import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex, selectActiveStepDate} from './stages/progress/activeStepSlice';
 import { selectConnectionStatus} from './stages/progress/progressSlice';
 import  HorizontalLinearStepper  from './common/Stepper';
@@ -29,6 +29,7 @@ import Wizard from './configuration-wizard/Wizard'
 import Connection from './stages/connection/Connection';
 import { ActiveState } from '../../types/stateInterfaces';
 import { getPreviousInstallation } from './stages/progress/StageProgressStatus';
+import { DEF_NO_OUTPUT } from './common/Constants';
 
 // REVIEW: Get rid of routing
 
@@ -115,6 +116,8 @@ const Home = () => {
         console.info('No Zowe CLI found on local machine');
       }
     }); 
+    window.electron.ipcRenderer.setStandardOutput(DEF_NO_OUTPUT).then((res: any) => {
+    })
     window.electron.ipcRenderer.findPreviousInstallations().then((res: IResponse) => {
       const connectionStore = res.details;
       if (connectionStore["connection-type"] === 'ftp') {

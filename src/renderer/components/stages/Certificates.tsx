@@ -25,10 +25,10 @@ import ProgressCard from "../common/ProgressCard";
 import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
+import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { setProgress, getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { CertInitSubStepsState } from "../../../types/stateInterfaces";
-import { FALLBACK_YAML, FALLBACK_SCHEMA  } from "../../..//utils/yamlSchemaDefaults";
+import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML, FALLBACK_SCHEMA } from "../common/Constants";
 
 const Certificates = () => {
 
@@ -51,24 +51,18 @@ const Certificates = () => {
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
   const [verifyCertsYaml, setVerifyCertsYaml] = useState({verifyCertificates: yaml?.zowe?.verifyCertificates})
   const [isFormInit, setIsFormInit] = useState(false);
-  const [initializeForm, setInitializeForm] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [showProgress, setShowProgress] = useState(getProgress('certificateStatus'));
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
-  const [reinit, setReinit] = useState(false);
-
-  const section = 'certificate';
-
   const [certificateInitProgress, setCertificateInitProgress] = useState(getCertificateInitState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
+  const [reinit, setReinit] = useState(false);
 
   let timer: any;
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
+
 
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
@@ -296,10 +290,10 @@ const Certificates = () => {
         </Box>
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-certificate-progress">
         {!showProgress ? null :
-          <React.Fragment>
-            <ProgressCard label="Write configuration file to local disk" id="download-progress-card" status={certificateInitProgress.writeYaml}/>
-            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={certificateInitProgress.uploadYaml}/>
-            <ProgressCard label="Run certificate initialization script (zwe init certifiate)" id="install-progress-card" status={certificateInitProgress.zweInitCertificate}/>
+          <React.Fragment> 
+            <ProgressCard label="Write configuration file to local disk" id="download-progress-card" status={certificateInitProgress?.writeYaml}/>
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={certificateInitProgress?.uploadYaml}/>
+            <ProgressCard label="Run certificate initialization script (zwe init certifiate)" id="install-progress-card" status={certificateInitProgress?.zweInitCertificate}/>
             <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize Zowe Certificates</Button>
           </React.Fragment>
         }
