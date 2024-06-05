@@ -57,9 +57,6 @@ const planningStageStatus: PlanningState = {
 
 const datasetInstallationStatus: DatasetInstallationState = {
   uploadYaml: false,
-  download: false,
-  upload: false,
-  unpax: false,
   install: false,
   initMVS: false
 }

@@ -56,9 +56,6 @@ export interface ActiveState {
 
 export interface DatasetInstallationState {
   uploadYaml: boolean,
-  download: boolean,
-  upload: boolean,
-  unpax: boolean,
   install: boolean,
   initMVS: boolean
 }
