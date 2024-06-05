@@ -18,7 +18,7 @@ const installationTypeStatus: InstallationType = {
   userUploadedPaxPath: '',
 }
 
-const downloadUnpaxStatus: DownloadUnpaxState = {
+export const downloadUnpaxStatus: DownloadUnpaxState = {
   uploadYaml: false,
   download: false,
   upload: false,
