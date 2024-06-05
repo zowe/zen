@@ -19,7 +19,7 @@ import CheckCircle from '@mui/icons-material/CheckCircle';
 import { setActiveStep } from "./progress/activeStepSlice"; 
 import { getStageDetails } from "../../../services/StageDetails";
 import { setDownloadUnpaxStatus } from './progress/progressSlice';
-import { getDownloadUnpaxState, getInstallationTypeStatus, getProgress, setDownloadUnpaxState } from "./progress/StageProgressStatus";
+import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationTypeStatus, getProgress, setDownloadUnpaxState } from "./progress/StageProgressStatus";
 import React from "react";
 import ProgressCard from "../common/ProgressCard";
 import { alertEmitter } from "../Header";
@@ -71,6 +71,7 @@ const Unpax = () => {
     event.preventDefault();
     setShowProgress(true);
     dispatch(setDownloadUnpaxStatus(false));
+    setDownloadUnpaxProgress(downloadUnpaxStatus);
     dispatch(setNextStepEnabled(false));
     window.electron.ipcRenderer.downloadButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
       if(!res.status){ //errors during runInstallation()
