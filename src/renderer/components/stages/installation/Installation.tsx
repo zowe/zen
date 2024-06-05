@@ -84,10 +84,10 @@ const Installation = () => {
 
     if(getProgress("datasetInstallationStatus")) {
       const nextPosition = document.getElementById('save-installation-progress');
-      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
+      if(nextPosition) nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
     } else {
       const nextPosition = document.getElementById('container-box-id');
-      nextPosition.scrollIntoView({behavior: 'smooth'});
+      if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
     }
 
     window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
@@ -189,8 +189,8 @@ const Installation = () => {
     setShowProgress((initClicked || getProgress('datasetInstallationStatus')));
 
     if(initClicked) {
-      const nextPosition = document.getElementById('installation-progress');
-      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      const nextPosition = document.getElementById('save-installation-progress');
+      if(nextPosition) nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
       setStateUpdated(!stateUpdated);
     }
   }, [initClicked]);
