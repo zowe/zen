@@ -111,7 +111,8 @@ const InstallationType = () => {
     {installValue === "download" &&
       <div>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-          {`Zen will download the latest Zowe convenience build in PAX archive format from `}
+          Zen will download the latest Zowe convenience build in PAX archive format from.
+          { !agreeLicense && <p>Please accept the license agreement to continue.</p>}
           <Link href="zowe.org">{'https://zowe.org'}</Link>
         </Typography>
         <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
@@ -124,10 +125,10 @@ const InstallationType = () => {
         </Box>
         {showLicense && <LicenseDialog isAgreementVisible={true} licenseAgreement={licenseAgreement}/>}
       </div>}
-    {installValue === "upload" &&   <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-        {`Select a local Zowe PAX file (offline installation).`}
-      </Typography>}
-    {installValue === "upload" && <><Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+    {installValue === "upload" && <><Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
+        Select a local Zowe PAX file (offline installation).
+      </Typography>
+      <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '16px'}} type="submit" onClick={e => {
         e.preventDefault();
         window.electron.ipcRenderer.uploadPax().then((res: any) => {
           if(res.filePaths && res.filePaths[0] != undefined){

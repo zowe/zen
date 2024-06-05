@@ -50,8 +50,8 @@ function PatternPropertiesForm(props: any){
                     // console.log('matched pattern ' + pattern + ' to ' + toMatch[k] + ' for key' + keys[i]);
                     const matchedProps = Object.keys(yamlValue[toMatch[k]]);
                     if(matchedProps.length > 0) {
-                      newElements.push(<span><strong>{toMatch[k]}</strong></span>)
-                      newElements.push(<br />);
+                      newElements.push(<span key={`span-${k}`}><strong>{toMatch[k]}</strong></span>)
+                      newElements.push(<br key={`br-${k}`} />);
                       // console.log('matchedProps:', matchedProps);
                       for(let l = 0; l < matchedProps.length && l < LOOP_LIMIT; l++){
                         // pattern = patterns[j] = current regex pattern from patternProperties
@@ -67,22 +67,22 @@ function PatternPropertiesForm(props: any){
                                 // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
                                 const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}};
                                 setLYaml(newYaml);
-                                await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, !yaml[keys[i]][toMatch[k]][matchedProps[l]])
+                                await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, !yaml[keys[i]][toMatch[k]][matchedProps[l]])
                                 dispatch(setYaml(newYaml));
                               }}/>}
                             />)
-                            newElements.push(<br />);
+                            newElements.push(<br key={`br2-${k}${l}`} />);
                             break;
                           case 'number':
                               newElements.push(<TextField
                                 label={matchedProps[l]}
                                 variant="standard"
-                                key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l] + '.'  + yaml[keys[i]][toMatch[k]][matchedProps[l]]}
+                                key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
                                 value={yaml[keys[i]][toMatch[k]][matchedProps[l]]}
                                 onChange={async (e) => {
                                   const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
                                   setLYaml(newYaml);
-                                  await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
+                                  await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
                                   dispatch(setYaml(newYaml));
                                 }}
                               />)
@@ -90,7 +90,7 @@ function PatternPropertiesForm(props: any){
                             break;
                         }
                       }
-                      newElements.push(<br />);
+                      newElements.push(<br key={`br3-${k}`} />);
                     }
                   }
                 }
@@ -103,7 +103,7 @@ function PatternPropertiesForm(props: any){
     }
   }, [yaml])
 
-  return <div key={JSON.stringify(props.yaml.components || {})}>
+  return <div>
     {elements}
   </div>
 }
@@ -736,7 +736,7 @@ const Networking = () => {
             dispatch(setYaml(newYaml))
             setLYaml(newYaml);
           }}><AddIcon /></IconButton></p>
-          {yaml.zowe.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box sx={{display: "flex", flexDirection: "row"}}><TextField
+          {yaml.zowe.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box key={`box-${index}`} sx={{display: "flex", flexDirection: "row"}}><TextField
             variant="standard"
             value={domain}
             onChange={async (e) => {
@@ -769,7 +769,7 @@ const Networking = () => {
               dispatch(setYaml(newYaml))
               setLYaml(newYaml);
               // // props.setYaml(newYaml);
-              // await window.electron.ipcRenderer.setConfigByKey(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
+              // await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
               // // dispatch(setYaml(newYaml));
             }}
           />
