@@ -306,7 +306,7 @@ const Stcs = () => {
         }
         </Box>
         </Box>
-        <Box sx={{ height: showProgress ? '125vh' : 'auto', minHeight: showProgress ? '125vh' : '10vh' }} id="stcs-progress"></Box>
+        <Box sx={{ height: showProgress ? '1vh' : 'auto', minHeight: showProgress ? '1vh' : '1vh' }} id="stcs-progress"></Box>
 
       </ContainerCard>
     </div>
