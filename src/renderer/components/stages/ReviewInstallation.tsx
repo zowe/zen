@@ -147,7 +147,7 @@ const ReviewInstallation = () => {
                 </Box>
               </Box>
             )}
-            {stage.id !== 0 && stage.id < 4 && (
+            {stage.id !== 0 && stage.id < 5 && (
               <div>
                 <Box className="review-component-box">
                   <Typography className="review-component-text" onClick={() => updateActiveStep(stage.id, false)}>{stage.label}</Typography>
