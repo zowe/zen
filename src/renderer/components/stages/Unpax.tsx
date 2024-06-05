@@ -48,12 +48,13 @@ const Unpax = () => {
   let timer: any;
 
   useEffect(() => {
-    if(!getProgress('downloadUnpaxStatus') && showProgress) {
+    const stageComplete = downloadUnpaxProgress.uploadYaml && downloadUnpaxProgress.download && downloadUnpaxProgress.upload && downloadUnpaxProgress.unpax;
+    if(!stageComplete && showProgress) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getDownloadUnpaxProgress().then((res: any) => {
           setDownloadUnpaxProgress(res);
           setDownloadUnpaxState(res);
-          if(downloadUnpaxProgress.uploadYaml && downloadUnpaxProgress.download && downloadUnpaxProgress.upload && downloadUnpaxProgress.unpax){
+          if(stageComplete){
             dispatch(setNextStepEnabled(true));
             dispatch(setDownloadUnpaxStatus(true));
             clearInterval(timer);
