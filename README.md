@@ -10,7 +10,7 @@ Node version 18.12 or higher is required.
 
 ### Developing
 
-Note: `npm run start` may succeed without errors, but `npm run make` will not. It is always advised to run `npm run make` after writing new code, or using the build automation to view errors
+Note: `npm run start` may succeed without errors, but `npm run make` may not. It is always advised to run `npm run make` after writing new code, or using the build automation to view errors
 
 Run `npm install` to install dependencies 
 
