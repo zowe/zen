@@ -330,7 +330,7 @@ const Planning = () => {
         alertEmitter.emit('hideAlert');
         setLocValidations(true);
         setPlanningState(true);
-        setStep(2);
+        // setStep(2); // This step is meant to show some usefull status, removing for now.
       } else {
         dispatch(setPlanningStatus(false));
         alertEmitter.emit('showAlert', details.error, 'error');
