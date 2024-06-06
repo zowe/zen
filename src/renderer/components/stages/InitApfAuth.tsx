@@ -143,10 +143,13 @@ const InitApfAuth = () => {
   }, [apfAuthInitProgress]);
 
   useEffect(() => {
-    if(!getProgress('apfAuthStatus') && initClicked) {
+    if(showProgress) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
           setApfAuthorizationInitProgress(res);
+          if(res.success){
+            clearInterval(timer);
+          }
         })
       }, 3000);
     }
