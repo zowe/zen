@@ -260,8 +260,6 @@ const Stcs = () => {
                 '& .MuiInputBase-root': { height: '60px', minWidth: '72ch', fontFamily: 'monospace' },
                 }}
                 label="Zowe"
-                multiline
-                maxRows={6}
                 value={setupYaml?.zowe ?? DEFAULT_ZOWE}
                 variant="filled"
                 disabled
@@ -271,8 +269,6 @@ const Stcs = () => {
                 '& .MuiInputBase-root': { height: '60px', minWidth: '72ch', fontFamily: 'monospace' },
                 }}
                 label="Zis"
-                multiline
-                maxRows={6}
                 value={setupYaml?.zis ?? DEFAULT_ZIS}
                 variant="filled"
                 disabled
@@ -282,8 +278,6 @@ const Stcs = () => {
                 '& .MuiInputBase-root': { height: '60px', minWidth: '72ch', fontFamily: 'monospace' },
                 }}
                 label="Aux"
-                multiline
-                maxRows={6}
                 value={setupYaml?.aux ?? DEFAULT_AUX}
                 variant="filled"
                 disabled
