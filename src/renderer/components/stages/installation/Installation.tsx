@@ -44,9 +44,6 @@ const Installation = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
-  // TODO: Why are there two sets of stageId/STAGE_ID's?
-  const stageId = 3;
-  const subStageId = 0;
   const dispatch = useAppDispatch();
   // this schema will be used in the case where the user, for some reason, clicks "skip installation" without downloading or uploading a Zowe pax
   // Maybe we shouldnt allow the user to skip the installation stage??
@@ -240,9 +237,9 @@ const Installation = () => {
   }
 
   const setStageSkipStatus = (status: boolean) => {
-    stages[stageId].subStages[subStageId].isSkipped = status;
-    stages[stageId].isSkipped = status;
-    mapAndSetSkipStatus(subStageId, status);
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = status;
+    mapAndSetSkipStatus(SUB_STAGE_ID, status);
   }
 
   const setDsInstallStageStatus = (status: boolean) => {
@@ -321,8 +318,8 @@ const Installation = () => {
           clearInterval(timer);
           updateProgress(false);
           installProceedActions(false);
-          stages[stageId].subStages[subStageId].isSkipped = true;
-          stages[stageId].isSkipped = true;
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+          stages[STAGE_ID].isSkipped = true;
           if (typeof err === "string") {
             console.warn('Installation failed', err);
           } else {
