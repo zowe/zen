@@ -309,7 +309,7 @@ class Installation {
     }
     ProgressStore.set('apfAuth.uploadYaml', uploadYaml.status);
     console.log("Check out this install arg! " + installationArgs.installationDir);
-    const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+    const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init apfauth -c ${SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('apfAuth.success', result.rc === 0);
     return {status: result.rc === 0, details: result.jobOutput}
@@ -335,7 +335,7 @@ class Installation {
       }
       ProgressStore.set('initSecurity.uploadYaml', uploadYaml.status);
       console.log("Check out this install arg! " + installationArgs.installationDir);
-      const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init security -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+      const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init security -c ${SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
       ProgressStore.set('initSecurity.success', result.rc === 0);
       return {status: result.rc === 0, details: result.jobOutput}
@@ -359,7 +359,7 @@ class Installation {
     }
     ProgressStore.set('certificate.uploadYaml', uploadYaml.status);
     console.log("Check out this install arg! " + installationArgs.installationDir);
-    const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init certificate --update-config -c ${installationArgs.installationDir}/zowe.yaml`;
+    const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init certificate --update-config -c ${SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) :installationArgs.installationDir}/zowe.yaml`;
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('certificate.zweInitCertificate', result.rc === 0);
     return {status: result.rc === 0, details: result.jobOutput}
@@ -389,7 +389,7 @@ class Installation {
         return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
       ProgressStore.set('initVsam.uploadYaml', uploadYaml.status);
-      const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init vsam -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+      const script = `cd ${installationArgs.installationType === "smpe" ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init vsam -c ${SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) :installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
 
       let errorFound = false;
