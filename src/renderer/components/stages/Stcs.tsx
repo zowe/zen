@@ -48,6 +48,7 @@ const Stcs = () => {
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security?.properties?.stcs;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security?.stcs);
+  const [setupDsYaml, setSetupDsYaml] = useState(yaml?.zowe?.setup?.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('stcsStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -282,26 +283,36 @@ const Stcs = () => {
                 variant="filled"
                 disabled
             />
+            <TextField
+                sx={{
+                '& .MuiInputBase-root': { height: '60px', minWidth: '72ch', fontFamily: 'monospace' },
+                }}
+                label="Dataset Proclib"
+                value={setupDsYaml?.proclib ?? ''}
+                variant="filled"
+                disabled
+            />
         </Box>
 
+          {!setupDsYaml?.proclib && <p style={{color:'red', fontSize: '12px'}}>The `dataset.proclib` is empty. Please ensure it contains the valid dataset name in the installation tab.</p>}
+
           {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Initialize Stcs Config</Button>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!setupDsYaml?.proclib} onClick={e => process(e)}>Initialize STC Config</Button>
           </FormControl> : null}
 
 
           <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-stcs-progress">
-          {!showProgress ? null :
-          <React.Fragment>
-            <ProgressCard label={`Write configuration file locally to temp directory`} id="init-stcs-progress-card" status={stcsInitProgress.writeYaml}/>
-            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={stcsInitProgress.uploadYaml}/>
-            <ProgressCard label={`Run zwe init stcs`} id="success-progress-card" status={stcsInitProgress.success}/>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize Stcs Config</Button>
-          </React.Fragment>
-        }
+            {!showProgress ? null :
+            <React.Fragment>
+              <ProgressCard label={`Write configuration file locally to temp directory`} id="init-stcs-progress-card" status={stcsInitProgress.writeYaml}/>
+              <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={stcsInitProgress.uploadYaml}/>
+              <ProgressCard label={`Run zwe init stcs`} id="success-progress-card" status={stcsInitProgress.success}/>
+              <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize STC Config</Button>
+            </React.Fragment>
+            }
+          </Box>
         </Box>
-        </Box>
-        <Box sx={{ height: showProgress ? '1vh' : 'auto', minHeight: showProgress ? '1vh' : '1vh' }} id="stcs-progress"></Box>
-
+        <Box sx={{ height: showProgress ? '1vh' : 'auto', minHeight: showProgress ? '1vh' : '0vh' }} id="stcs-progress"></Box>
       </ContainerCard>
     </div>
   );
