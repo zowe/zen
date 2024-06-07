@@ -152,16 +152,10 @@ const FTPConnectionForm = () => {
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       if (res && res.status && res.details) {
         dispatch(setYaml(res.details));
-        const schema = res.details.schema;
-        dispatch(setSchema(schema));
       } else {
         dispatch(setYaml(FALLBACK_YAML));
-        dispatch(setSchema(FALLBACK_SCHEMA));
         window.electron.ipcRenderer.setConfig(FALLBACK_YAML).then((res: IResponse) => {
           // yaml response
-        });
-        window.electron.ipcRenderer.setSchema(FALLBACK_SCHEMA).then((res: IResponse) => {
-          // schema response
         });
       }
       const { activeStepIndex, isSubStep, activeSubStepIndex } = getActiveStage();
