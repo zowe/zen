@@ -141,9 +141,9 @@ class Installation {
       let parsedSchema = false, parsedYaml = false;
       if(readPaxYamlAndSchema.details.yaml){
         const parseExampleYamlFromPax = function(catPath: string){
-          const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat ${catPath}\\r\\n`)
+          const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat ${catPath} \\r\\n`);
           if(jobOutputSplit[1]){
-            const trimmedYamlSchema = jobOutputSplit[1].split(`+ echo 'Script finished.'`)[0].split(`Script finished.`);
+            const trimmedYamlSchema = jobOutputSplit[1].split(`+ echo Script finished.`)[0].split(`Script finished.`);
             // console.log("\n\n *** trimmedYamlSchema[0]: ", trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`));
             return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`);
           }
@@ -216,9 +216,9 @@ class Installation {
         //No reason not to always set schema to latest if user is re-running installation
         if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
           const parseSchemaFromPax = function(inputString: string, catPath: string){
-            const jobOutputSplit = inputString.split(`cat ${catPath}\\r\\n`)
+            const jobOutputSplit = inputString.split(`cat ${catPath} \\r\\n`);
             if(jobOutputSplit[1]){
-              const trimmedYamlSchema = jobOutputSplit[1].split(`Script finished.`)[0].split(`Script finished.`);
+              const trimmedYamlSchema = jobOutputSplit[1].split(`+ echo Script finished.`)[0].split(`Script finished.`);
               return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`).replaceAll(`\\\\"`, `\\"`);
             }
             return "";
