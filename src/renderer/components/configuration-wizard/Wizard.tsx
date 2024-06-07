@@ -13,6 +13,7 @@ import Connection from "../stages/connection/Connection";
 import Planning from "../stages/Planning";
 import Installation from "../stages/installation/Installation";
 import Security from "../stages/Security";
+import Stcs from "../stages/Stcs";
 import Certificates from "../stages/Certificates";
 import Initialization from "../stages/Initialization";
 import ReviewInstallation from '../stages/ReviewInstallation';
@@ -41,9 +42,10 @@ export const stages = [
     {id: 1, label: NETWORKING_STAGE_LABEL, component: <Networking/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to APF Auth Setup', statusKey: 'networkingStatus'},
     {id: 2, label: APF_AUTH_STAGE_LABEL, component: <InitApfAuth/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Security Setup', statusKey: 'apfAuthStatus'},
     {id: 3, label: SECURITY_STAGE_LABEL, component: <Security/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Certificates Setup', statusKey: 'securityStatus'},
-    {id: 4, label: CERTIFICATES_STAGE_LABEL, component: <Certificates/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Vsam Setup', statusKey: 'certificateStatus'},
-    {id: 5, label: VSAM_STAGE_LABEL, component: <Vsam/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Launch Setup', statusKey: 'vsamStatus'},
-    {id: 6, label: LAUNCH_CONFIG_STAGE_LABEL, component: <LaunchConfig/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Instance Setup', statusKey: 'launchConfigStatus'},
+    {id: 4, label: 'Stcs', component: <Stcs/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Certificates Setup', statusKey: 'stcsStatus'},
+    {id: 5, label: CERTIFICATES_STAGE_LABEL, component: <Certificates/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Vsam Setup', statusKey: 'certificateStatus'},
+    {id: 6, label: VSAM_STAGE_LABEL, component: <Vsam/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Launch Setup', statusKey: 'vsamStatus'},
+    {id: 7, label: LAUNCH_CONFIG_STAGE_LABEL, component: <LaunchConfig/>, hasJCL: true, isSkippable: true, isSkipped: false, hasYaml: true, hasOutput: true, steps: 1, nextButton: 'Continue to Instance Setup', statusKey: 'launchConfigStatus'},
   ], nextButton: 'Review', statusKey: 'initializationStatus'},
   {id: 5, label: REVIEW_INSTALL_STAGE_LABEL, component: <ReviewInstallation/>, hasJCL: false, isSkippable: false, hasOutput: false, steps: 1, nextButton: 'Finish Installation', statusKey: 'reviewStatus'},
   {id: 6, label: FINISH_INSTALL_STAGE_LABEL, component: <FinishInstallation/>, hasJCL: false, isSkippable: false, isSkipped: false, hasOutput: false, steps: 1, statusKey: 'finishStatus'},

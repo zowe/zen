@@ -59,6 +59,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     completeProgress.networkingStatus,
     completeProgress.apfAuthStatus,
     completeProgress.securityStatus,
+    completeProgress.stcsStatus,
     completeProgress.certificateStatus,
     completeProgress.launchConfigStatus
   ])

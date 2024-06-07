@@ -37,6 +37,7 @@ const progressStatus: ProgressState = {
   networkingStatus: false,
   apfAuthStatus: false,
   securityStatus: false,
+  stcsStatus: false,
   certificateStatus: false,
   vsamStatus: false,
   launchConfigStatus: false,
@@ -68,6 +69,12 @@ const apfAuthStatus: InitSubStepsState = {
 }
 
 const securityInitStatus: InitSubStepsState = {
+  writeYaml: false,
+  uploadYaml: false,
+  success: false
+}
+
+const stcsInitStatus: InitSubStepsState = {
   writeYaml: false,
   uploadYaml: false,
   success: false
@@ -131,6 +138,7 @@ let downloadUnpaxKey = 'download_unpax';
 let datasetInstallationKey = 'dataset_installation';
 let apfAuthKey = 'apf_auth';
 let securityKey = 'security_init';
+let stcsKey = 'stcs_init';
 let certificateKey = 'certificate_init';
 let vsamKey = 'vsam_init';
 let planningValidationDetailsKey = `planning_validation_details`;
@@ -149,6 +157,7 @@ const setKeys = (id: string) => {
   datasetInstallationKey = `${datasetInstallationKey}_${id}`;
   apfAuthKey = `${apfAuthKey}_${id}`;
   securityKey = `${securityKey}_${id}`;
+  stcsKey = `${stcsKey}_${id}`;
   certificateKey = `${certificateKey}_${id}`;
   vsamKey = `${vsamKey}_${id}`;
   planningValidationDetailsKey = `${planningValidationDetailsKey}_${id}`;
@@ -206,6 +215,12 @@ export const initializeProgress = (host: string, user: string) => {
   if(!securityInitState) {
     const flattenedData = flatten(securityInitStatus);
     localStorage.setItem(securityKey, JSON.stringify(flattenedData));
+  }
+
+  const stcsInitState = localStorage.getItem(stcsKey);
+  if(!stcsInitState) {
+    const flattenedData = flatten(stcsInitStatus);
+    localStorage.setItem(stcsKey, JSON.stringify(flattenedData));
   }
 
   const certificateInitState = localStorage.getItem(certificateKey);
@@ -323,6 +338,21 @@ export const getSecurityInitState = (): InitSubStepsState => {
     return unflatten(flattenedData)
   } else {
     return securityInitStatus;
+  }
+}
+
+export const setStcsInitState = (stcsInitSteps: InitSubStepsState): void => {
+  Object.assign(stcsInitStatus, stcsInitSteps);
+  localStorage.setItem(stcsKey, JSON.stringify(stcsInitStatus));
+}
+
+export const getStcsInitState = (): InitSubStepsState => {
+  const stcsInitState = localStorage.getItem(stcsKey);
+  if(stcsInitState) {
+    const flattenedData = JSON.parse(stcsInitState);
+    return unflatten(flattenedData)
+  } else {
+    return stcsInitStatus;
   }
 }
 

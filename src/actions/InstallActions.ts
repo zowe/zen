@@ -59,6 +59,11 @@ export class InstallActions {
     return this.strategy.runInitSecurity(connectionArgs, installationArgs, zoweConfig);
   }
 
+  initStcs(connectionArgs: IIpcConnectionArgs,
+    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse> {
+    return this.strategy.initStcs(connectionArgs, installationArgs, zoweConfig);
+  }
+
   initVsam(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse> {
     return this.strategy.initVsam(connectionArgs, installationArgs, zoweConfig);
