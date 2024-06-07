@@ -31,6 +31,8 @@ export class ConfigurationStore extends DefaultStore {
   }
 
   public static setConfig(value: any) {
+    if(value === undefined || value === null || typeof value === "object")
+      return false
     return this.set(KEY_CONFIG, value);
   }
 
