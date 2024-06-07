@@ -59,6 +59,7 @@ const ReviewInstallation = () => {
     completeProgress.networkingStatus,
     completeProgress.apfAuthStatus,
     completeProgress.securityStatus,
+    completeProgress.stcsStatus,
     completeProgress.certificateStatus,
     completeProgress.vsamStatus,
     completeProgress.launchConfigStatus
