@@ -10,6 +10,7 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 import { IIpcConnectionArgs } from '../types/interfaces';
+import { InstallationArgs } from '../types/stateInterfaces';
 
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {
@@ -27,6 +28,9 @@ contextBridge.exposeInMainWorld('electron', {
     },
     getConfig() {
       return ipcRenderer.invoke("get-config");
+    },
+    uploadLatestYaml(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs) {
+      return ipcRenderer.invoke("upload-latest-yaml", connectionArgs, installationArgs);
     },
     getConfigByKey(key: string, value: any) {
       return ipcRenderer.invoke("get-config-by-key", key);

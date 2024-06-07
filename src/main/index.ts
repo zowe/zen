@@ -242,6 +242,11 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('upload-latest-yaml', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.uploadLatestYaml(connectionArgs, installationArgs);
+    return res;
+  });
+
   ipcMain.handle('init-stcs', async (event, connectionArgs, installationArgs, zoweConfig) => {
     const res = await installActions.initStcs(connectionArgs, installationArgs, zoweConfig);
     return res;

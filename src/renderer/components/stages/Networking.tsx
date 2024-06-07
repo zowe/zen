@@ -22,6 +22,8 @@ import { selectInitializationStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
+import { selectConnectionArgs } from "./connection/connectionSlice";
+import { getInstallationArguments } from "./progress/StageProgressStatus";
 
 function PatternPropertiesForm(props: any){
   const [elements, setElements] = useState([]);
@@ -633,6 +635,8 @@ const Networking = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
+  const [installationArgs, setInstArgs] = useState(getInstallationArguments());
+  const connectionArgs = useAppSelector(selectConnectionArgs);
 
 
 
@@ -774,6 +778,10 @@ const Networking = () => {
             }}
           />
           <PatternPropertiesForm schema={schema} yaml={yaml} setYaml={setLYaml}/>
+          <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+            e.preventDefault();
+            window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs);
+          }}>{'Save YAML to z/OS'}</Button>
         </Box>
       </ContainerCard>
     </div>

@@ -30,6 +30,32 @@ function removeRuntimeFromPath(path: string)
 
 class Installation {
 
+  public async uploadLatestYaml (
+    connectionArgs: IIpcConnectionArgs, 
+    installationArgs: InstallationArgs,
+  ): Promise<IResponse> {
+    const currentConfig: any = ConfigurationStore.getConfig();
+    const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
+    const savingResult = await this.generateYamlFile(currentConfig);
+    if (!savingResult.status) {
+      console.log("failed to save yaml");
+      return savingResult;
+    }
+    
+    try {
+      console.log("uploading yaml...");
+      const uploadYaml = await this.uploadYaml(connectionArgs, SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir);
+      ProgressStore.set('downloadUnpax.uploadYaml', uploadYaml.status);
+
+      if(!uploadYaml.status){
+        return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
+      }
+      return {status: true, details: "upload yaml success"};
+    } catch (error) {
+      return {status: false, details: error.message};
+    }
+  }
+
   public async downloadUnpax (
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,
