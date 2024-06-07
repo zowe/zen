@@ -84,7 +84,7 @@ const Installation = () => {
 
     if(getProgress("datasetInstallationStatus")) {
       const nextPosition = document.getElementById('save-installation-progress');
-      if(nextPosition) nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
+      if(nextPosition) nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
       const nextPosition = document.getElementById('container-box-id');
       if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
@@ -189,7 +189,7 @@ const Installation = () => {
     setShowProgress((initClicked || getProgress('datasetInstallationStatus')));
 
     if(initClicked) {
-      const nextPosition = document.getElementById('save-installation-progress');
+      const nextPosition = document.getElementById('installation-progress');
       if(nextPosition) nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
       setStateUpdated(!stateUpdated);
     }
@@ -210,6 +210,7 @@ const Installation = () => {
         window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
           setMvsDatasetInitializationProgress(res);
           dispatch(setDatasetInstallationStatus(stageComplete))
+          eventDispatcher.emit('initMvsComplete', true);
         })
       }, 3000);
     }
@@ -374,7 +375,8 @@ const Installation = () => {
           </React.Fragment>
         }
         </Box>
-        <Box sx={{ height: '35vh', minHeight: '0', bottom: '0' }} id="save-installation-progress"></Box>
+        <Box sx={{ height: '0', minHeight: '0' }} id="save-installation-progress"></Box>
+        <Box sx={{ height: showProgress ? '55vh' : 'auto', minHeight: '55vh' }} id="installation-progress"></Box>
       </ContainerCard>
     </div>
   );
