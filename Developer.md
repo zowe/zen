@@ -1,4 +1,4 @@
-# ZEN - Zowe Enterprise Necessity
+# ZEN - Zowe Server Install Wizard
 
 ### Introduction
 

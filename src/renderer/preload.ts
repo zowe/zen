@@ -10,6 +10,7 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 import { IIpcConnectionArgs } from '../types/interfaces';
+import { InstallationArgs } from '../types/stateInterfaces';
 
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {
@@ -27,6 +28,9 @@ contextBridge.exposeInMainWorld('electron', {
     },
     getConfig() {
       return ipcRenderer.invoke("get-config");
+    },
+    uploadLatestYaml(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs) {
+      return ipcRenderer.invoke("upload-latest-yaml", connectionArgs, installationArgs);
     },
     getConfigByKey(key: string, value: any) {
       return ipcRenderer.invoke("get-config-by-key", key);
@@ -97,6 +101,9 @@ contextBridge.exposeInMainWorld('electron', {
     installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string, zoweConfig: any, skipDownload: boolean) {
       return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version, zoweConfig, skipDownload);
     },
+    downloadButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string, zoweConfig: any) {
+      return ipcRenderer.invoke("download-unpax", connectionArgs, installationArgs, version, zoweConfig);
+    },
     initCertsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
       return ipcRenderer.invoke("init-certificates", connectionArgs, installationArgs, zoweConfig);
     },
@@ -108,6 +115,9 @@ contextBridge.exposeInMainWorld('electron', {
     },
     getInstallationProgress() {
       return ipcRenderer.invoke("get-installation-progress");
+    },
+    getDownloadUnpaxProgress() {
+      return ipcRenderer.invoke("get-download-unpax-progress");
     },
     getCertificateProgress() {
       return ipcRenderer.invoke("get-certificate-progress");

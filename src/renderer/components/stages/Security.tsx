@@ -69,7 +69,7 @@ const Security = () => {
   ajv.addKeyword("$anchor");
   let securitySchema;
   let validate: any;
-  if(schema) {
+  if(schema && schema.properties) {
     securitySchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
   }
 
@@ -95,6 +95,7 @@ const Security = () => {
       window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
         if (res.status) {
           dispatch(setSchema(res.details));
+          setLocalSchema(res.details);
         } else {
           dispatch(setSchema(FALLBACK_SCHEMA));
           setLocalSchema(FALLBACK_SCHEMA)
@@ -202,11 +203,11 @@ const Security = () => {
     process(event);
   }
 
-  const process = (event: any) => {
+  const process = async (event: any) => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
       // Some parts of Zen pass the response as a string directly into the object
       if (res.status == false && typeof res.details == "string") {
         res.details = { 3: res.details };
@@ -277,7 +278,7 @@ const Security = () => {
     <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("yaml")}>View/Edit Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button>
+        {/* <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button> */}
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
       <ContainerCard title="Security" description="Configure Zowe Security.">
@@ -302,7 +303,7 @@ const Security = () => {
         }
         </Box>
         </Box>
-        <Box sx={{ height: showProgress ? '125vh' : 'auto', minHeight: showProgress ? '125vh' : '10vh' }} id="security-progress"></Box>
+        <Box sx={{ height: showProgress ? '60vh' : 'auto', minHeight: showProgress ? '60vh' : '10vh' }} id="security-progress"></Box>
 
       </ContainerCard>
     </div>

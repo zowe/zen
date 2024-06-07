@@ -19,12 +19,18 @@ import { ProgressStore } from "../storage/ProgressStore";
 import { checkDirExists } from '../services/ServiceUtils';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { EditorStore } from '../storage/EditorStore';
+import { log, warn, error, info } from 'electron-log/main';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 const connectionActions = new ConnectionActions();
 const installActions = new InstallActions();
+
+console.log = log;
+console.warn = warn;
+console.error = error;
+console.info = info;
 
 // REVIEW: electron-squirrel-startup, review the necessity of it, package will have an operation viloation as it is 7 years old. 
 // if (require('electron-squirrel-startup')) { // ?
@@ -189,8 +195,13 @@ const createWindow = (): void => {
     return res;
   })
 
-  ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs, version, zoweConfig, skipDownload) => {
-    const res = await installActions.runInstallation(connectionArgs, installationArgs, version, zoweConfig, skipDownload);
+  ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs, version, zoweConfig) => {
+    const res = await installActions.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
+    return res;
+  });
+
+  ipcMain.handle('download-unpax', async (event, connectionArgs, installationArgs, version, zoweConfig) => {
+    const res = await installActions.downloadUnpax(connectionArgs, installationArgs, version, zoweConfig);
     return res;
   });
 
@@ -216,6 +227,11 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('get-download-unpax-progress', async () => {
+    const res = ProgressStore.getAll()['downloadUnpax'];
+    return res;
+  });
+
   ipcMain.handle('get-certificate-progress', async (event) => {
     const res = ProgressStore.getAll()['certificate'];
     return res;
@@ -223,6 +239,11 @@ const createWindow = (): void => {
 
   ipcMain.handle('init-security', async (event, connectionArgs, installationArgs, zoweConfig) => {
     const res = await installActions.runInitSecurity(connectionArgs, installationArgs, zoweConfig);
+    return res;
+  });
+
+  ipcMain.handle('upload-latest-yaml', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.uploadLatestYaml(connectionArgs, installationArgs);
     return res;
   });
 

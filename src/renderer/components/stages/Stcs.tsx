@@ -11,13 +11,10 @@
 import { useState, useEffect } from "react";
 import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
-import { setStcsStatus, setInitializationStatus, selectStcsStatus, selectInitializationStatus } from './progress/progressSlice';
-import ContainerCard from '../common/ContainerCard';
-import JsonForm from '../common/JsonForms';
-import EditorDialog from "../common/EditorDialog";
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml, setSchema } from '../configuration-wizard/wizardSlice';
+import { setStcsStatus, setInitializationStatus } from './progress/progressSlice';
+import ContainerCard from '../common/ContainerCard';import EditorDialog from "../common/EditorDialog";
 import Ajv from "ajv";
-import { selectInstallationArgs } from "./installation/installationSlice";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { IResponse } from "../../../types/interfaces";
 import ProgressCard from "../common/ProgressCard";
@@ -26,9 +23,10 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { setProgress, getProgress, setStcsInitState, getStcsInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
+import { getProgress, setStcsInitState, getStcsInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
+import { FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
 
 const Stcs = () => {
 
@@ -44,9 +42,8 @@ const Stcs = () => {
   const theme = createTheme();
 
   const dispatch = useAppDispatch();
-  const schema = useAppSelector(selectSchema);
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security?.properties?.stcs;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security?.stcs);
   const [setupDsYaml, setSetupDsYaml] = useState(yaml?.zowe?.setup?.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('stcsStatus'));
@@ -58,14 +55,10 @@ const Stcs = () => {
   const [stcsInitProgress, setStcsInitProgress] = useState(getStcsInitState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
-  const [reinit, setReinit] = useState(false);
-  const [initErrorMsg, setInitErrorMsg] = useState('');
 
   const installationArgs = getInstallationArguments();
   const connectionArgs = useAppSelector(selectConnectionArgs);
   let timer: any;
-
-  const section = 'stcs';
   const DEFAULT_ZOWE = 'ZWESLSTC';
   const DEFAULT_ZIS = 'ZWESISTC';
   const DEFAULT_AUX = 'ZWESASTC';
@@ -85,6 +78,30 @@ const Stcs = () => {
   }
 
   useEffect(() => {
+
+    if(!yaml){
+      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setYaml(res.details));
+          setLYaml(res.details);
+        } else {
+          dispatch(setYaml(FALLBACK_YAML));
+          setLYaml(FALLBACK_YAML);
+        }
+      })
+    }
+
+    if(!schema){
+      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setSchema(res.details));
+          setLocalSchema(res.details);
+        } else {
+          dispatch(setSchema(FALLBACK_SCHEMA));
+          setLocalSchema(FALLBACK_SCHEMA);
+        }
+      })
+    }
 
     setShowProgress(initClicked || getProgress('stcsStatus'));
     let nextPosition;
@@ -191,20 +208,18 @@ const Stcs = () => {
   };
 
   const reinitialize = (event: any) => {
-    setReinit(true);
     process(event);
   }
 
-  const process = (event: any) => {
+  const process = async (event: any) => {
     alertEmitter.emit('hideAlert');
 
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initStcsButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.initStcsButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
         updateProgress(res.status);
         if(res.error) {
-          setInitErrorMsg(`${res ? res.errorMsg : ''} ${defaultErrorMessage}`);
           alertEmitter.emit('showAlert', res.errorMsg+" "+defaultErrorMessage, 'error');
         }
         clearInterval(timer);
@@ -252,7 +267,7 @@ const Stcs = () => {
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', color: 'text.secondary', fontSize: '13px' }}>
           {`Please review the following started task (STC) configuration values from the security stage before initializing stcs.\n`}
         </Typography>
-        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details.config ?? yaml))}>
+        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           
           <Box sx={{ width: '60vw' }}>

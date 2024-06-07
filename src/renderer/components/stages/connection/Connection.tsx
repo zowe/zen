@@ -43,8 +43,7 @@ const Connection = () => {
   const stageLabel = 'Connection';
 
   const dispatch = useAppDispatch();
-  // const zoweCLIVersion = useAppSelector(selectZoweCLIVersion); // Remove this feature for now.
-  const zoweCLIVersion = '';
+  const zoweCLIVersion = useAppSelector(selectZoweCLIVersion);
   const [expanded, setExpanded] = React.useState<string | false>('FTPConn');
 
   const handleChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -152,17 +151,11 @@ const FTPConnectionForm = () => {
   const setYamlAndConfig = () => {
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       if (res && res.status && res.details) {
-        dispatch(setYaml(res.details.config));
-        const schema = res.details.schema;
-        dispatch(setSchema(schema));
+        dispatch(setYaml(res.details));
       } else {
         dispatch(setYaml(FALLBACK_YAML));
-        dispatch(setSchema(FALLBACK_SCHEMA));
         window.electron.ipcRenderer.setConfig(FALLBACK_YAML).then((res: IResponse) => {
           // yaml response
-        });
-        window.electron.ipcRenderer.setSchema(FALLBACK_SCHEMA).then((res: IResponse) => {
-          // schema response
         });
       }
       const { activeStepIndex, isSubStep, activeSubStepIndex } = getActiveStage();

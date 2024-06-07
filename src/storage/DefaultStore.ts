@@ -53,7 +53,7 @@ export class DefaultStore {
   public static set(key: string, value: any): boolean {
     try {
       if (value === undefined || typeof value === 'function' || typeof value === 'symbol') {
-        console.warn(`Attempted to overwrite ${key} with undefined, function, or symbol`);
+        console.warn(`Attempted to overwrite ${key} with undefined, function, or symbol. Value: ${value}`);
       } else {
         this.getStore().set(key, value);
       }

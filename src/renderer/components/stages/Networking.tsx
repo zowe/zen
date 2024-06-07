@@ -22,6 +22,8 @@ import { selectInitializationStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
+import { selectConnectionArgs } from "./connection/connectionSlice";
+import { getInstallationArguments } from "./progress/StageProgressStatus";
 
 function PatternPropertiesForm(props: any){
   const [elements, setElements] = useState([]);
@@ -38,7 +40,7 @@ function PatternPropertiesForm(props: any){
       for (let i = 0; i < keys.length && i < LOOP_LIMIT; i++) { //i = go through each property of the yaml
         if (props.schema.properties[keys[i]].patternProperties != undefined) { //only for rendering patternProperties
           if(typeof yaml[keys[i]] === "object" && Object.keys(yaml[keys[i]]).length > 0) {
-            newElements.push(<p key={keys[i]} style={{fontSize: "24px"}}>{keys[i]}</p>);
+            newElements.push(<p key={`title-p-` + keys[i]} style={{fontSize: "24px"}}>{keys[i]}</p>);
             const patterns = Object.keys(props.schema.properties[keys[i]].patternProperties); //get all user defined regex patterns
             for(let j = 0; j <  patterns.length && j < LOOP_LIMIT; j++){ //j = go through each pattern
               const pattern = new RegExp(patterns[j]);
@@ -62,7 +64,7 @@ function PatternPropertiesForm(props: any){
                           case 'boolean':
                             newElements.push(<FormControlLabel
                               label={matchedProps[l]}
-                              key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
+                              key={`toggle-` + keys[i] + '.' + toMatch[k] + '.' + matchedProps[l] + '-' + (i+k+l)}
                               control={<Checkbox checked={yaml[keys[i]][toMatch[k]][matchedProps[l]]} onChange={async (e) => {
                                 // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
                                 const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}};
@@ -633,6 +635,8 @@ const Networking = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
+  const [installationArgs, setInstArgs] = useState(getInstallationArguments());
+  const connectionArgs = useAppSelector(selectConnectionArgs);
 
 
 
@@ -721,15 +725,15 @@ const Networking = () => {
   return (
     yaml && schema && <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
+        <Button key="yaml" variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
+        {/* <Button key="jcl" variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button> */}
+        <Button key="job" variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Networking" description="Zowe networking configurations."> 
         {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <p style={{fontSize: "24px"}}>External Domains <IconButton onClick={(e) => {
+          <p key="external-domains" style={{fontSize: "24px"}}>External Domains <IconButton onClick={(e) => {
             let domains = [...yaml.zowe?.externalDomains, ""];
             const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
             window.electron.ipcRenderer.setConfig(newYaml )
@@ -774,6 +778,10 @@ const Networking = () => {
             }}
           />
           <PatternPropertiesForm schema={schema} yaml={yaml} setYaml={setLYaml}/>
+          <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+            e.preventDefault();
+            window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs);
+          }}>{'Save YAML to z/OS'}</Button>
         </Box>
       </ContainerCard>
     </div>

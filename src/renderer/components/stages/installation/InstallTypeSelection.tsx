@@ -8,21 +8,19 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import { Box, Button, FormControl, FormControlLabel, Link, Radio, RadioGroup, Typography } from '@mui/material';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { setNextStepEnabled } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath, selectInstallationType, selectLicenseAgreement } from './installationSlice';
-import { setInstallationTypeStatus } from "../progress/progressSlice"; 
+import { selectInstallationArgs, setInstallationArgs, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath } from './installationSlice';
+import { setDownloadUnpaxStatus, setInstallationTypeStatus } from "../progress/progressSlice";
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
 import { getStageDetails } from "../../../../services/StageDetails";
 import { getInstallationTypeStatus } from "../progress/StageProgressStatus";
-import { connect } from "http2";
-
 const InstallationType = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
@@ -55,7 +53,7 @@ const InstallationType = () => {
     }
     
   }, [installValue, paxPath, installationArgs, agreeLicense]);
-
+  
   const updateProgress = (status: boolean): void => {
     dispatch(setInstallationTypeStatus(status))
     dispatch(setNextStepEnabled(status));
@@ -82,6 +80,7 @@ const InstallationType = () => {
     }
     setInstallValue(type);
     updateProgress(false);
+    dispatch(setDownloadUnpaxStatus(false));
   }
 
   return (
@@ -112,7 +111,7 @@ const InstallationType = () => {
       <div>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
           Zen will download the latest Zowe convenience build in PAX archive format from.
-          { !agreeLicense && <p>Please accept the license agreement to continue.</p>}
+          { !agreeLicense && <><br />Please accept the license agreement to continue.<br/></>}
           <Link href="zowe.org">{'https://zowe.org'}</Link>
         </Typography>
         <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>

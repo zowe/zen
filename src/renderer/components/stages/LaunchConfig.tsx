@@ -23,6 +23,8 @@ import { selectInitializationStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
+import { getInstallationArguments } from "./progress/StageProgressStatus";
+import { selectConnectionArgs } from "./connection/connectionSlice";
 
 const LaunchConfig = () => {
 
@@ -437,6 +439,8 @@ const LaunchConfig = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
+  const [installationArgs, setInstArgs] = useState(getInstallationArguments());
+  const connectionArgs = useAppSelector(selectConnectionArgs);
 
 
   const ajv = new Ajv();
@@ -513,7 +517,7 @@ const LaunchConfig = () => {
     <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
+        {/* <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button> */}
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Configuration" description="Basic zowe.yaml configurations."> 
@@ -521,6 +525,10 @@ const LaunchConfig = () => {
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
+          <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+            e.preventDefault();
+            window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs);
+          }}>{'Save YAML to z/OS'}</Button>
         </Box>
       </ContainerCard>
     </div>

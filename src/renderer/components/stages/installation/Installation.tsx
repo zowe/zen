@@ -27,7 +27,7 @@ import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
 import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK, FALLBACK_SCHEMA, FALLBACK_YAML } from '../../common/Constants';
 import { getStageDetails, getSubStageDetails } from "../../../../services/StageDetails"; 
-import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments } from "../progress/StageProgressStatus";
+import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments, datasetInstallationStatus } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
 import eventDispatcher from '../../../../services/eventDispatcher';
 
@@ -43,7 +43,6 @@ const Installation = () => {
   const theme = createTheme();
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
-
   const dispatch = useAppDispatch();
   // this schema will be used in the case where the user, for some reason, clicks "skip installation" without downloading or uploading a Zowe pax
   // Maybe we shouldnt allow the user to skip the installation stage??
@@ -73,7 +72,7 @@ const Installation = () => {
   ajv.addKeyword("$anchor");
   let datasetSchema;
   let validate: any;
-  if(schema) {
+  if(schema && schema.properties) {
     datasetSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
   }
 
@@ -84,16 +83,11 @@ const Installation = () => {
   useEffect(() => {
 
     if(getProgress("datasetInstallationStatus")) {
-      if(installationType !== 'smpe') {
-        const nextPosition = document.getElementById('start-installation-progress');
-        nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        const nextPosition = document.getElementById('save-installation-progress');
-        nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'start' });
-      }
+      const nextPosition = document.getElementById('save-installation-progress');
+      if(nextPosition) nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
       const nextPosition = document.getElementById('container-box-id');
-      nextPosition.scrollIntoView({behavior: 'smooth'});
+      if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
     }
 
     window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
@@ -160,7 +154,6 @@ const Installation = () => {
           // console.log('got config:', JSON.stringify(res.details));
           let yamlObj = mergeInstallationArgsAndYaml(res.details);
           if(res.details.zowe?.setup?.dataset === undefined){
-            // console.log('setting yaml:',{...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} });
             dispatch(setYaml({...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} }));
           } else {
             dispatch(setYaml(yamlObj));
@@ -178,13 +171,13 @@ const Installation = () => {
         dispatch(setSchema(FALLBACK_SCHEMA));
       }
     })
+
+    dispatch(setNextStepEnabled(getProgress('datasetInstallationStatus')));
     
     if(installationType === 'smpe') {
       const status = getProgress('datasetInstallationStatus');
       setStageSkipStatus(!status);
-      setDsInstallStageStatus(status);
-    } else {
-      updateProgress(getProgress('datasetInstallationStatus'));
+      installProceedActions(status);
     }
 
     return () => {
@@ -193,13 +186,12 @@ const Installation = () => {
   }, []);
 
   useEffect(() => {
-    setShowProgress(installationType!=='smpe' && (initClicked || getProgress('datasetInstallationStatus')));
+    setShowProgress((initClicked || getProgress('datasetInstallationStatus')));
 
     if(initClicked) {
       const nextPosition = document.getElementById('installation-progress');
-      nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      if(nextPosition) nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
       setStateUpdated(!stateUpdated);
-      dispatch(setDatasetInstallationStatus(false));
     }
   }, [initClicked]);
 
@@ -208,22 +200,24 @@ const Installation = () => {
     if(allAttributesTrue) {
       dispatch(setNextStepEnabled(true));
       dispatch(setDatasetInstallationStatus(true));
-      setShowProgress(installationType!=='smpe' && (initClicked || getProgress('datasetInstallationStatus')));
     }
   }, [mvsDatasetInitProgress]);
 
   useEffect(() => {
-    if(!getProgress('datasetInstallationStatus') && initClicked) {
+    const stageComplete = mvsDatasetInitProgress.uploadYaml && mvsDatasetInitProgress.initMVS && mvsDatasetInitProgress.install;
+    if(!stageComplete && showProgress) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
           setMvsDatasetInitializationProgress(res);
+          dispatch(setDatasetInstallationStatus(stageComplete))
+          eventDispatcher.emit('initMvsComplete', true);
         })
       }, 3000);
     }
     return () => {
       clearInterval(timer);
     };
-  }, [showProgress, stateUpdated]);
+  }, [showProgress, stateUpdated, mvsDatasetInitProgress]);
 
   const setMvsDatasetInitializationProgress = (datasetInitState: DatasetInstallationState) => {
     setMvsDatasetInitProgress(datasetInitState);
@@ -241,13 +235,6 @@ const Installation = () => {
     stages[STAGE_ID].isSkipped = status;
     mapAndSetSkipStatus(SUB_STAGE_ID, status);
   }
-
-  const setDsInstallStageStatus = (status: boolean) => {
-    dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(status));
-    dispatch(setDatasetInstallationStatus(status));
-  }
-
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
     setStageSkipStatus(!status);
@@ -259,8 +246,8 @@ const Installation = () => {
     }
     const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    setDsInstallStageStatus(status);
-    setMvsDatasetInitializationProgress(getDatasetInstallationState());
+    installProceedActions(status);
+    // setMvsDatasetInitializationProgress(getDatasetInstallationState());
   }
 
   const toggleEditorVisibility = (type: any) => {
@@ -268,65 +255,54 @@ const Installation = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const process = (event: any, skipDownload?: boolean) => {
+  const process = async (event: any) => {
 
-    if(!(installationType === 'smpe')) {
-      setInitClicked(true);
-      updateProgress(false);
-    }
+    setInitClicked(true);
+    updateProgress(false);
     event.preventDefault();
     dispatch(setLoading(true));
+    setMvsDatasetInitProgress(datasetInstallationStatus)
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
     Promise.all([
       window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.setup.dataset', setupYaml),
     ]).then(async () => {
       dispatch(setLoading(false));
-      if(installationType === 'smpe'){
-        setStageSkipStatus(false);
-        setDsInstallStageStatus(true);
-        dispatch(setLoading(false));
-        setShowProgress(false);
-      } else {
-        setYaml(window.electron.ipcRenderer.getConfig());
-        setShowProgress(true);
-        dispatch(setLoading(false)); /* change skipDownload ?? false --> true to skip upload/download steps for quicker development */
-        window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml, skipDownload ?? false).then((res: IResponse) => {
-          if(res.details?.mergedYaml != undefined){
-            dispatch(setYaml(res.details.mergedYaml));
-            window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
-          }
-          // Some parts of Zen pass the response as a string directly into the object
-          if (res.status == false && typeof res.details == "string") {
-            res.details = { 3: res.details };
-          }
-          if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe install
-            alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
-            window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
-              toggleEditorVisibility("output");
-            })
-            updateProgress(false);
-            installProceedActions(false);
-            stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-            clearInterval(timer);
-          } else {
-            installProceedActions(res.status);
-            stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
-            clearInterval(timer);
-          }
-        }).catch((err: any) => {
-          clearInterval(timer);
+      setYaml(window.electron.ipcRenderer.getConfig());
+      setShowProgress(true);
+      dispatch(setLoading(false)); /* change skipDownload ?? false --> true to skip upload/download steps for quicker development */
+      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
+        // Some parts of Zen pass the response as a string directly into the object
+        if (res.status == false && typeof res.details == "string") {
+          res.details = { 3: res.details };
+        }
+        if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe install
+          alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
+          window.electron.ipcRenderer.setStandardOutput(JSON.stringify(res.details[3])).then((res: any) => {
+            toggleEditorVisibility("output");
+          })
           updateProgress(false);
           installProceedActions(false);
           stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-          stages[STAGE_ID].isSkipped = true;
-          if (typeof err === "string") {
-            console.warn('Installation failed', err);
-          } else {
-            console.warn('Installation failed', err?.toString()); // toString() throws run-time error on undefined or null
-          }
-        });
-      }
+          clearInterval(timer);
+        } else {
+          updateProgress(res.status);
+          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+          clearInterval(timer);
+        }
+      }).catch((err: any) => {
+        clearInterval(timer);
+        updateProgress(false);
+        installProceedActions(false);
+        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
+        stages[STAGE_ID].isSkipped = true;
+        if (typeof err === "string") {
+          console.warn('Installation failed', err);
+        } else {
+          console.warn('Installation failed', err?.toString()); // toString() throws run-time error on undefined or null
+        }
+      });
+      
     })
   }
 
@@ -355,7 +331,8 @@ const Installation = () => {
         setStageConfig(false, errPath+' '+errMsg, updatedData);
       } else {
         const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}};
-        await window.electron.ipcRenderer.setConfig(newYaml)
+        setLYaml(newYaml);
+        window.electron.ipcRenderer.setConfig(newYaml)
         setStageConfig(true, '', updatedData);
       }
     }
@@ -371,7 +348,7 @@ const Installation = () => {
     <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View/Edit Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
+        {/* <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button> */}
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Installation" description="Provide installation details."> 
@@ -385,19 +362,16 @@ const Installation = () => {
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationType === 'smpe' ? 'Save' : 'Install MVS datasets'}</Button>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{'Install MVS datasets'}</Button>
           {/* <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e, true)}>{installationType === 'smpe' ? 'Save' : 'SKIP DOWNLOAD and Install MVS datasets'}</Button> */}
         </FormControl> : null}
         <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : '0'}} id="start-installation-progress">
         {!showProgress ? null :
-          <React.Fragment> 
-            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={mvsDatasetInitProgress?.uploadYaml}/>
-            <ProgressCard label="Download convenience build pax locally" id="download-progress-card" status={mvsDatasetInitProgress?.download}/>
-            <ProgressCard label={`Upload pax file to ${installationArgs.installationDir}`} id="upload-progress-card" status={mvsDatasetInitProgress?.upload}/>
-            <ProgressCard label="Unpax installation files" id="unpax-progress-card" status={mvsDatasetInitProgress?.unpax}/>
-            <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={mvsDatasetInitProgress?.install}/>
-            <ProgressCard label="Run MVS dataset initialization script (zwe init mvs)" id="install-progress-card" status={mvsDatasetInitProgress?.initMVS }/>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{installationType === 'smpe' ? 'Save' : 'Reinstall MVS datasets'}</Button>
+          <React.Fragment>
+            <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={mvsDatasetInitProgress.uploadYaml}/>
+            <ProgressCard label="Run installation script (zwe install)" id="install-progress-card" status={mvsDatasetInitProgress.install}/>
+            <ProgressCard label="Run MVS dataset initialization script (zwe init mvs)" id="install-progress-card" status={mvsDatasetInitProgress.initMVS}/>
+            <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{'Reinstall MVS datasets'}</Button>
           </React.Fragment>
         }
         </Box>

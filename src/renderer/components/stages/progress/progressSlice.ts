@@ -17,6 +17,7 @@ const initialState: ProgressState = {
   connectionStatus: getProgress('connectionStatus') || false,
   planningStatus: getProgress('planningStatus') || false,
   installationTypeStatus: getProgress('installationTypeStatus') || false,
+  downloadUnpaxStatus: getProgress('downloadUnpaxStatus') || false,
   initializationStatus: getProgress('initializationStatus') || false,
   datasetInstallationStatus: getProgress('datasetInstallationStatus') || false,
   networkingStatus: getProgress('networkingStatus') || false,
@@ -43,6 +44,10 @@ export const progressSlice = createSlice({
     setInstallationTypeStatus: (state, action: PayloadAction<boolean>) => {
       state.installationTypeStatus = action.payload;
       setProgress('installationTypeStatus', action.payload);
+    },
+    setDownloadUnpaxStatus: (state, action: PayloadAction<boolean>) => {
+      state.downloadUnpaxStatus = action.payload;
+      setProgress('downloadUnpaxStatus', action.payload);
     },
     setInitializationStatus: (state, action: PayloadAction<boolean>) => {
       if (
@@ -100,11 +105,12 @@ export const progressSlice = createSlice({
   }
 });
 
-export const { setConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setInitializationStatus, setDatasetInstallationStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setStcsStatus, setCertificateStatus, setVsamStatus, setLaunchConfigStatus, setReviewStatus } = progressSlice.actions;
+export const { setConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setInitializationStatus, setDatasetInstallationStatus, setDownloadUnpaxStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setStcsStatus, setCertificateStatus, setVsamStatus, setLaunchConfigStatus, setReviewStatus } = progressSlice.actions;
 
 export const selectConnectionStatus = (state: RootState) => state.progress.connectionStatus;
 export const selectPlanningStatus = (state: RootState) => state.progress.planningStatus;
 export const selectInstallationTypeStatus = (state: RootState) => state.progress.installationTypeStatus;
+export const selectIDownloadUnpaxStatus = (state: RootState) => state.progress.downloadUnpaxStatus;
 export const selectInitializationStatus = (state: RootState) => state.progress.initializationStatus;
 export const selectDatasetInstallationStatus= (state: RootState) => state.progress.datasetInstallationStatus;
 export const selectNetworkingStatus= (state: RootState) => state.progress.networkingStatus;
