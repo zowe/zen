@@ -255,7 +255,7 @@ const Installation = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const process = (event: any) => {
+  const process = async (event: any) => {
 
     setInitClicked(true);
     updateProgress(false);
@@ -271,7 +271,7 @@ const Installation = () => {
       setYaml(window.electron.ipcRenderer.getConfig());
       setShowProgress(true);
       dispatch(setLoading(false)); /* change skipDownload ?? false --> true to skip upload/download steps for quicker development */
-      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
+      window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs, version, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
         // Some parts of Zen pass the response as a string directly into the object
         if (res.status == false && typeof res.details == "string") {
           res.details = { 3: res.details };
