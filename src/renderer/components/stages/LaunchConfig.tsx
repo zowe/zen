@@ -494,8 +494,8 @@ const LaunchConfig = () => {
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
           const newYaml = {...yaml, zowe: {...yaml.zowe, configmgr: newData.configmgr, launchScript: newData.launchScript}};
-          await window.electron.ipcRenderer.setConfigByKey("zowe.configmgr", newData.configmgr);
-          await window.electron.ipcRenderer.setConfigByKey("zowe.launchScript", newData.launchScript);
+          await window.electron.ipcRenderer.setConfigByKeyAndValidate("zowe.configmgr", newData.configmgr);
+          await window.electron.ipcRenderer.setConfigByKeyAndValidate("zowe.launchScript", newData.launchScript);
           dispatch(setYaml(newYaml));
           setStageConfig(true, '', newData);
         }
