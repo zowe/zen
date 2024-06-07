@@ -18,10 +18,12 @@ import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { stages } from "../configuration-wizard/Wizard";
-import { selectInitializationStatus } from "./progress/progressSlice";
+import { selectInitializationStatus, setNetworkingStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
+import eventDispatcher from "../../../services/eventDispatcher";
+import { getProgress, mapAndSetSkipStatus } from "./progress/StageProgressStatus";
 
 function PatternPropertiesForm(props: any){
   const [elements, setElements] = useState([]);
@@ -65,6 +67,7 @@ function PatternPropertiesForm(props: any){
                               key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
                               control={<Checkbox checked={yaml[keys[i]][toMatch[k]][matchedProps[l]]} onChange={async (e) => {
                                 // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
+                                eventDispatcher.emit('configUpdate');
                                 const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}};
                                 setLYaml(newYaml);
                                 await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, !yaml[keys[i]][toMatch[k]][matchedProps[l]])
@@ -80,6 +83,7 @@ function PatternPropertiesForm(props: any){
                                 key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
                                 value={yaml[keys[i]][toMatch[k]][matchedProps[l]]}
                                 onChange={async (e) => {
+                                  eventDispatcher.emit('configUpdate');
                                   const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
                                   setLYaml(newYaml);
                                   await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
@@ -634,8 +638,6 @@ const Networking = () => {
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
 
-
-
   const ajv = new Ajv();
   ajv.addKeyword("$anchor");
   let validate: any;
@@ -652,6 +654,8 @@ const Networking = () => {
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
   useEffect(() => {
+    eventDispatcher.on('configUpdate', onConfigUpdate);
+
     if(!yaml){
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
@@ -676,12 +680,13 @@ const Networking = () => {
     const nextPosition = document.getElementById('container-box-id');
     if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
 
-    dispatch(setNextStepEnabled(true));
+    dispatch(setNextStepEnabled(getProgress('networkingStatus')));
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = false;
     stages[STAGE_ID].isSkipped = isInitializationSkipped;
     setIsFormInit(true);
 
     return () => {
+      eventDispatcher.off('configUpdate', onConfigUpdate);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
@@ -716,7 +721,19 @@ const Networking = () => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setLYaml(data);
-  } 
+  }
+
+  const onConfigUpdate = () => {
+    dispatch(setNetworkingStatus(true));
+    dispatch(setNextStepEnabled(true));
+    setStageSkipStatus(false);
+  }
+
+  const setStageSkipStatus = (status: boolean) => {
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = status;
+    mapAndSetSkipStatus(SUB_STAGE_ID, status);
+  }
 
   return (
     yaml && schema && <div id="container-box-id">
@@ -740,6 +757,7 @@ const Networking = () => {
             variant="standard"
             value={domain}
             onChange={async (e) => {
+              onConfigUpdate();
               let domains = [...yaml.zowe?.externalDomains];
               domains[index] = e.target.value;
               const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
@@ -764,6 +782,7 @@ const Networking = () => {
             helperText={schema.properties.zowe.properties.externalPort.description}
             value={yaml.zowe.externalPort}
             onChange={async (e) => {
+              onConfigUpdate();
               const newYaml = {...yaml, zowe: {...yaml.zowe, externalPort: Number(e.target.value)}};
               window.electron.ipcRenderer.setConfig(newYaml)
               dispatch(setYaml(newYaml))
