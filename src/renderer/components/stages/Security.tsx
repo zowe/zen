@@ -203,11 +203,11 @@ const Security = () => {
     process(event);
   }
 
-  const process = (event: any) => {
+  const process = async (event: any) => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
       // Some parts of Zen pass the response as a string directly into the object
       if (res.status == false && typeof res.details == "string") {
         res.details = { 3: res.details };
