@@ -300,7 +300,7 @@ const Certificates = () => {
           </React.Fragment>
         }
         </Box>
-        <Box sx={{ height: showProgress ? '40vh' : 'auto', minHeight: showProgress ? '40vh' : '10vh' }} id="certificate-progress"></Box>
+        <Box sx={{ height: showProgress ? '10vh' : 'auto'}} id="certificate-progress"></Box>
       </ContainerCard>
     </div>
   );
