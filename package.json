@@ -1,8 +1,8 @@
 {
-  "name": "zowe-enterprise-necessity",
+  "name": "zowe-install-wizard",
   "author": "Zowe",
-  "description": "Zowe Enterprise Necessity",
-  "productName": "zowe-enterprise-necessity",
+  "description": "Zowe Server Install Wizard",
+  "productName": "zowe-install-wizard",
   "version": "1.0.0",
   "main": ".webpack/main",
   "scripts": {
@@ -64,6 +64,7 @@
     "@types/flat": "^5.0.2",
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
+    "electron-log": "^5.1.5",
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^8.1.0",
     "flat": "^5.0.2",

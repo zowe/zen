@@ -84,7 +84,7 @@ export default function Header() {
         <AppBar position="static">
           <Toolbar sx={{boxShadow: '0px 2px 4px 3px rgb(0 0 0 / 25%)', minHeight: '60px !important'}}>
             <Typography style={{ textAlign: 'right' }} variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Zowe Enterprise Necessity
+              Zowe Server Install Wizard
             </Typography>
             {alertData.show && (
               <><Alert style={{ position: 'absolute' }} severity={alertData.severity}>{alertData.message}

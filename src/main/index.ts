@@ -19,12 +19,18 @@ import { ProgressStore } from "../storage/ProgressStore";
 import { checkDirExists } from '../services/ServiceUtils';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { EditorStore } from '../storage/EditorStore';
+import { log, warn, error, info } from 'electron-log/main';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 const connectionActions = new ConnectionActions();
 const installActions = new InstallActions();
+
+console.log = log;
+console.warn = warn;
+console.error = error;
+console.info = info;
 
 // REVIEW: electron-squirrel-startup, review the necessity of it, package will have an operation viloation as it is 7 years old. 
 // if (require('electron-squirrel-startup')) { // ?
