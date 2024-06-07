@@ -226,6 +226,11 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('init-stcs', async (event, connectionArgs, installationArgs, zoweConfig) => {
+    const res = await installActions.initStcs(connectionArgs, installationArgs, zoweConfig);
+    return res;
+  });
+
   ipcMain.handle('init-vsam', async (event, connectionArgs, installationArgs, zoweConfig) => {
     const res = await installActions.initVsam(connectionArgs, installationArgs, zoweConfig);
     return res;
@@ -233,6 +238,11 @@ const createWindow = (): void => {
 
   ipcMain.handle('get-init-security-progress', async () => {
     const res = ProgressStore.getAll()['initSecurity'];
+    return res;
+  });
+
+  ipcMain.handle('get-init-stcs-progress', async () => {
+    const res = ProgressStore.getAll()['initStcs'];
     return res;
   });
 
