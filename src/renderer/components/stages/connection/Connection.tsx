@@ -43,8 +43,7 @@ const Connection = () => {
   const stageLabel = 'Connection';
 
   const dispatch = useAppDispatch();
-  // const zoweCLIVersion = useAppSelector(selectZoweCLIVersion); // Remove this feature for now.
-  const zoweCLIVersion = '';
+  const zoweCLIVersion = useAppSelector(selectZoweCLIVersion);
   const [expanded, setExpanded] = React.useState<string | false>('FTPConn');
 
   const handleChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -152,7 +151,7 @@ const FTPConnectionForm = () => {
   const setYamlAndConfig = () => {
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       if (res && res.status && res.details) {
-        dispatch(setYaml(res.details.config));
+        dispatch(setYaml(res.details));
         const schema = res.details.schema;
         dispatch(setSchema(schema));
       } else {
