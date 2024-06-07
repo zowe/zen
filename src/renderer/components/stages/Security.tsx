@@ -45,8 +45,8 @@ const Security = () => {
   const theme = createTheme();
 
   const dispatch = useAppDispatch();
-  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema) || FALLBACK_SCHEMA);
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml) || FALLBACK_YAML);
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security ?? {product: 'RACF'});
   const [showProgress, setShowProgress] = useState(getProgress('securityStatus'));

@@ -42,8 +42,8 @@ const Certificates = () => {
   const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
 
   const dispatch = useAppDispatch();
-  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema) || FALLBACK_SCHEMA);
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml) || FALLBACK_YAML);
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const installationArgs = getInstallationArguments();
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;

@@ -43,8 +43,8 @@ const InitApfAuth = () => {
   const theme = createTheme();
 
   const dispatch = useAppDispatch();
-  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema) || FALLBACK_SCHEMA);
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml) || FALLBACK_YAML);
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || FALLBACK_YAML.zowe.setup.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('apfAuthStatus'));
