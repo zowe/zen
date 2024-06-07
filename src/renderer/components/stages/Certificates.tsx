@@ -42,8 +42,8 @@ const Certificates = () => {
   const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
 
   const dispatch = useAppDispatch();
-  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema) || FALLBACK_SCHEMA);
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml) || FALLBACK_YAML);
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const installationArgs = getInstallationArguments();
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
@@ -69,7 +69,7 @@ const Certificates = () => {
   let certificateSchema;
   let validate: any;
   let validateVerifyCertSchema: any;
-  if(schema) {
+  if(schema && schema.properties) {
     certificateSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
   }
 
@@ -99,6 +99,7 @@ const Certificates = () => {
       window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
         if (res.status) {
           dispatch(setSchema(res.details));
+          setLocalSchema(res.details);
         } else {
           dispatch(setSchema(FALLBACK_SCHEMA));
           setLocalSchema(FALLBACK_SCHEMA)

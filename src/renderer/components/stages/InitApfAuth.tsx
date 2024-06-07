@@ -43,10 +43,10 @@ const InitApfAuth = () => {
   const theme = createTheme();
 
   const dispatch = useAppDispatch();
-  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema) || FALLBACK_SCHEMA);
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml) || FALLBACK_YAML);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || FALLBACK_YAML.zowe.setup.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('apfAuthStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -65,7 +65,7 @@ const InitApfAuth = () => {
   ajv.addKeyword("$anchor");
   let datasetSchema;
   let validate: any;
-  if(schema) {
+  if(schema && schema.properties) {
     datasetSchema = schema.properties.zowe.properties.setup.properties.dataset;
   }
 
@@ -93,6 +93,7 @@ const InitApfAuth = () => {
       window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
         if (res.status) {
           dispatch(setSchema(res.details));
+          setLocalSchema(res.details);
         } else {
           dispatch(setSchema(FALLBACK_SCHEMA));
           setLocalSchema(FALLBACK_SCHEMA);

@@ -72,7 +72,7 @@ const Installation = () => {
   ajv.addKeyword("$anchor");
   let datasetSchema;
   let validate: any;
-  if(schema) {
+  if(schema && schema.properties) {
     datasetSchema = schema?.properties?.zowe?.properties?.setup?.properties?.dataset;
   }
 

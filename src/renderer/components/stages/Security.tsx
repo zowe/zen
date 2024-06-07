@@ -45,8 +45,8 @@ const Security = () => {
   const theme = createTheme();
 
   const dispatch = useAppDispatch();
-  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema) || FALLBACK_SCHEMA);
+  const [yaml, setLYaml] = useState(useAppSelector(selectYaml) || FALLBACK_YAML);
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security ?? {product: 'RACF'});
   const [showProgress, setShowProgress] = useState(getProgress('securityStatus'));
@@ -69,7 +69,7 @@ const Security = () => {
   ajv.addKeyword("$anchor");
   let securitySchema;
   let validate: any;
-  if(schema) {
+  if(schema && schema.properties) {
     securitySchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
   }
 
@@ -95,6 +95,7 @@ const Security = () => {
       window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
         if (res.status) {
           dispatch(setSchema(res.details));
+          setLocalSchema(res.details);
         } else {
           dispatch(setSchema(FALLBACK_SCHEMA));
           setLocalSchema(FALLBACK_SCHEMA)
