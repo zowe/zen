@@ -302,7 +302,7 @@ const Security = () => {
         }
         </Box>
         </Box>
-        <Box sx={{ height: showProgress ? '125vh' : 'auto', minHeight: showProgress ? '125vh' : '10vh' }} id="security-progress"></Box>
+        <Box sx={{ height: showProgress ? '60vh' : 'auto', minHeight: showProgress ? '60vh' : '10vh' }} id="security-progress"></Box>
 
       </ContainerCard>
     </div>
