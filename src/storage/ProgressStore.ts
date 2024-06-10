@@ -14,11 +14,16 @@ import { DefaultStore } from './DefaultStore';
 // TODO: Store overall progress and restore up to last successful step
 
 const STORE_DEFAULT = {
-  "installation": {
+  "downloadUnpax": {
     "uploadYaml": false,
     "download": false,
     "upload": false,
     "unpax": false,
+    "getExampleYaml": false,
+    "getSchemas": false,
+  },
+  "installation": {
+    "uploadYaml": false,
     "install": false,
     "initMVS": false
   },
@@ -28,6 +33,11 @@ const STORE_DEFAULT = {
     "success": false
   },
   "initSecurity": {
+    "writeYaml": false,
+    "uploadYaml": false,
+    "success": false
+  },
+  "initStcs": {
     "writeYaml": false,
     "uploadYaml": false,
     "success": false

@@ -18,10 +18,8 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/progress/progressSlice';
-import { useAppSelector, useAppDispatch } from '../../hooks';
+import { useAppSelector } from '../../hooks';
 import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { selectPlanningStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, selectReviewStatus } from '../stages/progress/progressSlice';
-import { selectInstallationTypeStatus } from '../stages/progress/progressSlice';
 import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progress/activeStepSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
@@ -29,11 +27,12 @@ import savedInstall from '../../assets/saved-install-green.png';
 import eventDispatcher from '../../../services/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Constants';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL } from '../common/Constants';
 import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus } from '../stages/progress/StageProgressStatus';
 
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
+import { getStageDetails } from '../../../services/StageDetails';
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
 
@@ -41,8 +40,8 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const connectionStatus = useSelector(selectConnectionStatus);
 
-  const INIT_STAGE_ID = 3;
-  const REVIEW_STAGE_ID = 4;
+  const INIT_STAGE_ID = getStageDetails(INIT_STAGE_LABEL).id;
+  const REVIEW_STAGE_ID = getStageDetails(REVIEW_INSTALL_STAGE_LABEL).id;
 
   const completeProgress = getCompleteProgress();
 
@@ -50,6 +49,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     useSelector(selectConnectionStatus),
     completeProgress.planningStatus,
     completeProgress.installationTypeStatus,
+    completeProgress.downloadUnpaxStatus,
     completeProgress.initializationStatus,
     completeProgress.reviewStatus
   ];
@@ -59,6 +59,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     completeProgress.networkingStatus,
     completeProgress.apfAuthStatus,
     completeProgress.securityStatus,
+    completeProgress.stcsStatus,
     completeProgress.certificateStatus,
     completeProgress.launchConfigStatus
   ])
@@ -122,8 +123,10 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const handleSkip = () => {
     stages[activeStep].isSkipped = true;
-    stages[activeStep].subStages[activeSubStep].isSkipped = true;
-    mapAndSetSkipStatus(activeSubStep, true);
+    if(stages[activeStep].subStages){
+      stages[activeStep].subStages[activeSubStep].isSkipped = true;
+      mapAndSetSkipStatus(activeSubStep, true);
+    }
     handleNext();
   }
 
@@ -164,18 +167,9 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
       return;
     }
 
-    // To not access the stage if any previous stage is not completed
-    for (let i = 0; i < newActiveStep; i++) {
-      const statusAtIndex = stageProgressStatus[i];
-      // We can access 'Review Installation' if Initialization in not completed since it can be skipped
-      if (!statusAtIndex && !(newActiveStep == REVIEW_STAGE_ID && i == INIT_STAGE_ID)) {
-        return;
-      }
-    }
-
     setActiveStep(newActiveStep);
     const newSubStep = isSubStep ? subStepIndex : 0;
-    if((subStepIndex > 0 && subStageProgressStatus[0] === true) || subStepIndex === 0){ //only allow substages after installation to be navigated to if init mvs has been completed
+    if((subStepIndex > 0 && completeProgress.datasetInstallationStatus === true) || subStepIndex === 0){ //only allow substages after installation to be navigated to if init mvs has been completed
       setActiveSubStep(newSubStep);
     }
   }

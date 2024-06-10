@@ -46,7 +46,7 @@ const InitApfAuth = () => {
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || FALLBACK_YAML.zowe.setup.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('apfAuthStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -65,7 +65,7 @@ const InitApfAuth = () => {
   ajv.addKeyword("$anchor");
   let datasetSchema;
   let validate: any;
-  if(schema) {
+  if(schema && schema.properties) {
     datasetSchema = schema.properties.zowe.properties.setup.properties.dataset;
   }
 
@@ -93,6 +93,7 @@ const InitApfAuth = () => {
       window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
         if (res.status) {
           dispatch(setSchema(res.details));
+          setLocalSchema(res.details);
         } else {
           dispatch(setSchema(FALLBACK_SCHEMA));
           setLocalSchema(FALLBACK_SCHEMA);
@@ -143,10 +144,13 @@ const InitApfAuth = () => {
   }, [apfAuthInitProgress]);
 
   useEffect(() => {
-    if(!getProgress('apfAuthStatus') && initClicked) {
+    if(showProgress) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
           setApfAuthorizationInitProgress(res);
+          if(res.success){
+            clearInterval(timer);
+          }
         })
       }, 3000);
     }
@@ -200,11 +204,11 @@ const InitApfAuth = () => {
     process(event);
   }
 
-  const process = (event: any) => {
+  const process = async (event: any) => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
          // Some parts of Zen pass the response as a string directly into the object
          if (res.status == false && typeof res.details == "string") {
           res.details = { 3: res.details };
@@ -287,7 +291,7 @@ const InitApfAuth = () => {
     <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("yaml")}>View/Edit Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button>
+        {/* <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button> */}
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
       <ContainerCard title="APF Authorize Load Libraries" description="Run the `zwe init apfauth` command to APF authorize load libraries.">

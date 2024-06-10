@@ -52,6 +52,7 @@ const ReviewInstallation = () => {
     completeProgress.planningStatus,
     completeProgress.installationTypeStatus,
     completeProgress.initializationStatus,
+    completeProgress.downloadUnpaxStatus
   ];
   
   const subStageProgressStatus = [
@@ -59,6 +60,7 @@ const ReviewInstallation = () => {
     completeProgress.networkingStatus,
     completeProgress.apfAuthStatus,
     completeProgress.securityStatus,
+    completeProgress.stcsStatus,
     completeProgress.certificateStatus,
     completeProgress.vsamStatus,
     completeProgress.launchConfigStatus
@@ -106,7 +108,7 @@ const ReviewInstallation = () => {
     <div>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
+        {/* <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button> */}
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
     <ContainerCard title="Review Installation" description="Review all steps before clicking Finish Installation. Visit a previous step to change it.">
@@ -146,7 +148,7 @@ const ReviewInstallation = () => {
                 </Box>
               </Box>
             )}
-            {stage.id !== 0 && stage.id < 4 && (
+            {stage.id !== 0 && stage.id < 5 && (
               <div>
                 <Box className="review-component-box">
                   <Typography className="review-component-text" onClick={() => updateActiveStep(stage.id, false)}>{stage.label}</Typography>
