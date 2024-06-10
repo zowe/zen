@@ -67,7 +67,7 @@ function PatternPropertiesForm(props: any){
                               key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
                               control={<Checkbox checked={yaml[keys[i]][toMatch[k]][matchedProps[l]]} onChange={async (e) => {
                                 // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
-                                eventDispatcher.emit('configUpdate');
+                                eventDispatcher.emit('networkConfigUpdate');
                                 const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}};
                                 setLYaml(newYaml);
                                 await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, !yaml[keys[i]][toMatch[k]][matchedProps[l]])
@@ -83,7 +83,7 @@ function PatternPropertiesForm(props: any){
                                 key={keys[i] + '.' + toMatch[k] + '.' + matchedProps[l]}
                                 value={yaml[keys[i]][toMatch[k]][matchedProps[l]]}
                                 onChange={async (e) => {
-                                  eventDispatcher.emit('configUpdate');
+                                  eventDispatcher.emit('networkConfigUpdate');
                                   const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
                                   setLYaml(newYaml);
                                   await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
@@ -654,7 +654,7 @@ const Networking = () => {
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
   useEffect(() => {
-    eventDispatcher.on('configUpdate', onConfigUpdate);
+    eventDispatcher.on('networkConfigUpdate', onConfigUpdate);
 
     if(!yaml){
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
@@ -686,7 +686,7 @@ const Networking = () => {
     setIsFormInit(true);
 
     return () => {
-      eventDispatcher.off('configUpdate', onConfigUpdate);
+      eventDispatcher.off('networkConfigUpdate', onConfigUpdate);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);

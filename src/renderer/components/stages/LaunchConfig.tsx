@@ -19,10 +19,12 @@ import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { stages } from "../configuration-wizard/Wizard";
-import { selectInitializationStatus } from "./progress/progressSlice";
+import { selectInitializationStatus, setLaunchConfigStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
+import { getProgress, mapAndSetSkipStatus } from "./progress/StageProgressStatus";
+import eventDispatcher from "../../../services/eventDispatcher";
 
 const LaunchConfig = () => {
 
@@ -437,6 +439,7 @@ const LaunchConfig = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
+  const [isLaunch, setIsLaunch] = useState(false);
 
 
   const ajv = new Ajv();
@@ -450,6 +453,8 @@ const LaunchConfig = () => {
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
   useEffect(() => {
+    eventDispatcher.on('launchConfigUpdate', onConfigUpdate);
+    setIsLaunch(true);
 
     if(!yaml){
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
@@ -465,12 +470,13 @@ const LaunchConfig = () => {
     const nextPosition = document.getElementById('container-box-id');
     nextPosition.scrollIntoView({behavior: 'smooth'});
 
-    dispatch(setNextStepEnabled(true));
+    dispatch(setNextStepEnabled(getProgress('launchConfigStatus')));
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = false;
     stages[STAGE_ID].isSkipped = isInitializationSkipped;
     setIsFormInit(true);
 
     return () => {
+      eventDispatcher.off('launchConfigUpdate', onConfigUpdate);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
@@ -481,6 +487,11 @@ const LaunchConfig = () => {
   };
   
   const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
+    if(isLaunch) {
+      setIsLaunch(false);
+    } else {
+      onConfigUpdate();
+    }
     let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe) : (data.zowe ? data.zowe : data);
     setIsFormInit(false);
 
@@ -502,6 +513,18 @@ const LaunchConfig = () => {
       }
     }
   };
+
+  const onConfigUpdate = () => {
+    dispatch(setLaunchConfigStatus(true));
+    dispatch(setNextStepEnabled(true));
+    setStageSkipStatus(false);
+  }
+
+  const setStageSkipStatus = (status: boolean) => {
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = status;
+    mapAndSetSkipStatus(SUB_STAGE_ID, status);
+  }
 
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);

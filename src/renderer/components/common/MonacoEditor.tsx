@@ -97,13 +97,14 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
         if(updatedKey[0] === 'zowe') {
           if(updatedKey[1] === 'launchScript' || updatedKey[1] === 'configmgr') {
             dispatch(setLaunchConfigStatus(true));
+            eventDispatcher.emit('launchConfigUpdate');
           } else if(updatedKey[1] === 'externalDomains' || updatedKey[1] === 'externalPort') {
             dispatch(setNetworkingStatus(true));
-            eventDispatcher.emit('networkConfigUpdate', yamlObj);
+            eventDispatcher.emit('networkConfigUpdate');
           }
         } else if(updatedKey[0] === 'components') {
           dispatch(setNetworkingStatus(true));
-          eventDispatcher.emit('networkConfigUpdate', yamlObj);
+          eventDispatcher.emit('networkConfigUpdate');
         }
       }
     }
