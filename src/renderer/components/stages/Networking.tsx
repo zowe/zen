@@ -692,12 +692,12 @@ const Networking = () => {
                                 key={keys[i] + '.' + toMatch[k] + '.' + l}
                                 value={yaml[keys[i]][toMatch[k]][matchedProps[l]]}
                                 onChange={async (e) => {
-                                    if(!Number.isNaN(e.target.value)){
-                                      const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
-                                      setLYaml(newYaml);
-                                      await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
-                                      dispatch(setYaml(newYaml));
-                                    }
+                                  if(!Number.isNaN(Number(e.target.value))){
+                                    const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
+                                    setLYaml(newYaml);
+                                    await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
+                                    dispatch(setYaml(newYaml));
+                                  }
                                 }}
                               />)
                           default:
