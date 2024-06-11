@@ -18,12 +18,12 @@ import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { stages } from "../configuration-wizard/Wizard";
-import { selectInitializationStatus } from "./progress/progressSlice";
+import { selectInitializationStatus, setNetworkingStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
 import { selectConnectionArgs } from "./connection/connectionSlice";
-import { getInstallationArguments } from "./progress/StageProgressStatus";
+import { getInstallationArguments, getProgress } from "./progress/StageProgressStatus";
 
 function PatternPropertiesForm(props: any){
   const [elements, setElements] = useState([]);
@@ -680,7 +680,7 @@ const Networking = () => {
     const nextPosition = document.getElementById('container-box-id');
     if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
 
-    dispatch(setNextStepEnabled(true));
+    dispatch(setNextStepEnabled(getProgress('networkingStatus')));
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = false;
     stages[STAGE_ID].isSkipped = isInitializationSkipped;
     setIsFormInit(true);
@@ -720,7 +720,17 @@ const Networking = () => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setLYaml(data);
-  } 
+  }
+
+  const onSaveYaml = (e: any) => {
+    e.preventDefault();
+    window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
+      if(res && res.status) {
+        dispatch(setNextStepEnabled(true));
+        dispatch(setNetworkingStatus(true));
+      }
+    });
+  }
 
   return (
     yaml && schema && <div id="container-box-id">
@@ -778,10 +788,7 @@ const Networking = () => {
             }}
           />
           <PatternPropertiesForm schema={schema} yaml={yaml} setYaml={setLYaml}/>
-          <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
-            e.preventDefault();
-            window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs);
-          }}>{'Save YAML to z/OS'}</Button>
+          <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => onSaveYaml(e)}>{'Save YAML to z/OS'}</Button>
         </Box>
       </ContainerCard>
     </div>
