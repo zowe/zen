@@ -23,7 +23,7 @@ import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
 import { selectConnectionArgs } from "./connection/connectionSlice";
-import { getInstallationArguments } from "./progress/StageProgressStatus";
+import { getInstallationArguments, getProgress } from "./progress/StageProgressStatus";
 
 //   const schema = useAppSelector(selectSchema);
 const schema: any = {
@@ -597,7 +597,7 @@ const Networking = () => {
     const nextPosition = document.getElementById('container-box-id');
     if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
 
-    dispatch(setNextStepEnabled(true));
+    dispatch(setNextStepEnabled(getProgress('networkingStatus')));
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = false;
     stages[STAGE_ID].isSkipped = isInitializationSkipped;
     setIsFormInit(true);
@@ -716,6 +716,15 @@ const Networking = () => {
       setElements(newElements);
     }
   }, [yaml])
+  const onSaveYaml = (e: any) => {
+    e.preventDefault();
+    window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
+      if(res && res.status) {
+        dispatch(setNextStepEnabled(true));
+        dispatch(setNetworkingStatus(true));
+      }
+    });
+  }
 
   return (
     yaml && schema && <div id="container-box-id">
@@ -775,16 +784,7 @@ const Networking = () => {
           <div>
             {elements}
           </div>
-          <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
-            e.preventDefault();
-            window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: any) => {
-              if(res.status){
-                dispatch(setNetworkingStatus(true));
-              } else {
-                dispatch(setNetworkingStatus(false));
-              }
-            });
-          }}>{'Save YAML to z/OS'}</Button>
+          <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => onSaveYaml(e)}>{'Save YAML to z/OS'}</Button>
         </Box>
       </ContainerCard>
     </div>

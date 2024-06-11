@@ -221,6 +221,7 @@ const Certificates = () => {
   };
   
   const handleFormChange = (data: any) => {
+    console.log("Form change data:", JSON.stringify(data));
     if(data?.zowe?.verifyCertificates){
       setVerifyCerts(data.zowe.verifyCertificates);
     }
