@@ -702,7 +702,7 @@ const Networking = () => {
   
   const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
 
-    if (data.zowe.externalDomains || data.zowe.externalPort || data.components) {
+    if (data?.zowe?.externalDomains || data?.zowe?.externalPort || data?.components) {
 
       if(validate) {
         validate(data);
@@ -712,7 +712,7 @@ const Networking = () => {
           setStageConfig(false, errPath+' '+errMsg, data.zowe);
 
         } else {
-          const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: data.zowe.externalDomains, externalPort: data.zowe.externalPort}, components: data.components};
+          const newYaml = {...yaml, zowe: {...yaml?.zowe, externalDomains: data?.zowe?.externalDomains, externalPort: data?.zowe?.externalPort}, components: data?.components};
           // console.log("new yaml", JSON.stringify(newYaml));
           window.electron.ipcRenderer.setConfig(newYaml)
           setStageConfig(true, '', newYaml);
@@ -751,29 +751,29 @@ const Networking = () => {
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <p key="external-domains" style={{fontSize: "24px"}}>External Domains <IconButton onClick={(e) => {
-            let domains = [...yaml.zowe?.externalDomains, ""];
-            const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
+            let domains = [...yaml?.zowe?.externalDomains, ""];
+            const newYaml = {...yaml, zowe: {...yaml?.zowe, externalDomains: domains}};
             window.electron.ipcRenderer.setConfig(newYaml )
             dispatch(setYaml(newYaml))
             setLYaml(newYaml);
           }}><AddIcon /></IconButton></p>
-          {yaml.zowe.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box key={`box-${index}`} sx={{display: "flex", flexDirection: "row"}}><TextField
+          {yaml?.zowe?.externalDomains != undefined && yaml?.zowe?.externalDomains?.map((domain: string, index: number) => <Box key={`box-${index}`} sx={{display: "flex", flexDirection: "row"}}><TextField
             variant="standard"
             value={domain}
             onChange={async (e) => {
               onConfigUpdate();
-              let domains = [...yaml.zowe?.externalDomains];
+              let domains = [...yaml?.zowe?.externalDomains];
               domains[index] = e.target.value;
-              const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
+              const newYaml = {...yaml, zowe: {...yaml?.zowe, externalDomains: domains}};
               // console.log(domains);
               window.electron.ipcRenderer.setConfig(newYaml )
               dispatch(setYaml(newYaml))
               setLYaml(newYaml);
             }}
           /><IconButton onClick={(e) => {
-            let domains = [...yaml.zowe?.externalDomains];
+            let domains = [...yaml?.zowe?.externalDomains];
             domains.splice(index, 1);
-            const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
+            const newYaml = {...yaml, zowe: {...yaml?.zowe, externalDomains: domains}};
             window.electron.ipcRenderer.setConfig(newYaml )
             dispatch(setYaml(newYaml))
             setLYaml(newYaml);
@@ -783,11 +783,11 @@ const Networking = () => {
             label={"External Port"}
             variant="standard"
             type="number"
-            helperText={schema.properties.zowe.properties.externalPort.description}
-            value={yaml.zowe.externalPort}
+            helperText={schema?.properties?.zowe?.properties?.externalPort?.description}
+            value={yaml?.zowe?.externalPort}
             onChange={async (e) => {
               onConfigUpdate();
-              const newYaml = {...yaml, zowe: {...yaml.zowe, externalPort: Number(e.target.value)}};
+              const newYaml = {...yaml, zowe: {...yaml?.zowe, externalPort: Number(e.target.value)}};
               window.electron.ipcRenderer.setConfig(newYaml)
               dispatch(setYaml(newYaml))
               setLYaml(newYaml);
