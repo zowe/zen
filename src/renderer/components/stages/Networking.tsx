@@ -18,7 +18,7 @@ import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { stages } from "../configuration-wizard/Wizard";
-import { selectInitializationStatus } from "./progress/progressSlice";
+import { selectInitializationStatus, setNetworkingStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
@@ -799,7 +799,13 @@ const Networking = () => {
           <PatternPropertiesForm schema={schema} yaml={yaml} setYaml={setLYaml}/>
           <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
             e.preventDefault();
-            window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs);
+            window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: any) => {
+              if(res.status){
+                dispatch(setNetworkingStatus(true));
+              } else {
+                dispatch(setNetworkingStatus(false));
+              }
+            });
           }}>{'Save YAML to z/OS'}</Button>
         </Box>
       </ContainerCard>

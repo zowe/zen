@@ -19,7 +19,7 @@ import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { stages } from "../configuration-wizard/Wizard";
-import { selectInitializationStatus } from "./progress/progressSlice";
+import { selectInitializationStatus, setLaunchConfigStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
@@ -527,7 +527,13 @@ const LaunchConfig = () => {
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
           <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
             e.preventDefault();
-            window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs);
+            window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: any) => {
+              if(res.status){
+                dispatch(setLaunchConfigStatus(true));
+              } else {
+                dispatch(setLaunchConfigStatus(false));
+              }
+            });
           }}>{'Save YAML to z/OS'}</Button>
         </Box>
       </ContainerCard>
