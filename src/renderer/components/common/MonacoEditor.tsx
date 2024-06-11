@@ -21,11 +21,9 @@ import eventDispatcher from "../../../services/eventDispatcher";
 
 const MonacoEditorComponent = ({contentType, initialContent, onContentChange, isSchemaValid, schemaError, readOnlyYaml} : {contentType: any, initialContent: any, onContentChange: any, isSchemaValid: any, schemaError: any, readOnlyYaml?: boolean}) => {
 
-  const dispatch = useAppDispatch();
   const editorRef = useRef(null);
   const [isError, setIsError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [originalYamlObject, setOriginalYamlObject] = useState(load(initialContent));
 
   let readOnly = true;
   let lang: string;
@@ -64,10 +62,8 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
       if(contentType == 'yaml') {
         try {
           // To parse the yaml and check if it is valid
-          const updatedObject = load(code);
           setError(false, '');
           onContentChange(code, false);
-          // Compare the updated object with the original object
         } catch(error) {
           const errorDesc = error.message ? error.message : "Invalid Yaml";
           const errorMsg = error.reason ? error.reason : errorDesc;
