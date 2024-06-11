@@ -11,7 +11,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { load } from 'js-yaml';
-import { diff } from 'deep-diff';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import { OUTPUT_HILITE, OUTPUT_THEME } from '../../Highlighters/jclOutput';
@@ -69,8 +68,6 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
           setError(false, '');
           onContentChange(code, false);
           // Compare the updated object with the original object
-          const differences = diff(originalYamlObject, updatedObject);
-          isYamlUpdated(differences, updatedObject);
         } catch(error) {
           const errorDesc = error.message ? error.message : "Invalid Yaml";
           const errorMsg = error.reason ? error.reason : errorDesc;
@@ -89,26 +86,6 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
   useEffect(() => {
     editorRef.current.setValue(initialContent);
   }, [initialContent])
-
-  const isYamlUpdated = (diff: any, yamlObj: any) => {
-    if(diff) {
-      const updatedKey = diff[0].path;
-      if(updatedKey) {
-        if(updatedKey[0] === 'zowe') {
-          if(updatedKey[1] === 'launchScript' || updatedKey[1] === 'configmgr') {
-            dispatch(setLaunchConfigStatus(true));
-            eventDispatcher.emit('launchConfigUpdate');
-          } else if(updatedKey[1] === 'externalDomains' || updatedKey[1] === 'externalPort') {
-            dispatch(setNetworkingStatus(true));
-            eventDispatcher.emit('networkConfigUpdate');
-          }
-        } else if(updatedKey[0] === 'components') {
-          dispatch(setNetworkingStatus(true));
-          eventDispatcher.emit('networkConfigUpdate');
-        }
-      }
-    }
-  }
 
   const setError = (isError: boolean, errorMessage: string) => {
     setIsError(isError);
