@@ -19,6 +19,12 @@ export const JCL_UNIX_SCRIPT_CHARS = 70;
 
 export const JCL_JOBNAME_DEFAULT = "ZENJOB";
 
+export const MKDIR_ERROR_PARENT = "EDC5129I"; // when MKDIR tries to create top-level dir in a dir that doesn't exist
+
+export const MKDIR_ERROR_EXISTS = "EDC5117I"; // when dir already exist
+
+export const LIST_ERROR_NOTFOUND = "FSUM6785"; // when dir doesn't exist
+
 export async function connectFTPServer(config: IIpcConnectionArgs): Promise<any> {
 
   const client = new zos();
@@ -36,7 +42,9 @@ export async function checkDirExists(config: IIpcConnectionArgs, dir: string): P
     const list = await client.listDataset(dir);
     return !!list;
   } catch (error) {
-    console.warn(error);
+    if (error.toString().includes(LIST_ERROR_NOTFOUND) == false) { // List cmd returns an error for not found, so hide that one
+      console.warn(error);
+    }
     return false;
   } finally {
     client.close();
@@ -49,10 +57,30 @@ export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<
     await client.makeDirectory(dir);
     return true;
   } catch (error) {
+    if (error.toString().includes(MKDIR_ERROR_PARENT)) {
+      let parentDir = reducePath(dir);
+      if (parentDir !== "/") {
+        console.info("Wasn't able to create: " + dir + " . Will attempt to create: " + parentDir);
+        await makeDir(config, parentDir);
+        return makeDir(config, dir);
+      }
+    }
+    if (error.toString().includes(MKDIR_ERROR_EXISTS)) {
+      return true;
+    }
+    console.warn(error);
     return false;
   } finally {
     client.close();
   }
+}
+
+// /u/tsxxx/blaa --> /u/tsxxx
+export function reducePath(path: string): string {
+  if (path.lastIndexOf('/') > 0) {
+    path = path.slice(0, path.lastIndexOf('/'));
+  }
+  return path; // stops at "/"
 }
 
 // This adds a "\n" inside Unix commands separated by ";" if char limit reached
