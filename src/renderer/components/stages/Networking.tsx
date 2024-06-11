@@ -24,6 +24,7 @@ import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from
 import { IResponse } from "../../../types/interfaces";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { getInstallationArguments, getProgress } from "./progress/StageProgressStatus";
+import { alertEmitter } from "../Header";
 
 //   const schema = useAppSelector(selectSchema);
 const schema: any = {
@@ -722,6 +723,11 @@ const Networking = () => {
       if(res && res.status) {
         dispatch(setNextStepEnabled(true));
         dispatch(setNetworkingStatus(true));
+        alertEmitter.emit('hideAlert');
+      } else {
+        dispatch(setNextStepEnabled(true));
+        dispatch(setNetworkingStatus(true));
+        alertEmitter.emit('showAlert', res.details, 'error');
       }
     });
   }

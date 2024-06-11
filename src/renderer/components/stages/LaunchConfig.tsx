@@ -25,6 +25,7 @@ import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML } from "../common/Const
 import { IResponse } from "../../../types/interfaces";
 import { getInstallationArguments, getProgress } from "./progress/StageProgressStatus";
 import { selectConnectionArgs } from "./connection/connectionSlice";
+import { alertEmitter } from "../Header";
 
 const LaunchConfig = () => {
 
@@ -519,6 +520,11 @@ const LaunchConfig = () => {
       if(res && res.status) {
         dispatch(setNextStepEnabled(true));
         dispatch(setLaunchConfigStatus(true));
+        alertEmitter.emit('hideAlert');
+      } else {
+        dispatch(setNextStepEnabled(true));
+        dispatch(setLaunchConfigStatus(true));
+        alertEmitter.emit('showAlert', res.details, 'error');
       }
     });
   }
