@@ -725,7 +725,7 @@ const Networking = () => {
       }
     }
     let newYaml;
-    if ((data.zowe && (data.zowe.externalDomains || data.zowe.externalPort))) {
+    if (data.zowe && data.zowe.externalDomains && data.zowe.externalPort) {
       newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: data.zowe.externalDomains, externalPort: data.zowe.externalPort}};
     }
     if(data.components){
