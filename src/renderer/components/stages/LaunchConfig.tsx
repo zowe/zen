@@ -21,7 +21,7 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus, setLaunchConfigStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML, ajv, SERVER_COMMON } from "../common/Constants";
+import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML, ajv, SERVER_COMMON, INIT_STAGE_LABEL, LAUNCH_CONFIG_STAGE_LABEL } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
 import { getInstallationArguments, getProgress } from "./progress/StageProgressStatus";
 import { selectConnectionArgs } from "./connection/connectionSlice";
@@ -30,13 +30,9 @@ import { alertEmitter } from "../Header";
 const LaunchConfig = () => {
 
   const [theme] = useState(createTheme());
-
-  const stageLabel = 'Initialization';
-  const subStageLabel = 'Launch Config';
-
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
-  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
+  const [STAGE_ID] = useState(getStageDetails(INIT_STAGE_LABEL).id);
+  const [SUB_STAGES] = useState(!!getStageDetails(INIT_STAGE_LABEL).subStages);
+  const [SUB_STAGE_ID] = useState(SUB_STAGES ? getSubStageDetails(STAGE_ID, LAUNCH_CONFIG_STAGE_LABEL).id : 0);
 
   const dispatch = useAppDispatch();
 //   const schema = useAppSelector(selectSchema);
@@ -445,7 +441,7 @@ const LaunchConfig = () => {
 
   const [validate] = useState(() => ajv.compile(setupSchema));
 
-  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
+  const [isInitializationSkipped] = useState(!useAppSelector(selectInitializationStatus));
 
   useEffect(() => {
 

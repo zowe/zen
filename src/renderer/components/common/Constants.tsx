@@ -36,7 +36,6 @@ export const FINISH_INSTALL_STAGE_LABEL = "Finish Installation";
 
 import Ajv2019 from "ajv/dist/2019"
 import Ajv from "ajv";
-import draft7MetaSchema from "ajv/dist/refs/json-schema-draft-07.json";
 
 export const SERVER_COMMON = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
