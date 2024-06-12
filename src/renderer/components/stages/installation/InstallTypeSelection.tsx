@@ -106,7 +106,7 @@ const InstallationType = () => {
         </RadioGroup>
     </FormControl>
     {installValue === "smpe" && <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-        {`SMP/E installation must be done outside of ZEN. Return to ZEN and input the location Zowe was installed to before continuing.`}
+        {`SMP/E installation must be done outside of ZEN. Return to ZEN after completing the SMP/E installation process.`}
     </Typography>}
     {installValue === "download" &&
       <div>
