@@ -27,7 +27,7 @@ import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { setProgress, getProgress, setSecurityInitState, getSecurityInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
-import { JCL_UNIX_SCRIPT_OK, INIT_STAGE_LABEL, SECURITY_STAGE_LABEL, ajv } from '../common/Constants';
+import { JCL_UNIX_SCRIPT_OK, INIT_STAGE_LABEL, SECURITY_STAGE_LABEL, ajv, SERVER_COMMON } from '../common/Constants';
 import { alertEmitter } from "../Header";
 
 const Security = () => {
@@ -59,8 +59,7 @@ const Security = () => {
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
 
   let timer: any;
-  const [securitySchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.security);
-  const [validate] = useState(() => ajv.compile(securitySchema));
+  const [validate] = useState(() => ajv.compile(setupSchema));
 
   useEffect(() => {
 

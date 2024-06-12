@@ -20,7 +20,7 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus, setNetworkingStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
+import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML, ajv } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { getInstallationArguments, getProgress } from "./progress/StageProgressStatus";
@@ -555,16 +555,8 @@ const Networking = () => {
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   const [elements, setElements] = useState([]);
   const connectionArgs = useAppSelector(selectConnectionArgs);
+  const [validate] = useState(() => ajv.compile(schema));
 
-
-
-  const ajv = new Ajv();
-  ajv.addKeyword("$anchor");
-  let validate: any;
-
-  if(schema) {
-    validate = ajv.compile(schema);
-  }
 
   // useEffect(() => {
   //   // dispatch(setYaml(yaml));
@@ -696,7 +688,7 @@ const Networking = () => {
       setElements(newElements);
     }
   }, [yaml])
-  
+
   const onSaveYaml = (e: any) => {
     e.preventDefault();
     alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');

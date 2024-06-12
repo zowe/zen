@@ -36,8 +36,9 @@ export const FINISH_INSTALL_STAGE_LABEL = "Finish Installation";
 
 import Ajv2019 from "ajv/dist/2019"
 import Ajv from "ajv";
+import draft7MetaSchema from "ajv/dist/refs/json-schema-draft-07.json";
 
-const server_common = {
+export const SERVER_COMMON = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
   "$id": "https://zowe.org/schemas/v2/server-common",
   "title": "Common types",
@@ -1111,11 +1112,11 @@ export const FALLBACK_SCHEMA = {
 
 
 //these two consts allow the whole schema to be validated
-export const ajv2019 = new Ajv2019({schemas: [FALLBACK_SCHEMA, server_common]}).addKeyword("$anchor")
+export const ajv2019 = new Ajv2019({schemas: [FALLBACK_SCHEMA, SERVER_COMMON]}).addKeyword("$anchor")
 export const schemaValidate = ajv2019.getSchema("https://zowe.org/schemas/v2/server-base")
 
 
-export const ajv = new Ajv().addKeyword("$anchor");
+export const ajv = new Ajv2019().addKeyword("$anchor").addSchema(SERVER_COMMON);
 
 export const FALLBACK_YAML = {
   "node": {

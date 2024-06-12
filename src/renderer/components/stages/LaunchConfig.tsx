@@ -21,7 +21,7 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus, setLaunchConfigStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML, ajv } from "../common/Constants";
+import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML, ajv, SERVER_COMMON } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
 import { getInstallationArguments, getProgress } from "./progress/StageProgressStatus";
 import { selectConnectionArgs } from "./connection/connectionSlice";
