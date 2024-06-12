@@ -134,12 +134,6 @@ const Planning = () => {
       }
     })
 
-    window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
-      if (res.status) {
-        dispatch(setSchema(res.details));
-      }
-    })
-
   }, []); 
 
   useEffect(() => {

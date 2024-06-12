@@ -20,6 +20,8 @@ import { checkDirExists } from '../services/ServiceUtils';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { EditorStore } from '../storage/EditorStore';
 import { log, warn, error, info } from 'electron-log/main';
+import { getInstallationArguments } from '../renderer/components/stages/progress/StageProgressStatus';
+import { setInstallationArguments } from '../renderer/components/stages/progress/StageProgressStatus';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -108,6 +110,15 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('get-installation-args', async (event) => {
+    const res: any = await getInstallationArguments();
+    return {status: true, details: res};
+  });
+
+  ipcMain.handle('set-installation-args', async (event, installationArgs) => {
+    const res: any = await setInstallationArguments(installationArgs);
+    return {status: true};
+  });
 
   ipcMain.handle('get-schema', async (event, schema: any) => {
     const res: any = await ConfigurationStore.getSchema();

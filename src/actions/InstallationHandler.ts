@@ -50,7 +50,7 @@ class Installation {
       if(!uploadYaml.status){
         return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
-      return {status: true, details: "upload yaml success"};
+      return {status: true, details: "Successfully uploaded yaml config"};
     } catch (error) {
       return {status: false, details: error.message};
     }

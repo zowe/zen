@@ -574,27 +574,6 @@ const Networking = () => {
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
   useEffect(() => {
-    if(!yaml){
-      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setYaml(res.details));
-          setLYaml(res.details);
-        } else {
-          dispatch(setYaml(FALLBACK_YAML));
-          setLYaml(FALLBACK_YAML);
-        }
-      })
-    }
-
-    if(!schema){
-      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setSchema(res.details));
-        } else {
-          dispatch(setSchema(FALLBACK_SCHEMA));
-        }
-      })
-    }
     const nextPosition = document.getElementById('container-box-id');
     if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
 
@@ -717,16 +696,17 @@ const Networking = () => {
       setElements(newElements);
     }
   }, [yaml])
+  
   const onSaveYaml = (e: any) => {
     e.preventDefault();
+    alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
     window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
       if(res && res.status) {
         dispatch(setNextStepEnabled(true));
         dispatch(setNetworkingStatus(true));
-        alertEmitter.emit('hideAlert');
+        alertEmitter.emit('showAlert', res.details, 'success');
       } else {
-        dispatch(setNextStepEnabled(true));
-        dispatch(setNetworkingStatus(true));
+        dispatch(setNetworkingStatus(false));
         alertEmitter.emit('showAlert', res.details, 'error');
       }
     });

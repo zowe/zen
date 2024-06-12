@@ -38,6 +38,12 @@ contextBridge.exposeInMainWorld('electron', {
     setConfig(completeZoweYamlObj: any) {
       return ipcRenderer.invoke("set-config", completeZoweYamlObj);
     },
+    setInstallationArgs(installationArgs: any) {
+      return ipcRenderer.invoke("set-installation-args", installationArgs);
+    },
+    getInstallationArgs() {
+      return ipcRenderer.invoke("get-installation-args");
+    },
     setConfigByKeyAndValidate(key: string, value: any) {
       return ipcRenderer.invoke("set-config-by-key", key, value);
     },

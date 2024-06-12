@@ -21,7 +21,7 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus, setLaunchConfigStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML } from "../common/Constants";
+import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML, ajv } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
 import { getInstallationArguments, getProgress } from "./progress/StageProgressStatus";
 import { selectConnectionArgs } from "./connection/connectionSlice";
@@ -29,7 +29,7 @@ import { alertEmitter } from "../Header";
 
 const LaunchConfig = () => {
 
-  const theme = createTheme();
+  const [theme] = useState(createTheme());
 
   const stageLabel = 'Initialization';
   const subStageLabel = 'Launch Config';
@@ -433,7 +433,7 @@ const LaunchConfig = () => {
     }
   }
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const setupSchema:any = schema ? schema.properties.zowe : "";
+  const [setupSchema] = useState(schema.properties.zowe);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe);
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -443,14 +443,7 @@ const LaunchConfig = () => {
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   const connectionArgs = useAppSelector(selectConnectionArgs);
 
-
-  const ajv = new Ajv();
-  ajv.addKeyword("$anchor");
-  let validate: any;
-
-  if(schema.properties.zowe) {
-    validate = ajv.compile(schema.properties.zowe);
-  }
+  const [validate] = useState(() => ajv.compile(setupSchema));
 
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
 
@@ -504,6 +497,7 @@ const LaunchConfig = () => {
           dispatch(setYaml(newYaml));
           setStageConfig(true, '', newData);
         }
+        dispatch(setLaunchConfigStatus(false));
       }
     }
   };
@@ -516,14 +510,14 @@ const LaunchConfig = () => {
 
   const onSaveYaml = (e: any) => {
     e.preventDefault();
+    alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
     window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
       if(res && res.status) {
         dispatch(setNextStepEnabled(true));
         dispatch(setLaunchConfigStatus(true));
-        alertEmitter.emit('hideAlert');
+        alertEmitter.emit('showAlert', res.details, 'success');
       } else {
-        dispatch(setNextStepEnabled(true));
-        dispatch(setLaunchConfigStatus(true));
+        dispatch(setLaunchConfigStatus(false));
         alertEmitter.emit('showAlert', res.details, 'error');
       }
     });

@@ -30,6 +30,7 @@ import Connection from './stages/connection/Connection';
 import { ActiveState } from '../../types/stateInterfaces';
 import { getInstallationArguments, getPreviousInstallation } from './stages/progress/StageProgressStatus';
 import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Constants';
+import { selectInstallationArgs, setInstallationArgs } from './stages/installation/installationSlice';
 
 // REVIEW: Get rid of routing
 
@@ -92,7 +93,7 @@ const Home = () => {
   const [showLoginDialog, setShowLogin] = useState(false);
   const [yaml] = useState(useAppSelector(selectYaml));
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const [installationArgs] = useState(getInstallationArguments());
+  const [installationArgs] = useState(useAppSelector(selectInstallationArgs));
 
   const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getPreviousInstallation();
 
@@ -116,7 +117,7 @@ const Home = () => {
     //Home is the first screen the user will always see 100% of the time. Therefore, we will call the loading of the configs, schemas, and installation args here and set them to the redux memory states
 
     //YAML LOADING - necessary for editor state as well as form values
-    if(!yaml){
+    if(!yaml == undefined || (typeof yaml === "object" && Object.keys(yaml).length === 0)){
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           dispatch(setYaml(res.details));
@@ -127,7 +128,7 @@ const Home = () => {
     }
 
     //SCHEMA LOADING - necessary for JsonForms
-    if(!schema){
+    if(schema == undefined || (typeof schema === "object" && Object.keys(yaml).length === 0)){
       window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
         if (res.status) {
           dispatch(setSchema(res.details));
@@ -137,6 +138,14 @@ const Home = () => {
       })
     }
 
+    //Load installation args
+    if(installationArgs == undefined){
+      window.electron.ipcRenderer.getInstallationArgs().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setInstallationArgs(res.details));
+        }
+      })
+    }
 
 
 

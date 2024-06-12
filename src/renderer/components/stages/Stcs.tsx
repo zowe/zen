@@ -26,20 +26,18 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { getProgress, setStcsInitState, getStcsInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
-import { FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
+import { FALLBACK_SCHEMA, FALLBACK_YAML, INIT_STAGE_LABEL, ajv } from "../common/Constants";
 
 const Stcs = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
-
-  const stageLabel = 'Initialization';
   const subStageLabel = 'Stcs';
 
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
-  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
+  const [STAGE_ID] = useState(getStageDetails(INIT_STAGE_LABEL).id);
+  const [SUB_STAGES] = useState(!!getStageDetails(INIT_STAGE_LABEL).subStages);
+  const [SUB_STAGE_ID] = useState(SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0);
 
-  const theme = createTheme();
+  const [theme] = useState(createTheme());
 
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
@@ -56,52 +54,19 @@ const Stcs = () => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
 
-  const installationArgs = getInstallationArguments();
-  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const [installationArgs] = useState(getInstallationArguments());
+  const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   let timer: any;
-  const DEFAULT_ZOWE = 'ZWESLSTC';
-  const DEFAULT_ZIS = 'ZWESISTC';
-  const DEFAULT_AUX = 'ZWESASTC';
+  const [DEFAULT_ZOWE] = useState('ZWESLSTC');
+  const [DEFAULT_ZIS] = useState('ZWESISTC');
+  const [DEFAULT_AUX] = useState('ZWESASTC');
 
-  const defaultErrorMessage = "Please ensure that the values for security.stcs attributes and dataset.proclib are accurate.";
+  const [defaultErrorMessage] = useState("Please ensure that the values for security.stcs attributes and dataset.proclib are accurate.");
 
-  const ajv = new Ajv();
-  ajv.addKeyword("$anchor");
-  let stcsSchema;
-  let validate: any;
-  if(schema) {
-    stcsSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security?.properties?.stcs;
-  }
-
-  if(stcsSchema) {
-    validate = ajv.compile(stcsSchema);
-  }
+  const [stcsSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.security?.properties?.stcs);
+  const [validate] = useState(() => ajv.compile(stcsSchema))
 
   useEffect(() => {
-
-    if(!yaml){
-      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setYaml(res.details));
-          setLYaml(res.details);
-        } else {
-          dispatch(setYaml(FALLBACK_YAML));
-          setLYaml(FALLBACK_YAML);
-        }
-      })
-    }
-
-    if(!schema){
-      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setSchema(res.details));
-          setLocalSchema(res.details);
-        } else {
-          dispatch(setSchema(FALLBACK_SCHEMA));
-          setLocalSchema(FALLBACK_SCHEMA);
-        }
-      })
-    }
 
     setShowProgress(initClicked || getProgress('stcsStatus'));
     let nextPosition;

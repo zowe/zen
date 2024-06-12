@@ -25,7 +25,7 @@ import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK} from '../../common/Constants';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, INSTALL_STAGE_LABEL, ajv2019} from '../../common/Constants';
 import { getStageDetails, getSubStageDetails } from "../../../../services/StageDetails"; 
 import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments, datasetInstallationStatus } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
@@ -33,14 +33,14 @@ import eventDispatcher from '../../../../services/eventDispatcher';
 
 const Installation = () => {
 
-  const stageLabel = 'Initialization';
-  const subStageLabel = 'Installation';
+  const [stageLabel] = useState(INIT_STAGE_LABEL);
+  const [subStageLabel] = useState(INSTALL_STAGE_LABEL);
 
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
-  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
+  const [STAGE_ID] = useState(getStageDetails(stageLabel).id);
+  const [SUB_STAGES] = useState(!!getStageDetails(stageLabel).subStages);
+  const [SUB_STAGE_ID]= useState(SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0);
 
-  const theme = createTheme();
+  const [theme] = useState(createTheme());
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
   const dispatch = useAppDispatch();
@@ -49,7 +49,7 @@ const Installation = () => {
 
   const [schema] = useState(useAppSelector(selectSchema));
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [setupSchema, setSetupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.dataset);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('datasetInstallationStatus'));
@@ -63,9 +63,11 @@ const Installation = () => {
   const [initClicked, setInitClicked] = useState(false);
 
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
-  const version = useAppSelector(selectZoweVersion);
+  const [version] = useState(useAppSelector(selectZoweVersion));
   let timer: any;
-  const installationType = getInstallationTypeStatus().installationType;
+  const [installationType] = useState(getInstallationTypeStatus().installationType);
+
+  const [validate] = useState(() => ajv.compile(setupSchema));
 
   
   useEffect(() => {
@@ -133,7 +135,7 @@ const Installation = () => {
           return yamlObj;
         }
         if(res.details.zowe === undefined){
-          //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux but not on disk
+          //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux but not on disk. This should never occur
           let yamlObj = mergeInstallationArgsAndYaml(FALLBACK_YAML);
           // console.log('setting yaml:', yamlObj);
           setLYaml(yamlObj)
@@ -152,13 +154,6 @@ const Installation = () => {
     })
 
     setIsFormInit(true);
-
-    window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
-      if(res.details === undefined){
-        //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux
-        dispatch(setSchema(FALLBACK_SCHEMA));
-      }
-    })
 
     dispatch(setNextStepEnabled(getProgress('datasetInstallationStatus')));
     
@@ -250,6 +245,7 @@ const Installation = () => {
     event.preventDefault();
     dispatch(setLoading(true));
     setMvsDatasetInitProgress(datasetInstallationStatus)
+    dispatch(setDatasetInstallationStatus(false));
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
     Promise.all([
@@ -353,7 +349,7 @@ const Installation = () => {
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{'Install MVS datasets'}</Button>
           {/* <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e, true)}>{installationType === 'smpe' ? 'Save' : 'SKIP DOWNLOAD and Install MVS datasets'}</Button> */}
         </FormControl> : null}
-        <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : '0'}} id="start-installation-progress">
+        <Box sx={{height: showProgress ? 'calc(50vh - 220px)' : '0'}} id="start-installation-progress">
         {!showProgress ? null :
           <React.Fragment>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={mvsDatasetInitProgress.uploadYaml}/>
@@ -364,7 +360,7 @@ const Installation = () => {
         }
         </Box>
         <Box sx={{ height: '0', minHeight: '0' }} id="save-installation-progress"></Box>
-        <Box sx={{ height: showProgress ? '55vh' : 'auto', minHeight: '55vh' }} id="installation-progress"></Box>
+        <Box sx={{ height: showProgress ? '45vh' : 'auto' }} id="installation-progress"></Box>
       </ContainerCard>
     </div>
   );
