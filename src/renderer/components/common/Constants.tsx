@@ -34,6 +34,103 @@ export const LAUNCH_CONFIG_STAGE_LABEL = "Launch Config";
 export const REVIEW_INSTALL_STAGE_LABEL = "Review Installation";
 export const FINISH_INSTALL_STAGE_LABEL = "Finish Installation";
 
+import Ajv2019 from "ajv/dist/2019"
+
+const server_common = {
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "https://zowe.org/schemas/v2/server-common",
+  "title": "Common types",
+  "description": "Configuration types that are common in Zowe and may be referenced by multiple components",
+  "$defs": {
+    "semverVersion": {
+      "$anchor": "zoweSemverVersion",
+      "type": "string",
+      "description": "A semantic version, see https://semver.org/",
+      "pattern": "^[0-9]*\\.[0-9]*\\.[0-9]*(-*[a-zA-Z][0-9a-zA-Z\\-\\.]*)?(\\+[0-9a-zA-Z\\-\\.]*)?$"
+    },
+    "semverRange": {
+      "$anchor": "zoweSemverRange",
+      "type": "string",
+      "description": "A semantic version, see https://semver.org/",
+      "pattern": "^(([\\^\\~\\>\\<]?)|(>=?)|(<=?))[0-9]*\\.[0-9]*\\.[0-9]*(-*[a-zA-Z][0-9a-zA-Z\\-\\.]*)?(\\+[0-9a-zA-Z\\-\\.]*)?$"
+    },
+    "dataset": {
+      "$anchor": "zoweDataset",
+      "type": "string",
+      "description": "A 44-char all caps dotted ZOS name",
+      "pattern": "^([A-Z\\$\\#\\@]){1}([A-Z0-9\\$\\#\\@\\-]){0,7}(\\.([A-Z\\$\\#\\@]){1}([A-Z0-9\\$\\#\\@\\-]){0,7}){0,11}$",
+      "minLength": 3,
+      "maxLength": 44
+    },
+    "datasetMember": {
+      "$anchor": "zoweDatasetMember",
+      "type": "string",
+      "description": "A 1-8-char all caps dataset member name",
+      // "pattern": "^([A-Z\\$\\#\\@]){1}([A-Z0-9\\$\\#\\@]){0,7}$",
+      "minLength": 1,
+      "maxLength": 8
+    },
+    "jobname": {
+      "$anchor": "zoweJobname",
+      "type": "string",
+      // "pattern": "^([A-Z\\$\\#\\@]){1}([A-Z0-9\\$\\#\\@]){0,7}$",
+      "minLength": 3,
+      "maxLength": 8
+    },
+    "user": {
+      "$anchor": "zoweUser",
+      "type": "string",
+      "pattern": "^([A-Z0-9$#@]){1,8}$",
+      "minLength": 1,
+      "maxLength": 8
+    },
+    "token": {
+      "$anchor": "zoweToken",
+      "type": "string",
+      "pattern": "^([A-Z0-9$#@.]){1,32}$",
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "path": {
+      "$anchor": "zowePath",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "file": {
+      "$anchor": "zoweFile",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "reverseDomainNotation": {
+      "$anchor": "zoweReverseDomainNotation",
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,6}(\\.[A-Za-z0-9-]{1,62}[A-Za-z0-9])+$"
+    },
+    "ipv4": {
+      "$anchor": "zoweIpv4",
+      "type": "string",
+      "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    },
+    "tcpPort": {
+      "$anchor": "zoweTcpPort",
+      "type": "integer",
+      "description": "TCP network port",
+      "minimum": 1024,
+      "maximum": 65535
+    },
+    "reservedTcpPort": {
+      "$anchor": "zoweReservedTcpPort",
+      "type": "integer",
+      "description": "Reserved TCP network ports. Can be used but discouraged due to their standardized use by common programs",
+      "deprecated": true,
+      "minimum": 1,
+      "maximum": 1023
+    }
+  }
+}
+
 
 export const FALLBACK_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
@@ -41,7 +138,7 @@ export const FALLBACK_SCHEMA = {
   "title": "Zowe configuration file",
   "description": "Configuration file for Zowe (zowe.org) version 2.",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
     "zowe": {
       "type": "object",
@@ -75,11 +172,8 @@ export const FALLBACK_SCHEMA = {
                   "description": "Holds Zowe PARMLIB members for plugins",
                   "properties": {
                     "zis": {
-                      "description": "PARMLIB member used by ZIS",
-                      "type": "string",
-                      "pattern": "^([A-Z$#@]){1}([A-Z0-9$#@]){0,7}$",
-                      "minLength": 1,
-                      "maxLength": 8
+                      "$ref": "/schemas/v2/server-common#zoweDatasetMember",
+                      "description": "PARMLIB member used by ZIS"
                     }
                   }
                 },
@@ -230,11 +324,8 @@ export const FALLBACK_SCHEMA = {
                   "description": "PKCS#12 keystore settings",
                   "properties": {
                     "directory": {
-                      "description": "Keystore directory",
-                      "type": "string",
-                      "pattern": "^([^\\0]){1,1024}$",
-                      "minLength": 1,
-                      "maxLength": 1024
+                      "$ref": "/schemas/v2/server-common#zowePath",
+                      "description": "Keystore directory"
                     },
                     "name": {
                       "type": "string",
@@ -431,19 +522,19 @@ export const FALLBACK_SCHEMA = {
           }
         },
         "runtimeDirectory": {
-          "$ref": "#/$defs/zowePath",
+          "$ref": "/schemas/v2/server-common#zowePath",
           "description": "Path to where you installed Zowe."
         },
         "logDirectory": {
-          "$ref": "#/$defs/zowePath",
+          "$ref": "/schemas/v2/server-common#zowePath",
           "description": "Path to where you want to store Zowe log files."
         },
         "workspaceDirectory": {
-          "$ref": "#/$defs/zowePath",
+          "$ref": "/schemas/v2/server-common#zowePath",
           "description": "Path to where you want to store Zowe workspace files. Zowe workspace are used by Zowe component runtime to store temporary files."
         },
         "extensionDirectory": {
-          "$ref": "#/$defs/zowePath",
+          "$ref": "/schemas/v2/server-common#zowePath",
           "description": "Path to where you want to store Zowe extensions. \"zwe components install\" will install new extensions into this directory."
         },
         "job": {
@@ -595,7 +686,7 @@ export const FALLBACK_SCHEMA = {
       "type": "object",
       "properties": {
         "home": {
-          "$ref": "#/$defs/zowePath",
+          "$ref": "/schemas/v2/server-common#zowePath",
           "description": "Path to Java home directory."
         }
       }
@@ -604,7 +695,7 @@ export const FALLBACK_SCHEMA = {
       "type": "object",
       "properties": {
         "home": {
-          "$ref": "#/$defs/zowePath",
+          "$ref": "/schemas/v2/server-common#zowePath",
           "description": "Path to node.js home directory."
         }
       }
@@ -705,7 +796,7 @@ export const FALLBACK_SCHEMA = {
               "const": "PKCS12"
             },
             "file": {
-              "$ref": "#/$defs/zowePath",
+              "$ref": "/schemas/v2/server-common#zowePath",
               "description": "Path to your PKCS#12 keystore."
             },
             "password": {
@@ -730,7 +821,7 @@ export const FALLBACK_SCHEMA = {
               "const": "PKCS12"
             },
             "file": {
-              "$ref": "#/$defs/zowePath",
+              "$ref": "/schemas/v2/server-common#zowePath",
               "description": "Path to your PKCS#12 keystore."
             },
             "password": {
@@ -746,24 +837,24 @@ export const FALLBACK_SCHEMA = {
           "required": ["key", "certificate"],
           "properties": {
             "key": {
-              "$ref": "#/$defs/zowePath",
+              "$ref": "/schemas/v2/server-common#zowePath",
               "description": "Path to the certificate private key stored in PEM format."
             },
             "certificate": {
-              "$ref": "#/$defs/zowePath",
+              "$ref": "/schemas/v2/server-common#zowePath",
               "description": "Path to the certificate stored in PEM format."
             },
             "certificateAuthorities": {
               "description": "List of paths to the certificate authorities stored in PEM format.",
               "oneOf": [{
-                  "$ref": "#/$defs/zowePath",
+                  "$ref": "/schemas/v2/server-common#zowePath",
                   "description": "Paths to the certificate authorities stored in PEM format. You can separate multiple certificate authorities by comma."
                 },
                 {
                   "type": "array",
                   "description": "Path to the certificate authority stored in PEM format.",
                   "items": {
-                    "$ref": "#/$defs/zowePath"
+                    "$ref": "/schemas/v2/server-common#zowePath"
                   }
                 }
               ]
@@ -973,8 +1064,7 @@ export const FALLBACK_SCHEMA = {
               "type": "array",
               "description": "The IP addresses which all of the Zowe servers will be binding on and listening to. Some servers may only support listening on the first element.",
               "items": {
-                "type": "string",
-                "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+                "$ref": "/schemas/v2/server-common#zoweIpv4"
               }
             },
             "vipaIp": {
@@ -1010,20 +1100,16 @@ export const FALLBACK_SCHEMA = {
           "description": "The location of the default registry for this handler. It could be a URL, path, dataset, whatever this handler supports"
         },
         "path": {
-          "$ref": "#/$defs/zowePath",
+          "$ref": "/schemas/v2/server-common#zowePath",
           "description": "Unix file path to the configmgr-compatible JS file which implements the handler API"
         }
       }
-    },
-    "zowePath": {
-      "$anchor": "zowePath",
-      "type": "string",
-      "pattern": "^([^\\0]){1,1024}$",
-      "minLength": 1,
-      "maxLength": 1024
-    },
+    }
   }
 }
+
+export const ajv = new Ajv2019({schemas: [FALLBACK_SCHEMA, server_common]}).addKeyword("$anchor")
+export const schemaValidate = ajv.getSchema("https://zowe.org/schemas/v2/server-base")
 
 export const FALLBACK_YAML = {
   "node": {

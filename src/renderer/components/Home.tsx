@@ -16,7 +16,7 @@ import flatten, { unflatten } from 'flat';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
 import { setConnectionArgs, setResumeProgress, selectInitJobStatement } from './stages/connection/connectionSlice';
 import { setJobStatement } from './stages/PlanningSlice';
-import { setZoweCLIVersion } from './configuration-wizard/wizardSlice';
+import { selectSchema, selectYaml, setSchema, setYaml, setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { Tooltip } from '@mui/material';
 import installationImg from '../assets/installation.png'
@@ -28,8 +28,8 @@ import  HorizontalLinearStepper  from './common/Stepper';
 import Wizard from './configuration-wizard/Wizard'
 import Connection from './stages/connection/Connection';
 import { ActiveState } from '../../types/stateInterfaces';
-import { getPreviousInstallation } from './stages/progress/StageProgressStatus';
-import { DEF_NO_OUTPUT } from './common/Constants';
+import { getInstallationArguments, getPreviousInstallation } from './stages/progress/StageProgressStatus';
+import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Constants';
 
 // REVIEW: Get rid of routing
 
@@ -90,6 +90,9 @@ const Home = () => {
   const connectionStatus = useAppSelector(selectConnectionStatus);
   const [showWizard, setShowWizard] = useState(false);
   const [showLoginDialog, setShowLogin] = useState(false);
+  const [yaml] = useState(useAppSelector(selectYaml));
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
+  const [installationArgs] = useState(getInstallationArguments());
 
   const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getPreviousInstallation();
 
@@ -107,6 +110,34 @@ const Home = () => {
 
   useEffect(() => {
     eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));
+
+
+
+    //Home is the first screen the user will always see 100% of the time. Therefore, we will call the loading of the configs, schemas, and installation args here and set them to the redux memory states
+
+    //YAML LOADING - necessary for editor state as well as form values
+    if(!yaml){
+      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setYaml(res.details));
+        } else {
+          dispatch(setYaml(FALLBACK_YAML));
+        }
+      })
+    }
+
+    //SCHEMA LOADING - necessary for JsonForms
+    if(!schema){
+      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setSchema(res.details));
+        } else {
+          dispatch(setSchema(FALLBACK_SCHEMA));
+        }
+      })
+    }
+
+
 
 
     window.electron.ipcRenderer.checkZoweCLI().then((res: IResponse) => {

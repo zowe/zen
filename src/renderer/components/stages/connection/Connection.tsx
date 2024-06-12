@@ -9,7 +9,6 @@
  */
 
 import React, { SyntheticEvent, useEffect, useState } from "react";
-import { useSelector } from 'react-redux';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -27,20 +26,17 @@ import CheckCircle from '@mui/icons-material/CheckCircle';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
-import { setConnectionArgs, setConnectionValidationDetails, setHost, setPort,
+import { setConnectionValidationDetails, setHost, setPort,
                setUser, setPassword, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress} from './connectionSlice';
-import { setYaml, setSchema, setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
+import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
 import { initializeProgress, getActiveStage } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../services/eventDispatcher";
-import { FALLBACK_YAML, FALLBACK_SCHEMA } from "../../common/Constants";
 
 const Connection = () => {
-
-  const stageLabel = 'Connection';
 
   const dispatch = useAppDispatch();
   const zoweCLIVersion = useAppSelector(selectZoweCLIVersion);
@@ -139,7 +135,7 @@ const FTPConnectionForm = () => {
           dispatch(setNextStepEnabled(true));
           initializeProgress(connectionArgs.host, connectionArgs.user);
           initStageSkipStatus();
-          setYamlAndConfig();
+          setResume();
         }
         toggleFormProcessed(true);
         setValidationDetails(res.details);
@@ -148,23 +144,13 @@ const FTPConnectionForm = () => {
       }); 
   };
 
-  const setYamlAndConfig = () => {
-    window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-      if (res && res.status && res.details) {
-        dispatch(setYaml(res.details));
-      } else {
-        dispatch(setYaml(FALLBACK_YAML));
-        window.electron.ipcRenderer.setConfig(FALLBACK_YAML).then((res: IResponse) => {
-          // yaml response
-        });
-      }
-      const { activeStepIndex, isSubStep, activeSubStepIndex } = getActiveStage();
+  const setResume = () => {
+    const { activeStepIndex, isSubStep, activeSubStepIndex } = getActiveStage();
 
-      if(isResume) {
-        eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
-        setIsResume(false);
-      }
-    })
+    if(isResume) {
+      eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
+      setIsResume(false);
+    }
   }
 
   return (

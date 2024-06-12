@@ -123,17 +123,6 @@ const Planning = () => {
       if (res.status) {
         dispatch(setYaml(res.details));
         setLocalYaml(res.details);
-        // const schema = res.details.schema;
-        // Leaving this as a comment because the note about setting $ref properly is still valid i think
-        // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
-        // schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
-        // schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
-        // schema.$id = serverSchema.$id;
-        // if(schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
-        //   delete schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
-        //   schema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverSchema.$defs.ipv4
-        // }
-        // dispatch(setSchema(schema));
         let installationDir = '';
         if (res.details?.zowe?.runtimeDirectory && res.details?.zowe?.workspaceDirectory) {
           const getParentDir = (path: string): string => path.split('/').filter((i: string, ind: number) => i || !ind).slice(0, -1).join('/');
