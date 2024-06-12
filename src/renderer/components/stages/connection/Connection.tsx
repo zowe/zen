@@ -43,7 +43,8 @@ const Connection = () => {
   const stageLabel = 'Connection';
 
   const dispatch = useAppDispatch();
-  const zoweCLIVersion = useAppSelector(selectZoweCLIVersion);
+  // const zoweCLIVersion = useAppSelector(selectZoweCLIVersion);
+  const zoweCLIVersion = ''; // Removing for now as not implemented
   const [expanded, setExpanded] = React.useState<string | false>('FTPConn');
 
   const handleChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
