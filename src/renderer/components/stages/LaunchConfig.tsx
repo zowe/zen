@@ -437,7 +437,7 @@ const LaunchConfig = () => {
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
-  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
 
   const [validate] = useState(() => ajv.compile(setupSchema));
 
