@@ -80,10 +80,7 @@ const Installation = () => {
       if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
     }
 
-    window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
-      if(res != undefined){
-        setInstArgs((res as any));
-      }
+    if(installationArgs != undefined){
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         function mergeInstallationArgsAndYaml(yaml: any){
           let yamlObj = JSON.parse(JSON.stringify(yaml));
@@ -155,7 +152,7 @@ const Installation = () => {
           }
         }
       })
-    })
+    }
 
     setIsFormInit(true);
 
