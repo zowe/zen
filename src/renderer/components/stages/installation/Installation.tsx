@@ -82,8 +82,6 @@ const Installation = () => {
 
     window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
       if(res != undefined){
-        console.log("got installation args:", JSON.stringify(res));
-        console.log("getInstallationArguments():", JSON.stringify(getInstallationArguments()));
         setInstArgs((res as any));
       }
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
