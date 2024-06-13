@@ -400,7 +400,7 @@ class Installation {
     }
     ProgressStore.set('apfAuth.uploadYaml', uploadYaml.status);
     console.log("Check out this install arg! " + installationArgs.installationDir);
-    const script = `cd ${installationArgs.installationDir};./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+    const script = `cd ${installationArgs.installationDir}/bin;./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('apfAuth.success', result.rc === 0);
     return {status: result.rc === 0, details: result.jobOutput}
@@ -425,7 +425,7 @@ class Installation {
       }
       ProgressStore.set('initSecurity.uploadYaml', uploadYaml.status);
       console.log("Check out this install arg! " + installationArgs.installationDir);
-      const script = `cd ${installationArgs.installationDir};./zwe init security -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+      const script = `cd ${installationArgs.installationDir}/bin;./zwe init security -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
       ProgressStore.set('initSecurity.success', result.rc === 0);
       return {status: result.rc === 0, details: result.jobOutput}
@@ -631,7 +631,7 @@ export class FTPInstallation extends Installation {
   }
   
   async initMVS(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs) {
-    const script = `cd ${installationArgs.installationDir }; ./zwe init mvs -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten`;
+    const script = `cd ${installationArgs.installationDir + '/bin' }; ./zwe init mvs -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
