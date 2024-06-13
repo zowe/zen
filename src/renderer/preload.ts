@@ -104,6 +104,9 @@ contextBridge.exposeInMainWorld('electron', {
     downloadButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string, zoweConfig: any) {
       return ipcRenderer.invoke("download-unpax", connectionArgs, installationArgs, version, zoweConfig);
     },
+    fetchExampleYamlBtnOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs) {
+      return ipcRenderer.invoke("get-yaml-schema", connectionArgs, installationArgs);
+    },
     initCertsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
       return ipcRenderer.invoke("init-certificates", connectionArgs, installationArgs, zoweConfig);
     },

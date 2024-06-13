@@ -204,6 +204,11 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('get-yaml-schema', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.smpeGetExampleYamlAndSchemas(connectionArgs, installationArgs);
+    return res;
+  });
+
   ipcMain.handle('init-certificates', async (event, connectionArgs, installationArgs, zoweConfig) => {
     const res = await installActions.runInitCertificates(connectionArgs, installationArgs, zoweConfig);
     return res;

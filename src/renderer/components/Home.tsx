@@ -141,6 +141,8 @@ const Home = () => {
     window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
       if(res != undefined){
         dispatch(setInstallationArgs(res));
+      } else {
+        dispatch(setInstallationArgs({...getInstallationArguments()}));
       }
     })
 

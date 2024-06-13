@@ -64,6 +64,10 @@ export class InstallActions {
     return this.strategy.uploadLatestYaml(connectionArgs, installationArgs);
   }
 
+  smpeGetExampleYamlAndSchemas(connectionArgs: IIpcConnectionArgs, installArgs: InstallationArgs): Promise<IResponse> {
+    return this.strategy.smpeGetExampleYamlAndSchemas(connectionArgs, installArgs);
+  }
+
   initStcs(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse> {
     return this.strategy.initStcs(connectionArgs, installationArgs, zoweConfig);

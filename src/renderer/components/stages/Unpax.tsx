@@ -19,7 +19,7 @@ import CheckCircle from '@mui/icons-material/CheckCircle';
 import { setActiveStep } from "./progress/activeStepSlice"; 
 import { getStageDetails } from "../../../services/StageDetails";
 import { setDownloadUnpaxStatus } from './progress/progressSlice';
-import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationTypeStatus, getProgress, setDownloadUnpaxState } from "./progress/StageProgressStatus";
+import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationArguments, getInstallationTypeStatus, getProgress, setDownloadUnpaxState } from "./progress/StageProgressStatus";
 import React from "react";
 import ProgressCard from "../common/ProgressCard";
 import { alertEmitter } from "../Header";
@@ -44,7 +44,7 @@ const Unpax = () => {
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const version = useAppSelector(selectZoweVersion);
 
-  const [installationArgs, setInstArgs] = useState(useAppSelector(selectInstallationArgs));
+  const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   let timer: any;
 
   useEffect(() => {
@@ -60,7 +60,7 @@ const Unpax = () => {
             clearInterval(timer);
           }
         })
-      }, 3000);
+      }, 3000)
     }
     return () => {
       clearInterval(timer);
@@ -90,6 +90,29 @@ const Unpax = () => {
     });
   }
 
+  const fetchExampleYaml = (event: any) => {
+    event.preventDefault();
+    setShowProgress(true);
+    dispatch(setDownloadUnpaxStatus(false));
+    setDownloadUnpaxProgress(downloadUnpaxStatus);
+    dispatch(setNextStepEnabled(false));
+    window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+      if(!res.status){ //errors during runInstallation()
+        alertEmitter.emit('showAlert', res.details.message ? res.details.message : res.details, 'error');
+      }
+      if(res.details?.mergedYaml != undefined){
+        dispatch(setYaml(res.details.mergedYaml));
+        window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
+      }
+      dispatch(setNextStepEnabled(res.status));
+      dispatch(setDownloadUnpaxStatus(res.status));
+      clearInterval(timer);
+    }).catch(() => {
+      clearInterval(timer);
+      dispatch(setNextStepEnabled(false));
+    });
+  }
+
   useEffect(() => {
       window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
         if(res != undefined){
@@ -101,8 +124,8 @@ const Unpax = () => {
         nextPosition = document.getElementById('download-progress-card');
         nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-      dispatch(setNextStepEnabled(getProgress('downloadUnpaxStatus') || installValue === "smpe"));
-      dispatch(setDownloadUnpaxStatus(getProgress('downloadUnpaxStatus') || installValue === "smpe"));
+      dispatch(setNextStepEnabled(getProgress('downloadUnpaxStatus')));
+      dispatch(setDownloadUnpaxStatus(getProgress('downloadUnpaxStatus')));
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     }
@@ -111,8 +134,22 @@ const Unpax = () => {
   return (<>
       {installValue === "smpe" && <ContainerCard title="Continue to Initialization" description="">
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-            {`The SMP/E process has already downloaded the required Zowe runtime files. Please click skip or continue.`}
+            {`The SMP/E process has already downloaded the required Zowe runtime files. Zen will now retrieve the example-zowe.yaml and schemas for the yaml. Skip this step if you have already fetched these files.`}
           </Typography>
+          {!showProgress && <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
+            <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} 
+              onClick={(e) => fetchExampleYaml(e)}
+            >
+              Retrieve example-zowe.yaml
+            </Button>
+          </Box>}
+          {showProgress && 
+            <React.Fragment>
+              <ProgressCard label={`Retrieve example-zowe.yaml from installation files`} id="yaml-progress-card" status={downloadUnpaxProgress.getExampleYaml}/>
+              <ProgressCard label="Retrieve server-common and yaml schemas from installation files" id="schema-progress-card" status={downloadUnpaxProgress.getSchemas}/>
+              <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => fetchExampleYaml(e)}>Re-fetch example-zowe.yaml</Button>
+            </React.Fragment>
+          }
       </ContainerCard>}
       {installValue === "download" && <ContainerCard title="Download Zowe Pax" description=""> 
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
