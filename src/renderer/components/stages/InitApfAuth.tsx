@@ -302,7 +302,7 @@ const InitApfAuth = () => {
           </React.Fragment>
         }
         </Box>
-        <Box sx={{ height: showProgress ? '60vh' : 'auto', minHeight: '60vh' }} id="apf-progress"></Box>
+        <Box sx={{ height: showProgress ? '60vh' : '0', minHeight: '60vh' }} id="apf-progress"></Box>
       </ContainerCard>
     </div>
     
