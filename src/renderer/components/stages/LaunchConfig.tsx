@@ -519,8 +519,8 @@ const LaunchConfig = () => {
         dispatch(setLaunchConfigStatus(false));
         alertEmitter.emit('showAlert', res.details, 'error');
       }
+      dispatch(setInitializationStatus(isInitComplete()));
     });
-    dispatch(setInitializationStatus(isInitComplete()));
   }
 
   return (

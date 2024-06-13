@@ -109,7 +109,13 @@ const Installation = () => {
             yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
           }
           if ((yamlObj.zowe.job?.name === undefined || yamlObj.zowe.job?.name === '') && installationArgs.jobName) { //this undefined check is necessary because InstallationStage.jobName has a defualt, and therefore this would always overwrite the value in the config
-            yamlObj.zowe.job.name = installationArgs.jobName;
+            if(yamlObj.zowe.job === undefined){
+              yamlObj.zowe.job = {
+                name: installationArgs.jobName
+              }
+            } else {
+              yamlObj.zowe.job.name = installationArgs.jobName;
+            }
           }
           if ((yamlObj.zowe.job?.prefix === undefined || yamlObj.zowe.job?.prefix === '') && installationArgs.jobPrefix) {
             yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
@@ -141,7 +147,6 @@ const Installation = () => {
           setLYaml(yamlObj)
           dispatch(setYaml(yamlObj))
         } else {
-          // console.log('got config:', JSON.stringify(res.details));
           let yamlObj = mergeInstallationArgsAndYaml(res.details);
           if(res.details.zowe?.setup?.dataset === undefined){
             dispatch(setYaml({...yamlObj, zowe: {...yamlObj.zowe, setup: {...yamlObj.zowe.setup, dataset: FALLBACK_YAML.zowe.setup.dataset}} }));

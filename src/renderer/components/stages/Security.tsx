@@ -69,9 +69,6 @@ const Security = () => {
     if(getProgress('securityStatus')) {
       nextPosition = document.getElementById('security-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    } else {
-      nextPosition = document.getElementById('container-box-id');
-      nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
     updateProgress(getProgress('securityStatus'));
