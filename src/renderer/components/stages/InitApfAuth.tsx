@@ -62,6 +62,9 @@ const InitApfAuth = () => {
     if(getProgress('apfAuthStatus')) {
       nextPosition = document.getElementById('start-apf-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      nextPosition = document.getElementById('container-box-id');
+      nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
     updateProgress(getProgress('apfAuthStatus'));
