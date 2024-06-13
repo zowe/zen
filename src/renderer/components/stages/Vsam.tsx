@@ -233,6 +233,7 @@ const Vsam = () => {
       }
     };
     setLYaml(updatedYaml);
+    window.electron.setConfig(updatedYaml);
     dispatch(setYaml(updatedYaml));
   }
 
@@ -253,6 +254,7 @@ const Vsam = () => {
         }
       }
     };
+    window.electron.setConfig(updatedYaml);
     setLYaml(updatedYaml);
     dispatch(setYaml(updatedYaml));
   };
