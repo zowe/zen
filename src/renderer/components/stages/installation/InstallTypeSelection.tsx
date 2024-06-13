@@ -96,6 +96,7 @@ const InstallationType = () => {
             name="radio-buttons-group"
             onChange={(e) => {
                 dispatch(setInstallationArgs({...installationArgs, installationType: e.target.value}));
+                window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", {...installationArgs, installationType: e.target.value});
                 dispatch(setInstallationType(e.target.value))
                 installTypeChangeHandler(e.target.value)
             }}
