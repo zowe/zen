@@ -475,6 +475,9 @@ const LaunchConfig = () => {
   };
   
   const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
+    if(isFormInit){
+      setLaunchConfigStatus(false)
+    }
     let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe) : (data.zowe ? data.zowe : data);
     setIsFormInit(false);
 
@@ -493,7 +496,6 @@ const LaunchConfig = () => {
           dispatch(setYaml(newYaml));
           setStageConfig(true, '', newData);
         }
-        dispatch(setLaunchConfigStatus(false));
       }
     }
   };
