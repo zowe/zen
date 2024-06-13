@@ -300,7 +300,6 @@ class Installation {
               // Without these, AJV does not properly find $refs in the schema and therefore validation cannot occur
               yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverCommon.$defs.datasetMember;
               yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
-              yamlSchema.$id = serverCommon.$id;
               if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
                 delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
                 yamlSchema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverCommon.$defs.ipv4
