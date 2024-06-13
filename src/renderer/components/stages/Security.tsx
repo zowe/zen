@@ -59,7 +59,7 @@ const Security = () => {
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
 
   let timer: any;
-  const [validate] = useState(() => ajv.compile(setupSchema));
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema));
 
   useEffect(() => {
     dispatch(setInitializationStatus(isInitComplete()));

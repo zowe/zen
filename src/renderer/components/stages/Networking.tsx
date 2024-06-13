@@ -555,7 +555,7 @@ const Networking = () => {
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   const [elements, setElements] = useState([]);
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const [validate] = useState(() => ajv.compile(schema));
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema));
 
 
   // useEffect(() => {

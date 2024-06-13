@@ -63,7 +63,7 @@ const Vsam = () => {
 
   const [defaultErrorMessage] = useState("Please ensure that the volume, storage class & dataset values are accurate.");
 
-  const [validate] = useState(() => ajv.compile(setupSchema))
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema))
 
   useEffect(() => {
     dispatch(setInitializationStatus(isInitComplete()));

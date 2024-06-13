@@ -439,7 +439,7 @@ const LaunchConfig = () => {
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
 
-  const [validate] = useState(() => ajv.compile(setupSchema));
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema));
 
   const [isInitializationSkipped] = useState(!useAppSelector(selectInitializationStatus));
 

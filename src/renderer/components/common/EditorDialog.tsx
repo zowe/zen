@@ -16,7 +16,7 @@ import Ajv2019 from "ajv/dist/2019"
 import MonacoEditorComponent from "../common/MonacoEditor";
 import { parse, stringify } from "yaml";
 import { IResponse } from "../../../types/interfaces";
-import { DEF_NO_OUTPUT, schemaValidate } from "./Constants";
+import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, ajv, schemaValidate } from "./Constants";
 import { alertEmitter } from "../Header";
 
 const test_jcl = `
@@ -34,7 +34,6 @@ const test_op = "WARNING: 'Some Warning'\nERROR: 'Some Error'\nINFO: 'Some Info'
 const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onChange, content, readOnlyYaml} : {contentType: any, isEditorVisible: boolean, toggleEditorVisibility: any, onChange?: any, content?: any, readOnlyYaml?: boolean}) => {
 
   const dispatch = useAppDispatch();
-  const schema = useAppSelector(selectSchema);
   const [setupYaml, setSetupYaml] = useState(useAppSelector(selectYaml));
   const [setupOutput, setSetupOutput] = useState(useAppSelector(selectOutput));
   const [editorVisible, setEditorVisible] = useState(false);
@@ -87,7 +86,6 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
     }
 
     // To validate the javascript object against the schema
-    schemaValidate(jsonData);
     setIsSchemaValid(!schemaValidate.errors);
 
     if(schemaValidate.errors && jsonData) {

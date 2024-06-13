@@ -60,7 +60,7 @@ const Certificates = () => {
   let timer: any;
 
   const [certificateSchema] = useState( schema?.properties?.zowe?.properties?.setup?.properties?.certificate)
-  const [validate] = useState(() => ajv.compile(certificateSchema))
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema))
 
   useEffect(() => {
     dispatch(setInitializationStatus(isInitComplete()));
