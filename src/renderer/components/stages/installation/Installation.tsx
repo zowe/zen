@@ -273,6 +273,7 @@ const Installation = () => {
         } else {
           updateProgress(res.status);
           stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+          setNextStepEnabled(true);
           clearInterval(timer);
         }
       }).catch((err: any) => {
