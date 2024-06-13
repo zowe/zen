@@ -93,7 +93,6 @@ const Home = () => {
   const [showLoginDialog, setShowLogin] = useState(false);
   const [yaml] = useState(useAppSelector(selectYaml));
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const [installationArgs] = useState(useAppSelector(selectInstallationArgs));
 
   const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getPreviousInstallation();
 
@@ -130,7 +129,7 @@ const Home = () => {
     //SCHEMA LOADING - necessary for JsonForms
     if(schema == undefined || (typeof schema === "object" && Object.keys(yaml).length === 0)){
       window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
-        if (res.status) {
+        if (res.status && res.details !== undefined) {
           dispatch(setSchema(res.details));
         } else {
           dispatch(setSchema(FALLBACK_SCHEMA));
@@ -139,13 +138,11 @@ const Home = () => {
     }
 
     //Load installation args
-    if(installationArgs == undefined){
-      window.electron.ipcRenderer.getInstallationArgs().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setInstallationArgs(res.details));
-        }
-      })
-    }
+    window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
+      if(res != undefined){
+        dispatch(setInstallationArgs(res));
+      }
+    })
 
 
 

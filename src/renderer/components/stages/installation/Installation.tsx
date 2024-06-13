@@ -80,6 +80,8 @@ const Installation = () => {
       if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
     }
 
+    console.log('installationArgs:', JSON.stringify(installationArgs));
+
     window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
       if(res != undefined){
         // console.log("got installation args:", JSON.stringify(res));

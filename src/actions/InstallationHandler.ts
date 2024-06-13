@@ -219,6 +219,7 @@ class Installation {
             const jobOutputSplit = inputString.split(`cat ${catPath}\\r\\n`)
             if(jobOutputSplit[1]){
               const trimmedYamlSchema = jobOutputSplit[1].split(`Script finished.`)[0].split(`Script finished.`);
+              // console.log("trimmed schema:", trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`).replaceAll(`\\\\"`, `\\"`))
               return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`).replaceAll(`\\\\"`, `\\"`);
             }
             return "";
