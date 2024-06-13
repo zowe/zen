@@ -639,7 +639,7 @@ const Networking = () => {
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <p key="external-domains" style={{fontSize: "24px"}}>External Domains <IconButton onClick={(e) => {
-            let domains = [...yaml.zowe?.externalDomains, ""];
+            let domains = [...yaml.zowe?.externalDomains || [], ""];
             const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
             window.electron.ipcRenderer.setConfig(newYaml )
             dispatch(setYaml(newYaml))
