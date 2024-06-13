@@ -51,7 +51,7 @@ const Installation = () => {
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [setupSchema, setSetupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.dataset);
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset);
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || FALLBACK_YAML?.zowe?.setup?.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('datasetInstallationStatus'));
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -79,8 +79,6 @@ const Installation = () => {
       const nextPosition = document.getElementById('container-box-id');
       if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
     }
-
-    console.log('installationArgs:', JSON.stringify(installationArgs));
 
     window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
       if(res != undefined){
