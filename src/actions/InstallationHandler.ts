@@ -298,6 +298,7 @@ class Installation {
             if(yamlSchema && serverCommon){
               // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
               // Without these, AJV does not properly find $refs in the schema and therefore validation cannot occur
+              yamlSchema.additionalProperties = true;
               yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverCommon.$defs.datasetMember;
               yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
               if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
