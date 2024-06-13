@@ -619,7 +619,7 @@ export class FTPInstallation extends Installation {
 
   // TODO: Is this necessary adding "/runtime" ? User already specifies /runtime directory - removes 8 chars from max limit. See Planning.tsx
   async unpax(connectionArgs: IIpcConnectionArgs, installDir: string) {
-    const script = `mkdir ${installDir};cd ${installDir} && pax -ppx -rf ../zowe.pax;rm -rf ../zowe.pax`;
+    const script = `mkdir ${installDir};cd ${installDir} && pax -ppx -rf ../zowe.pax;rm -rf ./zowe.pax`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
