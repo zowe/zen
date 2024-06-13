@@ -24,7 +24,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setVsamInitState, mapAndSetSkipStatus, getInstallationArguments, getVsamInitState } from "./progress/StageProgressStatus";
+import { getProgress, setVsamInitState, mapAndSetSkipStatus, getInstallationArguments, getVsamInitState, isInitComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
 import { INIT_STAGE_LABEL, ajv } from "../common/Constants";
@@ -66,7 +66,7 @@ const Vsam = () => {
   const [validate] = useState(() => ajv.compile(setupSchema))
 
   useEffect(() => {
-
+    dispatch(setInitializationStatus(isInitComplete()));
     setShowProgress(initClicked || getProgress('vsamStatus'));
     let nextPosition;
 
@@ -157,7 +157,7 @@ const Vsam = () => {
     }
     const allAttributesTrue = Object.values(vsamInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setInitializationStatus(status));
+    dispatch(setInitializationStatus(isInitComplete()));
     dispatch(setVsamStatus(status));
     dispatch(setNextStepEnabled(status));
     setVsamInitializationProgress(getVsamInitState());

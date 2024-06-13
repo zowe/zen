@@ -23,7 +23,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setStcsInitState, getStcsInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
+import { getProgress, setStcsInitState, getStcsInitState, mapAndSetSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
 import { FALLBACK_SCHEMA, FALLBACK_YAML, INIT_STAGE_LABEL, SERVER_COMMON, ajv } from "../common/Constants";
@@ -67,7 +67,7 @@ const Stcs = () => {
   const [validate] = useState(() => ajv.compile(stcsSchema))
 
   useEffect(() => {
-
+    dispatch(setInitializationStatus(isInitComplete()));
     setShowProgress(initClicked || getProgress('stcsStatus'));
     let nextPosition;
 
@@ -161,7 +161,7 @@ const Stcs = () => {
     }
     const allAttributesTrue = Object.values(stcsInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setInitializationStatus(status));
+    dispatch(setInitializationStatus(isInitComplete()));
     dispatch(setStcsStatus(status));
     dispatch(setNextStepEnabled(status));
     setStcsInitializationProgress(getStcsInitState());

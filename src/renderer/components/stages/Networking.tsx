@@ -18,12 +18,12 @@ import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { stages } from "../configuration-wizard/Wizard";
-import { selectInitializationStatus, setNetworkingStatus } from "./progress/progressSlice";
+import { selectInitializationStatus, setInitializationStatus, setNetworkingStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML, ajv } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
 import { selectConnectionArgs } from "./connection/connectionSlice";
-import { getInstallationArguments, getProgress } from "./progress/StageProgressStatus";
+import { getInstallationArguments, getProgress, isInitComplete } from "./progress/StageProgressStatus";
 import { alertEmitter } from "../Header";
 
 //   const schema = useAppSelector(selectSchema);
@@ -570,6 +570,7 @@ const Networking = () => {
     if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
 
     dispatch(setNextStepEnabled(getProgress('networkingStatus')));
+    dispatch(setInitializationStatus(isInitComplete()));
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = false;
     stages[STAGE_ID].isSkipped = isInitializationSkipped;
     setIsFormInit(true);
@@ -701,6 +702,7 @@ const Networking = () => {
         dispatch(setNetworkingStatus(false));
         alertEmitter.emit('showAlert', res.details, 'error');
       }
+      dispatch(setInitializationStatus(isInitComplete()));
     });
   }
 

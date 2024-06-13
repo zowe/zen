@@ -23,7 +23,7 @@ import { alertEmitter } from "../Header";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import {  getProgress, setApfAuthState, getApfAuthState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
+import {  getProgress, setApfAuthState, getApfAuthState, mapAndSetSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { JCL_UNIX_SCRIPT_OK, FALLBACK_YAML, INIT_STAGE_LABEL, APF_AUTH_STAGE_LABEL, ajv, SERVER_COMMON } from "../common/Constants";
 
@@ -59,13 +59,11 @@ const InitApfAuth = () => {
   const [validate] = useState(() => ajv.compile(datasetSchema));
   
   useEffect(() => {
+    dispatch(setInitializationStatus(isInitComplete()));
     let nextPosition;
     if(getProgress('apfAuthStatus')) {
       nextPosition = document.getElementById('start-apf-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      nextPosition = document.getElementById('container-box-id');
-      nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
     updateProgress(getProgress('apfAuthStatus'));
@@ -149,7 +147,7 @@ const InitApfAuth = () => {
     const allAttributesTrue = Object.values(apfAuthInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
     dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(status));
+    dispatch(setInitializationStatus(isInitComplete()));
     dispatch(setApfAuthStatus(status));
     setApfAuthorizationInitProgress(getApfAuthState());
   }
@@ -208,7 +206,6 @@ const InitApfAuth = () => {
   const apfAuthProceedActions = (status: boolean) => {
     dispatch(setNextStepEnabled(status));
     dispatch(setApfAuthStatus(status));
-    dispatch(setInitializationStatus(status));
   }
 
   const formChangeHandler = (data: any, isYamlUpdated?: boolean) => {

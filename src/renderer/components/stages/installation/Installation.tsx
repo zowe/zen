@@ -27,7 +27,7 @@ import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
 import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, INSTALL_STAGE_LABEL, ajv2019, SERVER_COMMON} from '../../common/Constants';
 import { getStageDetails, getSubStageDetails } from "../../../../services/StageDetails"; 
-import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments, datasetInstallationStatus } from "../progress/StageProgressStatus";
+import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments, datasetInstallationStatus, isInitComplete } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
 import eventDispatcher from '../../../../services/eventDispatcher';
 
@@ -71,7 +71,7 @@ const Installation = () => {
 
   
   useEffect(() => {
-
+    dispatch(setInitializationStatus(isInitComplete()));
     if(getProgress("datasetInstallationStatus")) {
       const nextPosition = document.getElementById('save-installation-progress');
       if(nextPosition) nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -294,7 +294,7 @@ const Installation = () => {
   const installProceedActions = (status: boolean) => {
     dispatch(setNextStepEnabled(status));
     dispatch(setDatasetInstallationStatus(status));
-    dispatch(setInitializationStatus(status));
+    dispatch(setInitializationStatus(isInitComplete()));
   }
 
   const debouncedChange = useCallback(

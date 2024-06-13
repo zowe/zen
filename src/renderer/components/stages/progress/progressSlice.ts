@@ -50,21 +50,8 @@ export const progressSlice = createSlice({
       setProgress('downloadUnpaxStatus', action.payload);
     },
     setInitializationStatus: (state, action: PayloadAction<boolean>) => {
-      if (
-        state.datasetInstallationStatus &&
-        state.networkingStatus &&
-        state.apfAuthStatus &&
-        state.securityStatus &&
-        state.stcsStatus &&
-        state.certificateStatus &&
-        state.launchConfigStatus
-      ) {
-        state.initializationStatus = true;
-        setProgress('initializationStatus', true);
-      } else {
-        state.initializationStatus = false;
-        setProgress('initializationStatus', false);
-      }
+      state.initializationStatus = action.payload;
+      setProgress('initializationStatus', action.payload);
     },
     setDatasetInstallationStatus: (state, action: PayloadAction<boolean>) => {
       state.datasetInstallationStatus = action.payload;
