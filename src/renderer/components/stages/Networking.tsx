@@ -547,15 +547,14 @@ const Networking = () => {
 
   const dispatch = useAppDispatch();
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
-  const [elements, setElements] = useState([]);
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema));
+  const [LOOP_LIMIT] = useState(1024);
 
 
   // useEffect(() => {
@@ -573,7 +572,6 @@ const Networking = () => {
     dispatch(setInitializationStatus(isInitComplete()));
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = false;
     stages[STAGE_ID].isSkipped = isInitializationSkipped;
-    setIsFormInit(true);
 
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
@@ -611,84 +609,6 @@ const Networking = () => {
     setFormError(errorMsg);
     setLYaml(data);
   }
-
-  useEffect(() => {
-    if(yaml){
-      const keys = Object.keys(schema.properties);
-
-      //note on this nested for loop: it will only run on keys that have "patternProperties" as a child so it shouldnt be expensive
-      let newElements = [];
-      const LOOP_LIMIT = 1024;
-      for (let i = 0; i < keys.length && i < LOOP_LIMIT; i++) { //i = go through each property of the yaml
-        if (schema.properties[keys[i]].patternProperties != undefined) { //only for rendering patternProperties
-          if(typeof yaml[keys[i]] === "object" && Object.keys(yaml[keys[i]]).length > 0) {
-            newElements.push(<p key={`title-p-` + keys[i]} style={{fontSize: "24px"}}>{keys[i]}</p>);
-            const patterns = Object.keys(schema.properties[keys[i]].patternProperties); //get all user defined regex patterns
-            for(let j = 0; j <  patterns.length && j < LOOP_LIMIT; j++){ //j = go through each pattern
-              const pattern = new RegExp(patterns[j]);
-              const yamlValue = yaml[keys[i]];
-              if(yamlValue){
-                const toMatch = Object.keys(yamlValue);
-                for(let k = 0; k < toMatch.length && k < LOOP_LIMIT; k++){
-                  if(pattern.test(toMatch[k])){
-                    // console.log('matched pattern ' + pattern + ' to ' + toMatch[k] + ' for key' + keys[i]);
-                    const matchedProps = Object.keys(yamlValue[toMatch[k]]);
-                    if(matchedProps.length > 0) {
-                      newElements.push(<span key={`span-${k}`}><strong>{toMatch[k]}</strong></span>)
-                      newElements.push(<br key={`br-${k}`} />);
-                      // console.log('matchedProps:', matchedProps);
-                      for(let l = 0; l < matchedProps.length && l < LOOP_LIMIT; l++){
-                        // pattern = patterns[j] = current regex pattern from patternProperties
-                        // keys[i] = parent object that contains pattern properties (likely components or haInstances)
-                        // toMatch[k] = regex matched child of keys[i], likely a component name such as app-server, gateway, etc
-                        // matchedProps[l] = properties of toMatch[k]
-                        switch (typeof yamlValue[toMatch[k]][matchedProps[l]]){
-                          case 'boolean':
-                            newElements.push(<FormControlLabel
-                              label={matchedProps[l]}
-                              key={`toggle-` + keys[i] + '.' + toMatch[k] + '.' + matchedProps[l] + '-' + (i+k+l)}
-                              control={<Checkbox checked={yaml[keys[i]][toMatch[k]][matchedProps[l]]} onChange={async (e) => {
-                                // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
-                                const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}};
-                                setLYaml(newYaml);
-                                await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, !yaml[keys[i]][toMatch[k]][matchedProps[l]])
-                                dispatch(setYaml(newYaml));
-                              }}/>}
-                            />)
-                            newElements.push(<br key={`br2-${k}${l}`} />);
-                            break;
-                          case 'number':
-                              newElements.push(<TextField
-                                label={matchedProps[l]}
-                                variant="standard"
-                                type="text" inputMode="numeric"
-                                key={keys[i] + '.' + toMatch[k] + '.' + l}
-                                value={yaml[keys[i]][toMatch[k]][matchedProps[l]]}
-                                onChange={async (e) => {
-                                  if(!Number.isNaN(Number(e.target.value))){
-                                    const newYaml = {...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: Number(e.target.value)}}};
-                                    setLYaml(newYaml);
-                                    await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
-                                    dispatch(setYaml(newYaml));
-                                  }
-                                }}
-                              />)
-                          default:
-                            break;
-                        }
-                      }
-                      newElements.push(<br key={`br3-${k}`} />);
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      setElements(newElements);
-    }
-  }, [yaml])
 
   const onSaveYaml = (e: any) => {
     e.preventDefault();
@@ -763,7 +683,70 @@ const Networking = () => {
             }}
           />
           <div>
-            {elements}
+            {Object.keys(schema.properties).map((schemaKey, index) => {
+              if(index < LOOP_LIMIT){
+                if (schema.properties[schemaKey].patternProperties != undefined) { //only for rendering patternProperties
+                  if(typeof yaml[schemaKey] === "object" && Object.keys(yaml[schemaKey]).length > 0) {
+                    return <div key={`div-` + schemaKey + `-` + index}>
+                      <p key={`title-p-` + schemaKey} style={{fontSize: "24px"}}>{schemaKey}</p>
+                      {Object.keys(schema.properties[schemaKey].patternProperties).map((regexPattern, rIndex) => {
+                         const pattern = new RegExp(regexPattern);
+                        if(rIndex < LOOP_LIMIT && yaml[schemaKey]) {
+                          return Object.keys(yaml[schemaKey]).map((matchedPattern, mIndex) => {
+                            if(mIndex < LOOP_LIMIT && pattern.test(matchedPattern)){
+                              return <div key={`div-` + matchedPattern + `-` + mIndex}>
+                              <span key={`span-${mIndex}`}>
+                                <strong>{matchedPattern}</strong>
+                                <br key={`br-${mIndex}`} />
+                              </span>
+                                {Object.keys(yaml[schemaKey][matchedPattern]).map((schemaProperty, sIndex) => {
+  
+                                if(sIndex < LOOP_LIMIT && schemaProperty.length > 0){
+                                  return <div key={`div-` + (index+rIndex+sIndex)}>
+                                  
+                                      {typeof yaml[schemaKey][matchedPattern][schemaProperty] === "boolean" && <FormControlLabel
+                                        label={schemaProperty}
+                                        key={`toggle-` + schemaKey + '.' + matchedPattern + '.' + schemaProperty + '-' + (index+rIndex+sIndex)}
+                                        control={<Checkbox checked={yaml[schemaKey][matchedPattern][schemaProperty]} onChange={async (e) => {
+                                          // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
+                                          const newYaml = {...yaml, [schemaKey]: {...yaml[schemaKey], [matchedPattern]: {...yaml[schemaKey][matchedPattern], [schemaProperty]: !yaml[schemaKey][matchedPattern][schemaProperty]}}};
+                                          setLYaml(newYaml);
+                                          await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${schemaKey}.${matchedPattern}.${schemaProperty}`, !yaml[schemaKey][matchedPattern][schemaProperty])
+                                          dispatch(setYaml(newYaml));
+                                        }}/>}
+                                      />}
+                                    {typeof yaml[schemaKey][matchedPattern][schemaProperty] === "number" &&<TextField
+                                      label={schemaProperty}
+                                      variant="standard"
+                                      type="text" inputMode="numeric"
+                                      key={index + '.' + matchedPattern + '.' + rIndex}
+                                      value={yaml[schemaKey][matchedPattern][schemaProperty]}
+                                      onChange={async (e) => {
+                                        if(!Number.isNaN(Number(e.target.value))){
+                                          const newYaml = {...yaml, [schemaKey]: {...yaml[schemaKey], [matchedPattern]: {...yaml[schemaKey][matchedPattern], [schemaProperty]: Number(e.target.value)}}};
+                                          setLYaml(newYaml);
+                                          await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${schemaKey}.${matchedPattern}.${schemaProperty}`, Number(e.target.value))
+                                          dispatch(setYaml(newYaml));
+                                        }
+                                      }}
+                                    />}
+                                  </div>
+                                }
+                                return null;
+                              })}</div>
+                            }
+                            return null;
+                          })
+                        }
+                        return null;
+                      })
+                      }
+                    </div>
+                  }
+                }
+              }
+               return null;
+            })}
           </div>
           <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => onSaveYaml(e)}>{'Save YAML to z/OS'}</Button>
         </Box>
