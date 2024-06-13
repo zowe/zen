@@ -54,8 +54,6 @@ const InitApfAuth = () => {
 
   const [installationArgs] = useState(getInstallationArguments());
   let timer: any;
-
-  const [datasetSchema] = useState(schema.properties.zowe.properties.setup.properties.dataset);
   const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema));
   
   useEffect(() => {
