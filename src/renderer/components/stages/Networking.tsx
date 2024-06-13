@@ -693,6 +693,7 @@ const Networking = () => {
   const onSaveYaml = (e: any) => {
     e.preventDefault();
     alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
+    dispatch(setNetworkingStatus(false));
     window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
       if(res && res.status) {
         dispatch(setNextStepEnabled(true));

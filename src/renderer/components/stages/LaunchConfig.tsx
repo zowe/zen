@@ -506,6 +506,7 @@ const LaunchConfig = () => {
 
   const onSaveYaml = (e: any) => {
     e.preventDefault();
+    dispatch(setLaunchConfigStatus(false));
     alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
     window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
       if(res && res.status) {
