@@ -11,10 +11,9 @@
 import { useState, useEffect } from "react";
 import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled, setYaml, setSchema } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import { setStcsStatus, setInitializationStatus } from './progress/progressSlice';
 import ContainerCard from '../common/ContainerCard';import EditorDialog from "../common/EditorDialog";
-import Ajv from "ajv";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { IResponse } from "../../../types/interfaces";
 import ProgressCard from "../common/ProgressCard";
@@ -26,12 +25,12 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { getProgress, setStcsInitState, getStcsInitState, mapAndSetSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
-import { FALLBACK_SCHEMA, FALLBACK_YAML, INIT_STAGE_LABEL, SERVER_COMMON, ajv } from "../common/Constants";
+import { INIT_STAGE_LABEL, STC_STAGE_LABEL, ajv } from "../common/Constants";
 
 const Stcs = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
-  const subStageLabel = 'Stcs';
+  const [subStageLabel] = useState(STC_STAGE_LABEL);
 
   const [STAGE_ID] = useState(getStageDetails(INIT_STAGE_LABEL).id);
   const [SUB_STAGES] = useState(!!getStageDetails(INIT_STAGE_LABEL).subStages);

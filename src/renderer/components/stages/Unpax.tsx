@@ -12,10 +12,9 @@ import {useEffect, useState} from "react";
 import { Box, Button, Link, Typography } from '@mui/material';
 import ContainerCard from '../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, setLoading, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion} from './installation/installationSlice';
+import { selectYaml, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectZoweVersion} from './installation/installationSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
-import CheckCircle from '@mui/icons-material/CheckCircle';
 import { setActiveStep } from "./progress/activeStepSlice"; 
 import { getStageDetails } from "../../../services/StageDetails";
 import { setDownloadUnpaxStatus } from './progress/progressSlice';
@@ -24,16 +23,16 @@ import React from "react";
 import ProgressCard from "../common/ProgressCard";
 import { alertEmitter } from "../Header";
 import { IResponse } from "../../../types/interfaces";
-import { DownloadUnpaxState } from "../../../types/stateInterfaces";
+import { UNPAX_STAGE_LABEL } from "../common/Constants";
 
 const Unpax = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
-  const stageLabel = 'Unpax';
+  const [stageLabel] = useState(UNPAX_STAGE_LABEL);
 
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+  const [STAGE_ID] = useState(getStageDetails(stageLabel).id);
+  const [SUB_STAGES] = useState(!!getStageDetails(stageLabel).subStages);
 
   const dispatch = useAppDispatch();
   const connectionArgs = useAppSelector(selectConnectionArgs);

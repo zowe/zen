@@ -208,8 +208,8 @@ class Installation {
       console.log("uploading...");
       if(installationArgs.installationType === "upload"){
         //upload the PAX the user selected in the "Install Type" stage to the installation dir (from the planning stage)
-        console.log('Uploading user selected pax')
-        upload = await new FileTransfer().upload(connectionArgs, installationArgs.installationDir, path.join(installationArgs.installationDir, "zowe.pax"), DataType.BINARY)
+        console.log('Uploading user selected pax from ', installationArgs.userUploadedPaxPath)
+        upload = await new FileTransfer().upload(connectionArgs, installationArgs.userUploadedPaxPath, path.join(installationArgs.installationDir, "zowe.pax"), DataType.BINARY)
       } else if (installationArgs.installationType === "download"){
         console.log('Uploading pax downloaded from jfrog')
         upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);

@@ -11,12 +11,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { selectYaml, selectOutput, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
-import Ajv2019 from "ajv/dist/2019"
+import { selectYaml, selectOutput, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import MonacoEditorComponent from "../common/MonacoEditor";
 import { parse, stringify } from "yaml";
 import { IResponse } from "../../../types/interfaces";
-import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, ajv, schemaValidate } from "./Constants";
+import { DEF_NO_OUTPUT, schemaValidate } from "./Constants";
 import { alertEmitter } from "../Header";
 
 const test_jcl = `

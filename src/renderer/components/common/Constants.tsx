@@ -30,6 +30,7 @@ export const APF_AUTH_STAGE_LABEL = "APF Auth";
 export const SECURITY_STAGE_LABEL = "Security";
 export const CERTIFICATES_STAGE_LABEL = "Certificates";
 export const VSAM_STAGE_LABEL = "Vsam";
+export const STC_STAGE_LABEL = "Stcs";
 export const LAUNCH_CONFIG_STAGE_LABEL = "Launch Config";
 export const REVIEW_INSTALL_STAGE_LABEL = "Review Installation";
 export const FINISH_INSTALL_STAGE_LABEL = "Finish Installation";
