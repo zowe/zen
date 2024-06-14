@@ -31,6 +31,20 @@ const zoweDatasetMemberRegexFixed = {
   "maxLength": 8
 }
 
+function deepMerge(base: any, extension:any) {
+  if (typeof base === "object" && typeof extension === "object") {
+    for (const key in extension) {
+      if (typeof extension[key] === "object") {
+        if (!base[key]) base[key] = {};
+        deepMerge(base[key], extension[key]);
+      } else {
+        Object.assign(base, {[key]: extension[key]});
+      }
+    }
+  }
+  return base;
+}
+
 class Installation {
 
   public async uploadLatestYaml (
@@ -123,7 +137,7 @@ class Installation {
           try {
             yamlObj = parse(yamlFromPax);
             if (currentConfig) {
-              yamlObj = Object.assign({}, yamlObj, currentConfig);
+              yamlObj = deepMerge(yamlObj, currentConfig);
             }
             this.mergeYamlAndInstallationArgs(yamlObj, installationArgs);
             ConfigurationStore.setConfig(yamlObj);
