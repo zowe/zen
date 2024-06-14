@@ -18,8 +18,8 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { selectConnectionStatus } from '../stages/progress/progressSlice';
-import { useAppSelector } from '../../hooks';
-import { selectNextStepEnabled } from '../configuration-wizard/wizardSlice';
+import { useAppDispatch, useAppSelector } from '../../hooks';
+import { selectNextStepEnabled, setLoading, setYaml } from '../configuration-wizard/wizardSlice';
 import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progress/activeStepSlice';
 import { alertEmitter } from '../Header';
 import EditorDialog from "./EditorDialog";
@@ -27,12 +27,14 @@ import savedInstall from '../../assets/saved-install-green.png';
 import eventDispatcher from '../../../services/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL } from '../common/Constants';
-import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus } from '../stages/progress/StageProgressStatus';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL, UNPAX_STAGE_LABEL } from '../common/Constants';
+import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus, getInstallationArguments } from '../stages/progress/StageProgressStatus';
 
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
 import { getStageDetails } from '../../../services/StageDetails';
+import { IResponse } from '../../../types/interfaces';
+import { selectConnectionArgs } from '../stages/connection/connectionSlice';
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
 
@@ -72,6 +74,9 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const [contentType, setContentType] = useState('output');
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState('');
+  const [installationArgs] = useState(getInstallationArguments());
+  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const mvsCompleteListener = (completed: boolean) => {
@@ -121,12 +126,29 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     toggleEditorVisibility(TYPE_OUTPUT);
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
     stages[activeStep].isSkipped = true;
     if(stages[activeStep].subStages){
       stages[activeStep].subStages[activeSubStep].isSkipped = true;
       mapAndSetSkipStatus(activeSubStep, true);
     }
+    if(stages[activeStep].label === UNPAX_STAGE_LABEL && installationArgs.installationType == "download"){
+      alertEmitter.emit('showAlert', 'Retrieving example-zowe.yaml and latest schemas from Zowe runtime files...', 'info');
+      dispatch(setLoading(true));
+      await window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+        if(!res.status){ //errors during runInstallation()
+          alertEmitter.emit('showAlert', res.details.message ? res.details.message : res.details, 'error');
+        }
+        if(res.details?.mergedYaml != undefined){
+          dispatch(setYaml(res.details.mergedYaml));
+          window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
+          alertEmitter.emit('showAlert', "Successfully fetched example-zowe.yaml and latest schemas", 'success');
+        }
+      }).catch((e: any) => {
+        alertEmitter.emit('showAlert', e.message, 'error');
+      });
+    }
+    dispatch(setLoading(false));
     handleNext();
   }
 
