@@ -694,10 +694,11 @@ const Networking = () => {
                           return Object.keys(yaml[schemaKey]).map((matchedPattern, mIndex) => {
                             if(mIndex < LOOP_LIMIT && pattern.test(matchedPattern)){
                               return <div key={`div-` + matchedPattern + `-` + mIndex}>
-                              <span key={`span-${mIndex}`}>
-                                <strong>{matchedPattern}</strong>
-                                <br key={`br-${mIndex}`} />
-                              </span>
+                                <br />
+                                <span key={`span-${mIndex}`}>
+                                  <strong>{matchedPattern}</strong>
+                                  <br key={`br-${mIndex}`} />
+                                </span>
                                 {Object.keys(yaml[schemaKey][matchedPattern]).map((schemaProperty, sIndex) => {
   
                                 if(sIndex < LOOP_LIMIT && schemaProperty.length > 0){
