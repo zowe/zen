@@ -269,7 +269,7 @@ class Installation {
             if (currentConfig) {
               // console.log("current config:", JSON.stringify(currentConfig));
               // console.log("yamlObj: ", JSON.stringify(yamlObj));
-              yamlObj = yamlObj = Object.assign({}, yamlObj, currentConfig);
+              yamlObj = Object.assign({}, yamlObj, currentConfig);
               // console.log("merged yamlObj: ", JSON.stringify(yamlObj));
             }
             this.mergeYamlAndInstallationArgs(yamlObj, installationArgs);
