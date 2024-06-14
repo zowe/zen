@@ -8,11 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import { Box, Button, FormControl, Typography, debounce } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
-import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading, setSchema } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion, selectInstallationType, setInstallationArgs } from './installationSlice';
+import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading} from '../../configuration-wizard/wizardSlice';
+import { selectZoweVersion, setInstallationArgs } from './installationSlice';
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import { setDatasetInstallationStatus, setInitializationStatus } from "../progress/progressSlice";
 import { IResponse } from '../../../../types/interfaces';
@@ -20,14 +20,13 @@ import ProgressCard from '../../common/ProgressCard';
 import ContainerCard from '../../common/ContainerCard';
 import JsonForm from '../../common/JsonForms';
 import EditorDialog from "../../common/EditorDialog";
-import Ajv from "ajv";
 import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, JCL_UNIX_SCRIPT_OK, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, INSTALL_STAGE_LABEL, ajv2019, SERVER_COMMON} from '../../common/Constants';
+import { TYPE_YAML, TYPE_OUTPUT, JCL_UNIX_SCRIPT_OK, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, INSTALL_STAGE_LABEL} from '../../common/Constants';
 import { getStageDetails, getSubStageDetails } from "../../../../services/StageDetails"; 
-import { setProgress, getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments, datasetInstallationStatus, isInitComplete } from "../progress/StageProgressStatus";
+import { getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments, datasetInstallationStatus, isInitComplete } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
 import eventDispatcher from '../../../../services/eventDispatcher';
 
