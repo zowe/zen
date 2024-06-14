@@ -73,7 +73,7 @@ const Unpax = () => {
     dispatch(setDownloadUnpaxStatus(false));
     setDownloadUnpaxProgress(downloadUnpaxStatus);
     dispatch(setNextStepEnabled(false));
-    window.electron.ipcRenderer.downloadButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.downloadButtonOnClick(connectionArgs, {...installationArgs, userUploadedPaxPath: paxPath}, version, yaml).then((res: IResponse) => {
       if(!res.status){ //errors during runInstallation()
         alertEmitter.emit('showAlert', res.details, 'error');
       }
