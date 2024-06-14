@@ -28,13 +28,14 @@ import eventDispatcher from '../../../services/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL, UNPAX_STAGE_LABEL } from '../common/Constants';
-import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus, getInstallationArguments } from '../stages/progress/StageProgressStatus';
+import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus } from '../stages/progress/StageProgressStatus';
 
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
 import { getStageDetails } from '../../../services/StageDetails';
 import { IResponse } from '../../../types/interfaces';
 import { selectConnectionArgs } from '../stages/connection/connectionSlice';
+import { selectInstallationArgs } from '../stages/installation/installationSlice';
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
 
@@ -74,7 +75,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const [contentType, setContentType] = useState('output');
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState('');
-  const [installationArgs] = useState(getInstallationArguments());
+  const installationArgs = useAppSelector(selectInstallationArgs);
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const dispatch = useAppDispatch();
 
