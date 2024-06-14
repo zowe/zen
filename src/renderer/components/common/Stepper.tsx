@@ -138,7 +138,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
       await window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
         if(!res.status){ //errors during runInstallation()
           alertEmitter.emit('showAlert', res.details.message ? res.details.message : res.details, 'error');
-          console.log("failed to retrieve schemas");
+          console.log("failed to retrieve schemas: ", res.details.message ? res.details.message : res.details);
         }
         if(res.details?.mergedYaml != undefined){
           dispatch(setYaml(res.details.mergedYaml));
@@ -148,7 +148,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
         }
       }).catch((e: any) => {
         alertEmitter.emit('showAlert', e.message, 'error');
-        console.log("failed to retrieve schemas");
+        console.log("failed to retrieve schemas", e.message);
       });
     }
     dispatch(setLoading(false));
