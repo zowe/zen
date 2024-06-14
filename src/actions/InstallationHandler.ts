@@ -20,6 +20,16 @@ import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { InstallationArgs } from '../types/stateInterfaces';
 import { FALLBACK_SCHEMA } from '../renderer/components/common/Constants';
 
+
+//AJV did not like the regex in our current schema
+const zoweDatasetMemberRegexFixed = {
+  "description": "PARMLIB member used by ZIS",
+  "type": "string",
+  "pattern": "^([A-Z$#@]){1}([A-Z0-9$#@]){0,7}$",
+  "minLength": 1,
+  "maxLength": 8
+}
+
 class Installation {
 
   public async uploadLatestYaml (
@@ -105,11 +115,11 @@ class Installation {
           try {
             yamlObj = parse(yamlFromPax);
             if (currentConfig) {
-              // console.log("currentConfig: ", JSON.stringify(currentConfig));
-              yamlObj = Object.assign({}, currentConfig, yamlObj);
+              console.log("currentConfig: ", JSON.stringify(currentConfig));
+              yamlObj = Object.assign({}, yamlObj, currentConfig);
             }
             this.mergeYamlAndInstallationArgs(yamlObj, installationArgs);
-            // console.log('Setting merged yaml:', JSON.stringify(yamlObj));
+            console.log('Setting merged yaml:', JSON.stringify(yamlObj));
             ConfigurationStore.setConfig(yamlObj);
             ProgressStore.set('downloadUnpax.getExampleYaml', true);
             parsedYaml = true;
@@ -131,7 +141,7 @@ class Installation {
             const serverCommon = JSON.parse(readPaxYamlAndSchema.details.serverCommon);
             if(yamlSchema && serverCommon){
               yamlSchema.additionalProperties = true;
-              yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverCommon.$defs.datasetMember;
+              yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = zoweDatasetMemberRegexFixed;
               yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
               if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
                 delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
@@ -279,7 +289,7 @@ class Installation {
               // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
               // Without these, AJV does not properly find $refs in the schema and therefore validation cannot occur
               yamlSchema.additionalProperties = true;
-              yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverCommon.$defs.datasetMember;
+              yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = zoweDatasetMemberRegexFixed;
               yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
               if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
                 delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;

@@ -138,14 +138,17 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
       await window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
         if(!res.status){ //errors during runInstallation()
           alertEmitter.emit('showAlert', res.details.message ? res.details.message : res.details, 'error');
+          console.log("failed to retrieve schemas");
         }
         if(res.details?.mergedYaml != undefined){
           dispatch(setYaml(res.details.mergedYaml));
           window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
           alertEmitter.emit('showAlert', "Successfully fetched example-zowe.yaml and latest schemas", 'success');
+          console.log("Successfully fetched example-zowe.yaml and latest schemas");
         }
       }).catch((e: any) => {
         alertEmitter.emit('showAlert', e.message, 'error');
+        console.log("failed to retrieve schemas");
       });
     }
     dispatch(setLoading(false));

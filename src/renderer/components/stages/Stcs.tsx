@@ -62,9 +62,7 @@ const Stcs = () => {
   const [DEFAULT_AUX] = useState('ZWESASTC');
 
   const [defaultErrorMessage] = useState("Please ensure that the values for security.stcs attributes and dataset.proclib are accurate.");
-
-  const [stcsSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.security?.properties?.stcs);
-  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema))
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema?.properties?.zowe?.properties?.setup?.properties?.security?.properties?.stcs))
 
   useEffect(() => {
     dispatch(setInitializationStatus(isInitComplete()));
