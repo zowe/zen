@@ -613,7 +613,8 @@ export class FTPInstallation extends Installation {
       const serverCommonPath = `${installDir}/schemas/server-common.json`;
       const serverCommon = await new FileTransfer().download(connectionArgs, serverCommonPath, DataType.ASCII);
       return {status: true, details: {yaml, yamlSchema, serverCommon}};
-    } catch {
+    } catch (e) {
+      console.log("Error downloading example-zowe.yaml and schemas:", e.message);
       return {status: false, details: {yaml: '', yamlSchema: '', serverCommon: ''}}  
     }
   }
