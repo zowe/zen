@@ -93,10 +93,18 @@ contextBridge.exposeInMainWorld('electron', {
       return ipcRenderer.invoke("check-space-create-dir", connectionArgs, location);
     },
     checkDirExists(connectionArgs: IIpcConnectionArgs, location: string) {
-      return ipcRenderer.invoke("check-dir-exists", connectionArgs, location);
+      try{
+        return ipcRenderer.invoke("check-dir-exists", connectionArgs, location);
+      } catch (e){
+        return {status: false, details: e.message}
+      }
     },
     checkDirOrCreate(connectionArgs: IIpcConnectionArgs, location: string) {
+      try{
       return ipcRenderer.invoke("check-dir-or-create", connectionArgs, location);
+      } catch (e) {
+        return {status: false, details: e.message}
+      }
     },
     installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs, version: string) {
       return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version);

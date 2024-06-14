@@ -316,6 +316,7 @@ const Planning = () => {
         // setStep(2); // This step is meant to show some usefull status, removing for now.
       } else {
         dispatch(setPlanningStatus(false));
+        dispatch(setLoading(false));
         alertEmitter.emit('showAlert', details.error, 'error');
       }
     })
