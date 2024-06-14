@@ -11,7 +11,7 @@
 import '../global.css';
 import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
-import { Box, Card, CardContent, CardMedia, Typography, Button, DialogContent, DialogActions } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
 import flatten, { unflatten } from 'flat';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
 import { setConnectionArgs, setResumeProgress, selectInitJobStatement } from './stages/connection/connectionSlice';
@@ -22,11 +22,9 @@ import { Tooltip } from '@mui/material';
 import installationImg from '../assets/installation.png'
 import installationDryImg from '../assets/installation-dry-run.png'
 import eventDispatcher from "../../services/eventDispatcher";
-import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex, selectActiveStepDate} from './stages/progress/activeStepSlice';
 import { selectConnectionStatus} from './stages/progress/progressSlice';
 import  HorizontalLinearStepper  from './common/Stepper';
 import Wizard from './configuration-wizard/Wizard'
-import Connection from './stages/connection/Connection';
 import { ActiveState } from '../../types/stateInterfaces';
 import { getInstallationArguments, getPreviousInstallation } from './stages/progress/StageProgressStatus';
 import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Constants';

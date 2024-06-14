@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useState} from "react";
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
@@ -17,11 +17,11 @@ import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
 import ContainerCard from '../common/ContainerCard';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import { setYaml, setSchema, setNextStepEnabled, setLoading, selectYaml } from '../configuration-wizard/wizardSlice';
+import { setYaml, setNextStepEnabled, setLoading, selectYaml } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs, setConnectionArgs, setJobStatementVal } from './connection/connectionSlice';
 import { setPlanningStatus, selectPlanningStatus } from './progress/progressSlice';
 import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from './installation/installationSlice';
-import { setJobStatement, setJobStatementValid, setJobStatementValidMsg, setLocationValidationDetails, setIsLocationValid, selectJobStatement, selectJobStatementValid, selectJobStatementValidMsg, selectLocValidationDetails } from "./PlanningSlice";
+import { setJobStatement, setJobStatementValid, setJobStatementValidMsg, setLocationValidationDetails, setIsLocationValid, selectJobStatementValidMsg, selectLocValidationDetails } from "./PlanningSlice";
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { IResponse } from '../../../types/interfaces';
 import { alertEmitter } from "../Header";

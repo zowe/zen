@@ -16,7 +16,6 @@ import { setSecurityStatus, setInitializationStatus } from './progress/progressS
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
-import { selectInstallationArgs } from "./installation/installationSlice";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { IResponse } from "../../../types/interfaces";
 import ProgressCard from "../common/ProgressCard";
@@ -25,7 +24,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { setProgress, getProgress, setSecurityInitState, getSecurityInitState, mapAndSetSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
+import { getProgress, setSecurityInitState, getSecurityInitState, mapAndSetSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { JCL_UNIX_SCRIPT_OK, INIT_STAGE_LABEL, SECURITY_STAGE_LABEL, ajv, SERVER_COMMON } from '../common/Constants';
 import { alertEmitter } from "../Header";
