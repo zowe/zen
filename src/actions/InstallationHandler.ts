@@ -75,6 +75,12 @@ class Installation {
       yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
     }
     if (installationArgs.jobName) {
+      if(yamlObj.zowe.job == undefined){
+        yamlObj.zowe.job = {
+          name: "",
+          prefix: ""
+        }
+      }
       yamlObj.zowe.job.name = installationArgs.jobName;
     }
     if (installationArgs.jobPrefix) {
