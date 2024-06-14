@@ -19,11 +19,11 @@ import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { stages } from "../configuration-wizard/Wizard";
-import { selectInitializationStatus } from "./progress/progressSlice";
+import { selectInitializationStatus, setLaunchConfigStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
-import { getInstallationArguments } from "./progress/StageProgressStatus";
+import { getInstallationArguments, getProgress } from "./progress/StageProgressStatus";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 
 const LaunchConfig = () => {
@@ -469,7 +469,7 @@ const LaunchConfig = () => {
     const nextPosition = document.getElementById('container-box-id');
     nextPosition.scrollIntoView({behavior: 'smooth'});
 
-    dispatch(setNextStepEnabled(true));
+    dispatch(setNextStepEnabled(getProgress('launchConfigStatus')));
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = false;
     stages[STAGE_ID].isSkipped = isInitializationSkipped;
     setIsFormInit(true);
@@ -511,7 +511,17 @@ const LaunchConfig = () => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
-  } 
+  }
+
+  const onSaveYaml = (e: any) => {
+    e.preventDefault();
+    window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
+      if(res && res.status) {
+        dispatch(setNextStepEnabled(true));
+        dispatch(setLaunchConfigStatus(true));
+      }
+    });
+  }
 
   return (
     <div id="container-box-id">
@@ -525,10 +535,7 @@ const LaunchConfig = () => {
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
-          <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
-            e.preventDefault();
-            window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs);
-          }}>{'Save YAML to z/OS'}</Button>
+          <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => onSaveYaml(e)}>{'Save YAML to z/OS'}</Button>
         </Box>
       </ContainerCard>
     </div>
