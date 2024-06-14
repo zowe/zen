@@ -230,6 +230,7 @@ const Planning = () => {
 
   const validateLocations = (e: any, click?: boolean) => {
     setPlanningState(false);
+    setLocValidations(false);
    
     if(planningStatus && !isLocationsUpdated && !click) {
       setLocValidations(true);
