@@ -132,7 +132,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
       stages[activeStep].subStages[activeSubStep].isSkipped = true;
       mapAndSetSkipStatus(activeSubStep, true);
     }
-    if(stages[activeStep].label === UNPAX_STAGE_LABEL && installationArgs.installationType == "download"){
+    if(stages[activeStep].label === UNPAX_STAGE_LABEL && installationArgs.installationType != "smpe"){
       alertEmitter.emit('showAlert', 'Retrieving example-zowe.yaml and latest schemas from Zowe runtime files...', 'info');
       dispatch(setLoading(true));
       await window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
