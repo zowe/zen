@@ -19,6 +19,7 @@ import * as fs from 'fs';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { InstallationArgs } from '../types/stateInterfaces';
 import { FALLBACK_SCHEMA } from '../renderer/components/common/Constants';
+import { connect } from 'react-redux';
 
 
 //AJV did not like the regex in our current schema
@@ -99,7 +100,7 @@ class Installation {
     }
   }
 
-  public async smpeGetExampleYamlAndSchemas (
+  public async getExampleYamlAndSchemas (
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,
   ): Promise<IResponse> {
@@ -115,11 +116,9 @@ class Installation {
           try {
             yamlObj = parse(yamlFromPax);
             if (currentConfig) {
-              console.log("currentConfig: ", JSON.stringify(currentConfig));
               yamlObj = Object.assign({}, yamlObj, currentConfig);
             }
             this.mergeYamlAndInstallationArgs(yamlObj, installationArgs);
-            console.log('Setting merged yaml:', JSON.stringify(yamlObj));
             ConfigurationStore.setConfig(yamlObj);
             ProgressStore.set('downloadUnpax.getExampleYaml', true);
             parsedYaml = true;
@@ -247,65 +246,14 @@ class Installation {
           return {status: false, details: `Error unpaxing Zowe archive: ${unpax.details}`};
         }
       }
-      let yamlObj
-      let zoweRuntimePath = installationArgs.installationDir;
-      let readPaxYamlAndSchema = await this.readExampleYamlAndSchema(connectionArgs, zoweRuntimePath);
-      let parsedSchema = false, parsedYaml = false;
-      if(readPaxYamlAndSchema.details.yaml){
-        const yamlFromPax = readPaxYamlAndSchema.details.yaml;
-        if(yamlFromPax){
-          try {
-            yamlObj = parse(yamlFromPax);
-            if (currentConfig) {
-              // console.log("current config:", JSON.stringify(currentConfig));
-              // console.log("yamlObj: ", JSON.stringify(yamlObj));
-              yamlObj = Object.assign({}, yamlObj, currentConfig);
-              // console.log("merged yamlObj: ", JSON.stringify(yamlObj));
-            }
-            this.mergeYamlAndInstallationArgs(yamlObj, installationArgs);
-            if (zoweConfig) {
-              yamlObj = {...yamlObj, ...zoweConfig};
-            }
-            // console.log('Setting merged yaml:', JSON.stringify(yamlObj));
-            ConfigurationStore.setConfig(yamlObj);
-            ProgressStore.set('downloadUnpax.getExampleYaml', true);
-          } catch(e) {
-            console.log('error parsing example-zowe.yaml:', e);
-            ProgressStore.set('downloadUnpax.getExampleYaml', false);
-          }
-        } else {
-          console.log("no yaml found from pax");
-          ProgressStore.set('downloadUnpax.getExampleYaml', false);
-        }
-
-        //No reason not to always set schema to latest if user is re-running installation
-        if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
-          try {
-            let yamlSchema = JSON.parse(readPaxYamlAndSchema.details.yamlSchema);
-            const serverCommon = JSON.parse(readPaxYamlAndSchema.details.serverCommon);
-            // console.log('yaml schema:', parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
-            // console.log('server common', parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
-            if(yamlSchema && serverCommon){
-              // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
-              // Without these, AJV does not properly find $refs in the schema and therefore validation cannot occur
-              yamlSchema.additionalProperties = true;
-              yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = zoweDatasetMemberRegexFixed;
-              yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
-              if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
-                delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
-                yamlSchema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverCommon.$defs.ipv4
-              }
-              // console.log('Setting schema from runtime dir:', JSON.stringify(yamlSchema));
-              ConfigurationStore.setSchema(yamlSchema);
-              ProgressStore.set('downloadUnpax.getSchemas', true);
-            }
-          } catch (e) {
-            console.log('error setting schema from pax:', e);
-            ProgressStore.set('downloadUnpax.getSchemas', false);
+      let yamlObj = {};
+      await this.getExampleYamlAndSchemas(connectionArgs, installationArgs).then((res: IResponse) => {
+        if(res.status){
+          if(res.details.mergedYaml != undefined){
+            yamlObj = res.details.mergedYaml
           }
         }
-        
-      }
+      })
 
       return {status: download.status && uploadYaml.status && upload.status && unpax.status, details: {message: 'Zowe unpax successful.', mergedYaml: yamlObj}};
     } catch (error) {

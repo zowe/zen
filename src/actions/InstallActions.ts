@@ -65,7 +65,7 @@ export class InstallActions {
   }
 
   smpeGetExampleYamlAndSchemas(connectionArgs: IIpcConnectionArgs, installArgs: InstallationArgs): Promise<IResponse> {
-    return this.strategy.smpeGetExampleYamlAndSchemas(connectionArgs, installArgs);
+    return this.strategy.getExampleYamlAndSchemas(connectionArgs, installArgs);
   }
 
   initStcs(connectionArgs: IIpcConnectionArgs,
