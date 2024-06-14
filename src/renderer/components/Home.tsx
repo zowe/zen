@@ -142,7 +142,7 @@ const Home = () => {
       if(res != undefined){
         dispatch(setInstallationArgs(res));
       } else {
-        dispatch(setInstallationArgs({...getInstallationArguments()}));
+        dispatch(setInstallationArgs({...selectInstallationArgs, ...getInstallationArguments()}));
       }
     })
 
