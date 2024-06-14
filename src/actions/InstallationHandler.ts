@@ -47,26 +47,6 @@ class Installation {
     }
   }
 
-  parseExampleYamlFromPax = function(catPath: string, yaml: any){
-    const jobOutputSplit = JSON.stringify(yaml).split(`cat ${catPath}\\r\\n`)
-    if(jobOutputSplit[1]){
-      const trimmedYamlSchema = jobOutputSplit[1].split(`+ echo 'Script finished.'`)[0].split(`Script finished.`);
-      // console.log("\n\n *** trimmedYamlSchema[0]: ", trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`));
-      return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`);
-    }
-    return "";
-  }
-
-  parseSchemaFromPax = function(inputString: string, catPath: string){
-    const jobOutputSplit = inputString.split(`cat ${catPath}\\r\\n`)
-    if(jobOutputSplit[1]){
-      const trimmedYamlSchema = jobOutputSplit[1].split(`Script finished.`)[0].split(`Script finished.`);
-      // console.log("trimmed schema:", trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`).replaceAll(`\\\\"`, `\\"`))
-      return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`).replaceAll(`\\\\"`, `\\"`);
-    }
-    return "";
-  }
-
   mergeYamlAndInstallationArgs = function(yamlObj: any, installationArgs: InstallationArgs){
     if (installationArgs.installationDir) {
       yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
@@ -120,7 +100,7 @@ class Installation {
       let readPaxYamlAndSchema = await this.readExampleYamlAndSchema(connectionArgs, zoweRuntimePath);
       let parsedSchema = false, parsedYaml = false;
       if(readPaxYamlAndSchema.details.yaml){
-        const yamlFromPax = this.parseExampleYamlFromPax(`${zoweRuntimePath}/example-zowe.yaml`, readPaxYamlAndSchema.details.yaml);
+        const yamlFromPax = readPaxYamlAndSchema.details.yaml;
         if(yamlFromPax){
           try {
             yamlObj = parse(yamlFromPax);
@@ -147,8 +127,8 @@ class Installation {
         //No reason not to always set schema to latest if user is re-running installation
         if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
           try {
-            let yamlSchema = JSON.parse(this.parseSchemaFromPax(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
-            const serverCommon = JSON.parse(this.parseSchemaFromPax(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
+            let yamlSchema = JSON.parse(readPaxYamlAndSchema.details.yamlSchema);
+            const serverCommon = JSON.parse(readPaxYamlAndSchema.details.serverCommon);
             if(yamlSchema && serverCommon){
               yamlSchema.additionalProperties = true;
               yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverCommon.$defs.datasetMember;
@@ -262,7 +242,7 @@ class Installation {
       let readPaxYamlAndSchema = await this.readExampleYamlAndSchema(connectionArgs, zoweRuntimePath);
       let parsedSchema = false, parsedYaml = false;
       if(readPaxYamlAndSchema.details.yaml){
-        const yamlFromPax = this.parseExampleYamlFromPax(`${zoweRuntimePath}/example-zowe.yaml`, readPaxYamlAndSchema.details.yaml);
+        const yamlFromPax = readPaxYamlAndSchema.details.yaml;
         if(yamlFromPax){
           try {
             yamlObj = parse(yamlFromPax);
@@ -291,8 +271,8 @@ class Installation {
         //No reason not to always set schema to latest if user is re-running installation
         if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
           try {
-            let yamlSchema = JSON.parse(this.parseSchemaFromPax(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
-            const serverCommon = JSON.parse(this.parseSchemaFromPax(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
+            let yamlSchema = JSON.parse(readPaxYamlAndSchema.details.yamlSchema);
+            const serverCommon = JSON.parse(readPaxYamlAndSchema.details.serverCommon);
             // console.log('yaml schema:', parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
             // console.log('server common', parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
             if(yamlSchema && serverCommon){
@@ -637,13 +617,17 @@ export class FTPInstallation extends Installation {
   }
 
   async readExampleYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string){
-    const catYaml = `cat ${installDir}/example-zowe.yaml`;
-    const yamlResult = await new Script().run(connectionArgs, catYaml);
-    const catYamlSchema = `cat ${installDir}/schemas/zowe-yaml-schema.json`;
-    const yamlSchemaResult = await new Script().run(connectionArgs, catYamlSchema);
-    const catCommonSchema = `cat ${installDir}/schemas/server-common.json`;
-    const commonSchemaResult = await new Script().run(connectionArgs, catCommonSchema);
-    return {status: yamlResult.rc === 0 && yamlSchemaResult.rc == 0 && commonSchemaResult.rc == 0, details: {yaml: yamlResult.jobOutput, yamlSchema: yamlSchemaResult.jobOutput, serverCommon: commonSchemaResult.jobOutput}}
+    try {    
+      const yamlPath = `${installDir}/example-zowe.yaml`;
+      const yaml = await new FileTransfer().download(connectionArgs, yamlPath, DataType.ASCII);
+      const yamlSchemaPath = `${installDir}/schemas/zowe-yaml-schema.json`;
+      const yamlSchema = await new FileTransfer().download(connectionArgs, yamlSchemaPath, DataType.ASCII);
+      const serverCommonPath = `${installDir}/schemas/server-common.json`;
+      const serverCommon = await new FileTransfer().download(connectionArgs, serverCommonPath, DataType.ASCII);
+      return {status: true, details: {yaml, yamlSchema, serverCommon}};
+    } catch {
+      return {status: false, details: {yaml: '', yamlSchema: '', serverCommon: ''}}  
+    }
   }
 
   async checkInstallData() {
