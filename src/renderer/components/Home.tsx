@@ -116,7 +116,7 @@ const Home = () => {
     //Home is the first screen the user will always see 100% of the time. Therefore, we will call the loading of the configs, schemas, and installation args here and set them to the redux memory states
 
     //YAML LOADING - necessary for editor state as well as form values
-    if(!yaml == undefined || (typeof yaml === "object" && Object.keys(yaml).length === 0)){
+    if(yaml == undefined || (typeof yaml === "object" && Object.keys(yaml).length === 0)){
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           dispatch(setYaml(res.details));
@@ -127,7 +127,7 @@ const Home = () => {
     }
 
     //SCHEMA LOADING - necessary for JsonForms
-    if(schema == undefined || (typeof schema === "object" && Object.keys(yaml).length === 0)){
+    if(schema == undefined || (typeof schema === "object" && Object.keys(schema).length === 0)){
       window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
         if (res.status && res.details !== undefined) {
           dispatch(setSchema(res.details));
