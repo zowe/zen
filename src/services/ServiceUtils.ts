@@ -72,6 +72,7 @@ export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<
     }
     if (error.toString().includes(MKDIR_ERROR_BADARGS)) {
       console.info("Wasn't able to create: '" + dir + "'. Problem with using mkdir. Method usage is not implemented (bad arguments?)");
+      return false;
     }
     console.warn(error);
     return false;
