@@ -153,7 +153,7 @@ const Unpax = () => {
       {installValue === "download" && <ContainerCard title="Download Zowe Pax" description=""> 
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
             {`Zen will download the latest Zowe convenience build in PAX archive format from `}
-            <Link href="zowe.org">{'https://zowe.org.'}</Link>
+            <Link href="zowe.org">{'https://zowe.org/'}</Link>
             {` Skip this step if you have already downloaded Zowe.`}
           </Typography>
           {!showProgress && <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
