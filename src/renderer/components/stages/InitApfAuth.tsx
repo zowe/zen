@@ -54,7 +54,7 @@ const InitApfAuth = () => {
 
   const [installationArgs] = useState(getInstallationArguments());
   let timer: any;
-  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema));
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema?.properties?.zowe?.properties?.setup?.properties?.dataset));
   
   useEffect(() => {
     dispatch(setInitializationStatus(isInitComplete()));
@@ -167,7 +167,7 @@ const InitApfAuth = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
          // Some parts of Zen pass the response as a string directly into the object
          if (res.status == false && typeof res.details == "string") {
           res.details = { 3: res.details };

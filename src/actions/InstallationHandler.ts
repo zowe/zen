@@ -37,7 +37,8 @@ class Installation {
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,
   ): Promise<IResponse> {
-    const currentConfig: any = ConfigurationStore.getConfig();
+    let currentConfig: any = ConfigurationStore.getConfig();
+    if(currentConfig.installationArgs) delete currentConfig.installationArgs;
     const savingResult = await this.generateYamlFile(currentConfig);
     if (!savingResult.status) {
       console.log("failed to save yaml");
@@ -177,11 +178,11 @@ class Installation {
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,
     version: string,
-    zoweConfig: any,
   ): Promise<IResponse> {
-    const currentConfig: any = ConfigurationStore.getConfig();
+    let currentConfig: any = ConfigurationStore.getConfig();
+    if(currentConfig.installationArgs) delete currentConfig.installationArgs;
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
-    const savingResult = await this.generateYamlFile(zoweConfig);
+    const savingResult = await this.generateYamlFile(currentConfig);
     if (!savingResult.status) {
       console.log("failed to save yaml");
       return savingResult;
@@ -270,11 +271,10 @@ class Installation {
   public async runInstallation (
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,
-    version: string,
-    zoweConfig: any,
   ): Promise<IResponse> {
-    const currentConfig: any = ConfigurationStore.getConfig();
-    const savingResult = await this.generateYamlFile(zoweConfig);
+    let currentConfig: any = ConfigurationStore.getConfig();
+    if(currentConfig.installationArgs) delete currentConfig.installationArgs;
+    const savingResult = await this.generateYamlFile(currentConfig);
     if (!savingResult.status) {
       console.log("failed to save yaml");
       return savingResult;
@@ -325,10 +325,12 @@ class Installation {
   }
 
   public async runApfAuth(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
+    installationArgs: InstallationArgs): Promise<IResponse>{
+    let currentConfig: any = ConfigurationStore.getConfig();
+    if(currentConfig.installationArgs) delete currentConfig.installationArgs;
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-    await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
+    await fs.writeFile(filePath, stringify(currentConfig), (err) => {
       if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           return ProgressStore.set('apfAuth.writeYaml', false);
@@ -351,10 +353,12 @@ class Installation {
   }
   
   public async runInitSecurity(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
+    installationArgs: InstallationArgs): Promise<IResponse>{
+      let currentConfig: any = ConfigurationStore.getConfig();
+      if(currentConfig.installationArgs) delete currentConfig.installationArgs;
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-      await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
+      await fs.writeFile(filePath, stringify(currentConfig), (err) => {
         if (err) {
             console.warn("Can't save configuration to zowe.yaml");
             ProgressStore.set('initSecurity.writeYaml', false);
@@ -376,7 +380,9 @@ class Installation {
   }
 
   public async initStcs(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
+    installationArgs: InstallationArgs): Promise<IResponse>{
+      let currentConfig: any = ConfigurationStore.getConfig();
+      if(currentConfig.installationArgs) delete currentConfig.installationArgs;
 
       // Initialize Progress Store For Vsam
       ProgressStore.set('initStcs.writeYaml', false);
@@ -385,7 +391,7 @@ class Installation {
 
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-      await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
+      await fs.writeFile(filePath, stringify(currentConfig), (err) => {
         if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           ProgressStore.set('initStcs.writeYaml', false);
@@ -418,10 +424,12 @@ class Installation {
 
   }
 
-  async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs, zoweConfig: any){
+  async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs){
+    let currentConfig: any = ConfigurationStore.getConfig();
+    if(currentConfig.installationArgs) delete currentConfig.installationArgs
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-    await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
+    await fs.writeFile(filePath, stringify(currentConfig), (err: any) => {
       if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           return ProgressStore.set('certificate.writeYaml', false);
@@ -442,7 +450,9 @@ class Installation {
   }
 
   public async initVsam(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
+    installationArgs: InstallationArgs): Promise<IResponse>{
+      let currentConfig: any = ConfigurationStore.getConfig();
+      if(currentConfig.installationArgs) delete currentConfig.installationArgs;
       // Initialize Progress Store For Vsam
       ProgressStore.set('initVsam.writeYaml', false);
       ProgressStore.set('initVsam.uploadYaml', false);
@@ -450,7 +460,7 @@ class Installation {
 
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-      await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
+      await fs.writeFile(filePath, stringify(currentConfig), (err) => {
         if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           ProgressStore.set('initVsam.writeYaml', false);

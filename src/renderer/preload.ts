@@ -98,20 +98,20 @@ contextBridge.exposeInMainWorld('electron', {
     checkDirOrCreate(connectionArgs: IIpcConnectionArgs, location: string) {
       return ipcRenderer.invoke("check-dir-or-create", connectionArgs, location);
     },
-    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string, zoweConfig: any, skipDownload: boolean) {
-      return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version, zoweConfig, skipDownload);
+    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs, version: string) {
+      return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version);
     },
-    downloadButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string, zoweConfig: any) {
-      return ipcRenderer.invoke("download-unpax", connectionArgs, installationArgs, version, zoweConfig);
+    downloadButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs, version: string) {
+      return ipcRenderer.invoke("download-unpax", connectionArgs, installationArgs, version);
     },
     fetchExampleYamlBtnOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs) {
       return ipcRenderer.invoke("get-yaml-schema", connectionArgs, installationArgs);
     },
-    initCertsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
-      return ipcRenderer.invoke("init-certificates", connectionArgs, installationArgs, zoweConfig);
+    initCertsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}) {
+      return ipcRenderer.invoke("init-certificates", connectionArgs, installationArgs);
     },
-    apfAuthButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string}, zoweConfig: any) {
-      return ipcRenderer.invoke("init-apf", connectionArgs, installationArgs, zoweConfig);
+    apfAuthButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs) {
+      return ipcRenderer.invoke("init-apf", connectionArgs, installationArgs);
     },
     getApfAuthProgress(){
       return ipcRenderer.invoke("get-apf-auth-progress");
@@ -125,14 +125,14 @@ contextBridge.exposeInMainWorld('electron', {
     getCertificateProgress() {
       return ipcRenderer.invoke("get-certificate-progress");
     },
-    initSecurityButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
-      return ipcRenderer.invoke("init-security", connectionArgs, installationArgs, zoweConfig);
+    initSecurityButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}) {
+      return ipcRenderer.invoke("init-security", connectionArgs, installationArgs);
     },
-    initStcsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
-      return ipcRenderer.invoke("init-stcs", connectionArgs, installationArgs, zoweConfig);
+    initStcsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}) {
+      return ipcRenderer.invoke("init-stcs", connectionArgs, installationArgs);
     },
-    initVsamButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
-      return ipcRenderer.invoke("init-vsam", connectionArgs, installationArgs, zoweConfig);
+    initVsamButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}) {
+      return ipcRenderer.invoke("init-vsam", connectionArgs, installationArgs);
     },
     getInitSecurityProgress(){
       return ipcRenderer.invoke("get-init-security-progress");
