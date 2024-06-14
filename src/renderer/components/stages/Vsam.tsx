@@ -233,7 +233,7 @@ const Vsam = () => {
       }
     };
     setLYaml(updatedYaml);
-    window.electron.setConfig(updatedYaml);
+    window.electron.ipcRenderer.setConfig(updatedYaml);
     dispatch(setYaml(updatedYaml));
   }
 
@@ -254,7 +254,7 @@ const Vsam = () => {
         }
       }
     };
-    window.electron.setConfig(updatedYaml);
+    window.electron.ipcRenderer.setConfig(updatedYaml);
     setLYaml(updatedYaml);
     dispatch(setYaml(updatedYaml));
   };
