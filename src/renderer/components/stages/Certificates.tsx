@@ -47,7 +47,6 @@ const Certificates = () => {
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const installationArgs = getInstallationArguments();
   const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
-  const verifyCertsSchema = schema ? {"type": "object", "properties": {"verifyCertificates": schema.properties.zowe.properties.verifyCertificates}} : "";
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
   const [verifyCerts, setVerifyCerts] = useState(yaml?.zowe?.verifyCertificates ?? "STRICT");
   const [isFormInit, setIsFormInit] = useState(false);
@@ -68,17 +67,12 @@ const Certificates = () => {
   ajv.addKeyword("$anchor");
   let certificateSchema;
   let validate: any;
-  let validateVerifyCertSchema: any;
   if(schema && schema.properties) {
     certificateSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
   }
 
   if(certificateSchema) {
     validate = ajv.compile(certificateSchema);
-  }
-
-  if(verifyCertsSchema) {
-    validateVerifyCertSchema = ajv.compile(verifyCertsSchema);
   }
 
   useEffect(() => {

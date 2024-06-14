@@ -165,6 +165,15 @@ const FTPConnectionForm = () => {
         setIsResume(false);
       }
     })
+
+    window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+      if (res.status && res.details) {
+        dispatch(setSchema(res.details));
+      } else {
+        //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux
+        dispatch(setSchema(FALLBACK_SCHEMA));
+      }
+    })
   }
 
   return (

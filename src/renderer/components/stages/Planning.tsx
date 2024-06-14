@@ -86,6 +86,21 @@ const Planning = () => {
     setEditorVisible(!editorVisible);
   };
 
+  const setInstallArgs = (localYaml: any) => {
+    let installationDir = '';
+    if (localYaml?.zowe?.runtimeDirectory && localYaml?.zowe?.workspaceDirectory) {
+      const getParentDir = (path: string): string => path.split('/').filter((i: string, ind: number) => i || !ind).slice(0, -1).join('/');
+      const runtimeParent = getParentDir(localYaml?.zowe?.runtimeDirectory);
+      const workspaceParent = getParentDir(localYaml?.zowe?.workspaceDirectory);
+      if (runtimeParent === workspaceParent) installationDir = runtimeParent;
+    }
+    dispatch(setInstallationArgs({
+      ...installationArgs,
+      installationDir: localYaml?.zowe?.runtimeDirectory ?? '',
+      installationType: getInstallationTypeStatus()?.installationType, userUploadedPaxPath: getInstallationTypeStatus()?.userUploadedPaxPath
+    }));
+  }
+
   useEffect(() => {
     const nextPosition = document.getElementById('container-box-id');
     nextPosition.scrollIntoView({behavior: 'smooth', block: 'start'});
@@ -119,37 +134,29 @@ const Planning = () => {
       }
     })
 
-    window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-      if (res.status) {
-        dispatch(setYaml(res.details));
-        setLocalYaml(res.details);
-        // const schema = res.details.schema;
-        // Leaving this as a comment because the note about setting $ref properly is still valid i think
-        // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
-        // schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
-        // schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
-        // schema.$id = serverSchema.$id;
-        // if(schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
-        //   delete schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
-        //   schema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverSchema.$defs.ipv4
-        // }
-        // dispatch(setSchema(schema));
-        let installationDir = '';
-        if (res.details?.zowe?.runtimeDirectory && res.details?.zowe?.workspaceDirectory) {
-          const getParentDir = (path: string): string => path.split('/').filter((i: string, ind: number) => i || !ind).slice(0, -1).join('/');
-          const runtimeParent = getParentDir(res.details?.zowe?.runtimeDirectory);
-          const workspaceParent = getParentDir(res.details?.zowe?.workspaceDirectory);
-          if (runtimeParent === workspaceParent) installationDir = runtimeParent;
-        }
-        dispatch(setInstallationArgs({...installationArgs, installationDir: res.details?.zowe?.runtimeDirectory ?? '', installationType: getInstallationTypeStatus()?.installationType, userUploadedPaxPath: getInstallationTypeStatus()?.userUploadedPaxPath}));
-      }
-    })
+    // const schema = res.details.schema;
+    // Leaving this as a comment because the note about setting $ref properly is still valid i think
+    // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
+    // schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
+    // schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
+    // schema.$id = serverSchema.$id;
+    // if(schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
+    //   delete schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
+    //   schema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverSchema.$defs.ipv4
+    // }
+    // dispatch(setSchema(schema));
 
-    window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
-      if (res.status) {
-        dispatch(setSchema(res.details));
-      }
-    })
+    if(!localYaml) {
+      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+        if (res.status && res.details) {
+          dispatch(setYaml(res.details));
+          setLocalYaml(res.details);
+          setInstallArgs(res.details);
+        }
+      })
+    } else {
+      setInstallArgs(localYaml);
+    }
 
   }, []); 
 
