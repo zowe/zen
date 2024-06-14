@@ -642,6 +642,7 @@ const Networking = () => {
             const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
             window.electron.ipcRenderer.setConfig(newYaml )
             dispatch(setYaml(newYaml))
+            dispatch(setNetworkingStatus(false));
             setLYaml(newYaml);
           }}><AddIcon /></IconButton></p>
           {yaml.zowe.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box key={`box-${index}`} sx={{display: "flex", flexDirection: "row"}}><TextField
@@ -654,6 +655,7 @@ const Networking = () => {
               // console.log(domains);
               window.electron.ipcRenderer.setConfig(newYaml )
               dispatch(setYaml(newYaml))
+              dispatch(setNetworkingStatus(false));
               setLYaml(newYaml);
             }}
           /><IconButton onClick={(e) => {
@@ -662,6 +664,7 @@ const Networking = () => {
             const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
             window.electron.ipcRenderer.setConfig(newYaml )
             dispatch(setYaml(newYaml))
+            dispatch(setNetworkingStatus(false));
             setLYaml(newYaml);
           }}><DeleteIcon /></IconButton></Box>)}
           <br />
@@ -713,12 +716,13 @@ const Networking = () => {
                                           setLYaml(newYaml);
                                           await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${schemaKey}.${matchedPattern}.${schemaProperty}`, !yaml[schemaKey][matchedPattern][schemaProperty])
                                           dispatch(setYaml(newYaml));
+                                          dispatch(setNetworkingStatus(false));
                                         }}/>}
                                       />}
                                     {typeof yaml[schemaKey][matchedPattern][schemaProperty] === "number" &&<TextField
                                       label={schemaProperty}
                                       variant="standard"
-                                      type="text" inputMode="numeric"
+                                      type="text"
                                       key={index + '.' + matchedPattern + '.' + rIndex}
                                       value={yaml[schemaKey][matchedPattern][schemaProperty]}
                                       onChange={async (e) => {
@@ -727,6 +731,7 @@ const Networking = () => {
                                           setLYaml(newYaml);
                                           await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${schemaKey}.${matchedPattern}.${schemaProperty}`, Number(e.target.value))
                                           dispatch(setYaml(newYaml));
+                                          dispatch(setNetworkingStatus(false));
                                         }
                                       }}
                                     />}
