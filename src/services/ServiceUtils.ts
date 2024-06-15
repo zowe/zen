@@ -23,6 +23,8 @@ export const MKDIR_ERROR_PARENT = "EDC5129I"; // when MKDIR tries to create top-
 
 export const MKDIR_ERROR_EXISTS = "EDC5117I"; // when dir already exist
 
+export const MKDIR_ERROR_BADARGS= "EDC5134I"; // when func not implemented
+
 export const LIST_ERROR_NOTFOUND = "FSUM6785"; // when dir doesn't exist
 
 export async function connectFTPServer(config: IIpcConnectionArgs): Promise<any> {
@@ -60,13 +62,16 @@ export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<
     if (error.toString().includes(MKDIR_ERROR_PARENT)) {
       let parentDir = reducePath(dir);
       if (parentDir !== "/") {
-        console.info("Wasn't able to create: " + dir + " . Will attempt to create: " + parentDir);
+        console.info("Wasn't able to create: '" + dir + "'. Will attempt to create: " + parentDir);
         await makeDir(config, parentDir);
         return makeDir(config, dir);
       }
     }
     if (error.toString().includes(MKDIR_ERROR_EXISTS)) {
       return true;
+    }
+    if (error.toString().includes(MKDIR_ERROR_BADARGS)) {
+      console.info("Wasn't able to create: '" + dir + "'. Problem with using mkdir. Method usage is not implemented (bad arguments?)");
     }
     console.warn(error);
     return false;
