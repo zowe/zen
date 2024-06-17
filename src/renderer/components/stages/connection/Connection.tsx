@@ -27,14 +27,15 @@ import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
 import { setConnectionValidationDetails, setHost, setPort,
-               setUser, setPassword, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress} from './connectionSlice';
+               setUser, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress, setConnectionArgs, setPassword} from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
-import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
+import { setConnectionStatus,  selectConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setDownloadUnpaxStatus, setInitializationStatus, setDatasetInstallationStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus, setVsamStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
-import { initializeProgress, getActiveStage } from "../progress/StageProgressStatus";
+import { initializeProgress, getActiveStage, setPlanningStageStatus } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../services/eventDispatcher";
+import { setLocationValidationDetails } from "../PlanningSlice";
 
 const Connection = () => {
 
@@ -114,6 +115,26 @@ const FTPConnectionForm = () => {
   const [validationDetails, setValidationDetails] = React.useState('');
 
   const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
+
+  useEffect(() => {
+    if(!isResume){
+      dispatch(setConnectionStatus(false));
+      dispatch(setPlanningStatus(false));
+      dispatch(setInstallationTypeStatus(false));
+      dispatch(setDownloadUnpaxStatus(false));
+      dispatch(setInitializationStatus(false));
+      dispatch(setDatasetInstallationStatus(false));
+      dispatch(setNetworkingStatus(false));
+      dispatch(setApfAuthStatus(false));
+      dispatch(setSecurityStatus(false));
+      dispatch(setCertificateStatus(false));
+      dispatch(setVsamStatus(false));
+      dispatch(setNetworkingStatus(false));
+      dispatch(setLocationValidationDetails(false));
+      setPlanningStageStatus("isLocationValid", false) //whyyyy does this exist
+      setPlanningStageStatus("isJobStatementValid", false)
+    }
+  }, []);
 
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
