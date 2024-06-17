@@ -131,7 +131,7 @@ const FTPConnectionForm = () => {
       dispatch(setVsamStatus(false));
       dispatch(setNetworkingStatus(false));
       dispatch(setLocationValidationDetails(false));
-      setPlanningStageStatus("isLocationValid", false) //whyyyy does this exist
+      setPlanningStageStatus("isLocationValid", false)
       setPlanningStageStatus("isJobStatementValid", false)
     }
   }, []);
