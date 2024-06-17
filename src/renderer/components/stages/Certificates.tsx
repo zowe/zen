@@ -160,8 +160,13 @@ const Certificates = () => {
     updateProgress(false);
     event.preventDefault();
     window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-      updateProgress(res.status);
       clearInterval(timer);
+      updateProgress(res.status);
+      if(!res.status){
+        window.electron.ipcRenderer.setStandardOutput(JSON.stringify(res.details)).then((res: any) => {
+          toggleEditorVisibility("output");
+        })
+      }
     }).catch(() => {
       clearInterval(timer);
       updateProgress(false);
