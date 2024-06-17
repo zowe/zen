@@ -26,8 +26,7 @@ import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
 import { CertInitSubStepsState } from "../../../types/stateInterfaces";
-import { TYPE_YAML, TYPE_OUTPUT, INIT_STAGE_LABEL, CERTIFICATES_STAGE_LABEL, ajv } from "../common/Constants";
-import { deepMerge } from "../../../actions/InstallationHandler";
+import { TYPE_YAML, TYPE_OUTPUT, INIT_STAGE_LABEL, CERTIFICATES_STAGE_LABEL, ajv, deepMerge } from "../common/Constants";
 
 const Certificates = () => {
 

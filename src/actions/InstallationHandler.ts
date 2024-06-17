@@ -31,20 +31,6 @@ const zoweDatasetMemberRegexFixed = {
   "maxLength": 8
 }
 
-export function deepMerge(base: any, extension:any) {
-  if (typeof base === "object" && typeof extension === "object") {
-    for (const key in extension) {
-      if (typeof extension[key] === "object") {
-        if (!base[key]) base[key] = {};
-        deepMerge(base[key], extension[key]);
-      } else {
-        Object.assign(base, {[key]: extension[key]});
-      }
-    }
-  }
-  return base;
-}
-
 class Installation {
 
   public async uploadLatestYaml (

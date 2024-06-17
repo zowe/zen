@@ -36,7 +36,20 @@ export const REVIEW_INSTALL_STAGE_LABEL = "Review Installation";
 export const FINISH_INSTALL_STAGE_LABEL = "Finish Installation";
 
 import Ajv2019 from "ajv/dist/2019"
-import Ajv from "ajv";
+
+export function deepMerge(base: any, extension:any) {
+  if (typeof base === "object" && typeof extension === "object") {
+    for (const key in extension) {
+      if (typeof extension[key] === "object") {
+        if (!base[key]) base[key] = {};
+        deepMerge(base[key], extension[key]);
+      } else {
+        Object.assign(base, {[key]: extension[key]});
+      }
+    }
+  }
+  return base;
+}
 
 export const SERVER_COMMON = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
