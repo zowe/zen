@@ -456,7 +456,6 @@ class Installation {
     ProgressStore.set('certificate.zweInitCertificate', result.rc === 0);
     const yamlPath = `${installationArgs.installationDir}/zowe.yaml`;
     const yaml = await new FileTransfer().download(connectionArgs, yamlPath, DataType.ASCII);
-    console.log("updated yaml:", parse(yaml));
     return {status: result.rc === 0, details: {jobOutput: result.jobOutput, updatedYaml: parse(yaml)}}
   }
 
