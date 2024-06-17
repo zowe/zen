@@ -163,7 +163,7 @@ const Certificates = () => {
       clearInterval(timer);
       updateProgress(res.status);
       if(!res.status){
-        window.electron.ipcRenderer.setStandardOutput(JSON.stringify(JSON.stringify(res.details, null, 2))).then((res: any) => {
+        window.electron.ipcRenderer.setStandardOutput(JSON.stringify(res.details, null, 2)).then((res: any) => {
           toggleEditorVisibility("output");
         })
       }
