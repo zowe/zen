@@ -168,13 +168,14 @@ const Certificates = () => {
         })
       }
       if(res.details.updatedYaml != undefined){
-        window.electron.ipcRenderer.setConfig(deepMerge(yaml, res.details.updatedYaml));
-        dispatch(setYaml(deepMerge(yaml, res.details.updatedYaml)));
+        const merge = deepMerge(res.details.updatedYaml, yaml);
+        window.electron.ipcRenderer.setConfig(merge);
+        dispatch(setYaml(merge));
       }
-    }).catch(() => {
+    }).catch((e: any) => {
       clearInterval(timer);
       updateProgress(false);
-      console.warn('zwe init certificate failed');
+      console.warn('zwe init certificate failed', e);
     });
   }
 

@@ -455,8 +455,14 @@ class Installation {
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('certificate.zweInitCertificate', result.rc === 0);
     const yamlPath = `${installationArgs.installationDir}/zowe.yaml`;
-    const yaml = await new FileTransfer().download(connectionArgs, yamlPath, DataType.ASCII);
-    return {status: result.rc === 0, details: {jobOutput: result.jobOutput, updatedYaml: parse(yaml)}}
+    const yaml = await new FileTransfer().download(connectionArgs, yamlPath, DataType.BINARY);
+    var parsedYaml;
+    try{
+      parsedYaml = parse(yaml);
+    } catch (e){
+      console.log('error parsing yaml:', e.message);
+    }
+    return {status: result.rc === 0, details: {jobOutput: result.jobOutput, updatedYaml: parsedYaml}}
   }
 
   public async initVsam(connectionArgs: IIpcConnectionArgs,
