@@ -31,7 +31,7 @@ const zoweDatasetMemberRegexFixed = {
   "maxLength": 8
 }
 
-function deepMerge(base: any, extension:any) {
+export function deepMerge(base: any, extension:any) {
   if (typeof base === "object" && typeof extension === "object") {
     for (const key in extension) {
       if (typeof extension[key] === "object") {
@@ -471,7 +471,8 @@ class Installation {
     ProgressStore.set('certificate.zweInitCertificate', result.rc === 0);
     const yamlPath = `${installationArgs.installationDir}/zowe.yaml`;
     const yaml = await new FileTransfer().download(connectionArgs, yamlPath, DataType.ASCII);
-    return {status: result.rc === 0, details: result.jobOutput, updatedYaml: yaml}
+    console.log("updated yaml:", parse(yaml));
+    return {status: result.rc === 0, details: {jobOutput: result.jobOutput, updatedYaml: parse(yaml)}}
   }
 
   public async initVsam(connectionArgs: IIpcConnectionArgs,

@@ -27,6 +27,7 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
 import { CertInitSubStepsState } from "../../../types/stateInterfaces";
 import { TYPE_YAML, TYPE_OUTPUT, INIT_STAGE_LABEL, CERTIFICATES_STAGE_LABEL, ajv } from "../common/Constants";
+import { deepMerge } from "../../../actions/InstallationHandler";
 
 const Certificates = () => {
 
@@ -163,12 +164,12 @@ const Certificates = () => {
       clearInterval(timer);
       updateProgress(res.status);
       if(!res.status){
-        window.electron.ipcRenderer.setStandardOutput(JSON.stringify(res.details, null, 2)).then((res: any) => {
+        window.electron.ipcRenderer.setStandardOutput(JSON.stringify(res.details.jobOutput, null, 2)).then((res: any) => {
           toggleEditorVisibility("output");
         })
-        if(res.updatedYaml != undefined){
-          window.electron.ipcRenderer.setConfig(res.updatedYaml);
-          dispatch(setYaml(res.updatedYaml));
+        if(res.details.updatedYaml != undefined){
+          window.electron.ipcRenderer.setConfig(deepMerge(yaml, res.details.updatedYaml));
+          dispatch(setYaml(deepMerge(yaml, res.details.updatedYaml)));
         }
       }
     }).catch(() => {
