@@ -455,14 +455,17 @@ class Installation {
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('certificate.zweInitCertificate', result.rc === 0);
     const yamlPath = `${installationArgs.installationDir}/zowe.yaml`;
-    const yaml = await new FileTransfer().download(connectionArgs, yamlPath, DataType.BINARY);
-    var parsedYaml;
-    try{
-      parsedYaml = parse(yaml);
-    } catch (e){
-      console.log('error parsing yaml:', e.message);
-    }
-    return {status: result.rc === 0, details: {jobOutput: result.jobOutput, updatedYaml: parsedYaml}}
+    // const tagScript = `chtag -t -c ISO8859-1 ${yamlPath}`;
+    // const tagResult = await new Script().run(connectionArgs, tagScript);
+    // const yaml = await new FileTransfer().download(connectionArgs, yamlPath, DataType.ASCII);
+    // var parsedYaml;
+    // try{
+    //   parsedYaml = parse(yaml);
+    //   console.log("parsed yaml:", parsedYaml);
+    // } catch (e){
+    //   console.log('error parsing yaml:', e.message);
+    // }
+    return {status: result.rc === 0, details: {jobOutput: result.jobOutput}}
   }
 
   public async initVsam(connectionArgs: IIpcConnectionArgs,
