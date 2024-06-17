@@ -224,7 +224,9 @@ const Certificates = () => {
               id="demo-simple-select"
               value={verifyCerts}
               onChange={(e) => {
-                window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value}});
+                const newConfig = {...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value}};
+                window.electron.ipcRenderer.setConfig(newConfig);
+                setLYaml(newConfig)
                 setVerifyCerts(e.target.value);
               }}
             >
