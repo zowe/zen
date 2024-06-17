@@ -105,12 +105,21 @@ class Installation {
       yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
     }
     if (installationArgs.javaHome) {
+      if(yamlObj.java == undefined){
+        yamlObj.java = {home: ""}
+      }
       yamlObj.java.home = installationArgs.javaHome;
     }
     if (installationArgs.nodeHome) {
+      if(yamlObj.node == undefined){
+        yamlObj.node = {home: ""}
+      }
       yamlObj.node.home = installationArgs.nodeHome;
     }
     if (installationArgs.zosmfHost) {
+      if(yamlObj.zOSMF == undefined){
+        yamlObj.zOSMF = {host: "", port: "443", applId: ""}
+      }
       yamlObj.zOSMF.host = installationArgs.zosmfHost;
     }
     if (installationArgs.zosmfPort) {
@@ -460,7 +469,9 @@ class Installation {
     const script = `cd ${installationArgs.installationDir + '/bin'};./zwe init certificate --update-config -c ${installationArgs.installationDir}/zowe.yaml`;
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('certificate.zweInitCertificate', result.rc === 0);
-    return {status: result.rc === 0, details: result.jobOutput}
+    const yamlPath = `${installationArgs.installationDir}/zowe.yaml`;
+    const yaml = await new FileTransfer().download(connectionArgs, yamlPath, DataType.ASCII);
+    return {status: result.rc === 0, details: result.jobOutput, updatedYaml: yaml}
   }
 
   public async initVsam(connectionArgs: IIpcConnectionArgs,
