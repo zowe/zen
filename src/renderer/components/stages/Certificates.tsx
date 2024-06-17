@@ -159,13 +159,17 @@ const Certificates = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+    window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs).then((res: {status: boolean, details: any, updatedYaml: any}) => {
       clearInterval(timer);
       updateProgress(res.status);
       if(!res.status){
         window.electron.ipcRenderer.setStandardOutput(JSON.stringify(res.details, null, 2)).then((res: any) => {
           toggleEditorVisibility("output");
         })
+        if(res.updatedYaml != undefined){
+          window.electron.ipcRenderer.setConfig(res.updatedYaml);
+          dispatch(setYaml(res.updatedYaml));
+        }
       }
     }).catch(() => {
       clearInterval(timer);
