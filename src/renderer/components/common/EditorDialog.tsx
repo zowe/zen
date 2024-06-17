@@ -79,6 +79,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
     try {
       // To parse the yaml and convert it to the javascript object
       jsonData = parse(newCode);
+      delete jsonData.installationArgs;
     } catch (error) {
       console.error('Error parsing YAML:', error);
       jsonData = newCode;
