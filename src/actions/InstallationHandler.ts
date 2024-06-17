@@ -460,11 +460,11 @@ class Installation {
     const yaml = await new FileTransfer().download(connectionArgs, yamlPath, DataType.ASCII);
     var parsedYaml;
     try{
-      parsedYaml = parse(yaml);
+      parsedYaml = JSON.parse(JSON.stringify(parse(yaml)));
     } catch (e){
       console.log('error parsing yaml:', e.message);
     }
-    return {status: result.rc === 0, details: {jobOutput: result.jobOutput, updatedYaml: JSON.parse(JSON.stringify(parsedYaml))}}
+    return {status: result.rc === 0, details: {jobOutput: result.jobOutput, updatedYaml: parsedYaml}}
   }
 
   public async initVsam(connectionArgs: IIpcConnectionArgs,
