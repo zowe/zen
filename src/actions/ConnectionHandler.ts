@@ -46,8 +46,11 @@ export class FTPConnection extends Connection {
     const details = Object.keys(args).reduce((acc: string, k: keyof IIpcConnectionArgs) => {
       
       const value = (typeof args[k] == 'number') ? args[k].toString() : args[k]; 
-      const status = ConnectionStore.set(`ftp-details.${k}`, value);
-      return acc + status ? '' : `\n Can't set ftp-details.${k}, check the store schema`;
+      if(k != "password"){
+        const status = ConnectionStore.set(`ftp-details.${k}`, value);
+        return acc + status ? '' : `\n Can't set ftp-details.${k}, check the store schema`;
+      }
+      return;
     }, "");
   return {status: true, details}
   }
