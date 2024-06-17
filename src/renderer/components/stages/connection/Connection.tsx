@@ -29,11 +29,11 @@ import { IResponse } from '../../../../types/interfaces';
 import { setConnectionValidationDetails, setHost, setPort,
                setUser, setPassword, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress} from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
-import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
+import { setConnectionStatus,  selectConnectionStatus, setInitializationStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
-import { initializeProgress, getActiveStage } from "../progress/StageProgressStatus";
+import { initializeProgress, getActiveStage, isInitComplete } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../services/eventDispatcher";
 
 const Connection = () => {
@@ -133,6 +133,7 @@ const FTPConnectionForm = () => {
         dispatch(setConnectionStatus(res.status));
         if(res.status) {
           dispatch(setNextStepEnabled(true));
+          dispatch(setInitializationStatus(isInitComplete()));
           initializeProgress(connectionArgs.host, connectionArgs.user);
           initStageSkipStatus();
           setResume();
