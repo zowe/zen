@@ -176,6 +176,9 @@ const Certificates = () => {
       clearInterval(timer);
       updateProgress(false);
       console.warn('zwe init certificate failed', e);
+      window.electron.ipcRenderer.setStandardOutput(`zwe init certificate failed:  ${e}`).then((res: any) => {
+        toggleEditorVisibility("output");
+      })
     });
   }
 
