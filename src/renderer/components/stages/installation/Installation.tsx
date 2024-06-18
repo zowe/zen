@@ -281,7 +281,7 @@ const Installation = () => {
         installProceedActions(false);
         stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
         stages[STAGE_ID].isSkipped = true;
-        window.electron.ipcRenderer.setStandardOutput(`zwe init certificate failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
+        window.electron.ipcRenderer.setStandardOutput(`zwe init mvs failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
           toggleEditorVisibility("output");
         })
         if (typeof err === "string") {
