@@ -180,10 +180,12 @@ const Vsam = () => {
         alertEmitter.emit('showAlert', res.errorMsg+" "+defaultErrorMessage, 'error');
       }
       clearInterval(timer);
-    }).catch((error: any) => {
+    }).catch((err: any) => {
       clearInterval(timer);
       updateProgress(false);
-      console.warn('zwe init vsam failed');
+      window.electron.ipcRenderer.setStandardOutput(`zwe init vsam failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
+        toggleEditorVisibility("output");
+      })
     });
   }
 
