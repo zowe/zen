@@ -195,11 +195,9 @@ const InitApfAuth = () => {
         //alertEmitter.emit('showAlert', err.toString(), 'error');
         stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
         stages[STAGE_ID].isSkipped = true;
-        if (typeof err === "string") {
-          console.warn('zwe init apfauth failed', err);
-        } else {
-          console.warn('zwe init apfauth failed', err?.toString()); // toString() throws run-time error on undefined or null
-        }
+        window.electron.ipcRenderer.setStandardOutput(`zwe init apfauth failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
+          toggleEditorVisibility("output");
+        })
       });
   }
 

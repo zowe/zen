@@ -284,11 +284,6 @@ const Installation = () => {
         window.electron.ipcRenderer.setStandardOutput(`zwe init mvs failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
           toggleEditorVisibility("output");
         })
-        if (typeof err === "string") {
-          console.warn('Installation failed', err);
-        } else {
-          console.warn('Installation failed', err?.toString()); // toString() throws run-time error on undefined or null
-        }
       });
       
     })
