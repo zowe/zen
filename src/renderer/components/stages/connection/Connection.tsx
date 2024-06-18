@@ -29,7 +29,7 @@ import { IResponse } from '../../../../types/interfaces';
 import { setConnectionValidationDetails, setHost, setPort,
                setUser, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress, setConnectionArgs, setPassword} from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
-import { setConnectionStatus,  selectConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setDownloadUnpaxStatus, setInitializationStatus, setDatasetInstallationStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus, setVsamStatus} from '../progress/progressSlice';
+import { setConnectionStatus,  selectConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setDownloadUnpaxStatus, setInitializationStatus, setDatasetInstallationStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus, setVsamStatus, setStcsStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
@@ -129,6 +129,7 @@ const FTPConnectionForm = () => {
       dispatch(setSecurityStatus(false));
       dispatch(setCertificateStatus(false));
       dispatch(setVsamStatus(false));
+      dispatch(setStcsStatus(false));
       dispatch(setNetworkingStatus(false));
       dispatch(setLocationValidationDetails(false));
       setPlanningStageStatus("isLocationValid", false)
