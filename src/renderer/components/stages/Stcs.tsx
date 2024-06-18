@@ -185,10 +185,12 @@ const Stcs = () => {
           alertEmitter.emit('showAlert', res.errorMsg+" "+defaultErrorMessage, 'error');
         }
         clearInterval(timer);
-      }).catch((error: any) => {
+      }).catch((err: any) => {
         clearInterval(timer);
         updateProgress(false);
-        console.warn('zwe init stcs failed');
+        window.electron.ipcRenderer.setStandardOutput(`zwe init stc failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
+          toggleEditorVisibility("output");
+        })
       });
   }
 
