@@ -189,11 +189,9 @@ const Security = () => {
       securityProceedActions(false);
       stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
       stages[STAGE_ID].isSkipped = true;
-      if (typeof err === "string") {
-        console.warn('zwe init security failed', err);
-      } else {
-        console.warn('zwe init security failed', err?.toString()); // toString() throws run-time error on undefined or null
-      }
+      window.electron.ipcRenderer.setStandardOutput(`zwe init security failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
+        toggleEditorVisibility("output");
+      })
     });
   }
 
