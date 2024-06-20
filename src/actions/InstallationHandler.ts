@@ -560,7 +560,7 @@ export class FTPInstallation extends Installation {
     console.log(`Uploading ${tempPath} to ${filePath}`)
     await new FileTransfer().upload(connectionArgs, tempPath, filePath, DataType.BINARY)
     // console.log("Check out this install arg! " + installDir);
-    const script = `cat ${filePath} | grep 'zowe' > /dev/null; if [ $? -eq 0 ]; then if [ $(chtag -p ${filePath} | cut -f 2 -d" ") != "untagged" ]; then iconv -f iso8859-1 -t 1047 ${filePath} > ${filePath}.1047; mv ${filePath}.1047 ${filePath}; chtag -tc 1047 ${filePath}; fi; else iconv -f iso8859-1 -t 1047 ${filePath} > ${filePath}.1047; mv ${filePath}.1047 ${filePath}; chtag -tc 1047 ${filePath}; fi`;
+    const script = `chtag -t -c ISO8859-1 ${installDir}/zowe.yaml; cat ${filePath} | grep 'zowe' > /dev/null; if [ $? -eq 0 ]; then if [ $(chtag -p ${filePath} | cut -f 2 -d" ") != "untagged" ]; then iconv -f iso8859-1 -t 1047 ${filePath} > ${filePath}.1047; mv ${filePath}.1047 ${filePath}; chtag -tc 1047 ${filePath}; fi; else iconv -f iso8859-1 -t 1047 ${filePath} > ${filePath}.1047; mv ${filePath}.1047 ${filePath}; chtag -tc 1047 ${filePath}; fi`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
