@@ -559,8 +559,8 @@ export class FTPInstallation extends Installation {
     const filePath = path.join(installDir, "zowe.yaml");
     console.log(`Uploading ${tempPath} to ${filePath}`)
     await new FileTransfer().upload(connectionArgs, tempPath, filePath, DataType.BINARY)
-    console.log("Check out this install arg! " + installDir);
-    const script = `chtag -t -c ISO8859-1 ${installDir}/zowe.yaml`;
+    // console.log("Check out this install arg! " + installDir);
+    const script = `cat zowe.yaml | grep 'zowe' > /dev/null; if [ $? -eq 0 ]; then if [ $(chtag -p zowe.yaml | cut -f 2 -d" ") != "untagged" ]; then iconv -f iso8859-1 -t 1047 zowe.yaml > zowe.yaml.1047; mv zowe.yaml.1047 zowe.yaml; chtag -tc 1047 zowe.yaml; fi; else iconv -f iso8859-1 -t 1047 zowe.yaml > zowe.yaml.1047; mv zowe.yaml.1047 zowe.yaml; chtag -tc 1047 zowe.yaml; fi`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
