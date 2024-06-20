@@ -116,27 +116,6 @@ const FTPConnectionForm = () => {
 
   const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
 
-  useEffect(() => {
-    if(!isResume){
-      dispatch(setConnectionStatus(false));
-      dispatch(setPlanningStatus(false));
-      dispatch(setInstallationTypeStatus(false));
-      dispatch(setDownloadUnpaxStatus(false));
-      dispatch(setInitializationStatus(false));
-      dispatch(setDatasetInstallationStatus(false));
-      dispatch(setNetworkingStatus(false));
-      dispatch(setApfAuthStatus(false));
-      dispatch(setSecurityStatus(false));
-      dispatch(setCertificateStatus(false));
-      dispatch(setVsamStatus(false));
-      dispatch(setStcsStatus(false));
-      dispatch(setNetworkingStatus(false));
-      dispatch(setLocationValidationDetails(false));
-      setPlanningStageStatus("isLocationValid", false)
-      setPlanningStageStatus("isJobStatementValid", false)
-    }
-  }, []);
-
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
     dispatch(setNextStepEnabled(false));
