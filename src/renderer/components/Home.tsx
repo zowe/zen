@@ -61,26 +61,26 @@ const makeCard = (card: ICard) => {
   const {id, name, description, link, media} = card;
   const dispatch = useAppDispatch();
   return (  
-    <Link key={`link-${id}`} to={link}>
-      <Box sx={{ width: '40vw', height: '40vh'}}>
-        <Card id={`card-${id}`} square={true}  onClick={() => {
-              dispatch(setConnectionStatus(false));
-              dispatch(setPlanningStatus(false));
-              dispatch(setInstallationTypeStatus(false));
-              dispatch(setDownloadUnpaxStatus(false));
-              dispatch(setInitializationStatus(false));
-              dispatch(setDatasetInstallationStatus(false));
-              dispatch(setNetworkingStatus(false));
-              dispatch(setApfAuthStatus(false));
-              dispatch(setSecurityStatus(false));
-              dispatch(setCertificateStatus(false));
-              dispatch(setVsamStatus(false));
-              dispatch(setStcsStatus(false));
-              dispatch(setNetworkingStatus(false));
-              dispatch(setLocationValidationDetails(false));
-              setPlanningStageStatus("isLocationValid", false)
-              setPlanningStageStatus("isJobStatementValid", false)
-            }}>
+    <Link key={`link-${id}`} to={link} >
+      <Box sx={{ width: '40vw', height: '40vh'}} onClick={() => {
+          dispatch(setConnectionStatus(false));
+          dispatch(setPlanningStatus(false));
+          dispatch(setInstallationTypeStatus(false));
+          dispatch(setDownloadUnpaxStatus(false));
+          dispatch(setInitializationStatus(false));
+          dispatch(setDatasetInstallationStatus(false));
+          dispatch(setNetworkingStatus(false));
+          dispatch(setApfAuthStatus(false));
+          dispatch(setSecurityStatus(false));
+          dispatch(setCertificateStatus(false));
+          dispatch(setVsamStatus(false));
+          dispatch(setStcsStatus(false));
+          dispatch(setNetworkingStatus(false));
+          dispatch(setLocationValidationDetails(false));
+          setPlanningStageStatus("isLocationValid", false)
+          setPlanningStageStatus("isJobStatementValid", false)
+        }}>
+        <Card id={`card-${id}`} square={true}>
           <CardMedia
             sx={{ height: 240 }}
             image={media}
