@@ -171,6 +171,7 @@ const Certificates = () => {
         var merge = deepMerge(res.details.updatedYaml, yaml);
         merge.zowe.certificate = res.details.updatedYaml.zowe?.certificate;
         window.electron.ipcRenderer.setConfig(merge);
+        setLYaml(merge);
         dispatch(setYaml(merge));
       }
     }).catch((e: any) => {
