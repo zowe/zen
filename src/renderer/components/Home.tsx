@@ -63,13 +63,7 @@ const makeCard = (card: ICard) => {
   return (  
     <Link key={`link-${id}`} to={link}>
       <Box sx={{ width: '40vw', height: '40vh'}}>
-        <Card id={`card-${id}`} square={true} >
-          <CardMedia
-            sx={{ height: 240 }}
-            image={media}
-          />
-          <CardContent className="action-card">
-            <Box onClick={() => {
+        <Card id={`card-${id}`} square={true}  onClick={() => {
               dispatch(setConnectionStatus(false));
               dispatch(setPlanningStatus(false));
               dispatch(setInstallationTypeStatus(false));
@@ -87,6 +81,12 @@ const makeCard = (card: ICard) => {
               setPlanningStageStatus("isLocationValid", false)
               setPlanningStageStatus("isJobStatementValid", false)
             }}>
+          <CardMedia
+            sx={{ height: 240 }}
+            image={media}
+          />
+          <CardContent className="action-card">
+            <Box>
               <Typography variant="subtitle1" component="div">
                 {name}
               </Typography>
