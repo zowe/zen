@@ -260,7 +260,7 @@ const Installation = () => {
         if (res.status == false && typeof res.details == "string") {
           res.details = { 3: res.details };
         }
-        if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe install
+        if (!res.status && res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe install
           alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
           window.electron.ipcRenderer.setStandardOutput(JSON.stringify(res.details[3])).then((res: any) => {
             toggleEditorVisibility("output");
