@@ -172,7 +172,6 @@ const Certificates = () => {
         const updatedYaml = {...yaml, zowe: {...yaml.zowe, certificate: updatedCerts}};
         setSetupYaml(res.details.updatedYaml.zowe?.certificate);
         window.electron.ipcRenderer.setConfig(updatedYaml);
-        setLYaml(updatedCerts);
         dispatch(setYaml(updatedYaml));
       }
     }).catch((e: any) => {
