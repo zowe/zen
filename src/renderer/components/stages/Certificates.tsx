@@ -168,11 +168,12 @@ const Certificates = () => {
         })
       }
       if(res.details.updatedYaml != undefined){
-        var merge = deepMerge(deepMerge({}, yaml), res.details.updatedYaml);
+        const updatedCerts = res.details.updatedYaml.zowe?.certificate;
+        const updatedYaml = {...yaml, zowe: {...yaml.zowe, certificate: updatedCerts}};
         setSetupYaml(res.details.updatedYaml.zowe?.certificate);
-        window.electron.ipcRenderer.setConfig(merge);
-        setLYaml(merge);
-        dispatch(setYaml(merge));
+        window.electron.ipcRenderer.setConfig(updatedYaml);
+        setLYaml(updatedCerts);
+        dispatch(setYaml(updatedYaml));
       }
     }).catch((e: any) => {
       clearInterval(timer);
