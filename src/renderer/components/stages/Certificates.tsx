@@ -168,9 +168,7 @@ const Certificates = () => {
         })
       }
       if(res.details.updatedYaml != undefined){
-        var merge = deepMerge(Object.assign({}, yaml), res.details.updatedYaml);
-        merge.zowe.certificate = res.details.updatedYaml.zowe?.certificate;
-        console.log('setting zowe.certificate to:', JSON.stringify(res.details.updatedYaml.zowe?.certificate));
+        var merge = deepMerge(deepMerge({}, yaml), res.details.updatedYaml);
         setSetupYaml(res.details.updatedYaml.zowe?.certificate);
         window.electron.ipcRenderer.setConfig(merge);
         setLYaml(merge);
