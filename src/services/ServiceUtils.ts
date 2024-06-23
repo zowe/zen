@@ -89,7 +89,7 @@ export function reducePath(path: string): string {
   return path; // stops at "/"
 }
 
-// This adds a "\n" inside Unix commands separated by ";" if char limit reached
+// This adds a "\n" inside Unix commands if char limit reached
 export function parseUnixScriptByNumOfChars(script: string, charCount: number = JCL_UNIX_SCRIPT_CHARS): string {
   const parts: string[] = [];
   let currentPart = '';

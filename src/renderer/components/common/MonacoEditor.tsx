@@ -50,7 +50,8 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
       language: lang, 
       theme: theme,
       value: initialContent,
-      readOnly: readOnly
+      readOnly: readOnly,
+      wordWrap: 'on'  // TODO: Make a button for it
     });
 
     editorRef.current.onDidChangeModelContent(() => {
