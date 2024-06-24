@@ -19,7 +19,7 @@ import CheckCircle from '@mui/icons-material/CheckCircle';
 import { setActiveStep } from "./progress/activeStepSlice"; 
 import { getStageDetails } from "../../../services/StageDetails";
 import { setDownloadUnpaxStatus } from './progress/progressSlice';
-import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationTypeStatus, getProgress, setDownloadUnpaxState } from "./progress/StageProgressStatus";
+import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationTypeStatus, getProgress, setDownloadUnpaxState, mapAndSetStepSkipStatus } from "./progress/StageProgressStatus";
 import React from "react";
 import ProgressCard from "../common/ProgressCard";
 import { alertEmitter } from "../Header";
@@ -55,8 +55,7 @@ const Unpax = () => {
           setDownloadUnpaxProgress(res);
           setDownloadUnpaxState(res);
           if(stageComplete){
-            dispatch(setNextStepEnabled(true));
-            dispatch(setDownloadUnpaxStatus(true));
+            setStageSkipStatus(true);
             clearInterval(timer);
           }
         })
@@ -69,10 +68,9 @@ const Unpax = () => {
 
   const process = (event: any) => {
     event.preventDefault();
+    setStageSkipStatus(false);
     setShowProgress(true);
-    dispatch(setDownloadUnpaxStatus(false));
     setDownloadUnpaxProgress(downloadUnpaxStatus);
-    dispatch(setNextStepEnabled(false));
     window.electron.ipcRenderer.downloadButtonOnClick(connectionArgs, installationArgs, version, yaml).then((res: IResponse) => {
       if(!res.status){ //errors during runInstallation()
         alertEmitter.emit('showAlert', res.details, 'error');
@@ -81,12 +79,11 @@ const Unpax = () => {
         dispatch(setYaml(res.details.mergedYaml));
         window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
       }
-      dispatch(setNextStepEnabled(res.status));
-      dispatch(setDownloadUnpaxStatus(res.status));
+      setStageSkipStatus(res.status);
       clearInterval(timer);
     }).catch(() => {
       clearInterval(timer);
-      dispatch(setNextStepEnabled(false));
+      setStageSkipStatus(false);
     });
   }
 
@@ -107,6 +104,12 @@ const Unpax = () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     }
   }, []);
+
+  const setStageSkipStatus = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setDownloadUnpaxStatus(status));
+    mapAndSetStepSkipStatus(STAGE_ID, !status);
+  }
 
   return (<>
       {installValue === "smpe" && <ContainerCard title="Continue to Initialization" description="">

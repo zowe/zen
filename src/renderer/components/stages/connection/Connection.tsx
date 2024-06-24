@@ -33,7 +33,7 @@ import { setYaml, setSchema, setLoading, setNextStepEnabled, selectZoweCLIVersio
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
-import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
+import { getStageDetails, initSubStageSkipStatus, initStageSkipStatus } from "../../../../services/StageDetails";
 import { initializeProgress, getActiveStage } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../services/eventDispatcher";
 import { FALLBACK_YAML, FALLBACK_SCHEMA } from "../../common/Constants";
@@ -137,7 +137,9 @@ const FTPConnectionForm = () => {
         dispatch(setConnectionStatus(res.status));
         if(res.status) {
           dispatch(setNextStepEnabled(true));
+          dispatch(setConnectionStatus(true));
           initializeProgress(connectionArgs.host, connectionArgs.user);
+          initSubStageSkipStatus();
           initStageSkipStatus();
           setYamlAndConfig();
         }

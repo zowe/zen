@@ -80,8 +80,15 @@ export interface PlanningValidationDetails {
   error: string
 }
 
-export interface SkipState {
-  downloadUnpax: boolean,
+export interface stepSkipState {
+  planning: boolean,
+  installationType: boolean,
+  unpax: boolean,
+  initialization: boolean,
+  reviewInstallation: boolean
+}
+
+export interface subStepSkipState {
   datasetInstallation: boolean,
   networking: boolean,
   apfAuth: boolean,
