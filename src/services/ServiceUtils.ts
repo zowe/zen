@@ -21,11 +21,15 @@ export const JCL_JOBNAME_DEFAULT = "ZENJOB";
 
 export const MKDIR_ERROR_PARENT = "EDC5129I"; // when MKDIR tries to create top-level dir in a dir that doesn't exist
 
+export const MKDIR_ERROR_PERMISSIONS = "EDC5111I";
+
 export const MKDIR_ERROR_EXISTS = "EDC5117I"; // when dir already exist
 
 export const MKDIR_ERROR_BADARGS= "EDC5134I"; // when func not implemented
 
 export const LIST_ERROR_NOTFOUND = "FSUM6785"; // when dir doesn't exist
+
+let stopMakeDir = false;
 
 export async function connectFTPServer(config: IIpcConnectionArgs): Promise<any> {
 
@@ -53,7 +57,14 @@ export async function checkDirExists(config: IIpcConnectionArgs, dir: string): P
   }
 }
 
-export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<any> {
+/* Function's a little weird but basically 
+a) zos-node-accessor has no mkdir -p
+b) we use a stopRecursion flag because sometimes we keep trying for a parent, and we reduce down until we *can* make it
+but we won't know that we *cannot* until we hit the bad permissions error (ie reducePath has run its course) */
+export async function makeDir(config: IIpcConnectionArgs, dir: string, stopRecursionFlag = { stop: false }): Promise<any> {
+  if (stopRecursionFlag.stop) {
+    return false;
+  }
   if (!isValidUSSPath(dir)) {
     console.warn("Attempted to create invalid Unix directory: " + dir);
     return false;
@@ -63,19 +74,27 @@ export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<
     await client.makeDirectory(dir);
     return true;
   } catch (error) {
-    if (error.toString().includes(MKDIR_ERROR_PARENT)) {
+    if (error.toString().includes(MKDIR_ERROR_PERMISSIONS)) { // This is the error that tells us we should stop our parent search
+      console.warn("Wasn't able to create: '" + dir + "'. Bad permissions");
+      stopRecursionFlag.stop = true;
+      return false;
+    }
+    if (error.toString().includes(MKDIR_ERROR_PARENT)) { // This is the error that tells us there's still a chance
       let parentDir = reducePath(dir);
-      if (parentDir !== "/") {
+      if (parentDir !== "/" && parentDir) {
         console.info("Wasn't able to create: '" + dir + "'. Will attempt to create: " + parentDir);
-        await makeDir(config, parentDir);
-        return makeDir(config, dir);
+        const parentResult = await makeDir(config, parentDir, stopRecursionFlag);
+        if (parentResult && !stopRecursionFlag.stop) {
+          return await makeDir(config, dir, stopRecursionFlag);
+        }
+        return false;
       }
     }
     if (error.toString().includes(MKDIR_ERROR_EXISTS)) {
       return true;
     }
     if (error.toString().includes(MKDIR_ERROR_BADARGS)) {
-      console.info("Wasn't able to create: '" + dir + "'. Problem with using mkdir. Method usage is not implemented (bad arguments?)");
+      console.warn("Wasn't able to create: '" + dir + "'. Problem with using mkdir. Method usage is not implemented (bad arguments?)");
     } else {
       console.warn(error);
     }
@@ -85,12 +104,9 @@ export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<
   }
 }
 
-// /u/tsxxx/blaa --> /u/tsxxx
+// /u/tsxxx/blaa --> /u/tsxxx, eventually goes down to "/" then empty
 export function reducePath(path: string): string {
-  if (path.lastIndexOf('/') > 0) {
-    path = path.slice(0, path.lastIndexOf('/'));
-  }
-  return path; // stops at "/"
+  return path.substring(0, path.lastIndexOf('/'));
 }
 
 // Check if the path starts with a slash and does not contain spaces
