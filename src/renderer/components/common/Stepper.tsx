@@ -217,6 +217,28 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const isNextStepEnabled = useAppSelector(selectNextStepEnabled);
 
+  const skipButtonDisabled = (stages: any, activeStep: number, activeSubStep: number) => {
+    if(stages[activeStep]) {
+      if(stages[activeStep].isSkippable && !stages[activeStep].subStages) {
+        if(getProgress(stages[activeStep].statusKey)) {
+          return true;
+        } else {
+          return false;
+        }
+      } else if(stages[activeStep].subStages) {
+        if(stages[activeStep].subStages[activeSubStep].label === ("Installation")) {
+          return true;
+        } else if(getProgress(stages[activeStep].subStages[activeSubStep].statusKey)) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    } else {
+      return true;
+    }
+  }
+
   return (
     <Box className="stepper-container">
       <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility}/>
@@ -312,7 +334,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
             }
             {stages[activeStep] && stages[activeStep].isSkippable &&
               <Button 
-                disabled={stages[activeStep] && stages[activeStep].subStages ? !stages[activeStep].subStages[activeSubStep].isSkippable : !stages[activeStep].isSkippable}
+                disabled={skipButtonDisabled(stages, activeStep, activeSubStep)}
                 variant="contained" 
                 sx={{ textTransform: 'none', mr: 1 }} 
                 onClick={() => handleSkip()}
