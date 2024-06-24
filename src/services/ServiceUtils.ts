@@ -54,6 +54,10 @@ export async function checkDirExists(config: IIpcConnectionArgs, dir: string): P
 }
 
 export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<any> {
+  if (!isValidUSSPath(dir)) {
+    console.warn("Attempted to create invalid Unix directory: " + dir);
+    return false;
+  }
   const client = await connectFTPServer(config);
   try {
     await client.makeDirectory(dir);
@@ -61,8 +65,11 @@ export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<
   } catch (error) {
     if (error.toString().includes(MKDIR_ERROR_PARENT)) {
       let parentDir = reducePath(dir);
-      console.info("Wasn't able to create: '" + dir + "'. Will attempt to create: " + parentDir);
-      return makeDir(config, parentDir);
+      if (parentDir !== "/") {
+        console.info("Wasn't able to create: '" + dir + "'. Will attempt to create: " + parentDir);
+        await makeDir(config, parentDir);
+        return makeDir(config, dir);
+      }
     }
     if (error.toString().includes(MKDIR_ERROR_EXISTS)) {
       return true;
@@ -80,7 +87,16 @@ export async function makeDir(config: IIpcConnectionArgs, dir: string): Promise<
 
 // /u/tsxxx/blaa --> /u/tsxxx
 export function reducePath(path: string): string {
-  return path.substring(0, path.lastIndexOf('/'));
+  if (path.lastIndexOf('/') > 0) {
+    path = path.slice(0, path.lastIndexOf('/'));
+  }
+  return path; // stops at "/"
+}
+
+// Check if the path starts with a slash and does not contain spaces
+export function isValidUSSPath(path: string): boolean {
+  const validUSSRegex = /^\/[\w\/-]+$/;
+  return validUSSRegex.test(path);
 }
 
 // This adds a "\n" inside Unix commands separated by ";" if char limit reached
