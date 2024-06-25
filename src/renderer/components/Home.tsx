@@ -15,18 +15,18 @@ import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/mate
 import flatten, { unflatten } from 'flat';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
 import { setConnectionArgs, setResumeProgress, selectInitJobStatement } from './stages/connection/connectionSlice';
-import { setJobStatement, setLocationValidationDetails } from './stages/PlanningSlice';
+import { setJobStatement } from './stages/PlanningSlice';
 import { selectSchema, selectYaml, setSchema, setYaml, setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { Tooltip } from '@mui/material';
 import installationImg from '../assets/installation.png'
 import installationDryImg from '../assets/installation-dry-run.png'
 import eventDispatcher from "../../services/eventDispatcher";
-import { selectConnectionStatus, setApfAuthStatus, setCertificateStatus, setConnectionStatus, setDatasetInstallationStatus, setDownloadUnpaxStatus, setInitializationStatus, setInstallationTypeStatus, setNetworkingStatus, setPlanningStatus, setSecurityStatus, setStcsStatus, setVsamStatus} from './stages/progress/progressSlice';
+import { selectConnectionStatus} from './stages/progress/progressSlice';
 import  HorizontalLinearStepper  from './common/Stepper';
 import Wizard from './configuration-wizard/Wizard'
 import { ActiveState } from '../../types/stateInterfaces';
-import { getInstallationArguments, getPreviousInstallation, setPlanningStageStatus } from './stages/progress/StageProgressStatus';
+import { getInstallationArguments, getPreviousInstallation } from './stages/progress/StageProgressStatus';
 import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Constants';
 import { selectInstallationArgs, setInstallationArgs } from './stages/installation/installationSlice';
 
@@ -57,29 +57,21 @@ const cards: Array<ICard> = [
   }
 ]
 
+const prevInstallationKey = "prev_installation";
+const lastActiveState: ActiveState = {
+  activeStepIndex: 0,
+  isSubStep: false,
+  activeSubStepIndex: 0,
+};
+
 const makeCard = (card: ICard) => {
   const {id, name, description, link, media} = card;
-  const dispatch = useAppDispatch();
   return (  
     <Link key={`link-${id}`} to={link} >
-      <Box sx={{ width: '40vw', height: '40vh'}} onClick={() => {
-          dispatch(setConnectionStatus(false));
-          dispatch(setPlanningStatus(false));
-          dispatch(setInstallationTypeStatus(false));
-          dispatch(setDownloadUnpaxStatus(false));
-          dispatch(setInitializationStatus(false));
-          dispatch(setDatasetInstallationStatus(false));
-          dispatch(setNetworkingStatus(false));
-          dispatch(setApfAuthStatus(false));
-          dispatch(setSecurityStatus(false));
-          dispatch(setCertificateStatus(false));
-          dispatch(setVsamStatus(false));
-          dispatch(setStcsStatus(false));
-          dispatch(setNetworkingStatus(false));
-          dispatch(setLocationValidationDetails(false));
-          setPlanningStageStatus("isLocationValid", false)
-          setPlanningStageStatus("isJobStatementValid", false)
-        }}>
+      <Box sx={{ width: '40vw', height: '40vh'}} onClick={(e) => {
+        const flattenedData = flatten(lastActiveState);
+        localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
+      }}>
         <Card id={`card-${id}`} square={true}>
           <CardMedia
             sx={{ height: 240 }}
@@ -112,12 +104,6 @@ const Home = () => {
 
   const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getPreviousInstallation();
 
-  const prevInstallationKey = "prev_installation";
-  const lastActiveState: ActiveState = {
-    activeStepIndex: 0,
-    isSubStep: false,
-    activeSubStepIndex: 0,
-  };
   const [isNewInstallation, setIsNewInstallation] = useState(false);
 
   const stages: any = [];
@@ -209,7 +195,7 @@ const Home = () => {
 
   const resumeProgress = () => {
     setShowWizard(true);
-    dispatch(setResumeProgress(!connectionStatus));
+    dispatch(setResumeProgress(true));
   }
 
   return (
