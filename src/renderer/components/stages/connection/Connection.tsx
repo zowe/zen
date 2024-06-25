@@ -134,7 +134,7 @@ const FTPConnectionForm = () => {
         dispatch(setConnectionStatus(res.status));
         if(res.status) {
           dispatch(setNextStepEnabled(true));
-          initializeProgress(connectionArgs.host, connectionArgs.user);
+          initializeProgress(connectionArgs.host, connectionArgs.user, isResume);
           initStageSkipStatus();
           setResume();
         }
