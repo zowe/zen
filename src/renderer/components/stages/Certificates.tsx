@@ -197,6 +197,7 @@ const Certificates = () => {
     setIsFormInit(false);
 
     if (newData) {
+      dispatch(setCertificateStatus(false));
 
       if(validate) {
         validate(newData);
@@ -240,6 +241,7 @@ const Certificates = () => {
               id="demo-simple-select"
               value={verifyCerts}
               onChange={(e) => {
+                dispatch(setCertificateStatus(false));
                 const newConfig = {...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value, setup: {...yaml.zowe.setup}}};
                 window.electron.ipcRenderer.setConfig(newConfig);
                 setLYaml(newConfig)
