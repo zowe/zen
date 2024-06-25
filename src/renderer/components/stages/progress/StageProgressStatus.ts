@@ -9,7 +9,7 @@
  */
 
 import { flatten, unflatten } from 'flat';
-import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, subStepSkipState, stepSkipState, InstallationArgs, DownloadUnpaxState} from '../../../../types/stateInterfaces';
+import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, subStepState, stepSkipState, InstallationArgs, DownloadUnpaxState} from '../../../../types/stateInterfaces';
 import { stages } from '../../configuration-wizard/Wizard';
 
 const installationTypeStatus: InstallationType = {
@@ -99,7 +99,7 @@ const planningValidationDetailsStatus: PlanningValidationDetails = {
   error: ''
 }
 
-const subStepSkipStatus: subStepSkipState = {
+const subStepSkipStatus: subStepState = {
   datasetInstallation: false,
   networking: false,
   apfAuth: false,
@@ -155,7 +155,7 @@ let skipSubStateKey = `skip_sub_state`;
 let skipStateKey = `skip_state`;
 let installationArgsKey = `intallation_args`;
 
-let subStepSkipKeysArray: (keyof subStepSkipState)[] = Object.keys(subStepSkipStatus) as (keyof subStepSkipState)[];
+let subStepSkipKeysArray: (keyof subStepState)[] = Object.keys(subStepSkipStatus) as (keyof subStepState)[];
 let stepSkipKeysArray: (keyof stepSkipState)[] = Object.keys(stepSkipStatus) as (keyof stepSkipState)[];
 
 const setKeys = (id: string) => {
@@ -307,11 +307,11 @@ export const mapAndGetStepSkipStatus = (subStageId: number): boolean => {
   return skipStatusArray[subStageId-1];
 }
 
-export const setSubStageSkipStatus = (key: keyof subStepSkipState, newValue: boolean): void => {
+export const setSubStageSkipStatus = (key: keyof subStepState, newValue: boolean): void => {
   const skipStatus = localStorage.getItem(skipSubStateKey);
   if (skipStatus) {
     const flattenedData = JSON.parse(skipStatus);
-    const unFlattenedData = unflatten(flattenedData) as subStepSkipState;
+    const unFlattenedData = unflatten(flattenedData) as subStepState;
     Object.assign(subStepSkipStatus, unFlattenedData);
   }
   subStepSkipStatus[key] = newValue;
@@ -319,7 +319,7 @@ export const setSubStageSkipStatus = (key: keyof subStepSkipState, newValue: boo
   localStorage.setItem(skipSubStateKey, JSON.stringify(flattenedData));
 }
 
-export const getSubStageSkipStatus = () : subStepSkipState => {
+export const getSubStageSkipStatus = () : subStepState => {
   const skipStatus = localStorage.getItem(skipSubStateKey);
   if(skipStatus) {
     const flattenedData =  JSON.parse(skipStatus);

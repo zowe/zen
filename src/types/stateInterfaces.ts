@@ -88,7 +88,7 @@ export interface stepSkipState {
   reviewInstallation: boolean
 }
 
-export interface subStepSkipState {
+export interface subStepState {
   datasetInstallation: boolean,
   networking: boolean,
   apfAuth: boolean,
