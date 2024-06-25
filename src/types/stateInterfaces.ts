@@ -93,6 +93,7 @@ export interface subStepSkipState {
   networking: boolean,
   apfAuth: boolean,
   security: boolean,
+  stcs: boolean,
   certificate: boolean,
   vsam: boolean,
   launchConfig: boolean

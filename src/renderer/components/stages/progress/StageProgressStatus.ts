@@ -104,6 +104,7 @@ const subStepSkipStatus: subStepSkipState = {
   networking: false,
   apfAuth: false,
   security: false,
+  stcs: false,
   certificate: false,
   vsam: false,
   launchConfig: false

@@ -52,7 +52,9 @@ export const initSubStageSkipStatus = (): void => {
     skipStatus.networking,
     skipStatus.apfAuth,
     skipStatus.security,
+    skipStatus.stcs,
     skipStatus.certificate,
+    skipStatus.vsam,
     skipStatus.launchConfig
   ];
 

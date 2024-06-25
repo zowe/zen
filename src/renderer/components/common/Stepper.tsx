@@ -181,7 +181,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
       return <StepIcon icon={<CheckCircle sx={{ color: 'green', fontSize: '1.2rem' }} />} />;
     }
 
-    if ((isSubStep && mapAndGetSubStepSkipStatus(subStepId)) || (!isSubStep && mapAndGetStepSkipStatus(stageId))) {
+    if ((isSubStep && mapAndGetSubStepSkipStatus(subStepId) && stages[stageId].subStages[subStepId].isSkipped) || (!isSubStep && mapAndGetStepSkipStatus(stageId))) {
       return <StepIcon icon={<Warning sx={{ color: 'orange', fontSize: '1.2rem' }} />} />;
     }
 
