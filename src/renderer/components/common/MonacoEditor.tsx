@@ -88,7 +88,7 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
   }
 
   return (
-    <div style={{ height: '400px' }}>
+    <div style={{ height: '95vh'}}>
       {isError && (
         <div id="error-msg" 
           style={{ color: 'red', fontFamily: 'Arial, sans-serif', fontSize: 'small', paddingBottom: '1px' }}>

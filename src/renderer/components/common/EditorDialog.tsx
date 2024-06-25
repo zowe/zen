@@ -151,11 +151,13 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
   return (
     <div> 
       <Dialog 
+        fullWidth
+        maxWidth={'xl'}
         open={editorVisible} 
         onClose={toggleEditorVisibility} 
         PaperProps={{
           style: {
-            width: '100vw',
+            width: '95vw',
           },
         }}>
         <DialogTitle>Editor</DialogTitle>
