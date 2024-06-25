@@ -170,7 +170,7 @@ const Certificates = () => {
       if(res.details.updatedYaml != undefined){
         const updatedCerts = res.details.updatedYaml.zowe?.certificate;
         const updatedYaml = {...yaml, zowe: {...yaml.zowe, certificate: updatedCerts}};
-        setSetupYaml(res.details.updatedYaml.zowe?.certificate);
+        setSetupYaml(res.details.updatedYaml.zowe?.setup.certificate);
         window.electron.ipcRenderer.setConfig(updatedYaml);
         dispatch(setYaml(updatedYaml));
       }
@@ -239,7 +239,7 @@ const Certificates = () => {
               id="demo-simple-select"
               value={verifyCerts}
               onChange={(e) => {
-                const newConfig = {...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value}};
+                const newConfig = {...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value, setup: {...yaml.zowe.setup}}};
                 window.electron.ipcRenderer.setConfig(newConfig);
                 setLYaml(newConfig)
                 setVerifyCerts(e.target.value);
