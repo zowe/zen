@@ -218,16 +218,16 @@ const Stcs = () => {
     updateProgress(false);
     event.preventDefault();
     window.electron.ipcRenderer.initStcsButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
-        updateProgress(res.status);
-        if(res.error) {
-          alertEmitter.emit('showAlert', res.errorMsg+" "+defaultErrorMessage, 'error');
-        }
-        clearInterval(timer);
-      }).catch((error: any) => {
-        clearInterval(timer);
-        updateProgress(false);
-        console.warn('zwe init stcs failed');
-      });
+      updateProgress(res.status);
+      if(res.error) {
+        alertEmitter.emit('showAlert', res.errorMsg+" "+defaultErrorMessage, 'error');
+      }
+      clearInterval(timer);
+    }).catch((error: any) => {
+      clearInterval(timer);
+      updateProgress(false);
+      console.warn('zwe init stcs failed');
+    });
   }
 
   const handleFormChange = (data: any) => {
