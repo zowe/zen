@@ -258,9 +258,6 @@ const Planning = () => {
       window.electron.ipcRenderer.checkJava(connectionArgs, localYaml?.java?.home || installationArgs.javaHome),
       window.electron.ipcRenderer.checkNode(connectionArgs, localYaml?.node?.home || installationArgs.nodeHome),
       window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.workspaceDirectory || installationArgs.workspaceDir ),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.extensionDirectory || installationArgs.extensionDir),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.logDirectory || installationArgs.logDir),
     ]).then((res: Array<IResponse>) => {
       const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
       setEditorContent(res.map(item=>item?.details).join('\n'));
