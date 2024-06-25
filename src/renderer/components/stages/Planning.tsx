@@ -276,21 +276,9 @@ const Planning = () => {
         details.error = details.error + `Can't get Node.js version `;
         console.warn(res[1].details);
       }
-      if (res[2].status == false) { // Checking run-time directory existence or creating it failed?
+      if (res[2] && res[2].status == false) { // Checking run-time directory existence or creating it failed?
         details.error = details.error + res[2].details;
         console.warn(res[2].details);
-      }
-      if (res[3].status == false) { // workspace directory
-        details.error = details.error + res[3].details;
-        console.warn(res[3].details);
-      }
-      if (res[4].status == false) { // extensions directory
-        details.error = details.error + res[4].details;
-        console.warn(res[4].details);
-      }
-      if (res[5].status == false) { // logs directory
-        details.error = details.error + res[5].details;
-        console.warn(res[5].details);
       }
       //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks.
       // try {
