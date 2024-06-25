@@ -64,8 +64,6 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     completeProgress.launchConfigStatus
   ])
   
-
-
   const [activeStep, setActiveStep] =  initialization ? useState(0) : useState(useAppSelector(selectActiveStepIndex));
   const [activeSubStep, setActiveSubStep] = initialization ? useState(0) : useState(useAppSelector(selectActiveSubStepIndex));
   const [nextText, setNextText] = useState("Continue");
