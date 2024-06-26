@@ -65,12 +65,14 @@ const lastActiveState: ActiveState = {
 };
 
 const makeCard = (card: ICard) => {
+  const dispatch = useAppDispatch();
   const {id, name, description, link, media} = card;
   return (  
     <Link key={`link-${id}`} to={link} >
       <Box sx={{ width: '40vw', height: '40vh'}} onClick={(e) => {
         const flattenedData = flatten(lastActiveState);
         localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
+        if(id === "install") dispatch(setYaml(FALLBACK_YAML));
       }}>
         <Card id={`card-${id}`} square={true}>
           <CardMedia
