@@ -164,7 +164,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     }
   }
 
-  const getStepIcon = (error: any, stageId: number, isSubStep?: boolean, subStepId?: number) => {
+  const getStepIcon = (stageId: number, isSubStep?: boolean, subStepId?: number) => {
     
     if ((isSubStep && getProgress(stages[stageId].subStages[subStepId].statusKey)) || (!isSubStep && ((stageId == 0 && connectionStatus) || (getProgress(stages[stageId].statusKey))))) {
       return <StepIcon icon={<CheckCircle sx={{ color: 'green', fontSize: '1.2rem' }} />} />;
@@ -256,8 +256,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
                 boxShadow: 'rgb(0 0 0 / 15%) 0px 6px 4px -1px inset'} : {}}>
                 <StepLabel {...labelProps} 
                   error={labelProps.error} 
-                  // icon={labelProps.error ? <Warning sx={{ color: 'orange', fontSize: '1.2rem' }} /> : <CheckCircle sx={{ color: 'green', fontSize: '1.2rem' }} />}>
-                  icon={getStepIcon(labelProps.error, stage.id)}>
+                  icon={getStepIcon(stage.id)}>
                   <span className="navigator" onClick={() => handleStepperClick(stage.id, !!stage.subStage)}>{stage.label}</span>
                 </StepLabel>
               </div>
@@ -275,8 +274,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
             <Step key={stage.id} {...stepProps}>
                 <StepLabel {...labelProps}
                   error={labelProps.error} 
-                  // icon={labelProps.error ? <Warning sx={{ color: 'orange', fontSize: '1.2rem' }} /> : <CheckCircle sx={{ color: 'green', fontSize: '1.2rem' }} />}>
-                  icon={getStepIcon(labelProps.error, activeStep, true, index)}>
+                  icon={getStepIcon(activeStep, true, index)}>
                 <span className="navigator" onClick={() => handleStepperClick(activeStep, true, stage.id )}>{stage.label}</span>
                 </StepLabel>
             </Step>
