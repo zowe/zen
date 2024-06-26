@@ -54,7 +54,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     completeProgress.reviewStatus
   ];
 
-  const [subStageProgressStatus, setProgressStatus] = useState([
+  const [subStageProgressStatus, setSubStageProgressStatus] = useState([
     completeProgress.datasetInstallationStatus,
     completeProgress.networkingStatus,
     completeProgress.apfAuthStatus,
@@ -73,11 +73,11 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   useEffect(() => {
     const mvsCompleteListener = (completed: boolean) => {
-      setProgressStatus([true, completeProgress.networkingStatus,
-        completeProgress.apfAuthStatus,
-        completeProgress.securityStatus,
-        completeProgress.certificateStatus,
-        completeProgress.launchConfigStatus])
+      // setProgressStatus([true, completeProgress.networkingStatus,
+      //   completeProgress.apfAuthStatus,
+      //   completeProgress.securityStatus,
+      //   completeProgress.certificateStatus,
+      //   completeProgress.launchConfigStatus])
     };
     eventDispatcher.on('updateActiveStep', updateActiveStepListener);
     eventDispatcher.on('initMvsComplete', mvsCompleteListener);
