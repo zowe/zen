@@ -49,6 +49,7 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
     editorRef.current = monaco.editor.create(document.getElementById('monaco-editor-container'), {
       language: lang, 
       theme: theme,
+      wordWrap: "on",
       value: initialContent,
       readOnly: readOnly
     });
