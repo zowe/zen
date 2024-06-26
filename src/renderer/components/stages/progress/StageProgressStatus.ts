@@ -282,6 +282,7 @@ export const mapAndGetSubStepSkipStatus = (subStageId: number): boolean => {
     skipStatus.networking,
     skipStatus.apfAuth,
     skipStatus.security,
+    skipStatus.stcs,
     skipStatus.certificate,
     skipStatus.vsam,
     skipStatus.launchConfig

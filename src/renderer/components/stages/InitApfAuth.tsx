@@ -280,7 +280,6 @@ const InitApfAuth = () => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
     setSetupYaml(data);
-    updateProgress(proceed);
   }
 
   return (

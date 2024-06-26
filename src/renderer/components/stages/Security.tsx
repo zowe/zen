@@ -221,6 +221,7 @@ const Security = () => {
         securityProceedActions(false);
         clearInterval(timer);
       } else {
+        updateProgress(res.status);
         securityProceedActions(res.status);
         clearInterval(timer);
       }
