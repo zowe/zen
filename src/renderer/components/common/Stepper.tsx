@@ -72,18 +72,9 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const [editorContent, setEditorContent] = useState('');
 
   useEffect(() => {
-    const mvsCompleteListener = (completed: boolean) => {
-      // setProgressStatus([true, completeProgress.networkingStatus,
-      //   completeProgress.apfAuthStatus,
-      //   completeProgress.securityStatus,
-      //   completeProgress.certificateStatus,
-      //   completeProgress.launchConfigStatus])
-    };
     eventDispatcher.on('updateActiveStep', updateActiveStepListener);
-    eventDispatcher.on('initMvsComplete', mvsCompleteListener);
     return () => {
       eventDispatcher.off('updateActiveStep', updateActiveStepListener);
-      eventDispatcher.off('initMvsComplete', mvsCompleteListener);
     };
   }, []); 
 
