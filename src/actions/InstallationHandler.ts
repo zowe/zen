@@ -425,6 +425,12 @@ class Installation {
   }
 
   async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs, zoweConfig: any){
+
+    // Initialize Progress Store For Certificates
+    ProgressStore.set('certificate.writeYaml', true);
+    ProgressStore.set('certificate.uploadYaml', false);;
+    ProgressStore.set('certificate.zweInitCertificate', false);
+
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
