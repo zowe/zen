@@ -210,7 +210,6 @@ const Installation = () => {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
           setMvsDatasetInitializationProgress(res);
-          dispatch(setDatasetInstallationStatus(stageComplete))
           eventDispatcher.emit('initMvsComplete', true);
         })
       }, 3000);
@@ -236,6 +235,7 @@ const Installation = () => {
     stages[STAGE_ID].isSkipped = status;
     mapAndSetSubStepSkipStatus(SUB_STAGE_ID, status);
   }
+
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
     setStageSkipStatus(!status);
@@ -283,7 +283,6 @@ const Installation = () => {
             toggleEditorVisibility("output");
           })
           updateProgress(false);
-          installProceedActions(false);
           stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
           clearInterval(timer);
         } else {
