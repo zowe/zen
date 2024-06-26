@@ -119,12 +119,15 @@ const Installation = () => {
             yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
           }
           if (installationArgs.javaHome) {
+            if(yamlObj.java === undefined) yamlObj.java = {home: ""}
             yamlObj.java.home = installationArgs.javaHome;
           }
           if (installationArgs.nodeHome) {
+            if(yamlObj.node === undefined) yamlObj.node = {home: ""}
             yamlObj.node.home = installationArgs.nodeHome;
           }
           if (installationArgs.zosmfHost) {
+            if(yamlObj.zOSMF === undefined) yamlObj.zOSMF = {host: "", port: 443, applId: ""}
             yamlObj.zOSMF.host = installationArgs.zosmfHost;
           }
           if ((yamlObj.zOSMF.port === undefined || yamlObj.zOSMF.port === '') && installationArgs.zosmfPort) {
