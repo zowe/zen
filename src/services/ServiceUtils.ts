@@ -117,7 +117,6 @@ export function isValidUSSPath(path: string): boolean {
 
 // This adds a "\n" inside Unix commands separated by ";" if char limit reached
 export function parseUnixScriptByNumOfChars(script: string, charCount: number = JCL_UNIX_SCRIPT_CHARS): string {
-  console.log("I am being fed string '" + script + "'");
   const parts: string[] = [];
   let currentPart = '';
   let counter = 0;
@@ -145,7 +144,6 @@ export function parseUnixScriptByNumOfChars(script: string, charCount: number = 
   if (currentPart.length > 0) {
       parts.push(currentPart);
   }
-  console.log("I am returning string '" + parts.join('') + "'");
   return parts.join('');
 }
 
