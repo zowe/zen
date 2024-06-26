@@ -262,6 +262,12 @@ class Installation {
     version: string,
     zoweConfig: any,
   ): Promise<IResponse> {
+
+    // Initialize Progress Store For Dataset Installation
+    ProgressStore.set('installation.uploadYaml', false);
+    ProgressStore.set('installation.install', false);
+    ProgressStore.set('installation.initMVS', false);
+
     const currentConfig: any = ConfigurationStore.getConfig();
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
     const savingResult = await this.generateYamlFile(zoweConfig);
