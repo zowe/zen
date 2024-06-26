@@ -62,6 +62,16 @@ class Installation {
     version: string,
     zoweConfig: any,
   ): Promise<IResponse> {
+
+    // Initialize Progress Store For unpaxing
+    ProgressStore.set('downloadUnpax.uploadYaml', false);
+    ProgressStore.set('downloadUnpax.download', false);
+    ProgressStore.set('downloadUnpax.upload', false);
+    ProgressStore.set('downloadUnpax.unpax', false);
+    ProgressStore.set('downloadUnpax.getExampleYaml', false);
+    ProgressStore.set('downloadUnpax.getSchemas', false);
+    
+
     const currentConfig: any = ConfigurationStore.getConfig();
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
     const savingResult = await this.generateYamlFile(zoweConfig);
