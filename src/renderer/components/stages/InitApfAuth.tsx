@@ -220,12 +220,10 @@ const InitApfAuth = () => {
           })
           updateProgress(false); //res.status may not necessarily be false, even if things go wrong
           apfAuthProceedActions(false);
-          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
           clearInterval(timer);
         } else {
           updateProgress(res.status);
           apfAuthProceedActions(res.status);
-          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
           clearInterval(timer);
         }
       }).catch((err: any) => {
@@ -234,8 +232,6 @@ const InitApfAuth = () => {
         updateProgress(false);
         // TODO: Test this
         //alertEmitter.emit('showAlert', err.toString(), 'error');
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-        stages[STAGE_ID].isSkipped = true;
         if (typeof err === "string") {
           console.warn('zwe init apfauth failed', err);
         } else {

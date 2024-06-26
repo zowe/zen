@@ -219,11 +219,9 @@ const Security = () => {
         })
         updateProgress(false);
         securityProceedActions(false);
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
         clearInterval(timer);
       } else {
         securityProceedActions(res.status);
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
         clearInterval(timer);
       }
     }).catch((err: any) => {
@@ -232,8 +230,6 @@ const Security = () => {
       updateProgress(false);
       clearInterval(timer);
       securityProceedActions(false);
-      stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-      stages[STAGE_ID].isSkipped = true;
       if (typeof err === "string") {
         console.warn('zwe init security failed', err);
       } else {
