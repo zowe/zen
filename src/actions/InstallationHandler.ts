@@ -316,6 +316,12 @@ class Installation {
 
   public async runApfAuth(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
+
+    // Initialize Progress Store For Apf Auth
+    ProgressStore.set('apfAuth.writeYaml', false);
+    ProgressStore.set('apfAuth.uploadYaml', false);
+    ProgressStore.set('apfAuth.success', false);
+
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
@@ -370,10 +376,11 @@ class Installation {
   public async initStcs(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
 
-      // Initialize Progress Store For Vsam
+      // Initialize Progress Store For Stcs
       ProgressStore.set('initStcs.writeYaml', false);
       ProgressStore.set('initStcs.uploadYaml', false);
       ProgressStore.set('initStcs.success', false);
+
       const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
 
       console.log('writing current yaml to disk');
@@ -438,6 +445,7 @@ class Installation {
   public async initVsam(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
       const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
+
       // Initialize Progress Store For Vsam
       ProgressStore.set('initVsam.writeYaml', false);
       ProgressStore.set('initVsam.uploadYaml', false);
