@@ -187,6 +187,16 @@ class Installation {
     installationArgs: InstallationArgs,
     version: string,
   ): Promise<IResponse> {
+
+    // Initialize Progress Store For unpaxing
+    ProgressStore.set('downloadUnpax.uploadYaml', false);
+    ProgressStore.set('downloadUnpax.download', false);
+    ProgressStore.set('downloadUnpax.upload', false);
+    ProgressStore.set('downloadUnpax.unpax', false);
+    ProgressStore.set('downloadUnpax.getExampleYaml', false);
+    ProgressStore.set('downloadUnpax.getSchemas', false);
+    
+
     let currentConfig: any = ConfigurationStore.getConfig();
     if(currentConfig.installationArgs) delete currentConfig.installationArgs;
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
@@ -280,6 +290,10 @@ class Installation {
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,
   ): Promise<IResponse> {
+    // Initialize Progress Store For Dataset Installation
+    ProgressStore.set('installation.uploadYaml', false);
+    ProgressStore.set('installation.install', false);
+    ProgressStore.set('installation.initMVS', false);
     let currentConfig: any = ConfigurationStore.getConfig();
     if(currentConfig.installationArgs) delete currentConfig.installationArgs;
     const savingResult = await this.generateYamlFile(currentConfig);
@@ -334,6 +348,9 @@ class Installation {
 
   public async runApfAuth(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs): Promise<IResponse>{
+    ProgressStore.set('apfAuth.writeYaml', false);
+    ProgressStore.set('apfAuth.uploadYaml', false);
+    ProgressStore.set('apfAuth.success', false);
     let currentConfig: any = ConfigurationStore.getConfig();
     if(currentConfig.installationArgs) delete currentConfig.installationArgs;
     console.log('writing current yaml to disk');
@@ -362,6 +379,9 @@ class Installation {
   
   public async runInitSecurity(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs): Promise<IResponse>{
+      ProgressStore.set('initSecurity.writeYaml', false);
+      ProgressStore.set('initSecurity.uploadYaml', false);
+      ProgressStore.set('initSecurity.success', false);
       let currentConfig: any = ConfigurationStore.getConfig();
       if(currentConfig.installationArgs) delete currentConfig.installationArgs;
       console.log('writing current yaml to disk');
@@ -392,7 +412,7 @@ class Installation {
       let currentConfig: any = ConfigurationStore.getConfig();
       if(currentConfig.installationArgs) delete currentConfig.installationArgs;
 
-      // Initialize Progress Store For Vsam
+      // Initialize Progress Store For Stcs
       ProgressStore.set('initStcs.writeYaml', false);
       ProgressStore.set('initStcs.uploadYaml', false);
       ProgressStore.set('initStcs.success', false);
@@ -433,6 +453,9 @@ class Installation {
   }
 
   async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs){
+    ProgressStore.set('certificate.writeYaml', false);
+    ProgressStore.set('certificate.uploadYaml', false);;
+    ProgressStore.set('certificate.zweInitCertificate', false);
     let currentConfig: any = ConfigurationStore.getConfig();
     if(currentConfig.installationArgs) delete currentConfig.installationArgs
     console.log('writing current yaml to disk');
