@@ -443,7 +443,7 @@ class Installation {
   async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs, zoweConfig: any){
 
     // Initialize Progress Store For Certificates
-    ProgressStore.set('certificate.writeYaml', true);
+    ProgressStore.set('certificate.writeYaml', false);
     ProgressStore.set('certificate.uploadYaml', false);;
     ProgressStore.set('certificate.zweInitCertificate', false);
 
