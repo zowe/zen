@@ -126,8 +126,8 @@ const Installation = () => {
             if(yamlObj.node === undefined) yamlObj.node = {home: ""}
             yamlObj.node.home = installationArgs.nodeHome;
           }
+          if(yamlObj.zOSMF === undefined) yamlObj.zOSMF = {host: "", port: 443, applId: ""}
           if (installationArgs.zosmfHost) {
-            if(yamlObj.zOSMF === undefined) yamlObj.zOSMF = {host: "", port: 443, applId: ""}
             yamlObj.zOSMF.host = installationArgs.zosmfHost;
           }
           if ((yamlObj.zOSMF.port === undefined || yamlObj.zOSMF.port === '') && installationArgs.zosmfPort) {
