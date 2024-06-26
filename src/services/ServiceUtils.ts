@@ -117,6 +117,7 @@ export function isValidUSSPath(path: string): boolean {
 
 // This adds a "\n" inside Unix commands separated by ";" if char limit reached
 export function parseUnixScriptByNumOfChars(script: string, charCount: number = JCL_UNIX_SCRIPT_CHARS): string {
+  console.log("I am being fed string '" + script + "'");
   const parts: string[] = [];
   let currentPart = '';
   let counter = 0;
@@ -128,23 +129,26 @@ export function parseUnixScriptByNumOfChars(script: string, charCount: number = 
           if (lastSpaceIndex !== -1) {
               // If there's a space within the character limit, backtrack to the last encountered space
               const backtrackedPart = currentPart.substring(0, lastSpaceIndex);
-              parts.push(backtrackedPart);
-              currentPart = currentPart.substring(lastSpaceIndex + 1);
+              parts.push(backtrackedPart + '\n');
+              currentPart = currentPart.substring(lastSpaceIndex + 1) + script[i]; // Include the current character
+          } else {
+              // If no space found, push the currentPart as is
+              parts.push(currentPart + '\n');
+              currentPart = script[i]; // Don't forget the current char we are on
           }
-          if (currentPart.length > 0) {
-              // Add the current part and reset the counter
-              parts.push('\n');
-              counter = 0;
-          }
+          counter = currentPart.length;
+      } else {
+          currentPart += script[i];
+          counter++;
       }
-      currentPart += script[i];
-      counter++;
   }
   if (currentPart.length > 0) {
       parts.push(currentPart);
   }
+  console.log("I am returning string '" + parts.join('') + "'");
   return parts.join('');
 }
+
 
 export function startBPXBATCHAndShellSession(jobName: string = JCL_JOBNAME_DEFAULT): string {
   return `//${jobName}    EXEC PGM=BPXBATCH,REGION=0M
