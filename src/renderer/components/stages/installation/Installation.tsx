@@ -201,6 +201,7 @@ const Installation = () => {
     if(allAttributesTrue) {
       dispatch(setNextStepEnabled(true));
       dispatch(setDatasetInstallationStatus(true));
+      setStageSkipStatus(false);
     }
   }, [mvsDatasetInitProgress]);
 
@@ -210,6 +211,9 @@ const Installation = () => {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
           setMvsDatasetInitializationProgress(res);
+          if(res.success){
+            clearInterval(timer);
+          }
         })
       }, 3000);
     }
@@ -225,6 +229,7 @@ const Installation = () => {
     if(allAttributesTrue) {
       dispatch(setNextStepEnabled(true));
       dispatch(setDatasetInstallationStatus(true));
+      setStageSkipStatus(false);
     }
   }
 
@@ -246,7 +251,7 @@ const Installation = () => {
     const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
     installProceedActions(status);
-    // setMvsDatasetInitializationProgress(getDatasetInstallationState());
+    setMvsDatasetInitializationProgress(getDatasetInstallationState());
   }
 
   const toggleEditorVisibility = (type: any) => {
@@ -260,7 +265,6 @@ const Installation = () => {
     updateProgress(false);
     event.preventDefault();
     dispatch(setLoading(true));
-    setMvsDatasetInitProgress(datasetInstallationStatus)
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
 
     Promise.all([
@@ -281,19 +285,14 @@ const Installation = () => {
             toggleEditorVisibility("output");
           })
           updateProgress(false);
-          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
           clearInterval(timer);
         } else {
           updateProgress(res.status);
-          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
           clearInterval(timer);
         }
       }).catch((err: any) => {
         clearInterval(timer);
         updateProgress(false);
-        installProceedActions(false);
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-        stages[STAGE_ID].isSkipped = true;
         if (typeof err === "string") {
           console.warn('Installation failed', err);
         } else {
