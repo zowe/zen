@@ -349,6 +349,12 @@ class Installation {
   
   public async runInitSecurity(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
+
+      // Initialize Progress Store For Security
+      ProgressStore.set('initSecurity.writeYaml', false);
+      ProgressStore.set('initSecurity.uploadYaml', false);
+      ProgressStore.set('initSecurity.success', false);
+
       const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
