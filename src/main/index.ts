@@ -108,7 +108,6 @@ const createWindow = (): void => {
     return res;
   });
 
-
   ipcMain.handle('get-schema', async (event, schema: any) => {
     const res: any = await ConfigurationStore.getSchema();
     return {status: true, details: res};
@@ -195,23 +194,28 @@ const createWindow = (): void => {
     return res;
   })
 
-  ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs, version, zoweConfig) => {
-    const res = await installActions.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
+  ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.runInstallation(connectionArgs, installationArgs);
     return res;
   });
 
-  ipcMain.handle('download-unpax', async (event, connectionArgs, installationArgs, version, zoweConfig) => {
-    const res = await installActions.downloadUnpax(connectionArgs, installationArgs, version, zoweConfig);
+  ipcMain.handle('download-unpax', async (event, connectionArgs, installationArgs, version) => {
+    const res = await installActions.downloadUnpax(connectionArgs, installationArgs, version);
     return res;
   });
 
-  ipcMain.handle('init-certificates', async (event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.runInitCertificates(connectionArgs, installationArgs, zoweConfig);
+  ipcMain.handle('get-yaml-schema', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.smpeGetExampleYamlAndSchemas(connectionArgs, installationArgs);
     return res;
   });
 
-  ipcMain.handle('init-apf', async (_event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.runApfAuth(connectionArgs, installationArgs, zoweConfig);
+  ipcMain.handle('init-certificates', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.runInitCertificates(connectionArgs, installationArgs);
+    return res;
+  });
+
+  ipcMain.handle('init-apf', async (_event, connectionArgs, installationArgs) => {
+    const res = await installActions.runApfAuth(connectionArgs, installationArgs);
     return res;
   });
 
@@ -237,8 +241,8 @@ const createWindow = (): void => {
     return res;
   });
 
-  ipcMain.handle('init-security', async (event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.runInitSecurity(connectionArgs, installationArgs, zoweConfig);
+  ipcMain.handle('init-security', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.runInitSecurity(connectionArgs, installationArgs);
     return res;
   });
 
@@ -247,13 +251,13 @@ const createWindow = (): void => {
     return res;
   });
 
-  ipcMain.handle('init-stcs', async (event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.initStcs(connectionArgs, installationArgs, zoweConfig);
+  ipcMain.handle('init-stcs', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.initStcs(connectionArgs, installationArgs);
     return res;
   });
 
-  ipcMain.handle('init-vsam', async (event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.initVsam(connectionArgs, installationArgs, zoweConfig);
+  ipcMain.handle('init-vsam', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.initVsam(connectionArgs, installationArgs);
     return res;
   });
 

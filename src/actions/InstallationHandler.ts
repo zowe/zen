@@ -18,14 +18,16 @@ import { ProgressStore } from "../storage/ProgressStore";
 import * as fs from 'fs';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { InstallationArgs } from '../types/stateInterfaces';
+import { FALLBACK_SCHEMA, deepMerge } from '../renderer/components/common/Constants';
 
-function removeRuntimeFromPath(path: string)
-{
-    var the_arr = path.split('/');
-    if(the_arr[the_arr.length - 1].toLowerCase() === 'runtime'){
-      the_arr.pop();
-    }
-    return( the_arr.join('/') );
+
+//AJV did not like the regex in our current schema
+const zoweDatasetMemberRegexFixed = {
+  "description": "PARMLIB member used by ZIS",
+  "type": "string",
+  "pattern": "^([A-Z$#@]){1}([A-Z0-9$#@]){0,7}$",
+  "minLength": 1,
+  "maxLength": 8
 }
 
 class Installation {
@@ -34,8 +36,8 @@ class Installation {
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,
   ): Promise<IResponse> {
-    const currentConfig: any = ConfigurationStore.getConfig();
-    const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
+    let currentConfig: any = ConfigurationStore.getConfig();
+    if(currentConfig.installationArgs) delete currentConfig.installationArgs;
     const savingResult = await this.generateYamlFile(currentConfig);
     if (!savingResult.status) {
       console.log("failed to save yaml");
@@ -44,23 +46,146 @@ class Installation {
     
     try {
       console.log("uploading yaml...");
-      const uploadYaml = await this.uploadYaml(connectionArgs, SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir);
+      const uploadYaml = await this.uploadYaml(connectionArgs,installationArgs.installationDir);
       ProgressStore.set('downloadUnpax.uploadYaml', uploadYaml.status);
 
       if(!uploadYaml.status){
         return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
-      return {status: true, details: "upload yaml success"};
+      return {status: true, details: "Successfully uploaded yaml config"};
     } catch (error) {
       return {status: false, details: error.message};
     }
+  }
+
+  mergeYamlAndInstallationArgs = function(yamlObj: any, installationArgs: InstallationArgs){
+    if (installationArgs.installationDir) {
+      yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
+    }
+    if (installationArgs.workspaceDir) {
+      yamlObj.zowe.workspaceDirectory = installationArgs.workspaceDir;
+    }
+    if (installationArgs.logDir) {
+      yamlObj.zowe.logDirectory = installationArgs.logDir;
+    }
+    if (installationArgs.extensionDir) {
+      yamlObj.zowe.extensionDirectory = installationArgs.extensionDir;
+    }
+    if (installationArgs.rbacProfile) {
+      yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
+    }
+    if (installationArgs.jobName) {
+      if(yamlObj.zowe.job == undefined){
+        yamlObj.zowe.job = {
+          name: "",
+          prefix: ""
+        }
+      }
+      yamlObj.zowe.job.name = installationArgs.jobName;
+    }
+    if (installationArgs.jobPrefix) {
+      yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
+    }
+    if (installationArgs.cookieId) {
+      yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
+    }
+    if (installationArgs.javaHome) {
+      if(yamlObj.java == undefined){
+        yamlObj.java = {home: ""}
+      }
+      yamlObj.java.home = installationArgs.javaHome;
+    }
+    if (installationArgs.nodeHome) {
+      if(yamlObj.node == undefined){
+        yamlObj.node = {home: ""}
+      }
+      yamlObj.node.home = installationArgs.nodeHome;
+    }
+    if (installationArgs.zosmfHost) {
+      if(yamlObj.zOSMF == undefined){
+        yamlObj.zOSMF = {host: "", port: "443", applId: ""}
+      }
+      yamlObj.zOSMF.host = installationArgs.zosmfHost;
+    }
+    if (installationArgs.zosmfPort) {
+      yamlObj.zOSMF.port = installationArgs.zosmfPort;
+    }
+    if (installationArgs.zosmfApplId) {
+      yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
+    }
+  }
+
+  public async getExampleYamlAndSchemas (
+    connectionArgs: IIpcConnectionArgs, 
+    installationArgs: InstallationArgs,
+  ): Promise<IResponse> {
+    try{
+      const currentConfig: any = ConfigurationStore.getConfig();
+      let yamlObj
+      const zoweRuntimePath = installationArgs.installationDir;
+      let readPaxYamlAndSchema = await this.readExampleYamlAndSchema(connectionArgs, zoweRuntimePath);
+      let parsedSchema = false, parsedYaml = false;
+      if(readPaxYamlAndSchema.details.yaml){
+        const yamlFromPax = readPaxYamlAndSchema.details.yaml;
+        if(yamlFromPax){
+          try {
+            yamlObj = parse(yamlFromPax);
+            if (currentConfig) {
+              yamlObj = deepMerge(yamlObj, currentConfig);
+            }
+            this.mergeYamlAndInstallationArgs(yamlObj, installationArgs);
+            ConfigurationStore.setConfig(yamlObj);
+            ProgressStore.set('downloadUnpax.getExampleYaml', true);
+            parsedYaml = true;
+          } catch(e) {
+            console.log('error parsing example-zowe.yaml:', e);
+            ProgressStore.set('downloadUnpax.getExampleYaml', false);
+            return {status: false, details: {message: e.message}}
+          }
+        } else {
+          console.log("no yaml found from pax");
+          ProgressStore.set('downloadUnpax.getExampleYaml', false);
+          return {status: false, details: {message: "no yaml found from pax"}}
+        }
+
+        //No reason not to always set schema to latest if user is re-running installation
+        if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
+          try {
+            let yamlSchema = JSON.parse(readPaxYamlAndSchema.details.yamlSchema);
+            const serverCommon = JSON.parse(readPaxYamlAndSchema.details.serverCommon);
+            if(yamlSchema && serverCommon){
+              yamlSchema.additionalProperties = true;
+              yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = zoweDatasetMemberRegexFixed;
+              yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
+              if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
+                delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
+                yamlSchema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverCommon.$defs.ipv4
+              }
+              // console.log('Setting schema from runtime dir:', JSON.stringify(yamlSchema));
+              ConfigurationStore.setSchema(yamlSchema);
+              parsedSchema = true;
+              ProgressStore.set('downloadUnpax.getSchemas', true);
+            }
+          } catch (e) {
+            console.log('error setting schema from pax:', e);
+            ProgressStore.set('downloadUnpax.getSchemas', false);
+            ConfigurationStore.setSchema(FALLBACK_SCHEMA);
+            return {status: false, details: {message: e.message}}
+          }
+        }
+        return {status: parsedSchema && parsedYaml, details: {message: "Successfully retrieved example-zowe.yaml and schemas", mergedYaml: yamlObj}}
+      }
+    } catch (e) {
+      ConfigurationStore.setSchema(FALLBACK_SCHEMA);
+      return {status: false, details: e.message};
+    }
+
   }
 
   public async downloadUnpax (
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,
     version: string,
-    zoweConfig: any,
   ): Promise<IResponse> {
 
     // Initialize Progress Store For unpaxing
@@ -72,9 +197,10 @@ class Installation {
     ProgressStore.set('downloadUnpax.getSchemas', false);
     
 
-    const currentConfig: any = ConfigurationStore.getConfig();
+    let currentConfig: any = ConfigurationStore.getConfig();
+    if(currentConfig.installationArgs) delete currentConfig.installationArgs;
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
-    const savingResult = await this.generateYamlFile(zoweConfig);
+    const savingResult = await this.generateYamlFile(currentConfig);
     if (!savingResult.status) {
       console.log("failed to save yaml");
       return savingResult;
@@ -107,7 +233,7 @@ class Installation {
       console.log("uploading...");
       if(installationArgs.installationType === "upload"){
         //upload the PAX the user selected in the "Install Type" stage to the installation dir (from the planning stage)
-        console.log('Uploading user selected pax')
+        console.log('Uploading user selected pax from ', installationArgs.userUploadedPaxPath)
         upload = await new FileTransfer().upload(connectionArgs, installationArgs.userUploadedPaxPath, path.join(installationArgs.installationDir, "zowe.pax"), DataType.BINARY)
       } else if (installationArgs.installationType === "download"){
         console.log('Uploading pax downloaded from jfrog')
@@ -145,120 +271,14 @@ class Installation {
           return {status: false, details: `Error unpaxing Zowe archive: ${unpax.details}`};
         }
       }
-      let yamlObj
-      let zoweRuntimePath = installationArgs.installationType === "smpe" ? installationArgs.installationDir : installationArgs.installationDir + "/runtime";
-      let readPaxYamlAndSchema = await this.readExampleYamlAndSchema(connectionArgs, zoweRuntimePath);
-      let parsedSchema = false, parsedYaml = false;
-      if(readPaxYamlAndSchema.details.yaml){
-        const parseExampleYamlFromPax = function(catPath: string){
-          const jobOutputSplit = JSON.stringify(readPaxYamlAndSchema.details.yaml).split(`cat ${catPath}\\r\\n`)
-          if(jobOutputSplit[1]){
-            const trimmedYamlSchema = jobOutputSplit[1].split(`+ echo 'Script finished.'`)[0].split(`Script finished.`);
-            // console.log("\n\n *** trimmedYamlSchema[0]: ", trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`));
-            return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`);
-          }
-          return "";
-        }
-        const yamlFromPax = parseExampleYamlFromPax(`${zoweRuntimePath}/example-zowe.yaml`);
-        if(yamlFromPax){
-          try {
-            yamlObj = parse(yamlFromPax);
-            if (currentConfig) {
-              // console.log("current config:", JSON.stringify(currentConfig));
-              // console.log("yamlObj: ", JSON.stringify(yamlObj));
-              yamlObj = {...currentConfig, ...yamlObj}
-              // console.log("merged yamlObj: ", JSON.stringify(yamlObj));
-            }
-            if (yamlObj.zowe.runtimeDirectory === undefined && installationArgs.installationDir) {
-              yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
-            }
-            if (yamlObj.zowe.workspaceDirectory === undefined && installationArgs.workspaceDir) {
-              yamlObj.zowe.workspaceDirectory = installationArgs.workspaceDir;
-            }
-            if (yamlObj.zowe.logDirectory === undefined && installationArgs.logDir) {
-              yamlObj.zowe.logDirectory = installationArgs.logDir;
-            }
-            if (yamlObj.zowe.extensionDirectory === undefined && installationArgs.extensionDir) {
-              yamlObj.zowe.extensionDirectory = installationArgs.extensionDir;
-            }
-            if (yamlObj.zowe.rbacProfileIdentifier === undefined && installationArgs.rbacProfile) {
-              yamlObj.zowe.rbacProfileIdentifier = installationArgs.rbacProfile;
-            }
-            if (yamlObj.zowe.job.name === undefined && installationArgs.jobName) {
-              yamlObj.zowe.job.name = installationArgs.jobName;
-            }
-            if (yamlObj.zowe.job.prefix === undefined && installationArgs.jobPrefix) {
-              yamlObj.zowe.job.prefix = installationArgs.jobPrefix;
-            }
-            if (yamlObj.zowe.cookieIdentifier === undefined && installationArgs.cookieId) {
-              yamlObj.zowe.cookieIdentifier = installationArgs.cookieId;
-            }
-            if (yamlObj.java.home === undefined && installationArgs.javaHome) {
-              yamlObj.java.home = installationArgs.javaHome;
-            }
-            if (yamlObj.node.home === undefined && installationArgs.nodeHome) {
-              yamlObj.node.home = installationArgs.nodeHome;
-            }
-            if (yamlObj.zOSMF.host === undefined && installationArgs.zosmfHost) {
-              yamlObj.zOSMF.host = installationArgs.zosmfHost;
-            }
-            if (yamlObj.zOSMF.port === undefined && installationArgs.zosmfPort) {
-              yamlObj.zOSMF.port = installationArgs.zosmfPort;
-            }
-            if (yamlObj.zOSMF.applId === undefined && installationArgs.zosmfApplId) {
-              yamlObj.zOSMF.applId = installationArgs.zosmfApplId;
-            }
-            if (zoweConfig) {
-              yamlObj = {...yamlObj, ...zoweConfig};
-            }
-            // console.log('Setting merged yaml:', JSON.stringify(yamlObj));
-            ConfigurationStore.setConfig(yamlObj);
-            ProgressStore.set('downloadUnpax.getExampleYaml', true);
-          } catch(e) {
-            console.log('error parsing example-zowe.yaml:', e);
-            ProgressStore.set('downloadUnpax.getExampleYaml', false);
-          }
-        } else {
-          console.log("no yaml found from pax");
-          ProgressStore.set('downloadUnpax.getExampleYaml', false);
-        }
-
-        //No reason not to always set schema to latest if user is re-running installation
-        if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
-          const parseSchemaFromPax = function(inputString: string, catPath: string){
-            const jobOutputSplit = inputString.split(`cat ${catPath}\\r\\n`)
-            if(jobOutputSplit[1]){
-              const trimmedYamlSchema = jobOutputSplit[1].split(`Script finished.`)[0].split(`Script finished.`);
-              return trimmedYamlSchema[0].replaceAll(`\\r\\n`, `\r\n`).replaceAll(`\\"`, `"`).replaceAll(`\\\\"`, `\\"`);
-            }
-            return "";
-          }
-          try {
-            let yamlSchema = JSON.parse(parseSchemaFromPax(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
-            const serverCommon = JSON.parse(parseSchemaFromPax(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
-            // console.log('yaml schema:', parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.yamlSchema), `${zoweRuntimePath}/schemas/zowe-yaml-schema.json`));
-            // console.log('server common', parseSchemas(JSON.stringify(readPaxYamlAndSchema.details.serverCommon), `${zoweRuntimePath}/schemas/server-common.json`));
-            if(yamlSchema && serverCommon){
-              // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
-              // Without these, AJV does not properly find $refs in the schema and therefore validation cannot occur
-              yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverCommon.$defs.datasetMember;
-              yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
-              yamlSchema.$id = serverCommon.$id;
-              if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
-                delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
-                yamlSchema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverCommon.$defs.ipv4
-              }
-              // console.log('Setting schema from runtime dir:', JSON.stringify(yamlSchema));
-              ConfigurationStore.setSchema(yamlSchema);
-              ProgressStore.set('downloadUnpax.getSchemas', true);
-            }
-          } catch (e) {
-            console.log('error setting schema from pax:', e);
-            ProgressStore.set('downloadUnpax.getSchemas', false);
+      let yamlObj = {};
+      await this.getExampleYamlAndSchemas(connectionArgs, installationArgs).then((res: IResponse) => {
+        if(res.status){
+          if(res.details.mergedYaml != undefined){
+            yamlObj = res.details.mergedYaml
           }
         }
-        
-      }
+      })
 
       return {status: download.status && uploadYaml.status && upload.status && unpax.status, details: {message: 'Zowe unpax successful.', mergedYaml: yamlObj}};
     } catch (error) {
@@ -269,18 +289,14 @@ class Installation {
   public async runInstallation (
     connectionArgs: IIpcConnectionArgs, 
     installationArgs: InstallationArgs,
-    version: string,
-    zoweConfig: any,
   ): Promise<IResponse> {
-
     // Initialize Progress Store For Dataset Installation
     ProgressStore.set('installation.uploadYaml', false);
     ProgressStore.set('installation.install', false);
     ProgressStore.set('installation.initMVS', false);
-
-    const currentConfig: any = ConfigurationStore.getConfig();
-    const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
-    const savingResult = await this.generateYamlFile(zoweConfig);
+    let currentConfig: any = ConfigurationStore.getConfig();
+    if(currentConfig.installationArgs) delete currentConfig.installationArgs;
+    const savingResult = await this.generateYamlFile(currentConfig);
     if (!savingResult.status) {
       console.log("failed to save yaml");
       return savingResult;
@@ -288,7 +304,7 @@ class Installation {
     
     try {
       console.log("uploading yaml...");
-      const uploadYaml = await this.uploadYaml(connectionArgs, SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir);
+      const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
       ProgressStore.set('installation.uploadYaml', uploadYaml.status);
 
       if(!uploadYaml.status){
@@ -331,17 +347,15 @@ class Installation {
   }
 
   public async runApfAuth(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
-
-    // Initialize Progress Store For Apf Auth
+    installationArgs: InstallationArgs): Promise<IResponse>{
     ProgressStore.set('apfAuth.writeYaml', false);
     ProgressStore.set('apfAuth.uploadYaml', false);
     ProgressStore.set('apfAuth.success', false);
-
-    const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
+    let currentConfig: any = ConfigurationStore.getConfig();
+    if(currentConfig.installationArgs) delete currentConfig.installationArgs;
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-    await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
+    await fs.writeFile(filePath, stringify(currentConfig), (err) => {
       if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           return ProgressStore.set('apfAuth.writeYaml', false);
@@ -349,7 +363,7 @@ class Installation {
     });
     ProgressStore.set('apfAuth.writeYaml', true);
     console.log("uploading yaml...");
-    const uploadYaml = await this.uploadYaml(connectionArgs, SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir);
+    const uploadYaml = await this.uploadYaml(connectionArgs,installationArgs.installationDir);
     if(!uploadYaml.status){
       ProgressStore.set('apfAuth.uploadYaml', false);
       return {status: false, details: 'Failed to upload YAML file'}
@@ -357,24 +371,22 @@ class Installation {
     }
     ProgressStore.set('apfAuth.uploadYaml', uploadYaml.status);
     console.log("Check out this install arg! " + installationArgs.installationDir);
-    const script = `cd ${SMPE_INSTALL ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init apfauth -c ${SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+    const script = `cd ${installationArgs.installationDir}/bin;./zwe init apfauth -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('apfAuth.success', result.rc === 0);
     return {status: result.rc === 0, details: result.jobOutput}
   }
   
   public async runInitSecurity(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
-
-      // Initialize Progress Store For Security
+    installationArgs: InstallationArgs): Promise<IResponse>{
       ProgressStore.set('initSecurity.writeYaml', false);
       ProgressStore.set('initSecurity.uploadYaml', false);
       ProgressStore.set('initSecurity.success', false);
-
-      const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
+      let currentConfig: any = ConfigurationStore.getConfig();
+      if(currentConfig.installationArgs) delete currentConfig.installationArgs;
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-      await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
+      await fs.writeFile(filePath, stringify(currentConfig), (err) => {
         if (err) {
             console.warn("Can't save configuration to zowe.yaml");
             ProgressStore.set('initSecurity.writeYaml', false);
@@ -383,31 +395,31 @@ class Installation {
       });
       ProgressStore.set('initSecurity.writeYaml', true);
       console.log("uploading yaml...");
-      const uploadYaml = await this.uploadYaml(connectionArgs, SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir);
+      const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
       if(!uploadYaml.status){
         return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
       ProgressStore.set('initSecurity.uploadYaml', uploadYaml.status);
       console.log("Check out this install arg! " + installationArgs.installationDir);
-      const script = `cd ${SMPE_INSTALL ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init security -c ${SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+      const script = `cd ${installationArgs.installationDir}/bin;./zwe init security -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
       ProgressStore.set('initSecurity.success', result.rc === 0);
       return {status: result.rc === 0, details: result.jobOutput}
   }
 
   public async initStcs(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
+    installationArgs: InstallationArgs): Promise<IResponse>{
+      let currentConfig: any = ConfigurationStore.getConfig();
+      if(currentConfig.installationArgs) delete currentConfig.installationArgs;
 
       // Initialize Progress Store For Stcs
       ProgressStore.set('initStcs.writeYaml', false);
       ProgressStore.set('initStcs.uploadYaml', false);
       ProgressStore.set('initStcs.success', false);
 
-      const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
-
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-      await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
+      await fs.writeFile(filePath, stringify(currentConfig), (err) => {
         if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           ProgressStore.set('initStcs.writeYaml', false);
@@ -416,12 +428,12 @@ class Installation {
       });
       ProgressStore.set('initStcs.writeYaml', true);
       console.log("uploading yaml...");
-      const uploadYaml = await this.uploadYaml(connectionArgs, SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir);
+      const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
       if(!uploadYaml.status){
         return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
       ProgressStore.set('initStcs.uploadYaml', uploadYaml.status);
-      const script = `cd ${SMPE_INSTALL ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init stc -c ${SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) :installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+      const script = `cd ${installationArgs.installationDir + '/bin'};./zwe init stc -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
       let errorFound = false;
       let errorMessage = '';
@@ -440,17 +452,15 @@ class Installation {
 
   }
 
-  async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs, zoweConfig: any){
-
-    // Initialize Progress Store For Certificates
+  async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs){
     ProgressStore.set('certificate.writeYaml', false);
     ProgressStore.set('certificate.uploadYaml', false);;
     ProgressStore.set('certificate.zweInitCertificate', false);
-
-    const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
+    let currentConfig: any = ConfigurationStore.getConfig();
+    if(currentConfig.installationArgs) delete currentConfig.installationArgs
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-    await fs.writeFile(filePath, stringify(zoweConfig), (err: any) => {
+    await fs.writeFile(filePath, stringify(currentConfig), (err: any) => {
       if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           return ProgressStore.set('certificate.writeYaml', false);
@@ -458,22 +468,32 @@ class Installation {
     });
     ProgressStore.set('certificate.writeYaml', true);
     console.log("uploading yaml...");
-    const uploadYaml = await this.uploadYaml(connectionArgs, SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir);
+    const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
     if(!uploadYaml.status){
       return ProgressStore.set('certificate.uploadYaml', false);;
     }
     ProgressStore.set('certificate.uploadYaml', uploadYaml.status);
     console.log("Check out this install arg! " + installationArgs.installationDir);
-    const script = `cd ${SMPE_INSTALL ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init certificate --update-config -c ${SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) :installationArgs.installationDir}/zowe.yaml`;
+    const script = `cd ${installationArgs.installationDir + '/bin'};./zwe init certificate --update-config -c ${installationArgs.installationDir}/zowe.yaml`;
     const result = await new Script().run(connectionArgs, script);
     ProgressStore.set('certificate.zweInitCertificate', result.rc === 0);
-    return {status: result.rc === 0, details: result.jobOutput}
+    const yamlPath = `${installationArgs.installationDir}/zowe.yaml`;
+    // const tagScript = `chtag -t -c ISO8859-1 ${yamlPath}`;
+    // const tagResult = await new Script().run(connectionArgs, tagScript);
+    const yaml = await new FileTransfer().download(connectionArgs, yamlPath, DataType.ASCII);
+    var parsedYaml;
+    try{
+      parsedYaml = JSON.parse(JSON.stringify(parse(yaml)));
+    } catch (e){
+      console.log('error parsing yaml:', e.message);
+    }
+    return {status: result.rc === 0, details: {jobOutput: result.jobOutput, updatedYaml: parsedYaml}}
   }
 
   public async initVsam(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
-      const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
-
+    installationArgs: InstallationArgs): Promise<IResponse>{
+      let currentConfig: any = ConfigurationStore.getConfig();
+      if(currentConfig.installationArgs) delete currentConfig.installationArgs;
       // Initialize Progress Store For Vsam
       ProgressStore.set('initVsam.writeYaml', false);
       ProgressStore.set('initVsam.uploadYaml', false);
@@ -481,7 +501,7 @@ class Installation {
 
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
-      await fs.writeFile(filePath, stringify(zoweConfig), (err) => {
+      await fs.writeFile(filePath, stringify(currentConfig), (err) => {
         if (err) {
           console.warn("Can't save configuration to zowe.yaml");
           ProgressStore.set('initVsam.writeYaml', false);
@@ -490,12 +510,12 @@ class Installation {
       });
       ProgressStore.set('initVsam.writeYaml', true);
       console.log("uploading yaml...");
-      const uploadYaml = await this.uploadYaml(connectionArgs, SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir);
+      const uploadYaml = await this.uploadYaml(connectionArgs, installationArgs.installationDir);
       if(!uploadYaml.status){
         return {status: false, details: `Error uploading yaml configuration: ${uploadYaml.details}`};
       }
       ProgressStore.set('initVsam.uploadYaml', uploadYaml.status);
-      const script = `cd ${SMPE_INSTALL ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'};./zwe init vsam -c ${SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) :installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
+      const script = `cd ${installationArgs.installationDir + '/bin'};./zwe init vsam -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten --update-config`;
       const result = await new Script().run(connectionArgs, script);
 
       let errorFound = false;
@@ -562,8 +582,8 @@ export class FTPInstallation extends Installation {
     const filePath = path.join(installDir, "zowe.yaml");
     console.log(`Uploading ${tempPath} to ${filePath}`)
     await new FileTransfer().upload(connectionArgs, tempPath, filePath, DataType.BINARY)
-    console.log("Check out this install arg! " + installDir);
-    const script = `chtag -t -c ISO8859-1 ${installDir}/zowe.yaml`;
+    // console.log("Check out this install arg! " + installDir);
+    const script = `cd ${installDir}; cat zowe.yaml | grep 'zowe' > /dev/null; if [ $? -eq 0 ]; then if [ $(chtag -p zowe.yaml | cut -f 2 -d" ") != "untagged" ]; then iconv -f iso8859-1 -t 1047 zowe.yaml > zowe.yaml.1047; mv zowe.yaml.1047 zowe.yaml; chtag -tc 1047 zowe.yaml; fi; else iconv -f iso8859-1 -t 1047 zowe.yaml > zowe.yaml.1047; mv zowe.yaml.1047 zowe.yaml; chtag -tc 1047 zowe.yaml; fi`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
@@ -594,33 +614,36 @@ export class FTPInstallation extends Installation {
 
   // TODO: Is this necessary adding "/runtime" ? User already specifies /runtime directory - removes 8 chars from max limit. See Planning.tsx
   async unpax(connectionArgs: IIpcConnectionArgs, installDir: string) {
-    const script = `mkdir ${installDir}/runtime;cd ${installDir}/runtime && pax -ppx -rf ../zowe.pax;rm -rf ../zowe.pax`;
+    const script = `mkdir ${installDir};cd ${installDir} && pax -ppx -rf ./zowe.pax;rm -rf ./zowe.pax`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
 
   async install(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs) {
-    const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
-    const script = `cd ${SMPE_INSTALL ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'}; ./zwe install -c ${SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir}/zowe.yaml --allow-overwritten`;
+    const script = `cd ${installationArgs.installationDir + '/bin' }; ./zwe install -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
   
   async initMVS(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs) {
-    const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
-    const script = `cd ${SMPE_INSTALL ? installationArgs.installationDir + '/bin' : installationArgs.installationDir + '/runtime/bin'}; ./zwe init mvs -c ${SMPE_INSTALL ? removeRuntimeFromPath(installationArgs.installationDir) : installationArgs.installationDir}/zowe.yaml --allow-overwritten`;
+    const script = `cd ${installationArgs.installationDir + '/bin' }; ./zwe init mvs -c ${installationArgs.installationDir}/zowe.yaml --allow-overwritten`;
     const result = await new Script().run(connectionArgs, script);
     return {status: result.rc === 0, details: result.jobOutput}
   }
 
   async readExampleYamlAndSchema(connectionArgs: IIpcConnectionArgs, installDir: string){
-    const catYaml = `cat ${installDir}/example-zowe.yaml`;
-    const yamlResult = await new Script().run(connectionArgs, catYaml);
-    const catYamlSchema = `cat ${installDir}/schemas/zowe-yaml-schema.json`;
-    const yamlSchemaResult = await new Script().run(connectionArgs, catYamlSchema);
-    const catCommonSchema = `cat ${installDir}/schemas/server-common.json`;
-    const commonSchemaResult = await new Script().run(connectionArgs, catCommonSchema);
-    return {status: yamlResult.rc === 0 && yamlSchemaResult.rc == 0 && commonSchemaResult.rc == 0, details: {yaml: yamlResult.jobOutput, yamlSchema: yamlSchemaResult.jobOutput, serverCommon: commonSchemaResult.jobOutput}}
+    try {    
+      const yamlPath = `${installDir}/example-zowe.yaml`;
+      const yaml = await new FileTransfer().download(connectionArgs, yamlPath, DataType.ASCII);
+      const yamlSchemaPath = `${installDir}/schemas/zowe-yaml-schema.json`;
+      const yamlSchema = await new FileTransfer().download(connectionArgs, yamlSchemaPath, DataType.ASCII);
+      const serverCommonPath = `${installDir}/schemas/server-common.json`;
+      const serverCommon = await new FileTransfer().download(connectionArgs, serverCommonPath, DataType.ASCII);
+      return {status: true, details: {yaml, yamlSchema, serverCommon}};
+    } catch (e) {
+      console.log("Error downloading example-zowe.yaml and schemas:", e.message);
+      return {status: false, details: {yaml: '', yamlSchema: '', serverCommon: ''}}  
+    }
   }
 
   async checkInstallData() {
