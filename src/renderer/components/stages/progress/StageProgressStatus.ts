@@ -279,6 +279,9 @@ export const mapAndSetSubStepSkipStatus = (subStageId: number, value: boolean): 
 }
 
 export const mapAndGetSubStepSkipStatus = (subStageId: number): boolean => {
+  if(subStageId < 0 || subStageId > 7) {
+    return true; // Skip the sub-stage if the id is out of the valid range of the sub-stages (0-5)
+  }
   const skipStatus = getSubStageSkipStatus();
   const skipStatusArray = [
     skipStatus.datasetInstallation,
@@ -301,7 +304,10 @@ export const mapAndSetStepSkipStatus = (stageId: number, value: boolean): void =
   setStageSkipStatus(stepSkipKeysArray[stageId-1], value);
 }
 
-export const mapAndGetStepSkipStatus = (subStageId: number): boolean => {
+export const mapAndGetStepSkipStatus = (stageId: number): boolean => {
+  if(stageId < 0 || stageId > 5) {
+    return true; // Skip the stage if the stageId is out of the valid range of the stages (0-5)
+  }
   const skipStatus = getStageSkipStatus();
   const skipStatusArray = [
     skipStatus.planning,
@@ -311,7 +317,7 @@ export const mapAndGetStepSkipStatus = (subStageId: number): boolean => {
     skipStatus.reviewInstallation
   ]
 
-  return skipStatusArray[subStageId-1];
+  return skipStatusArray[stageId-1];
 }
 
 export const setSubStageSkipStatus = (key: keyof subStepState, newValue: boolean): void => {
