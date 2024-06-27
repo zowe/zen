@@ -110,7 +110,7 @@ const InitApfAuth = () => {
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
-    // updateProgress(getProgress('apfAuthStatus') && !stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+    updateProgress(getProgress('apfAuthStatus') && !stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
     setInit(true);
 
     return () => {

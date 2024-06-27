@@ -115,7 +115,6 @@ const Stcs = () => {
     }
 
     updateProgress(getProgress('stcsStatus') && !stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
-    // setNextStepEnabled(getProgress('stcsStatus') && !stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
     setInit(true);
 
     if(!setupYaml) {
