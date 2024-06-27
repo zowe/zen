@@ -114,7 +114,7 @@ const Security = () => {
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
-    updateProgress(getProgress('securityStatus'));
+    // updateProgress(getProgress('securityStatus'));
     setInit(true);
 
     return () => {
