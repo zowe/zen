@@ -62,6 +62,16 @@ class Installation {
     version: string,
     zoweConfig: any,
   ): Promise<IResponse> {
+
+    // Initialize Progress Store For unpaxing
+    ProgressStore.set('downloadUnpax.uploadYaml', false);
+    ProgressStore.set('downloadUnpax.download', false);
+    ProgressStore.set('downloadUnpax.upload', false);
+    ProgressStore.set('downloadUnpax.unpax', false);
+    ProgressStore.set('downloadUnpax.getExampleYaml', false);
+    ProgressStore.set('downloadUnpax.getSchemas', false);
+    
+
     const currentConfig: any = ConfigurationStore.getConfig();
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
     const savingResult = await this.generateYamlFile(zoweConfig);
@@ -262,6 +272,12 @@ class Installation {
     version: string,
     zoweConfig: any,
   ): Promise<IResponse> {
+
+    // Initialize Progress Store For Dataset Installation
+    ProgressStore.set('installation.uploadYaml', false);
+    ProgressStore.set('installation.install', false);
+    ProgressStore.set('installation.initMVS', false);
+
     const currentConfig: any = ConfigurationStore.getConfig();
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
     const savingResult = await this.generateYamlFile(zoweConfig);
@@ -316,6 +332,12 @@ class Installation {
 
   public async runApfAuth(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
+
+    // Initialize Progress Store For Apf Auth
+    ProgressStore.set('apfAuth.writeYaml', false);
+    ProgressStore.set('apfAuth.uploadYaml', false);
+    ProgressStore.set('apfAuth.success', false);
+
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
@@ -343,6 +365,12 @@ class Installation {
   
   public async runInitSecurity(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
+
+      // Initialize Progress Store For Security
+      ProgressStore.set('initSecurity.writeYaml', false);
+      ProgressStore.set('initSecurity.uploadYaml', false);
+      ProgressStore.set('initSecurity.success', false);
+
       const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
       console.log('writing current yaml to disk');
       const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
@@ -370,10 +398,11 @@ class Installation {
   public async initStcs(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
 
-      // Initialize Progress Store For Vsam
+      // Initialize Progress Store For Stcs
       ProgressStore.set('initStcs.writeYaml', false);
       ProgressStore.set('initStcs.uploadYaml', false);
       ProgressStore.set('initStcs.success', false);
+
       const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
 
       console.log('writing current yaml to disk');
@@ -412,6 +441,12 @@ class Installation {
   }
 
   async initCertificates(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs, zoweConfig: any){
+
+    // Initialize Progress Store For Certificates
+    ProgressStore.set('certificate.writeYaml', false);
+    ProgressStore.set('certificate.uploadYaml', false);;
+    ProgressStore.set('certificate.zweInitCertificate', false);
+
     const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
     console.log('writing current yaml to disk');
     const filePath = path.join(app.getPath('temp'), 'zowe.yaml')
@@ -438,6 +473,7 @@ class Installation {
   public async initVsam(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse>{
       const SMPE_INSTALL: boolean = installationArgs.installationType === "smpe";
+
       // Initialize Progress Store For Vsam
       ProgressStore.set('initVsam.writeYaml', false);
       ProgressStore.set('initVsam.uploadYaml', false);
