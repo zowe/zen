@@ -681,8 +681,7 @@ const Networking = () => {
     if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
 
     dispatch(setNextStepEnabled(getProgress('networkingStatus')));
-    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = false;
-    stages[STAGE_ID].isSkipped = isInitializationSkipped;
+
     setIsFormInit(true);
 
     return () => {
