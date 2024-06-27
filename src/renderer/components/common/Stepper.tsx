@@ -255,7 +255,6 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
                 borderTopLeftRadius: '7px',
                 boxShadow: 'rgb(0 0 0 / 15%) 0px 6px 4px -1px inset'} : {}}>
                 <StepLabel {...labelProps} 
-                  error={labelProps.error} 
                   icon={getStepIcon(stage.id)}>
                   <span className="navigator" onClick={() => handleStepperClick(stage.id, !!stage.subStage)}>{stage.label}</span>
                 </StepLabel>
@@ -273,7 +272,6 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
           return (
             <Step key={stage.id} {...stepProps}>
                 <StepLabel {...labelProps}
-                  error={labelProps.error} 
                   icon={getStepIcon(activeStep, true, index)}>
                 <span className="navigator" onClick={() => handleStepperClick(activeStep, true, stage.id )}>{stage.label}</span>
                 </StepLabel>
