@@ -272,6 +272,9 @@ export const initializeProgress = (host: string, user: string) => {
 }
 
 export const mapAndSetSubStepSkipStatus = (subStageId: number, value: boolean): void => {
+  if(subStageId < 0 || subStageId > 7) {
+    return;
+  }
   setSubStageSkipStatus(subStepSkipKeysArray[subStageId], value);
 }
 
@@ -292,6 +295,9 @@ export const mapAndGetSubStepSkipStatus = (subStageId: number): boolean => {
 }
 
 export const mapAndSetStepSkipStatus = (stageId: number, value: boolean): void => {
+  if(stageId < 0 || stageId > 5) {
+    return;
+  }
   setStageSkipStatus(stepSkipKeysArray[stageId-1], value);
 }
 
