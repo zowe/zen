@@ -49,6 +49,7 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
     editorRef.current = monaco.editor.create(document.getElementById('monaco-editor-container'), {
       language: lang, 
       theme: theme,
+      wordWrap: contentType === "yaml" ? "off" : "on",
       value: initialContent,
       readOnly: readOnly
     });
@@ -88,7 +89,7 @@ const MonacoEditorComponent = ({contentType, initialContent, onContentChange, is
   }
 
   return (
-    <div style={{ height: '400px' }}>
+    <div style={{ height: '95vh'}}>
       {isError && (
         <div id="error-msg" 
           style={{ color: 'red', fontFamily: 'Arial, sans-serif', fontSize: 'small', paddingBottom: '1px' }}>

@@ -11,25 +11,24 @@
 import '../global.css';
 import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
-import { Box, Card, CardContent, CardMedia, Typography, Button, DialogContent, DialogActions } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
 import flatten, { unflatten } from 'flat';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
 import { setConnectionArgs, setResumeProgress, selectInitJobStatement } from './stages/connection/connectionSlice';
 import { setJobStatement } from './stages/PlanningSlice';
-import { setZoweCLIVersion } from './configuration-wizard/wizardSlice';
+import { selectSchema, selectYaml, setSchema, setYaml, setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { Tooltip } from '@mui/material';
 import installationImg from '../assets/installation.png'
 import installationDryImg from '../assets/installation-dry-run.png'
 import eventDispatcher from "../../services/eventDispatcher";
-import { selectActiveStepIndex, selectIsSubstep, selectActiveSubStepIndex, selectActiveStepDate} from './stages/progress/activeStepSlice';
 import { selectConnectionStatus} from './stages/progress/progressSlice';
 import  HorizontalLinearStepper  from './common/Stepper';
 import Wizard from './configuration-wizard/Wizard'
-import Connection from './stages/connection/Connection';
 import { ActiveState } from '../../types/stateInterfaces';
-import { getPreviousInstallation } from './stages/progress/StageProgressStatus';
-import { DEF_NO_OUTPUT } from './common/Constants';
+import { getInstallationArguments, getPreviousInstallation } from './stages/progress/StageProgressStatus';
+import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Constants';
+import { selectInstallationArgs, setInstallationArgs } from './stages/installation/installationSlice';
 
 // REVIEW: Get rid of routing
 
@@ -58,12 +57,24 @@ const cards: Array<ICard> = [
   }
 ]
 
+const prevInstallationKey = "prev_installation";
+const lastActiveState: ActiveState = {
+  activeStepIndex: 0,
+  isSubStep: false,
+  activeSubStepIndex: 0,
+};
+
 const makeCard = (card: ICard) => {
+  const dispatch = useAppDispatch();
   const {id, name, description, link, media} = card;
   return (  
-    <Link key={`link-${id}`} to={link}>
-      <Box sx={{ width: '40vw', height: '40vh'}}>
-        <Card id={`card-${id}`} square={true} >
+    <Link key={`link-${id}`} to={link} >
+      <Box sx={{ width: '40vw', height: '40vh'}} onClick={(e) => {
+        const flattenedData = flatten(lastActiveState);
+        localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
+        if(id === "install") dispatch(setYaml(FALLBACK_YAML));
+      }}>
+        <Card id={`card-${id}`} square={true}>
           <CardMedia
             sx={{ height: 240 }}
             image={media}
@@ -90,15 +101,11 @@ const Home = () => {
   const connectionStatus = useAppSelector(selectConnectionStatus);
   const [showWizard, setShowWizard] = useState(false);
   const [showLoginDialog, setShowLogin] = useState(false);
+  const [yaml] = useState(useAppSelector(selectYaml));
+  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
 
   const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getPreviousInstallation();
 
-  const prevInstallationKey = "prev_installation";
-  const lastActiveState: ActiveState = {
-    activeStepIndex: 0,
-    isSubStep: false,
-    activeSubStepIndex: 0,
-  };
   const [isNewInstallation, setIsNewInstallation] = useState(false);
 
   const stages: any = [];
@@ -107,6 +114,42 @@ const Home = () => {
 
   useEffect(() => {
     eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));
+
+
+
+    //Home is the first screen the user will always see 100% of the time. Therefore, we will call the loading of the configs, schemas, and installation args here and set them to the redux memory states
+
+    //YAML LOADING - necessary for editor state as well as form values
+    if(yaml == undefined || (typeof yaml === "object" && Object.keys(yaml).length === 0)){
+      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
+        if (res.status) {
+          dispatch(setYaml(res.details));
+        } else {
+          dispatch(setYaml(FALLBACK_YAML));
+        }
+      })
+    }
+
+    //SCHEMA LOADING - necessary for JsonForms
+    if(schema == undefined || (typeof schema === "object" && Object.keys(schema).length === 0)){
+      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+        if (res.status && res.details !== undefined) {
+          dispatch(setSchema(res.details));
+        } else {
+          dispatch(setSchema(FALLBACK_SCHEMA));
+        }
+      })
+    }
+
+    //Load installation args
+    window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
+      if(res != undefined){
+        dispatch(setInstallationArgs(res));
+      } else {
+        dispatch(setInstallationArgs({...selectInstallationArgs, ...getInstallationArguments()}));
+      }
+    })
+
 
 
     window.electron.ipcRenderer.checkZoweCLI().then((res: IResponse) => {
@@ -154,7 +197,7 @@ const Home = () => {
 
   const resumeProgress = () => {
     setShowWizard(true);
-    dispatch(setResumeProgress(!connectionStatus));
+    dispatch(setResumeProgress(true));
   }
 
   return (

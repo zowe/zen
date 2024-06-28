@@ -11,31 +11,27 @@
 import { useState, useEffect } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectOutput, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectYaml,setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
-import Ajv from "ajv";
 import { createTheme } from '@mui/material/styles';
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { stages } from "../configuration-wizard/Wizard";
-import { selectInitializationStatus, setLaunchConfigStatus } from "./progress/progressSlice";
+import { selectInitializationStatus, setInitializationStatus, setLaunchConfigStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML } from "../common/Constants";
+import { TYPE_YAML, TYPE_OUTPUT, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, LAUNCH_CONFIG_STAGE_LABEL } from "../common/Constants";
 import { IResponse } from "../../../types/interfaces";
-import { getInstallationArguments, getProgress } from "./progress/StageProgressStatus";
+import { getInstallationArguments, getProgress, isInitComplete } from "./progress/StageProgressStatus";
 import { selectConnectionArgs } from "./connection/connectionSlice";
+import { alertEmitter } from "../Header";
 
 const LaunchConfig = () => {
 
-  const theme = createTheme();
-
-  const stageLabel = 'Initialization';
-  const subStageLabel = 'Launch Config';
-
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
-  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
+  const [theme] = useState(createTheme());
+  const [STAGE_ID] = useState(getStageDetails(INIT_STAGE_LABEL).id);
+  const [SUB_STAGES] = useState(!!getStageDetails(INIT_STAGE_LABEL).subStages);
+  const [SUB_STAGE_ID] = useState(SUB_STAGES ? getSubStageDetails(STAGE_ID, LAUNCH_CONFIG_STAGE_LABEL).id : 0);
 
   const dispatch = useAppDispatch();
 //   const schema = useAppSelector(selectSchema);
@@ -432,7 +428,7 @@ const LaunchConfig = () => {
     }
   }
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const setupSchema:any = schema ? schema.properties.zowe : "";
+  const [setupSchema] = useState(schema.properties.zowe);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe);
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -440,18 +436,11 @@ const LaunchConfig = () => {
   const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
-  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
 
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema));
 
-  const ajv = new Ajv();
-  ajv.addKeyword("$anchor");
-  let validate: any;
-
-  if(schema.properties.zowe) {
-    validate = ajv.compile(schema.properties.zowe);
-  }
-
-  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
+  const [isInitializationSkipped] = useState(!useAppSelector(selectInitializationStatus));
 
   useEffect(() => {
 
@@ -484,6 +473,9 @@ const LaunchConfig = () => {
   };
   
   const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
+    if(isFormInit){
+      setLaunchConfigStatus(false)
+    }
     let newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe) : (data.zowe ? data.zowe : data);
     setIsFormInit(false);
 
@@ -514,11 +506,18 @@ const LaunchConfig = () => {
 
   const onSaveYaml = (e: any) => {
     e.preventDefault();
+    dispatch(setLaunchConfigStatus(false));
+    alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
     window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
       if(res && res.status) {
         dispatch(setNextStepEnabled(true));
         dispatch(setLaunchConfigStatus(true));
+        alertEmitter.emit('showAlert', res.details, 'success');
+      } else {
+        dispatch(setLaunchConfigStatus(false));
+        alertEmitter.emit('showAlert', res.details, 'error');
       }
+      dispatch(setInitializationStatus(isInitComplete()));
     });
   }
 

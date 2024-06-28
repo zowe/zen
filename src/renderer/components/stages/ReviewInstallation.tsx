@@ -24,7 +24,7 @@ import { selectConnectionStatus, setReviewStatus } from './progress/progressSlic
 import { setActiveStep } from './progress/activeStepSlice';
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { getStageDetails } from "../../../services/StageDetails";
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL } from '../common/Constants';
+import { TYPE_YAML, TYPE_OUTPUT } from '../common/Constants';
 import { getCompleteProgress } from "./progress/StageProgressStatus";
 
 import '../../styles/ReviewInstallation.css';

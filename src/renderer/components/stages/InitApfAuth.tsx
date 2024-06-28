@@ -11,96 +11,53 @@
 import React, {useEffect, useState} from "react";
 import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled, setLoading, setYaml, setSchema } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
-import { setApfAuthStatus, setInitializationStatus, selectApfAuthStatus, selectInitializationStatus } from './progress/progressSlice';
+import { setApfAuthStatus, setInitializationStatus} from './progress/progressSlice';
 import { IResponse } from '../../../types/interfaces';
 import ProgressCard from '../common/ProgressCard';
 import ContainerCard from '../common/ContainerCard';
 import EditorDialog from "../common/EditorDialog";
-import Ajv from "ajv";
-import { selectInstallationArgs } from "./installation/installationSlice";
 import { createTheme } from '@mui/material/styles';
 import { alertEmitter } from "../Header";
 import { stages } from "../configuration-wizard/Wizard";
-import { setActiveStep, selectActiveStepIndex, selectActiveSubStepIndex, selectIsSubstep } from "./progress/activeStepSlice";
+import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { setProgress, getProgress, setApfAuthState, getApfAuthState, mapAndSetSubStepSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
+import { getProgress, setApfAuthState, getApfAuthState, mapAndSetSubStepSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
-import { JCL_UNIX_SCRIPT_OK, FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
+import { JCL_UNIX_SCRIPT_OK, FALLBACK_YAML, INIT_STAGE_LABEL, APF_AUTH_STAGE_LABEL, ajv, SERVER_COMMON } from "../common/Constants";
 
 const InitApfAuth = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
-  const stageLabel = 'Initialization';
-  const subStageLabel = 'APF Auth';
 
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
-  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
+  const [STAGE_ID] = useState(getStageDetails(INIT_STAGE_LABEL).id);
+  const [SUB_STAGES] = useState(!!getStageDetails(INIT_STAGE_LABEL).subStages);
+  const [SUB_STAGE_ID] = useState(SUB_STAGES ? getSubStageDetails(STAGE_ID, APF_AUTH_STAGE_LABEL).id : 0);
 
-  const theme = createTheme();
+  const [theme] = useState(createTheme());
 
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || FALLBACK_YAML.zowe.setup.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('apfAuthStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
   const [apfAuthInitProgress, setApfAuthInitProgress] = useState(getApfAuthState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
   const [reinit, setReinit] = useState(false);
 
-  const installationArgs = getInstallationArguments();
+  const [installationArgs] = useState(getInstallationArguments());
   let timer: any;
-
-  const ajv = new Ajv();
-  ajv.addKeyword("$anchor");
-  let datasetSchema;
-  let validate: any;
-  if(schema && schema.properties) {
-    datasetSchema = schema.properties.zowe.properties.setup.properties.dataset;
-  }
-
-  if(datasetSchema) {
-    validate = ajv.compile(datasetSchema);
-  }
-
-  const isStepSkipped = !useAppSelector(selectApfAuthStatus);
-  const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
-
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema?.properties?.zowe?.properties?.setup?.properties?.dataset));
+  
   useEffect(() => {
-    if(!yaml){
-      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setYaml(res.details));
-          setLYaml(res.details);
-        } else {
-          dispatch(setYaml(FALLBACK_YAML));
-          setLYaml(FALLBACK_YAML);
-        }
-      })
-    }
-
-    if(!schema){
-      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setSchema(res.details));
-          setLocalSchema(res.details);
-        } else {
-          dispatch(setSchema(FALLBACK_SCHEMA));
-          setLocalSchema(FALLBACK_SCHEMA);
-        }
-      })
-    }
-
+    dispatch(setInitializationStatus(isInitComplete()));
     let nextPosition;
     if(getProgress('apfAuthStatus')) {
       nextPosition = document.getElementById('start-apf-progress');
@@ -144,10 +101,12 @@ const InitApfAuth = () => {
   }, [apfAuthInitProgress]);
 
   useEffect(() => {
-    if(showProgress) {
+    const stageComplete = apfAuthInitProgress.success;
+    if(!stageComplete && showProgress) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
           setApfAuthorizationInitProgress(res);
+          dispatch(setApfAuthStatus(stageComplete))
           if(res.success){
             clearInterval(timer);
           }
@@ -189,7 +148,7 @@ const InitApfAuth = () => {
     const allAttributesTrue = Object.values(apfAuthInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
     dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(status));
+    dispatch(setInitializationStatus(isInitComplete()));
     dispatch(setApfAuthStatus(status));
     setApfAuthorizationInitProgress(getApfAuthState());
   }
@@ -208,7 +167,8 @@ const InitApfAuth = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
+    dispatch(setApfAuthStatus(false));
+    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
          // Some parts of Zen pass the response as a string directly into the object
          if (res.status == false && typeof res.details == "string") {
           res.details = { 3: res.details };
@@ -232,11 +192,9 @@ const InitApfAuth = () => {
         updateProgress(false);
         // TODO: Test this
         //alertEmitter.emit('showAlert', err.toString(), 'error');
-        if (typeof err === "string") {
-          console.warn('zwe init apfauth failed', err);
-        } else {
-          console.warn('zwe init apfauth failed', err?.toString()); // toString() throws run-time error on undefined or null
-        }
+        window.electron.ipcRenderer.setStandardOutput(`zwe init apfauth failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
+          toggleEditorVisibility("output");
+        })
       });
   }
 
@@ -244,7 +202,6 @@ const InitApfAuth = () => {
   const apfAuthProceedActions = (status: boolean) => {
     dispatch(setNextStepEnabled(status));
     dispatch(setApfAuthStatus(status));
-    dispatch(setInitializationStatus(status));
   }
 
   const formChangeHandler = (data: any, isYamlUpdated?: boolean) => {
@@ -277,8 +234,6 @@ const InitApfAuth = () => {
   }
 
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any, proceed: boolean) => {
-    setIsFormValid(isValid);
-    setFormError(errorMsg);
     setSetupYaml(data);
   }
 
@@ -342,7 +297,7 @@ const InitApfAuth = () => {
           </React.Fragment>
         }
         </Box>
-        <Box sx={{ height: showProgress ? '60vh' : 'auto', minHeight: '60vh' }} id="apf-progress"></Box>
+        <Box sx={{ height: showProgress ? '80vh' : '0' }} id="apf-progress"></Box>
       </ContainerCard>
     </div>
     

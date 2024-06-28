@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useState} from "react";
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
@@ -17,11 +17,11 @@ import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
 import ContainerCard from '../common/ContainerCard';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import { setYaml, setSchema, setNextStepEnabled, setLoading, selectYaml } from '../configuration-wizard/wizardSlice';
+import { setYaml, setNextStepEnabled, setLoading, selectYaml } from '../configuration-wizard/wizardSlice';
 import { selectConnectionArgs, setConnectionArgs, setJobStatementVal } from './connection/connectionSlice';
 import { setPlanningStatus, selectPlanningStatus } from './progress/progressSlice';
 import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from './installation/installationSlice';
-import { setJobStatement, setJobStatementValid, setJobStatementValidMsg, setLocationValidationDetails, setIsLocationValid, selectJobStatement, selectJobStatementValid, selectJobStatementValidMsg, selectLocValidationDetails } from "./PlanningSlice";
+import { setJobStatement, setJobStatementValid, setJobStatementValidMsg, setLocationValidationDetails, setIsLocationValid, selectJobStatementValidMsg, selectLocValidationDetails } from "./PlanningSlice";
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { IResponse } from '../../../types/interfaces';
 import { alertEmitter } from "../Header";
@@ -123,17 +123,6 @@ const Planning = () => {
       if (res.status) {
         dispatch(setYaml(res.details));
         setLocalYaml(res.details);
-        // const schema = res.details.schema;
-        // Leaving this as a comment because the note about setting $ref properly is still valid i think
-        // FIXME: Link schema by $ref properly - https://jsonforms.io/docs/ref-resolving
-        // schema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = serverSchema.$defs.datasetMember;
-        // schema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverSchema.$defs.path;
-        // schema.$id = serverSchema.$id;
-        // if(schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
-        //   delete schema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
-        //   schema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverSchema.$defs.ipv4
-        // }
-        // dispatch(setSchema(schema));
         let installationDir = '';
         if (res.details?.zowe?.runtimeDirectory && res.details?.zowe?.workspaceDirectory) {
           const getParentDir = (path: string): string => path.split('/').filter((i: string, ind: number) => i || !ind).slice(0, -1).join('/');
@@ -142,12 +131,6 @@ const Planning = () => {
           if (runtimeParent === workspaceParent) installationDir = runtimeParent;
         }
         dispatch(setInstallationArgs({...installationArgs, installationDir: res.details?.zowe?.runtimeDirectory ?? '', installationType: getInstallationTypeStatus()?.installationType, userUploadedPaxPath: getInstallationTypeStatus()?.userUploadedPaxPath}));
-      }
-    })
-
-    window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
-      if (res.status) {
-        dispatch(setSchema(res.details));
       }
     })
 
@@ -246,6 +229,8 @@ const Planning = () => {
   }
 
   const validateLocations = (e: any, click?: boolean) => {
+    setPlanningState(false);
+    setLocValidations(false);
    
     if(planningStatus && !isLocationsUpdated && !click) {
       setLocValidations(true);
@@ -273,9 +258,6 @@ const Planning = () => {
       window.electron.ipcRenderer.checkJava(connectionArgs, localYaml?.java?.home || installationArgs.javaHome),
       window.electron.ipcRenderer.checkNode(connectionArgs, localYaml?.node?.home || installationArgs.nodeHome),
       window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.workspaceDirectory || installationArgs.workspaceDir ),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.extensionDirectory || installationArgs.extensionDir),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.logDirectory || installationArgs.logDir),
     ]).then((res: Array<IResponse>) => {
       const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
       setEditorContent(res.map(item=>item?.details).join('\n'));
@@ -294,21 +276,9 @@ const Planning = () => {
         details.error = details.error + `Can't get Node.js version `;
         console.warn(res[1].details);
       }
-      if (res[2].status == false) { // Checking run-time directory existence or creating it failed?
+      if (res[2] && res[2].status == false) { // Checking run-time directory existence or creating it failed?
         details.error = details.error + res[2].details;
         console.warn(res[2].details);
-      }
-      if (res[3].status == false) { // workspace directory
-        details.error = details.error + res[3].details;
-        console.warn(res[3].details);
-      }
-      if (res[4].status == false) { // extensions directory
-        details.error = details.error + res[4].details;
-        console.warn(res[4].details);
-      }
-      if (res[5].status == false) { // logs directory
-        details.error = details.error + res[5].details;
-        console.warn(res[5].details);
       }
       //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks.
       // try {
@@ -333,6 +303,7 @@ const Planning = () => {
         // setStep(2); // This step is meant to show some usefull status, removing for now.
       } else {
         dispatch(setPlanningStatus(false));
+        dispatch(setLoading(false));
         alertEmitter.emit('showAlert', details.error, 'error');
       }
     })

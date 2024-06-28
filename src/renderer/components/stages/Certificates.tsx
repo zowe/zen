@@ -11,13 +11,11 @@
 import { useState, useEffect } from "react";
 import { Box, Button, FormControl, FormHelperText, MenuItem, Select } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { setSecurityStatus, setInitializationStatus, selectCertificateStatus, setCertificateStatus, selectInitializationStatus } from './progress/progressSlice';
-import { selectYaml, selectSchema, setNextStepEnabled, setYaml, setSchema } from '../configuration-wizard/wizardSlice';
+import { setInitializationStatus, setCertificateStatus } from './progress/progressSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
-import Ajv from "ajv";
-import { selectInstallationArgs } from "./installation/installationSlice";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { IResponse } from "../../../../src/types/interfaces";
 import React from "react";
@@ -26,28 +24,24 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { setProgress, getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSubStepSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
+import { getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSubStepSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
 import { CertInitSubStepsState } from "../../../types/stateInterfaces";
-import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, FALLBACK_YAML, FALLBACK_SCHEMA } from "../common/Constants";
+import { TYPE_YAML, TYPE_OUTPUT, INIT_STAGE_LABEL, CERTIFICATES_STAGE_LABEL, ajv, deepMerge } from "../common/Constants";
 
 const Certificates = () => {
 
-  const theme = createTheme();
+  const [theme] = useState(createTheme());
 
-  const stageLabel = 'Initialization';
-  const subStageLabel = 'Certificates';
-
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
-  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
+  const [STAGE_ID] = useState(getStageDetails(INIT_STAGE_LABEL).id);
+  const [SUB_STAGES] = useState(!!getStageDetails(INIT_STAGE_LABEL).subStages);
+  const [SUB_STAGE_ID] = useState(SUB_STAGES ? getSubStageDetails(STAGE_ID, CERTIFICATES_STAGE_LABEL).id : 0);
 
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const connectionArgs = useAppSelector(selectConnectionArgs);
-  const installationArgs = getInstallationArguments();
-  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
-  const verifyCertsSchema = schema ? {"type": "object", "properties": {"verifyCertificates": schema.properties.zowe.properties.verifyCertificates}} : "";
+  const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
+  const [installationArgs] = useState(getInstallationArguments());
+  const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.certificate);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
   const [verifyCerts, setVerifyCerts] = useState(yaml?.zowe?.verifyCertificates ?? "STRICT");
   const [isFormInit, setIsFormInit] = useState(false);
@@ -63,50 +57,10 @@ const Certificates = () => {
 
   let timer: any;
 
-
-  const ajv = new Ajv();
-  ajv.addKeyword("$anchor");
-  let certificateSchema;
-  let validate: any;
-  let validateVerifyCertSchema: any;
-  if(schema && schema.properties) {
-    certificateSchema = schema?.properties?.zowe?.properties?.setup?.properties?.certificate;
-  }
-
-  if(certificateSchema) {
-    validate = ajv.compile(certificateSchema);
-  }
-
-  if(verifyCertsSchema) {
-    validateVerifyCertSchema = ajv.compile(verifyCertsSchema);
-  }
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema))
 
   useEffect(() => {
-
-    if(!yaml){
-      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setYaml(res.details));
-          setLYaml(res.details);
-        } else {
-          dispatch(setYaml(FALLBACK_YAML));
-          setLYaml(FALLBACK_YAML);
-        }
-      })
-    }
-
-    if(!schema){
-      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setSchema(res.details));
-          setLocalSchema(res.details);
-        } else {
-          dispatch(setSchema(FALLBACK_SCHEMA));
-          setLocalSchema(FALLBACK_SCHEMA)
-        }
-      })
-    }
-
+    dispatch(setInitializationStatus(isInitComplete()));
     if(getProgress('certificateStatus')) {
       const nextPosition = document.getElementById('start-certificate-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -191,7 +145,7 @@ const Certificates = () => {
     const allAttributesTrue = Object.values(certificateInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
     dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(status));
+    dispatch(setInitializationStatus(isInitComplete()));
     dispatch(setCertificateStatus(status));
     setCertificateInitializationProgress(getCertificateInitState());
   }
@@ -205,13 +159,28 @@ const Certificates = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
-      updateProgress(res.status);
+    window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
       clearInterval(timer);
-    }).catch(() => {
+      updateProgress(res.status);
+      if(!res.status){
+        window.electron.ipcRenderer.setStandardOutput(JSON.stringify(res.details.jobOutput, null, 2)).then((res: any) => {
+          toggleEditorVisibility("output");
+        })
+      }
+      if(res.details.updatedYaml != undefined){
+        const updatedCerts = res.details.updatedYaml.zowe?.certificate;
+        const updatedYaml = {...yaml, zowe: {...yaml.zowe, certificate: updatedCerts}};
+        setSetupYaml(res.details.updatedYaml.zowe?.setup.certificate);
+        window.electron.ipcRenderer.setConfig(updatedYaml);
+        dispatch(setYaml(updatedYaml));
+      }
+    }).catch((e: any) => {
       clearInterval(timer);
       updateProgress(false);
-      console.warn('zwe init certificate failed');
+      console.warn('zwe init certificate failed', e);
+      window.electron.ipcRenderer.setStandardOutput(`zwe init certificate failed:  ${e}`).then((res: any) => {
+        toggleEditorVisibility("output");
+      })
     });
   }
 
@@ -228,6 +197,7 @@ const Certificates = () => {
     setIsFormInit(false);
 
     if (newData) {
+      dispatch(setCertificateStatus(false));
 
       if(validate) {
         validate(newData);
@@ -237,6 +207,7 @@ const Certificates = () => {
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
           window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
+          setLYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
           setStageConfig(true, '', newData);
         }
       }
@@ -270,7 +241,10 @@ const Certificates = () => {
               id="demo-simple-select"
               value={verifyCerts}
               onChange={(e) => {
-                window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value}});
+                dispatch(setCertificateStatus(false));
+                const newConfig = {...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value, setup: {...yaml.zowe.setup}}};
+                window.electron.ipcRenderer.setConfig(newConfig);
+                setLYaml(newConfig)
                 setVerifyCerts(e.target.value);
               }}
             >

@@ -176,78 +176,78 @@ const setKeys = (id: string) => {
   installationArgsKey = `${installationArgsKey}_${id}`;
 }
 
-export const initializeProgress = (host: string, user: string) => {
+export const initializeProgress = (host: string, user: string, isResume: boolean) => {
   const id = `${host}_${user}`;
   setKeys(id);
-
+  
   const progress = localStorage.getItem(progressStateKey);
-  if(!progress) {
+  if(!progress || !isResume) {
     const flattenedData = flatten(progressStatus);
     localStorage.setItem(progressStateKey, JSON.stringify(flattenedData));
   }
 
   const activeStage = localStorage.getItem(activeStateKey);
-  if(!activeStage) {
+  if(!activeStage || !isResume) {
     const flattenedData = flatten(activeStatus);
     localStorage.setItem(activeStateKey, JSON.stringify(flattenedData));
   }
 
   const planningState = localStorage.getItem(planningStateKey);
-  if(!planningState) {
+  if(!planningState || !isResume) {
     const flattenedData = flatten(planningStageStatus);
     localStorage.setItem(planningStateKey, JSON.stringify(flattenedData));
   }
 
   const installationTypeState = localStorage.getItem(installationTypeKey);
-  if(!installationTypeState) {
+  if(!installationTypeState || !isResume) {
     const flattenedData = flatten(installationTypeStatus);
     localStorage.setItem(installationTypeKey, JSON.stringify(flattenedData));
   }
 
   const downloadUnpaxState = localStorage.getItem(downloadUnpaxKey);
-  if(!downloadUnpaxState) {
+  if(!downloadUnpaxState || !isResume) {
     const flattenedData = flatten(downloadUnpaxStatus);
     localStorage.setItem(downloadUnpaxKey, JSON.stringify(flattenedData));
   }
 
   const datasetInstallationState = localStorage.getItem(datasetInstallationKey);
-  if(!datasetInstallationState) {
+  if(!datasetInstallationState || !isResume) {
     const flattenedData = flatten(datasetInstallationStatus);
     localStorage.setItem(datasetInstallationKey, JSON.stringify(flattenedData));
   }
 
   const apfAuthState = localStorage.getItem(apfAuthKey);
-  if(!apfAuthState) {
+  if(!apfAuthState || !isResume) {
     const flattenedData = flatten(apfAuthStatus);
     localStorage.setItem(apfAuthKey, JSON.stringify(flattenedData));
   }
 
   const securityInitState = localStorage.getItem(securityKey);
-  if(!securityInitState) {
+  if(!securityInitState || !isResume) {
     const flattenedData = flatten(securityInitStatus);
     localStorage.setItem(securityKey, JSON.stringify(flattenedData));
   }
 
   const stcsInitState = localStorage.getItem(stcsKey);
-  if(!stcsInitState) {
+  if(!stcsInitState || !isResume) {
     const flattenedData = flatten(stcsInitStatus);
     localStorage.setItem(stcsKey, JSON.stringify(flattenedData));
   }
 
   const certificateInitState = localStorage.getItem(certificateKey);
-  if(!certificateInitState) {
+  if(!certificateInitState || !isResume) {
     const flattenedData = flatten(certificateInitStatus);
     localStorage.setItem(certificateKey, JSON.stringify(flattenedData));
   }
 
   const vsamInitState = localStorage.getItem(vsamKey);
-  if(!vsamInitState) {
+  if(!vsamInitState || !isResume) {
     const flattenedData = flatten(vsamInitStatus);
     localStorage.setItem(vsamKey, JSON.stringify(flattenedData));
   }
 
   const planningValidationDetailsState = localStorage.getItem(certificateKey);
-  if(!planningValidationDetailsState) {
+  if(!planningValidationDetailsState || !isResume) {
     const flattenedData = flatten(planningValidationDetailsStatus);
     localStorage.setItem(planningValidationDetailsKey, JSON.stringify(flattenedData));
   }
@@ -259,13 +259,13 @@ export const initializeProgress = (host: string, user: string) => {
   }
 
   const stepSkipStatusState = localStorage.getItem(skipStateKey);
-  if(!stepSkipStatusState) {
+  if(!stepSkipStatusState || !isResume) {
     const flattenedData = flatten(stepSkipStatus);
     localStorage.setItem(skipStateKey, JSON.stringify(flattenedData));
   }
 
   const installationArgsState = localStorage.getItem(installationArgsKey);
-  if(!installationArgsState) {
+  if(!installationArgsState || !isResume) {
     const flattenedData = flatten(installationArgsStatus);
     localStorage.setItem(installationArgsKey, JSON.stringify(flattenedData));
   }
@@ -574,6 +574,16 @@ export const getCompleteProgress = () : ProgressState => {
     return unflatten(flattenedData);
   } else {
     return progressStatus;
+  }
+}
+
+export const isInitComplete = (): boolean => {
+  const progress = localStorage.getItem(progressStateKey);
+  if(progress) {
+    const data:any =  unflatten(JSON.parse(progress));
+    return data.datasetInstallationStatus && data.networkingStatus && data.apfAuthStatus && data.securityStatus && data.stcsStatus && data.certificateStatus && data.vsamStatus && data.launchConfigStatus;
+  } else {
+    return false;
   }
 }
 

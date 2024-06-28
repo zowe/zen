@@ -16,7 +16,6 @@ import { setInitializationStatus, setVsamStatus } from './progress/progressSlice
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
-import Ajv from "ajv";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { IResponse } from "../../../types/interfaces";
 import ProgressCard from "../common/ProgressCard";
@@ -25,27 +24,27 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { setProgress, getProgress, setVsamInitState, mapAndSetSubStepSkipStatus, getInstallationArguments, getVsamInitState } from "./progress/StageProgressStatus";
+import { getProgress, setVsamInitState, mapAndSetSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
+import { INIT_STAGE_LABEL, ajv } from "../common/Constants";
 
 const Vsam = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
-  const stageLabel = 'Initialization';
   const subStageLabel = 'Vsam';
 
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
-  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
+  const [STAGE_ID] = useState(getStageDetails(INIT_STAGE_LABEL).id);
+  const [SUB_STAGES] = useState(!!getStageDetails(INIT_STAGE_LABEL).subStages);
+  const [SUB_STAGE_ID] = useState(SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0);
 
-  const theme = createTheme();
+  const [theme] = useState(createTheme());
 
   const dispatch = useAppDispatch();
-  const schema = useAppSelector(selectSchema);
+  const [schema] = useState(useAppSelector(selectSchema));
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.vsam;
+  const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.vsam);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.vsam);
   const [showProgress, setShowProgress] = useState(getProgress('vsamStatus'));
   const [init, setInit] = useState(false);
@@ -56,33 +55,18 @@ const Vsam = () => {
   const [vsamInitProgress, setVsamInitProgress] = useState(getVsamInitState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
-  const [reinit, setReinit] = useState(false);
-
-  const [vsamDatasetName, setVsamDatasetName] = useState("");
   const [isDsNameValid, setIsDsNameValid] = useState(true);
-  const [initError, setInitError] = useState(false);
-  const [initErrorMsg, setInitErrorMsg] = useState('');
 
-  const installationArgs = getInstallationArguments();
-  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const [installationArgs] = useState(getInstallationArguments());
+  const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   let timer: any;
 
-  const defaultErrorMessage = "Please ensure that the volume, storage class & dataset values are accurate.";
+  const [defaultErrorMessage] = useState("Please ensure that the volume, storage class & dataset values are accurate.");
 
-  const ajv = new Ajv();
-  ajv.addKeyword("$anchor");
-  let vsamSchema;
-  let validate: any;
-  if(schema) {
-    vsamSchema = schema?.properties?.zowe?.properties?.setup?.properties?.vsam;
-  }
-
-  if(vsamSchema) {
-    validate = ajv.compile(vsamSchema);
-  }
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema))
 
   useEffect(() => {
-
+    dispatch(setInitializationStatus(isInitComplete()));
     setShowProgress(initClicked || getProgress('vsamStatus'));
     let nextPosition;
 
@@ -173,7 +157,7 @@ const Vsam = () => {
     }
     const allAttributesTrue = Object.values(vsamInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setInitializationStatus(status));
+    dispatch(setInitializationStatus(isInitComplete()));
     dispatch(setVsamStatus(status));
     dispatch(setNextStepEnabled(status));
     setVsamInitializationProgress(getVsamInitState());
@@ -184,29 +168,24 @@ const Vsam = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const reinitialize = (event: any) => {
-    setReinit(true);
-    process(event);
-  }
-
   const process = async (event: any) => {
     alertEmitter.emit('hideAlert');
 
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initVsamButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.initVsamButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
       updateProgress(res.status);
       if(res.error) {
-        setInitError(true);
-        setInitErrorMsg(`${res ? res.errorMsg : ''} ${defaultErrorMessage}`);
         alertEmitter.emit('showAlert', res.errorMsg+" "+defaultErrorMessage, 'error');
       }
       clearInterval(timer);
-    }).catch((error: any) => {
+    }).catch((err: any) => {
       clearInterval(timer);
       updateProgress(false);
-      console.warn('zwe init vsam failed');
+      window.electron.ipcRenderer.setStandardOutput(`zwe init vsam failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
+        toggleEditorVisibility("output");
+      })
     });
   }
 
@@ -256,6 +235,7 @@ const Vsam = () => {
       }
     };
     setLYaml(updatedYaml);
+    window.electron.ipcRenderer.setConfig(updatedYaml);
     dispatch(setYaml(updatedYaml));
   }
 
@@ -276,6 +256,7 @@ const Vsam = () => {
         }
       }
     };
+    window.electron.ipcRenderer.setConfig(updatedYaml);
     setLYaml(updatedYaml);
     dispatch(setYaml(updatedYaml));
   };
@@ -336,7 +317,7 @@ const Vsam = () => {
               <ProgressCard label={`Write configuration file locally to temp directory`} id="init-vsam-progress-card" status={vsamInitProgress?.writeYaml}/>
               <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={vsamInitProgress?.uploadYaml}/>
               <ProgressCard label={`Run zwe init vsam`} id="success-progress-card" status={vsamInitProgress?.success}/>
-              <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!isDsNameValid} onClick={e => reinitialize(e)}>Reinitialize Vsam Config</Button>
+              <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!isDsNameValid} onClick={e => process(e)}>Reinitialize Vsam Config</Button>
             </React.Fragment>
             }
           </Box>
