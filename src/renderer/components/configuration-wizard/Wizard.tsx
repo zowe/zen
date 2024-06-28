@@ -18,7 +18,6 @@ import Certificates from "../stages/Certificates";
 import Initialization from "../stages/Initialization";
 import ReviewInstallation from '../stages/ReviewInstallation';
 import FinishInstallation from '../stages/FinishInstallation';
-import spock from '../../assets/spock.svg'
 import InstallationType from '../stages/installation/InstallTypeSelection';
 import { selectLoading } from './wizardSlice';
 import { useAppSelector } from '../../hooks';
@@ -26,7 +25,7 @@ import InitApfAuth from '../stages/InitApfAuth';
 import Networking from '../stages/Networking';
 import Vsam from '../stages/Vsam';
 import LaunchConfig from '../stages/LaunchConfig';
-import { getInstallationTypeStatus, getProgress } from '../stages/progress/StageProgressStatus';
+import { getProgress } from '../stages/progress/StageProgressStatus';
 import Unpax from '../stages/Unpax';
 import { APF_AUTH_STAGE_LABEL, CERTIFICATES_STAGE_LABEL, CONNECTION_STAGE_LABEL, FINISH_INSTALL_STAGE_LABEL, INIT_STAGE_LABEL, INSTALLATION_TYPE_STAGE_LABEL, INSTALL_STAGE_LABEL, LAUNCH_CONFIG_STAGE_LABEL, NETWORKING_STAGE_LABEL, PLANNING_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL, SECURITY_STAGE_LABEL, UNPAX_STAGE_LABEL, VSAM_STAGE_LABEL } from '../common/Constants';
 

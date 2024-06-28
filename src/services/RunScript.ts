@@ -19,8 +19,8 @@ export class Script {
 
     const jcl = `${config.jobStatement}
 ${startBPXBATCHAndShellSession("ZNSCRPT")}
-${parseUnixScriptByNumOfChars(script)} &&
-echo "${JCL_UNIX_SCRIPT_OK}"
+${parseUnixScriptByNumOfChars(script)}
+&& echo "${JCL_UNIX_SCRIPT_OK}"
 /* `
     console.log(`JOB: ${jcl}`)
     const resp: IJobResults = await submitJcl(config, jcl, ["STDOUT", "STDERR"])

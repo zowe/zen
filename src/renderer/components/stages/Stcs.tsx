@@ -11,10 +11,9 @@
 import { useState, useEffect } from "react";
 import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled, setYaml, setSchema } from '../configuration-wizard/wizardSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import { setStcsStatus, setInitializationStatus } from './progress/progressSlice';
 import ContainerCard from '../common/ContainerCard';import EditorDialog from "../common/EditorDialog";
-import Ajv from "ajv";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { IResponse } from "../../../types/interfaces";
 import ProgressCard from "../common/ProgressCard";
@@ -23,23 +22,21 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setStcsInitState, getStcsInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
+import { getProgress, setStcsInitState, getStcsInitState, mapAndSetSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
-import { FALLBACK_SCHEMA, FALLBACK_YAML } from "../common/Constants";
+import { INIT_STAGE_LABEL, STC_STAGE_LABEL, ajv } from "../common/Constants";
 
 const Stcs = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
+  const [subStageLabel] = useState(STC_STAGE_LABEL);
 
-  const stageLabel = 'Initialization';
-  const subStageLabel = 'Stcs';
+  const [STAGE_ID] = useState(getStageDetails(INIT_STAGE_LABEL).id);
+  const [SUB_STAGES] = useState(!!getStageDetails(INIT_STAGE_LABEL).subStages);
+  const [SUB_STAGE_ID] = useState(SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0);
 
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
-  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
-
-  const theme = createTheme();
+  const [theme] = useState(createTheme());
 
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
@@ -56,53 +53,18 @@ const Stcs = () => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
 
-  const installationArgs = getInstallationArguments();
-  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const [installationArgs] = useState(getInstallationArguments());
+  const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   let timer: any;
-  const DEFAULT_ZOWE = 'ZWESLSTC';
-  const DEFAULT_ZIS = 'ZWESISTC';
-  const DEFAULT_AUX = 'ZWESASTC';
+  const [DEFAULT_ZOWE] = useState('ZWESLSTC');
+  const [DEFAULT_ZIS] = useState('ZWESISTC');
+  const [DEFAULT_AUX] = useState('ZWESASTC');
 
-  const defaultErrorMessage = "Please ensure that the values for security.stcs attributes and dataset.proclib are accurate.";
-
-  const ajv = new Ajv();
-  ajv.addKeyword("$anchor");
-  let stcsSchema;
-  let validate: any;
-  if(schema) {
-    stcsSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security?.properties?.stcs;
-  }
-
-  if(stcsSchema) {
-    validate = ajv.compile(stcsSchema);
-  }
+  const [defaultErrorMessage] = useState("Please ensure that the values for security.stcs attributes and dataset.proclib are accurate.");
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema?.properties?.zowe?.properties?.setup?.properties?.security?.properties?.stcs))
 
   useEffect(() => {
-
-    if(!yaml){
-      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setYaml(res.details));
-          setLYaml(res.details);
-        } else {
-          dispatch(setYaml(FALLBACK_YAML));
-          setLYaml(FALLBACK_YAML);
-        }
-      })
-    }
-
-    if(!schema){
-      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setSchema(res.details));
-          setLocalSchema(res.details);
-        } else {
-          dispatch(setSchema(FALLBACK_SCHEMA));
-          setLocalSchema(FALLBACK_SCHEMA);
-        }
-      })
-    }
-
+    dispatch(setInitializationStatus(isInitComplete()));
     setShowProgress(initClicked || getProgress('stcsStatus'));
     let nextPosition;
 
@@ -196,7 +158,7 @@ const Stcs = () => {
     }
     const allAttributesTrue = Object.values(stcsInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setInitializationStatus(status));
+    dispatch(setInitializationStatus(isInitComplete()));
     dispatch(setStcsStatus(status));
     dispatch(setNextStepEnabled(status));
     setStcsInitializationProgress(getStcsInitState());
@@ -217,16 +179,18 @@ const Stcs = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initStcsButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.initStcsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
         updateProgress(res.status);
         if(res.error) {
           alertEmitter.emit('showAlert', res.errorMsg+" "+defaultErrorMessage, 'error');
         }
         clearInterval(timer);
-      }).catch((error: any) => {
+      }).catch((err: any) => {
         clearInterval(timer);
         updateProgress(false);
-        console.warn('zwe init stcs failed');
+        window.electron.ipcRenderer.setStandardOutput(`zwe init stc failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
+          toggleEditorVisibility("output");
+        })
       });
   }
 

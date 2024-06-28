@@ -37,26 +37,25 @@ export class InstallActions {
   }
 
   runInitCertificates(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: any){
-      return this.strategy.initCertificates(connectionArgs, installationArgs, zoweConfig)
+    installationArgs: InstallationArgs){
+      return this.strategy.initCertificates(connectionArgs, installationArgs)
   }
 
   downloadUnpax(connectionArgs: IIpcConnectionArgs,
     installationArgs: InstallationArgs,
-    version: string, zoweConfig: any): Promise<IResponse> {
-    return this.strategy.downloadUnpax(connectionArgs, installationArgs, version, zoweConfig);
+    version: string): Promise<IResponse> {
+    return this.strategy.downloadUnpax(connectionArgs, installationArgs, version);
   }
 
   runInstallation (
     connectionArgs: IIpcConnectionArgs, 
-    installationArgs: InstallationArgs,
-    version: string, zoweConfig: any ): Promise<IResponse> {
-    return this.strategy.runInstallation(connectionArgs, installationArgs, version, zoweConfig);
+    installationArgs: InstallationArgs): Promise<IResponse> {
+    return this.strategy.runInstallation(connectionArgs, installationArgs);
   }
 
   runInitSecurity(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse> {
-    return this.strategy.runInitSecurity(connectionArgs, installationArgs, zoweConfig);
+    installationArgs: InstallationArgs): Promise<IResponse> {
+    return this.strategy.runInitSecurity(connectionArgs, installationArgs);
   }
 
   uploadLatestYaml(connectionArgs: IIpcConnectionArgs,
@@ -64,19 +63,23 @@ export class InstallActions {
     return this.strategy.uploadLatestYaml(connectionArgs, installationArgs);
   }
 
+  smpeGetExampleYamlAndSchemas(connectionArgs: IIpcConnectionArgs, installArgs: InstallationArgs): Promise<IResponse> {
+    return this.strategy.getExampleYamlAndSchemas(connectionArgs, installArgs);
+  }
+
   initStcs(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse> {
-    return this.strategy.initStcs(connectionArgs, installationArgs, zoweConfig);
+    installationArgs: InstallationArgs): Promise<IResponse> {
+    return this.strategy.initStcs(connectionArgs, installationArgs);
   }
 
   initVsam(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse> {
-    return this.strategy.initVsam(connectionArgs, installationArgs, zoweConfig);
+    installationArgs: InstallationArgs): Promise<IResponse> {
+    return this.strategy.initVsam(connectionArgs, installationArgs);
   }
 
   runApfAuth(connectionArgs: IIpcConnectionArgs,
-    installationArgs: InstallationArgs, zoweConfig: object): Promise<IResponse> {
-    return this.strategy.runApfAuth(connectionArgs, installationArgs, zoweConfig);
+    installationArgs: InstallationArgs): Promise<IResponse> {
+    return this.strategy.runApfAuth(connectionArgs, installationArgs);
   }
 
 }

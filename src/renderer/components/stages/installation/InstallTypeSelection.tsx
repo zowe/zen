@@ -21,14 +21,15 @@ import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
 import { getStageDetails } from "../../../../services/StageDetails";
 import { getInstallationTypeStatus } from "../progress/StageProgressStatus";
+import { INSTALLATION_TYPE_STAGE_LABEL } from "../../common/Constants";
 const InstallationType = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
-  const stageLabel = 'Installation Type';
+  const [stageLabel] = useState(INSTALLATION_TYPE_STAGE_LABEL);
 
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+  const [STAGE_ID] = useState(getStageDetails(stageLabel).id);
+  const [SUB_STAGES] = useState(!!getStageDetails(stageLabel).subStages);
 
   const dispatch = useAppDispatch();
   const connectionArgs = useAppSelector(selectConnectionArgs);
@@ -95,6 +96,7 @@ const InstallationType = () => {
             name="radio-buttons-group"
             onChange={(e) => {
                 dispatch(setInstallationArgs({...installationArgs, installationType: e.target.value}));
+                window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", {...installationArgs, installationType: e.target.value});
                 dispatch(setInstallationType(e.target.value))
                 installTypeChangeHandler(e.target.value)
             }}
@@ -105,7 +107,7 @@ const InstallationType = () => {
         </RadioGroup>
     </FormControl>
     {installValue === "smpe" && <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-        {`SMP/E installation must be done outside of ZEN. Return to ZEN and input the location Zowe was installed to before continuing.`}
+        {`SMP/E installation must be done outside of ZEN. Return to ZEN after completing the SMP/E installation process.`}
     </Typography>}
     {installValue === "download" &&
       <div>

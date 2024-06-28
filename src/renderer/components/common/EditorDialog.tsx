@@ -11,13 +11,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { selectYaml, selectOutput, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
-import Ajv2019 from "ajv/dist/2019"
+import { selectYaml, selectOutput, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import MonacoEditorComponent from "../common/MonacoEditor";
-import draft7MetaSchema from "ajv/dist/refs/json-schema-draft-07.json";
 import { parse, stringify } from "yaml";
 import { IResponse } from "../../../types/interfaces";
-import { DEF_NO_OUTPUT } from "./Constants";
+import { DEF_NO_OUTPUT, schemaValidate } from "./Constants";
 import { alertEmitter } from "../Header";
 
 const test_jcl = `
@@ -35,7 +33,6 @@ const test_op = "WARNING: 'Some Warning'\nERROR: 'Some Error'\nINFO: 'Some Info'
 const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onChange, content, readOnlyYaml} : {contentType: any, isEditorVisible: boolean, toggleEditorVisibility: any, onChange?: any, content?: any, readOnlyYaml?: boolean}) => {
 
   const dispatch = useAppDispatch();
-  const schema = useAppSelector(selectSchema);
   const [setupYaml, setSetupYaml] = useState(useAppSelector(selectYaml));
   const [setupOutput, setSetupOutput] = useState(useAppSelector(selectOutput));
   const [editorVisible, setEditorVisible] = useState(false);
@@ -82,23 +79,18 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
     try {
       // To parse the yaml and convert it to the javascript object
       jsonData = parse(newCode);
+      delete jsonData.installationArgs;
     } catch (error) {
       console.error('Error parsing YAML:', error);
       jsonData = newCode;
     }
 
-    const ajv = new Ajv2019()
-    ajv.addKeyword("$anchor");
-    ajv.addMetaSchema(draft7MetaSchema)
-    const validate = ajv.compile(schema);
-
     // To validate the javascript object against the schema
-    const isValid = validate(jsonData);
-    setIsSchemaValid(isValid);
+    setIsSchemaValid(!schemaValidate.errors);
 
-    if(validate.errors && jsonData) {
-      const errPath = validate.errors[0].schemaPath;
-      const errMsg = validate.errors[0].message;
+    if(schemaValidate.errors && jsonData) {
+      const errPath = schemaValidate.errors[0].schemaPath;
+      const errMsg = schemaValidate.errors[0].message;
       setSchemaError(`Invalid Schema: ${errPath}. ${errMsg} `, );
       jsonData = jsonData ? jsonData : "";
       setSetupYaml(jsonData);
@@ -159,11 +151,13 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
   return (
     <div> 
       <Dialog 
+        fullWidth
+        maxWidth={'xl'}
         open={editorVisible} 
         onClose={toggleEditorVisibility} 
         PaperProps={{
           style: {
-            width: '100vw',
+            width: '95vw',
           },
         }}>
         <DialogTitle>Editor</DialogTitle>

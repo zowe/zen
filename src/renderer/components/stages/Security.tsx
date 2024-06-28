@@ -11,13 +11,11 @@
 import { useState, useEffect } from "react";
 import { Box, Button, FormControl } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, selectSchema, setNextStepEnabled, setYaml, setSchema } from '../configuration-wizard/wizardSlice';
-import { setSecurityStatus, setInitializationStatus, selectSecurityStatus, selectInitializationStatus } from './progress/progressSlice';
+import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { setSecurityStatus, setInitializationStatus } from './progress/progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
-import Ajv from "ajv";
-import { selectInstallationArgs } from "./installation/installationSlice";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { IResponse } from "../../../types/interfaces";
 import ProgressCard from "../common/ProgressCard";
@@ -26,28 +24,25 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { setProgress, getProgress, setSecurityInitState, getSecurityInitState, mapAndSetSkipStatus, getInstallationArguments } from "./progress/StageProgressStatus";
+import { getProgress, setSecurityInitState, getSecurityInitState, mapAndSetSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
-import { JCL_UNIX_SCRIPT_OK, FALLBACK_SCHEMA, FALLBACK_YAML } from '../common/Constants';
+import { JCL_UNIX_SCRIPT_OK, INIT_STAGE_LABEL, SECURITY_STAGE_LABEL, ajv, SERVER_COMMON } from '../common/Constants';
 import { alertEmitter } from "../Header";
 
 const Security = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
-  const stageLabel = 'Initialization';
-  const subStageLabel = 'Security';
+  const [STAGE_ID] = useState(getStageDetails(INIT_STAGE_LABEL).id);
+  const [SUB_STAGES] = useState(!!getStageDetails(INIT_STAGE_LABEL).subStages);
+  const [SUB_STAGE_ID] = useState(SUB_STAGES ? getSubStageDetails(STAGE_ID, SECURITY_STAGE_LABEL).id : 0);
 
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
-  const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
-
-  const theme = createTheme();
+  const [theme] = useState(createTheme());
 
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
   const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
-  const setupSchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
+  const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.security);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security ?? {product: 'RACF'});
   const [showProgress, setShowProgress] = useState(getProgress('securityStatus'));
   const [init, setInit] = useState(false);
@@ -58,51 +53,15 @@ const Security = () => {
   const [securityInitProgress, setSecurityInitProgress] = useState(getSecurityInitState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
-  const [reinit, setReinit] = useState(false);
 
-  const installationArgs = getInstallationArguments();
-  const connectionArgs = useAppSelector(selectConnectionArgs);
+  const [installationArgs] = useState(getInstallationArguments());
+  const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
 
   let timer: any;
-
-  const ajv = new Ajv();
-  ajv.addKeyword("$anchor");
-  let securitySchema;
-  let validate: any;
-  if(schema && schema.properties) {
-    securitySchema = schema?.properties?.zowe?.properties?.setup?.properties?.security;
-  }
-
-  if(securitySchema) {
-    validate = ajv.compile(securitySchema);
-  }
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema));
 
   useEffect(() => {
-
-    if(!yaml){
-      window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setYaml(res.details));
-          setLYaml(res.details);
-        } else {
-          dispatch(setYaml(FALLBACK_YAML));
-          setLYaml(FALLBACK_YAML);
-        }
-      })
-    }
-
-    if(!schema){
-      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
-        if (res.status) {
-          dispatch(setSchema(res.details));
-          setLocalSchema(res.details);
-        } else {
-          dispatch(setSchema(FALLBACK_SCHEMA));
-          setLocalSchema(FALLBACK_SCHEMA)
-        }
-      })
-    }
-
+    dispatch(setInitializationStatus(isInitComplete()));
     setShowProgress(initClicked || getProgress('securityStatus'));
     let nextPosition;
 
@@ -187,7 +146,7 @@ const Security = () => {
     }
     const allAttributesTrue = Object.values(securityInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setInitializationStatus(status));
+    dispatch(setInitializationStatus(isInitComplete()));
     dispatch(setSecurityStatus(status));
     dispatch(setNextStepEnabled(status));
     setSecurityInitializationProgress(getSecurityInitState());
@@ -198,16 +157,12 @@ const Security = () => {
     setEditorVisible(!editorVisible);
   };
 
-  const reinitialize = (event: any) => {
-    setReinit(true);
-    process(event);
-  }
 
   const process = async (event: any) => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs, (await window.electron.ipcRenderer.getConfig()).details ?? yaml).then((res: IResponse) => {
+    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
       // Some parts of Zen pass the response as a string directly into the object
       if (res.status == false && typeof res.details == "string") {
         res.details = { 3: res.details };
@@ -234,11 +189,9 @@ const Security = () => {
       securityProceedActions(false);
       stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
       stages[STAGE_ID].isSkipped = true;
-      if (typeof err === "string") {
-        console.warn('zwe init security failed', err);
-      } else {
-        console.warn('zwe init security failed', err?.toString()); // toString() throws run-time error on undefined or null
-      }
+      window.electron.ipcRenderer.setStandardOutput(`zwe init security failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
+        toggleEditorVisibility("output");
+      })
     });
   }
 
@@ -246,7 +199,7 @@ const Security = () => {
   const securityProceedActions = (status: boolean) => {
     dispatch(setNextStepEnabled(status));
     dispatch(setSecurityStatus(status));
-    dispatch(setInitializationStatus(status));
+    dispatch(setInitializationStatus(isInitComplete()));
   }
 
   const handleFormChange = (data: any) => {
@@ -292,13 +245,13 @@ const Security = () => {
           </FormControl> : null}
 
 
-          <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-security-progress">
+          <Box sx={{height: showProgress ? 'calc(40vh - 220px)' : 'auto'}} id="start-security-progress">
           {!showProgress ? null :
           <React.Fragment> 
             <ProgressCard label={`Write configuration file locally to temp directory`} id="init-security-progress-card" status={securityInitProgress?.writeYaml}/>
             <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={securityInitProgress?.uploadYaml}/>
             <ProgressCard label={`Run zwe init security`} id="success-progress-card" status={securityInitProgress?.success}/>
-            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => reinitialize(e)}>Reinitialize Security Config</Button>
+            <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>Reinitialize Security Config</Button>
           </React.Fragment>
         }
         </Box>
