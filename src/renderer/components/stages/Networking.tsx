@@ -613,17 +613,25 @@ const Networking = () => {
     e.preventDefault();
     alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
     dispatch(setNetworkingStatus(false));
-    window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
-      if(res && res.status) {
-        dispatch(setNextStepEnabled(true));
-        dispatch(setNetworkingStatus(true));
-        alertEmitter.emit('showAlert', res.details, 'success');
-      } else {
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
+        if(res && res.status) {
+          dispatch(setNextStepEnabled(true));
+          dispatch(setNetworkingStatus(true));
+          alertEmitter.emit('showAlert', res.details, 'success');
+        } else {
         dispatch(setNetworkingStatus(false));
         alertEmitter.emit('showAlert', res.details, 'error');
       }
       dispatch(setInitializationStatus(isInitComplete()));
-    });
+      });
+    }
+    else{
+      alertEmitter.emit('showAlert', 'success');
+      dispatch(setNextStepEnabled(true));
+      dispatch(setNetworkingStatus(true));
+      dispatch(setInitializationStatus(isInitComplete()));
+    }
   }
 
   return (

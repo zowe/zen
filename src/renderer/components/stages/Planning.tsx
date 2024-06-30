@@ -111,13 +111,14 @@ const Planning = () => {
 
     dispatch(setJobStatementVal(jobStatementValue));
 
-    window.electron.ipcRenderer.getZoweVersion().then((res: IResponse) => dispatch(setZoweVersion(res.status ? res.details : '' )));
-
-    window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.getZoweVersion().then((res: IResponse) => dispatch(setZoweVersion(res.status ? res.details : '' )));
+      
+      window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
       if(res != undefined){
         setInstArgs((res as any));
       }
-    })
+      })
 
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       if (res.status) {
@@ -133,9 +134,9 @@ const Planning = () => {
         dispatch(setInstallationArgs({...installationArgs, installationDir: res.details?.zowe?.runtimeDirectory ?? '', installationType: getInstallationTypeStatus()?.installationType, userUploadedPaxPath: getInstallationTypeStatus()?.userUploadedPaxPath}));
       }
     })
-
+  }
   }, []); 
-
+  
   useEffect(() => {
     setPlanningState(jobHeaderSaved && locationsValidated);
   }, [jobHeaderSaved, locationsValidated]);
@@ -196,7 +197,9 @@ const Planning = () => {
     }
     e.preventDefault();
     dispatch(setLoading(true));
-    window.electron.ipcRenderer.saveJobHeader(jobStatementValue)
+
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.saveJobHeader(jobStatementValue)
       .then(() => getENVVars())
       .then((res: IResponse) => {
         setEditorContentAndType(res.details, 'output');
@@ -226,8 +229,20 @@ const Planning = () => {
         alertEmitter.emit('showAlert', err.message, 'error');
         dispatch(setLoading(false));
       });    
+    }
+    else{
+      if(locationsValidated){
+        setPlanningState(true);
+        setStep(2);
+      }
+      else if(step<1)
+        setStep(1);
+      setJobHeaderSaved(true);
+      dispatch(setJobStatementValid(true));
+      dispatch(setLoading(false));
+    }
   }
-
+    
   const validateLocations = (e: any, click?: boolean) => {
     setPlanningState(false);
     setLocValidations(false);
@@ -254,11 +269,12 @@ const Planning = () => {
 
     // TODO: Possible feature for future: add to checkDir to see if existing Zowe install exists.
     // Then give the user ability to use existing zowe.yaml to auto-fill in fields from Zen
-    Promise.all([
-      window.electron.ipcRenderer.checkJava(connectionArgs, localYaml?.java?.home || installationArgs.javaHome),
-      window.electron.ipcRenderer.checkNode(connectionArgs, localYaml?.node?.home || installationArgs.nodeHome),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir),
-    ]).then((res: Array<IResponse>) => {
+    if(!installationArgs.dryRunMode){
+      Promise.all([
+        window.electron.ipcRenderer.checkJava(connectionArgs, localYaml?.java?.home || installationArgs.javaHome),
+        window.electron.ipcRenderer.checkNode(connectionArgs, localYaml?.node?.home || installationArgs.nodeHome),
+        window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir),
+      ]).then((res: Array<IResponse>) => {
       const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
       setEditorContent(res.map(item=>item?.details).join('\n'));
       setContentType('output');
@@ -282,51 +298,57 @@ const Planning = () => {
       }
       //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks.
       // try {
-      //   const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
-      //   details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
-      //   // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
+        //   const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
+        //   details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
+        //   // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
       //   if (parseInt(details.spaceAvailableMb, 10) < requiredSpace) { 
-      //     details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
-      //   }
-      // } catch (error) {
-      //   details.error = details.error + `Can't check space available; `;
-      //   console.warn(res[2].details);
-      // }
-      setValidationDetails(details);
-      setPlanningValidationDetailsState(details);
-      dispatch(setLocationValidationDetails(details))
-      dispatch(setLoading(false));
-      if (!details.error) {
-        alertEmitter.emit('hideAlert');
-        setLocValidations(true);
-        setPlanningState(true);
-        // setStep(2); // This step is meant to show some usefull status, removing for now.
-      } else {
+        //     details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
+        //   }
+        // } catch (error) {
+          //   details.error = details.error + `Can't check space available; `;
+          //   console.warn(res[2].details);
+          // }
+          setValidationDetails(details);
+          setPlanningValidationDetailsState(details);
+          dispatch(setLocationValidationDetails(details))
+          dispatch(setLoading(false));
+          if (!details.error) {
+            alertEmitter.emit('hideAlert');
+            setLocValidations(true);
+            setPlanningState(true);
+            // setStep(2); // This step is meant to show some usefull status, removing for now.
+          } else {
         dispatch(setPlanningStatus(false));
         dispatch(setLoading(false));
         alertEmitter.emit('showAlert', details.error, 'error');
       }
     })
   }
-
-  const onJobStatementChange = (newJobStatement: string) => {
-    setIsJobStatementUpdated(true);
-    setJobStatementValue(newJobStatement);
-    setJobHeaderSaved(false);
-    setJobStatementValidation(false);
-    dispatch(setJobStatement(newJobStatement));
-    dispatch(setJobStatementValid(false));
-    setPlanningState(false);
-    setStep(0);
+  else{
+    setPlanningState(true);
+    setLocValidations(true);
+    dispatch(setLoading(false));
   }
-
-  const formChangeHandler = (key?: string, value?: (string | number), installationArg?: string) => {
-    setIsLocationsUpdated(true);
-    setPlanningStatus(false);
-    setLocationsValidated(false);
-    dispatch(setPlanningStatus(false));
-    dispatch(setNextStepEnabled(false));
-    setStep(1);
+}
+        
+const onJobStatementChange = (newJobStatement: string) => {
+          setIsJobStatementUpdated(true);
+          setJobStatementValue(newJobStatement);
+          setJobHeaderSaved(false);
+          setJobStatementValidation(false);
+          dispatch(setJobStatement(newJobStatement));
+          dispatch(setJobStatementValid(false));
+          setPlanningState(false);
+          setStep(0);
+        }
+        
+        const formChangeHandler = (key?: string, value?: (string | number), installationArg?: string) => {
+          setIsLocationsUpdated(true);
+          setPlanningStatus(false);
+          setLocationsValidated(false);
+          dispatch(setPlanningStatus(false));
+          dispatch(setNextStepEnabled(false));
+          setStep(1);
 
     if (!key || !value) {
       return;

@@ -159,11 +159,12 @@ const Certificates = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-      clearInterval(timer);
-      updateProgress(res.status);
-      if(!res.status){
-        window.electron.ipcRenderer.setStandardOutput(JSON.stringify(res.details.jobOutput, null, 2)).then((res: any) => {
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+        clearInterval(timer);
+        updateProgress(res.status);
+        if(!res.status){
+          window.electron.ipcRenderer.setStandardOutput(JSON.stringify(res.details.jobOutput, null, 2)).then((res: any) => {
           toggleEditorVisibility("output");
         })
       }
@@ -174,14 +175,25 @@ const Certificates = () => {
         window.electron.ipcRenderer.setConfig(updatedYaml);
         dispatch(setYaml(updatedYaml));
       }
-    }).catch((e: any) => {
-      clearInterval(timer);
-      updateProgress(false);
-      console.warn('zwe init certificate failed', e);
-      window.electron.ipcRenderer.setStandardOutput(`zwe init certificate failed:  ${e}`).then((res: any) => {
-        toggleEditorVisibility("output");
-      })
-    });
+      }).catch((e: any) => {
+        clearInterval(timer);
+        updateProgress(false);
+        console.warn('zwe init certificate failed', e);
+        window.electron.ipcRenderer.setStandardOutput(`zwe init certificate failed:  ${e}`).then((res: any) => {
+          toggleEditorVisibility("output");
+        })
+      });
+    }
+    else{
+      setCertificateInitState(
+        {
+          writeYaml: true,
+          uploadYaml: true,
+          zweInitCertificate: true
+        }
+      )
+      updateProgress(true);
+    }
   }
 
   const toggleEditorVisibility = (type: any) => {

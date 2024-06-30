@@ -174,9 +174,11 @@ const Vsam = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initVsamButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-      updateProgress(res.status);
-      if(res.error) {
+
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.initVsamButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+        updateProgress(res.status);
+        if(res.error) {
         alertEmitter.emit('showAlert', res.errorMsg+" "+defaultErrorMessage, 'error');
       }
       clearInterval(timer);
@@ -187,6 +189,15 @@ const Vsam = () => {
         toggleEditorVisibility("output");
       })
     });
+    }
+    else{
+      setVsamInitState({
+        writeYaml: true,
+        uploadYaml: true,
+        success: true
+      });
+      updateProgress(true);
+    }
   }
 
   const handleFormChange = (data: any) => {

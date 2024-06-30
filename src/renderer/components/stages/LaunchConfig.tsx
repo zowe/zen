@@ -509,9 +509,10 @@ const LaunchConfig = () => {
     e.preventDefault();
     dispatch(setLaunchConfigStatus(false));
     alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
-    window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
-      if(res && res.status) {
-        dispatch(setNextStepEnabled(true));
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
+        if(res && res.status) {
+          dispatch(setNextStepEnabled(true));
         dispatch(setLaunchConfigStatus(true));
         alertEmitter.emit('showAlert', res.details, 'success');
       } else {
@@ -519,7 +520,14 @@ const LaunchConfig = () => {
         alertEmitter.emit('showAlert', res.details, 'error');
       }
       dispatch(setInitializationStatus(isInitComplete()));
-    });
+      });
+    }
+    else{
+      alertEmitter.emit('showAlert', 'success');
+      dispatch(setNextStepEnabled(true));
+      dispatch(setLaunchConfigStatus(true));
+      dispatch(setInitializationStatus(isInitComplete()));
+    }
   }
 
   return (

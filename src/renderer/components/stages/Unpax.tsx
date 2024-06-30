@@ -72,21 +72,44 @@ const Unpax = () => {
     dispatch(setDownloadUnpaxStatus(false));
     setDownloadUnpaxProgress(downloadUnpaxStatus);
     dispatch(setNextStepEnabled(false));
-    window.electron.ipcRenderer.downloadButtonOnClick(connectionArgs, {...installationArgs, userUploadedPaxPath: paxPath}, version).then((res: IResponse) => {
-      if(!res.status){ //errors during runInstallation()
-        alertEmitter.emit('showAlert', res.details, 'error');
-      }
-      if(res.details?.mergedYaml != undefined){
-        dispatch(setYaml(res.details.mergedYaml));
-        window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
-      }
-      dispatch(setNextStepEnabled(res.status));
-      dispatch(setDownloadUnpaxStatus(res.status));
+
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.downloadButtonOnClick(connectionArgs, {...installationArgs, userUploadedPaxPath: paxPath}, version).then((res: IResponse) => {
+        if(!res.status){ //errors during runInstallation()
+          alertEmitter.emit('showAlert', res.details, 'error');
+        }
+        if(res.details?.mergedYaml != undefined){
+          dispatch(setYaml(res.details.mergedYaml));
+          window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
+        }
+        dispatch(setNextStepEnabled(res.status));
+        dispatch(setDownloadUnpaxStatus(res.status));
       clearInterval(timer);
     }).catch(() => {
       clearInterval(timer);
       dispatch(setNextStepEnabled(false));
     });
+  }
+  else{
+    setDownloadUnpaxProgress({
+      uploadYaml: true,
+      download: true,
+      upload: true,
+      unpax: true,
+      getExampleYaml: true,
+      getSchemas: true,
+    });
+    setDownloadUnpaxState({
+      uploadYaml: true,
+      download: true,
+      upload: true,
+      unpax: true,
+      getExampleYaml: true,
+      getSchemas: true,
+    });
+    dispatch(setNextStepEnabled(true));
+    dispatch(setDownloadUnpaxStatus(true));
+  }
   }
 
   const fetchExampleYaml = (event: any) => {
@@ -95,8 +118,10 @@ const Unpax = () => {
     dispatch(setDownloadUnpaxStatus(false));
     setDownloadUnpaxProgress(downloadUnpaxStatus);
     dispatch(setNextStepEnabled(false));
-    window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-      if(!res.status){ //errors during runInstallation()
+    if(!installationArgs.dryRunMode){
+
+      window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+        if(!res.status){ //errors during runInstallation()
         alertEmitter.emit('showAlert', res.details.message ? res.details.message : res.details, 'error');
       }
       if(res.details?.mergedYaml != undefined){
@@ -110,6 +135,27 @@ const Unpax = () => {
       clearInterval(timer);
       dispatch(setNextStepEnabled(false));
     });
+  }
+  else{
+    setDownloadUnpaxProgress({
+      uploadYaml: true,
+      download: true,
+      upload: true,
+      unpax: true,
+      getExampleYaml: true,
+      getSchemas: true,
+    });
+    setDownloadUnpaxState({
+      uploadYaml: true,
+      download: true,
+      upload: true,
+      unpax: true,
+      getExampleYaml: true,
+      getSchemas: true,
+    });
+    dispatch(setNextStepEnabled(true));
+    dispatch(setDownloadUnpaxStatus(true));
+  }
   }
 
   useEffect(() => {

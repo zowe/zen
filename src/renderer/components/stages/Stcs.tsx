@@ -179,7 +179,9 @@ const Stcs = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initStcsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+    
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.initStcsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
         updateProgress(res.status);
         if(res.error) {
           alertEmitter.emit('showAlert', res.errorMsg+" "+defaultErrorMessage, 'error');
@@ -192,6 +194,15 @@ const Stcs = () => {
           toggleEditorVisibility("output");
         })
       });
+    }
+    else{
+      setStcsInitState({
+        writeYaml: true,
+        uploadYaml: true,
+        success: true
+      });
+      updateProgress(true);
+    }
   }
 
   const handleFormChange = (data: any) => {

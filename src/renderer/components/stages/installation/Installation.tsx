@@ -79,7 +79,7 @@ const Installation = () => {
       if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
     }
 
-    if(installationArgs != undefined){
+    if(installationArgs != undefined && !installationArgs.dryRunMode){
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         function mergeInstallationArgsAndYaml(yaml: any){
           let yamlObj = JSON.parse(JSON.stringify(yaml));
@@ -250,7 +250,7 @@ const Installation = () => {
     setMvsDatasetInitProgress(datasetInstallationStatus)
     dispatch(setDatasetInstallationStatus(false));
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
-
+    if(!installationArgs.dryRunMode){
     Promise.all([
       window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.setup.dataset', setupYaml),
     ]).then(async () => {
@@ -288,10 +288,19 @@ const Installation = () => {
           toggleEditorVisibility("output");
         })
       });
-      
     })
   }
-
+  else{
+    dispatch(setLoading(false));
+    setMvsDatasetInitializationProgress({
+      uploadYaml: true,
+      install: true,
+      initMVS: true
+    })
+    updateProgress(true);
+  }
+  }
+  
   // True - a proceed, False - blocked
   const installProceedActions = (status: boolean) => {
     dispatch(setNextStepEnabled(status));

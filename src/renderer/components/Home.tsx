@@ -52,7 +52,7 @@ const cards: Array<ICard> = [
     id: "configure", 
     name: "Zowe Installation Dry Run", 
     description: "It will guide you through the installation steps without running the installation.", 
-    link: "/",
+    link: "/wizard",
     media: installationDryImg,
   }
 ]
@@ -65,15 +65,26 @@ const lastActiveState: ActiveState = {
 };
 
 const makeCard = (card: ICard) => {
-  const dispatch = useAppDispatch();
   const {id, name, description, link, media} = card;
+  const installationArgs = useAppSelector(selectInstallationArgs);
+  const dispatch = useAppDispatch();
+
+  const handleClick = () => {
+    const flattenedData = flatten(lastActiveState);
+    localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
+    let newInstallationArgs;
+    if (id === "install") {
+      dispatch(setYaml(FALLBACK_YAML));
+      newInstallationArgs = {...installationArgs, dryRunMode: false};
+    } else if (id === "configure") {
+      newInstallationArgs = {...installationArgs, dryRunMode: true};
+    }
+    dispatch(setInstallationArgs(newInstallationArgs));
+  };
+
   return (  
     <Link key={`link-${id}`} to={link} >
-      <Box sx={{ width: '40vw', height: '40vh'}} onClick={(e) => {
-        const flattenedData = flatten(lastActiveState);
-        localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
-        if(id === "install") dispatch(setYaml(FALLBACK_YAML));
-      }}>
+      <Box sx={{ width: '40vw', height: '40vh'}} onClick={handleClick}>
         <Card id={`card-${id}`} square={true}>
           <CardMedia
             sx={{ height: 240 }}
@@ -91,7 +102,7 @@ const makeCard = (card: ICard) => {
           </CardContent>
         </Card>
       </Box>
-    </Link>
+      </Link>
   )
 }
 
