@@ -120,6 +120,8 @@ class Installation {
     installationArgs: InstallationArgs,
   ): Promise<IResponse> {
     try{
+      ProgressStore.set('downloadUnpax.getSchemas', false);
+      ProgressStore.set('downloadUnpax.getExampleYaml', false);
       const currentConfig: any = ConfigurationStore.getConfig();
       let yamlObj
       const zoweRuntimePath = installationArgs.installationDir;
