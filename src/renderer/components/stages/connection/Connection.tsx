@@ -27,15 +27,14 @@ import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
 import { setConnectionValidationDetails, setHost, setPort,
-               setUser, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress, setConnectionArgs, setPassword} from './connectionSlice';
-import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
-import { setConnectionStatus,  selectConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setDownloadUnpaxStatus, setInitializationStatus, setDatasetInstallationStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus, setVsamStatus, setStcsStatus} from '../progress/progressSlice';
+               setUser, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress, setPassword} from './connectionSlice';
+import { setLoading, setNextStepEnabled, selectZoweCLIVersion} from '../../configuration-wizard/wizardSlice';
+import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
-import { initializeProgress, getActiveStage, setPlanningStageStatus } from "../progress/StageProgressStatus";
+import { initializeProgress, getActiveStage, } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../services/eventDispatcher";
-import { setLocationValidationDetails } from "../PlanningSlice";
 
 const Connection = () => {
 
@@ -50,6 +49,16 @@ const Connection = () => {
   const connectionStatus = useAppSelector(selectConnectionStatus);
 
   useEffect(() => {
+    const pageAccessedByReload = (
+      (window.performance.navigation && window.performance.navigation.type === 1) ||
+        window.performance
+          .getEntriesByType('navigation')
+          .map((nav: any) => nav.type)
+          .includes('reload')
+    );
+    if(pageAccessedByReload){
+      window.location.assign(window.location.href.substring(0, window.location.href.lastIndexOf('/')));
+    }
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
   }, []);
 
