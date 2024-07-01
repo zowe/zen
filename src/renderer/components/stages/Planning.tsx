@@ -30,7 +30,7 @@ import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
 import { getStageDetails } from "../../../services/StageDetails";
 import { getProgress, getPlanningStageStatus, setPlanningValidationDetailsState, getPlanningValidationDetailsState, getInstallationTypeStatus } from "./progress/StageProgressStatus";
-import { FALLBACK_YAML } from "../common/Constants";
+import { FALLBACK_YAML, isValidUSSPath } from "../common/Utils";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -279,6 +279,15 @@ const Planning = () => {
       setEditorContent(res.map(item=>item?.details).join('\n'));
       setContentType('output');
 
+      if (localYaml?.zowe?.logDirectory && !isValidUSSPath(localYaml.zowe.logDirectory)) {
+        details.error = localYaml.zowe.logDirectory + " is not a valid z/OS Unix path"
+      }
+      if (localYaml?.zowe?.extensionDirectory && !isValidUSSPath(localYaml.zowe.extensionDirectory)) {
+        details.error = localYaml.zowe.extensionDirectory + " is not a valid z/OS Unix path"
+      }
+      if (localYaml?.zowe?.workspaceDirectory && !isValidUSSPath(localYaml.zowe.workspaceDirectory)) {
+        details.error = localYaml.zowe.logDirectory + " is not a valid z/OS Unix path"
+      }
       // If res[?] doesn't exist, ?-th window.electronc.ipcRender call failed...
       try {
         details.javaVersion = res[0].details.split('\n').filter((i: string) => i.trim().startsWith('java version'))[0].trim().slice(14, -1);

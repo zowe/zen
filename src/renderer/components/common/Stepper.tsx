@@ -27,7 +27,7 @@ import savedInstall from '../../assets/saved-install-green.png';
 import eventDispatcher from '../../../services/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL, UNPAX_STAGE_LABEL } from '../common/Constants';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL, UNPAX_STAGE_LABEL } from '../common/Utils';
 import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus } from '../stages/progress/StageProgressStatus';
 
 import '../../styles/Stepper.css';
