@@ -49,6 +49,7 @@ const Connection = () => {
   const connectionStatus = useAppSelector(selectConnectionStatus);
 
   useEffect(() => {
+    //This is a dirty hack to stop app from reloading to connection screen instead of home
     const pageAccessedByReload = (
       (window.performance.navigation && window.performance.navigation.type === 1) ||
         window.performance
@@ -59,6 +60,7 @@ const Connection = () => {
     if(pageAccessedByReload){
       window.location.assign(window.location.href.substring(0, window.location.href.lastIndexOf('/')));
     }
+    //End of dirty hack
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
   }, []);
 
