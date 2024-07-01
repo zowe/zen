@@ -10,7 +10,7 @@
 
 import Store from 'electron-store';
 import { DefaultStore } from './DefaultStore';
-import { DEF_JOB_STATEMENT } from '../renderer/components/common/Constants';
+import { DEF_JOB_STATEMENT } from '../renderer/components/common/Utils';
 
 const STORE_NAME = 'zen-connection-store';
 const STORE_SCHEMA = {

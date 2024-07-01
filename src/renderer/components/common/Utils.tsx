@@ -51,6 +51,12 @@ export function deepMerge(base: any, extension:any) {
   return base;
 }
 
+// Check if the path starts with a slash and does not contain spaces
+export function isValidUSSPath(path: string): boolean {
+  const validUSSRegex = /^\/[\w\/-]+$/;
+  return validUSSRegex.test(path);
+}
+
 export const SERVER_COMMON = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
   "$id": "https://zowe.org/schemas/v2/server-common",

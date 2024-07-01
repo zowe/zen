@@ -18,7 +18,7 @@ import { ProgressStore } from "../storage/ProgressStore";
 import * as fs from 'fs';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { InstallationArgs } from '../types/stateInterfaces';
-import { FALLBACK_SCHEMA, deepMerge } from '../renderer/components/common/Constants';
+import { FALLBACK_SCHEMA, deepMerge } from '../renderer/components/common/Utils';
 
 
 //AJV did not like the regex in our current schema
