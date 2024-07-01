@@ -36,8 +36,8 @@ export class FTPConnection extends Connection {
         response.details = e.message;
       }
     }
+    config.password = "";
     if (response.status) {
-      config.password = "";
       this.saveConnectionData(config);
     }
     return response;
