@@ -64,13 +64,17 @@ const Unpax = () => {
     return () => {
       clearInterval(timer);
     };
-  }, [showProgress]);
+  }, [showProgress, downloadUnpaxProgress]);
 
   const process = (event: any) => {
     event.preventDefault();
     setShowProgress(true);
     dispatch(setDownloadUnpaxStatus(false));
-    setDownloadUnpaxProgress(downloadUnpaxStatus);
+    setDownloadUnpaxProgress({
+      ...downloadUnpaxProgress,
+      getExampleYaml: false,
+      getSchemas: false, 
+    });
     dispatch(setNextStepEnabled(false));
     window.electron.ipcRenderer.downloadButtonOnClick(connectionArgs, {...installationArgs, userUploadedPaxPath: paxPath}, version).then((res: IResponse) => {
       if(!res.status){ //errors during runInstallation()
