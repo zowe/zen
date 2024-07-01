@@ -21,7 +21,7 @@ import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
 import { getStageDetails } from "../../../../services/StageDetails";
 import { getInstallationTypeStatus } from "../progress/StageProgressStatus";
-import { INSTALLATION_TYPE_STAGE_LABEL } from "../../common/Constants";
+import { INSTALLATION_TYPE_STAGE_LABEL } from "../../common/Utils";
 const InstallationType = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command

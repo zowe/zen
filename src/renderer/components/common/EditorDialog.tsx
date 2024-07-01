@@ -15,7 +15,7 @@ import { selectYaml, selectOutput, setNextStepEnabled, setYaml } from '../config
 import MonacoEditorComponent from "../common/MonacoEditor";
 import { parse, stringify } from "yaml";
 import { IResponse } from "../../../types/interfaces";
-import { DEF_NO_OUTPUT, schemaValidate } from "./Constants";
+import { DEF_NO_OUTPUT, schemaValidate } from "./Utils";
 import { alertEmitter } from "../Header";
 
 const test_jcl = `

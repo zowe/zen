@@ -20,7 +20,7 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus, setInitializationStatus, setLaunchConfigStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { TYPE_YAML, TYPE_OUTPUT, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, LAUNCH_CONFIG_STAGE_LABEL } from "../common/Constants";
+import { TYPE_YAML, TYPE_OUTPUT, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, LAUNCH_CONFIG_STAGE_LABEL } from "../common/Utils";
 import { IResponse } from "../../../types/interfaces";
 import { getInstallationArguments, getProgress, isInitComplete } from "./progress/StageProgressStatus";
 import { selectConnectionArgs } from "./connection/connectionSlice";
