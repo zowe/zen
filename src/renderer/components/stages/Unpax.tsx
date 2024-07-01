@@ -48,7 +48,7 @@ const Unpax = () => {
 
   useEffect(() => {
     const stageComplete = downloadUnpaxProgress.uploadYaml && downloadUnpaxProgress.download && downloadUnpaxProgress.upload && downloadUnpaxProgress.unpax;
-    if(!stageComplete && showProgress) {
+    if(!stageComplete && showProgress && !(downloadUnpaxProgress.getExampleYaml && downloadUnpaxProgress.getSchemas)) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getDownloadUnpaxProgress().then((res: any) => {
           setDownloadUnpaxProgress(res);
@@ -70,11 +70,6 @@ const Unpax = () => {
     event.preventDefault();
     setShowProgress(true);
     dispatch(setDownloadUnpaxStatus(false));
-    setDownloadUnpaxProgress({
-      ...downloadUnpaxProgress,
-      getExampleYaml: false,
-      getSchemas: false, 
-    });
     dispatch(setNextStepEnabled(false));
     window.electron.ipcRenderer.downloadButtonOnClick(connectionArgs, {...installationArgs, userUploadedPaxPath: paxPath}, version).then((res: IResponse) => {
       if(!res.status){ //errors during runInstallation()
@@ -100,6 +95,11 @@ const Unpax = () => {
     setDownloadUnpaxProgress(downloadUnpaxStatus);
     dispatch(setNextStepEnabled(false));
     window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+      setDownloadUnpaxProgress({
+        ...downloadUnpaxProgress,
+        getExampleYaml: false,
+        getSchemas: false, 
+      });
       if(!res.status){ //errors during runInstallation()
         alertEmitter.emit('showAlert', res.details.message ? res.details.message : res.details, 'error');
       }
