@@ -217,26 +217,6 @@ const Vsam = () => {
     if(updatedYaml?.zowe) {
       setLYaml(updatedYaml);
     }
-    handleUpdateYaml(data, updatedYaml);
-  }
-
-  const handleUpdateYaml = (data: any, newYaml: any) => {
-    const currentYaml = newYaml?.zowe ? newYaml : yaml;
-    const updatedYaml = {
-      ...currentYaml,
-      zowe: {
-        ...currentYaml.zowe,
-        setup: {
-          ...currentYaml.zowe.setup,
-          vsam: {
-            ...data,
-          }
-        }
-      }
-    };
-    setLYaml(updatedYaml);
-    window.electron.ipcRenderer.setConfig(updatedYaml);
-    dispatch(setYaml(updatedYaml));
   }
 
   const handleUpdateVsamName = (newName: string) => {
