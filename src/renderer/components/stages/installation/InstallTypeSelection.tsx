@@ -131,15 +131,19 @@ const InstallationType = () => {
       </Typography>
       <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '16px'}} type="submit" onClick={e => {
         e.preventDefault();
-        window.electron.ipcRenderer.uploadPax().then((res: any) => {
-          if(res.filePaths && res.filePaths[0] != undefined){
-            setPaxPath(res.filePaths[0]);
-            dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: res.filePaths[0]}));
-            dispatch(setUserUploadedPaxPath(res.filePaths[0]));
-          } else {
-            setPaxPath("");
-          }
-        });
+        if(!installationArgs.dryRunMode){
+          window.electron.ipcRenderer.uploadPax().then((res: any) => {
+            if(res.filePaths && res.filePaths[0] != undefined){
+              setPaxPath(res.filePaths[0]);
+              dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: res.filePaths[0]}));
+              dispatch(setUserUploadedPaxPath(res.filePaths[0]));
+            } else {
+              setPaxPath("");
+            }
+          });
+        }
+        else
+          updateProgress(true);
       }}>Upload PAX</Button>
       <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
         {`${paxPath === "" ? "No pax file selected." : paxPath}`}
