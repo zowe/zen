@@ -229,14 +229,14 @@ const Planning = () => {
         alertEmitter.emit('showAlert', err.message, 'error');
         dispatch(setLoading(false));
       });    
-    }
-    else{
+    } else{
       if(locationsValidated){
         setPlanningState(true);
         setStep(2);
-      }
-      else if(step<1)
+      } else if (step<1)
+      {
         setStep(1);
+      }
       setJobHeaderSaved(true);
       dispatch(setJobStatementValid(true));
       dispatch(setLoading(false));

@@ -64,48 +64,6 @@ const lastActiveState: ActiveState = {
   activeSubStepIndex: 0,
 };
 
-const makeCard = (card: ICard) => {
-  const {id, name, description, link, media} = card;
-  const installationArgs = useAppSelector(selectInstallationArgs);
-  const dispatch = useAppDispatch();
-
-  const handleClick = () => {
-    const flattenedData = flatten(lastActiveState);
-    localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
-    let newInstallationArgs;
-    if (id === "install") {
-      dispatch(setYaml(FALLBACK_YAML));
-      newInstallationArgs = {...installationArgs, dryRunMode: false};
-    } else if (id === "configure") {
-      newInstallationArgs = {...installationArgs, dryRunMode: true};
-    }
-    dispatch(setInstallationArgs(newInstallationArgs));
-  };
-
-  return (  
-    <Link key={`link-${id}`} to={link} >
-      <Box sx={{ width: '40vw', height: '40vh'}} onClick={handleClick}>
-        <Card id={`card-${id}`} square={true}>
-          <CardMedia
-            sx={{ height: 240 }}
-            image={media}
-          />
-          <CardContent className="action-card">
-            <Box>
-              <Typography variant="subtitle1" component="div">
-                {name}
-              </Typography>
-              <Typography sx={{ mb: 1.5, mt: 1.5, fontSize: '0.875rem' }} color="text.secondary">
-                {description}
-              </Typography>
-            </Box>
-          </CardContent>
-        </Card>
-      </Box>
-      </Link>
-  )
-}
-
 const Home = () => {
 
   const dispatch = useAppDispatch();
@@ -114,6 +72,7 @@ const Home = () => {
   const [showLoginDialog, setShowLogin] = useState(false);
   const [yaml] = useState(useAppSelector(selectYaml));
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
+  const installationArgs = useAppSelector(selectInstallationArgs);
 
   const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getPreviousInstallation();
 
@@ -122,6 +81,46 @@ const Home = () => {
   const stages: any = [];
   const defaultTooltip: string = "Resume";
   const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
+
+  const makeCard = (card: ICard) => {
+    const {id, name, description, link, media} = card;
+  
+    const handleClick = () => {
+      const flattenedData = flatten(lastActiveState);
+      localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
+      let newInstallationArgs;
+      if (id === "install") {
+        dispatch(setYaml(FALLBACK_YAML));
+        newInstallationArgs = {...installationArgs, dryRunMode: false};
+      } else if (id === "configure") {
+        newInstallationArgs = {...installationArgs, dryRunMode: true};
+      }
+      dispatch(setInstallationArgs(newInstallationArgs));
+    };
+  
+    return (  
+      <Link key={`link-${id}`} to={link} >
+        <Box sx={{ width: '40vw', height: '40vh'}} onClick={handleClick}>
+          <Card id={`card-${id}`} square={true}>
+            <CardMedia
+              sx={{ height: 240 }}
+              image={media}
+            />
+            <CardContent className="action-card">
+              <Box>
+                <Typography variant="subtitle1" component="div">
+                  {name}
+                </Typography>
+                <Typography sx={{ mb: 1.5, mt: 1.5, fontSize: '0.875rem' }} color="text.secondary">
+                  {description}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+        </Link>
+    )
+  }
 
   useEffect(() => {
     eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));

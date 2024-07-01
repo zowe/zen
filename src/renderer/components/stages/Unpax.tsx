@@ -66,6 +66,15 @@ const Unpax = () => {
     };
   }, [showProgress]);
 
+  const downloadUnpaxProgressAndStateTrue = {
+    uploadYaml: true,
+    download: true,
+    upload: true,
+    unpax: true,
+    getExampleYaml: true,
+    getSchemas: true,
+  };
+
   const process = (event: any) => {
     event.preventDefault();
     setShowProgress(true);
@@ -91,22 +100,8 @@ const Unpax = () => {
     });
   }
   else{
-    setDownloadUnpaxProgress({
-      uploadYaml: true,
-      download: true,
-      upload: true,
-      unpax: true,
-      getExampleYaml: true,
-      getSchemas: true,
-    });
-    setDownloadUnpaxState({
-      uploadYaml: true,
-      download: true,
-      upload: true,
-      unpax: true,
-      getExampleYaml: true,
-      getSchemas: true,
-    });
+    setDownloadUnpaxProgress(downloadUnpaxProgressAndStateTrue);
+    setDownloadUnpaxState(downloadUnpaxProgressAndStateTrue);
     dispatch(setNextStepEnabled(true));
     dispatch(setDownloadUnpaxStatus(true));
   }
@@ -137,22 +132,8 @@ const Unpax = () => {
     });
   }
   else{
-    setDownloadUnpaxProgress({
-      uploadYaml: true,
-      download: true,
-      upload: true,
-      unpax: true,
-      getExampleYaml: true,
-      getSchemas: true,
-    });
-    setDownloadUnpaxState({
-      uploadYaml: true,
-      download: true,
-      upload: true,
-      unpax: true,
-      getExampleYaml: true,
-      getSchemas: true,
-    });
+    setDownloadUnpaxProgress(downloadUnpaxProgressAndStateTrue);
+    setDownloadUnpaxState(downloadUnpaxProgressAndStateTrue);
     dispatch(setNextStepEnabled(true));
     dispatch(setDownloadUnpaxStatus(true));
   }
@@ -199,7 +180,9 @@ const Unpax = () => {
       {installValue === "download" && <ContainerCard title="Download Zowe Pax" description=""> 
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
             {`Zen will download the latest Zowe convenience build in PAX archive format from `}
-            <Link href="zowe.org">{'https://zowe.org/'}</Link>
+            <Link href="https://zowe.org" target="_blank" rel="noopener noreferrer">
+              {'https://zowe.org'}
+            </Link>
             {` Skip this step if you have already downloaded Zowe.`}
           </Typography>
           {!showProgress && <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
