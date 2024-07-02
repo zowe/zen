@@ -27,7 +27,7 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { getProgress, setVsamInitState, mapAndSetSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
-import { INIT_STAGE_LABEL, ajv } from "../common/Constants";
+import { INIT_STAGE_LABEL, ajv } from "../common/Utils";
 
 const Vsam = () => {
 

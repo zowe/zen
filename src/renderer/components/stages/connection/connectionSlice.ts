@@ -11,7 +11,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
 import { IIpcConnectionArgs, IIpcConnectionArgsSecureOptions } from '../../../../types/interfaces';
-import { DEF_JOB_STATEMENT } from '../../common/Constants';
+import { DEF_JOB_STATEMENT } from '../../common/Utils';
 
 export interface ConnectionState {
   connectionArgs: IIpcConnectionArgs;

@@ -23,7 +23,7 @@ import React from "react";
 import ProgressCard from "../common/ProgressCard";
 import { alertEmitter } from "../Header";
 import { IResponse } from "../../../types/interfaces";
-import { UNPAX_STAGE_LABEL } from "../common/Constants";
+import { UNPAX_STAGE_LABEL } from "../common/Utils";
 
 const Unpax = () => {
 
