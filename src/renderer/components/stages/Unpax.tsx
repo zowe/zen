@@ -54,7 +54,7 @@ const Unpax = () => {
           setDownloadUnpaxProgress(res);
           setDownloadUnpaxState(res);
           if(stageComplete){
-            setStageSkipStatus(true);
+            setStageStatus(true);
             clearInterval(timer);
           }
         })
@@ -67,7 +67,7 @@ const Unpax = () => {
 
   const process = (event: any) => {
     event.preventDefault();
-    setStageSkipStatus(false);
+    setStageStatus(false);
     setShowProgress(true);
     setDownloadUnpaxProgress(downloadUnpaxStatus);
     dispatch(setNextStepEnabled(false));
@@ -79,11 +79,11 @@ const Unpax = () => {
         dispatch(setYaml(res.details.mergedYaml));
         window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
       }
-      setStageSkipStatus(res.status);
+      setStageStatus(res.status);
       clearInterval(timer);
     }).catch(() => {
       clearInterval(timer);
-      setStageSkipStatus(false);
+      setStageStatus(false);
     });
   }
 
@@ -128,7 +128,7 @@ const Unpax = () => {
     }
   }, []);
 
-  const setStageSkipStatus = (status: boolean) => {
+  const setStageStatus = (status: boolean) => {
     dispatch(setNextStepEnabled(status));
     dispatch(setDownloadUnpaxStatus(status));
     mapAndSetStepSkipStatus(STAGE_ID, !status);
