@@ -92,7 +92,6 @@ const Unpax = () => {
     event.preventDefault();
     setShowProgress(true);
     dispatch(setDownloadUnpaxStatus(false));
-    setDownloadUnpaxProgress(downloadUnpaxStatus);
     dispatch(setNextStepEnabled(false));
     window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
       setDownloadUnpaxProgress({
