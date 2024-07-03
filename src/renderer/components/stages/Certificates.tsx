@@ -135,14 +135,12 @@ const Certificates = () => {
 
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
-    stages[STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
     setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setStageSkipStatus(!status);
-
     if(!status) {
       for (let key in certificateInitProgress) {
         certificateInitProgress[key as keyof(CertInitSubStepsState)] = false;
@@ -155,6 +153,7 @@ const Certificates = () => {
     dispatch(setInitializationStatus(isInitializationStageComplete()));
     dispatch(setCertificateStatus(status));
     setCertificateInitializationProgress(getCertificateInitState());
+    setStageSkipStatus(!status);
   }
 
   const reinitialize = (event: any) => {

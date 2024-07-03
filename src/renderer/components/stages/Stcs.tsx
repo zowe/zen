@@ -150,13 +150,12 @@ const Stcs = () => {
 
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
-    stages[STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
     setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setStageSkipStatus(!status);
     if(!status) {
       for (let key in stcsInitProgress) {
         stcsInitProgress[key as keyof(InitSubStepsState)] = false;
@@ -169,6 +168,7 @@ const Stcs = () => {
     dispatch(setStcsStatus(status));
     dispatch(setNextStepEnabled(status));
     setStcsInitializationProgress(getStcsInitState());
+    setStageSkipStatus(!status);
   }
 
   const toggleEditorVisibility = (type: any) => {

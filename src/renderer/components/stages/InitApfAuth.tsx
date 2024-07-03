@@ -138,14 +138,12 @@ const InitApfAuth = () => {
 
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
-    stages[STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
     setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setStageSkipStatus(!status);
-
     if(!status) {
       for (let key in apfAuthInitProgress) {
         apfAuthInitProgress[key as keyof(InitSubStepsState)] = false;
@@ -158,6 +156,7 @@ const InitApfAuth = () => {
     dispatch(setInitializationStatus(isInitializationStageComplete()));
     dispatch(setApfAuthStatus(status));
     setApfAuthorizationInitProgress(getApfAuthState());
+    setStageSkipStatus(!status);
   }
   
   const toggleEditorVisibility = (type: any) => {

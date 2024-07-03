@@ -226,13 +226,12 @@ const Installation = () => {
 
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
-    stages[STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
     setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setStageSkipStatus(!status);
     if(!status) {
       for (let key in mvsDatasetInitProgress) {
         mvsDatasetInitProgress[key as keyof(DatasetInstallationState)] = false;
@@ -243,6 +242,7 @@ const Installation = () => {
     status = allAttributesTrue ? true : false;
     installProceedActions(status);
     setMvsDatasetInitializationProgress(getDatasetInstallationState());
+    setStageSkipStatus(!status);
   }
 
   const toggleEditorVisibility = (type: any) => {

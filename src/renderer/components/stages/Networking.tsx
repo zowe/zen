@@ -582,15 +582,15 @@ const Networking = () => {
 
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
-    stages[STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
     setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!setStateUpdated);
-    setStageSkipStatus(!status);
     dispatch(setNetworkingStatus(status));
     dispatch(setNextStepEnabled(status));
+    setStageSkipStatus(!status);
   }
 
   const toggleEditorVisibility = (type: any) => {

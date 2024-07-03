@@ -149,13 +149,12 @@ const Vsam = () => {
 
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
-    stages[STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
     setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setStageSkipStatus(!status);
     if(!status) {
       for (let key in vsamInitProgress) {
         vsamInitProgress[key as keyof(InitSubStepsState)] = false;
@@ -168,6 +167,7 @@ const Vsam = () => {
     dispatch(setVsamStatus(status));
     dispatch(setNextStepEnabled(status));
     setVsamInitializationProgress(getVsamInitState());
+    setStageSkipStatus(!status);
   }
 
   const toggleEditorVisibility = (type: any) => {

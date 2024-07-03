@@ -138,13 +138,12 @@ const Security = () => {
 
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
-    stages[STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
     setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setStageSkipStatus(!status);
     if(!status) {
       for (let key in securityInitProgress) {
         securityInitProgress[key as keyof(InitSubStepsState)] = false;
@@ -157,6 +156,7 @@ const Security = () => {
     dispatch(setSecurityStatus(status));
     dispatch(setNextStepEnabled(status));
     setSecurityInitializationProgress(getSecurityInitState());
+    setStageSkipStatus(!status);
   }
 
   const toggleEditorVisibility = (type: any) => {
