@@ -12,6 +12,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
 import { setProgress, getProgress } from './StageProgressStatus';
 import { ProgressState } from '../../../../types/stateInterfaces';
+import { stages } from '../../configuration-wizard/Wizard';
 
 const initialState: ProgressState = {
   connectionStatus: getProgress('connectionStatus') || false,
@@ -50,8 +51,14 @@ export const progressSlice = createSlice({
       setProgress('downloadUnpaxStatus', action.payload);
     },
     setInitializationStatus: (state, action: PayloadAction<boolean>) => {
-      state.initializationStatus = action.payload;
-      setProgress('initializationStatus', action.payload);
+      let status = false;
+      stages.map(stage => {
+        if(stage.subStages) {
+          status = stage.subStages.map(subStage => subStage.isSkipped).every(skip => skip === false);
+        }
+      })
+      state.initializationStatus = status;
+      setProgress('initializationStatus', status);
     },
     setDatasetInstallationStatus: (state, action: PayloadAction<boolean>) => {
       state.datasetInstallationStatus = action.payload;
