@@ -572,8 +572,6 @@ const Networking = () => {
     dispatch(setNextStepEnabled(getProgress('networkingStatus')));
     dispatch(setInitializationStatus(isInitializationStageComplete()));
 
-    updateProgress(!stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
-
     return () => {
       mapAndSetSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
