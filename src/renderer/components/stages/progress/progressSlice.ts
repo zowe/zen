@@ -51,14 +51,8 @@ export const progressSlice = createSlice({
       setProgress('downloadUnpaxStatus', action.payload);
     },
     setInitializationStatus: (state, action: PayloadAction<boolean>) => {
-      let status = false;
-      stages.map(stage => {
-        if(stage.subStages) {
-          status = stage.subStages.map(subStage => subStage.isSkipped).every(skip => skip === false);
-        }
-      })
-      state.initializationStatus = status;
-      setProgress('initializationStatus', status);
+      state.initializationStatus = action.payload;
+      setProgress('initializationStatus', action.payload);
     },
     setDatasetInstallationStatus: (state, action: PayloadAction<boolean>) => {
       state.datasetInstallationStatus = action.payload;
