@@ -580,7 +580,7 @@ export const getCompleteProgress = () : ProgressState => {
 export const isInitComplete = (): boolean => {
   const progress = localStorage.getItem(progressStateKey);
   if(progress) {
-    const data:any =  unflatten(JSON.parse(progress));
+    const data:any = unflatten(JSON.parse(progress));
     return data.datasetInstallationStatus && data.networkingStatus && data.apfAuthStatus && data.securityStatus && data.stcsStatus && data.certificateStatus && data.vsamStatus && data.launchConfigStatus;
   } else {
     return false;
