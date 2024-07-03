@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Box, Button, FormControl, FormHelperText, MenuItem, Select } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setInitializationStatus, setCertificateStatus } from './progress/progressSlice';
@@ -54,10 +54,16 @@ const Certificates = () => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
   const [reinit, setReinit] = useState(false);
+  const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+  const stageStatusRef = useRef(stageStatus);
 
   let timer: any;
 
   const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema))
+
+  useEffect(() => {
+    stageStatusRef.current = stageStatus;
+  }, [stageStatus]);
 
   useEffect(() => {
     dispatch(setInitializationStatus(isInitComplete()));
@@ -74,6 +80,7 @@ const Certificates = () => {
     setIsFormInit(true);
 
     return () => {
+      mapAndSetSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
@@ -129,7 +136,7 @@ const Certificates = () => {
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
     stages[STAGE_ID].isSkipped = status;
-    mapAndSetSubStepSkipStatus(SUB_STAGE_ID, status);
+    setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
