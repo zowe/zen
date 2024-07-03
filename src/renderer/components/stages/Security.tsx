@@ -24,7 +24,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { setProgress, getProgress, setSecurityInitState, getSecurityInitState, mapAndSetSubStepSkipStatus, getInstallationArguments, isInitializationStageComplete } from "./progress/StageProgressStatus";
+import { setProgress, getProgress, setSecurityInitState, getSecurityInitState, updateSubStepSkipStatus, getInstallationArguments, isInitializationStageComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { JCL_UNIX_SCRIPT_OK, INIT_STAGE_LABEL, SECURITY_STAGE_LABEL, ajv, SERVER_COMMON } from '../common/Utils';
 import { alertEmitter } from "../Header";
@@ -83,7 +83,7 @@ const Security = () => {
     setInit(true);
 
     return () => {
-      mapAndSetSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
+      updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);

@@ -22,7 +22,7 @@ import { selectInitializationStatus, setInitializationStatus, setLaunchConfigSta
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_OUTPUT, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, LAUNCH_CONFIG_STAGE_LABEL } from "../common/Utils";
 import { IResponse } from "../../../types/interfaces";
-import { getInstallationArguments, getProgress, isInitializationStageComplete, mapAndSetSubStepSkipStatus } from "./progress/StageProgressStatus";
+import { getInstallationArguments, getProgress, isInitializationStageComplete, updateSubStepSkipStatus } from "./progress/StageProgressStatus";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { alertEmitter } from "../Header";
 
@@ -473,7 +473,7 @@ const LaunchConfig = () => {
     updateProgress(getProgress('launchConfigStatus') && !stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
 
     return () => {
-      mapAndSetSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
+      updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);

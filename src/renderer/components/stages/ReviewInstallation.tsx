@@ -25,7 +25,7 @@ import { setActiveStep } from './progress/activeStepSlice';
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { getStageDetails } from "../../../services/StageDetails";
 import { TYPE_YAML, TYPE_OUTPUT } from '../common/Utils';
-import { getCompleteProgress, mapAndSetStepSkipStatus } from "./progress/StageProgressStatus";
+import { getCompleteProgress, updateStepSkipStatus } from "./progress/StageProgressStatus";
 
 import '../../styles/ReviewInstallation.css';
 

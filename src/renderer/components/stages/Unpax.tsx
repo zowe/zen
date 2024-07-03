@@ -18,7 +18,7 @@ import { selectConnectionArgs } from './connection/connectionSlice';
 import { setActiveStep } from "./progress/activeStepSlice"; 
 import { getStageDetails } from "../../../services/StageDetails";
 import { setDownloadUnpaxStatus } from './progress/progressSlice';
-import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationArguments, getInstallationTypeStatus, getProgress, setDownloadUnpaxState, mapAndSetStepSkipStatus } from "./progress/StageProgressStatus";
+import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationArguments, getInstallationTypeStatus, getProgress, setDownloadUnpaxState, updateStepSkipStatus } from "./progress/StageProgressStatus";
 import React from "react";
 import ProgressCard from "../common/ProgressCard";
 import { alertEmitter } from "../Header";
@@ -73,7 +73,7 @@ const Unpax = () => {
     dispatch(setDownloadUnpaxStatus(getProgress('downloadUnpaxStatus')));
 
     return () => {
-      mapAndSetStepSkipStatus(STAGE_ID, stageStatusRef.current);
+      updateStepSkipStatus(STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     }
   }, []);

@@ -22,7 +22,7 @@ import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, ajv } from "../common/Utils";
 import { IResponse } from "../../../types/interfaces";
 import { selectConnectionArgs } from "./connection/connectionSlice";
-import { getInstallationArguments, getProgress, isInitializationStageComplete, mapAndSetSubStepSkipStatus } from "./progress/StageProgressStatus";
+import { getInstallationArguments, getProgress, isInitializationStageComplete, updateSubStepSkipStatus } from "./progress/StageProgressStatus";
 import { alertEmitter } from "../Header";
 
 //   const schema = useAppSelector(selectSchema);
@@ -573,7 +573,7 @@ const Networking = () => {
     dispatch(setInitializationStatus(isInitializationStageComplete()));
 
     return () => {
-      mapAndSetSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
+      updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);

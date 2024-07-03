@@ -24,7 +24,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setVsamInitState, mapAndSetSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete } from "./progress/StageProgressStatus";
+import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
 import { INIT_STAGE_LABEL, ajv } from "../common/Utils";
@@ -94,7 +94,7 @@ const Vsam = () => {
 
     return () => {
       alertEmitter.emit('hideAlert');
-      mapAndSetSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
+      updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);

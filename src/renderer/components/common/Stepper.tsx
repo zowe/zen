@@ -28,7 +28,7 @@ import eventDispatcher from '../../../services/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL, UNPAX_STAGE_LABEL } from '../common/Utils';
-import { getProgress, getCompleteProgress, mapAndSetSubStepSkipStatus, mapAndGetSubStepSkipStatus, mapAndSetStepSkipStatus, mapAndGetStepSkipStatus } from '../stages/progress/StageProgressStatus';
+import { getProgress, getCompleteProgress, updateSubStepSkipStatus, updateStepSkipStatus } from '../stages/progress/StageProgressStatus';
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
 import { getStageDetails } from '../../../services/StageDetails';
@@ -117,10 +117,10 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const handleSkip = async () => {
     stages[activeStep].isSkipped = true;
-    mapAndSetStepSkipStatus(activeStep, true);
+    updateStepSkipStatus(activeStep, true);
     if(stages[activeStep].subStages){
       stages[activeStep].subStages[activeSubStep].isSkipped = true;
-      mapAndSetSubStepSkipStatus(activeSubStep, true);
+      updateSubStepSkipStatus(activeSubStep, true);
     }
     if(stages[activeStep].label === UNPAX_STAGE_LABEL && installationArgs.installationType != "smpe"){
       alertEmitter.emit('showAlert', 'Retrieving example-zowe.yaml and latest schemas from Zowe runtime files...', 'info');
