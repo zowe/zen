@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Box, Button, Checkbox, FormControlLabel, IconButton, SvgIcon, SvgIconProps, TextField } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
@@ -22,7 +22,7 @@ import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, ajv } from "../common/Utils";
 import { IResponse } from "../../../types/interfaces";
 import { selectConnectionArgs } from "./connection/connectionSlice";
-import { getInstallationArguments, getProgress, isInitComplete } from "./progress/StageProgressStatus";
+import { getInstallationArguments, getProgress, isInitComplete, mapAndSetSubStepSkipStatus } from "./progress/StageProgressStatus";
 import { alertEmitter } from "../Header";
 
 //   const schema = useAppSelector(selectSchema);
@@ -555,13 +555,15 @@ const Networking = () => {
   const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema));
   const [LOOP_LIMIT] = useState(1024);
 
-
-  // useEffect(() => {
-  //   // dispatch(setYaml(yaml));
-  //   setModdedYaml(createModdedYaml(yaml));
-  // }, [yaml]); 
+  const [stateUpdated, setStateUpdated] = useState(false);
+  const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+  const stageStatusRef = useRef(stageStatus);
 
   const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
+
+  useEffect(() => {
+    stageStatusRef.current = stageStatus;
+  }, [stageStatus]);
 
   useEffect(() => {
     const nextPosition = document.getElementById('container-box-id');
@@ -570,10 +572,26 @@ const Networking = () => {
     dispatch(setNextStepEnabled(getProgress('networkingStatus')));
     dispatch(setInitializationStatus(isInitComplete()));
 
+    updateProgress(!stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+
     return () => {
+      mapAndSetSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
+
+  const setStageSkipStatus = (status: boolean) => {
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = status;
+    setStageStatus(status);
+  }
+
+  const updateProgress = (status: boolean) => {
+    setStateUpdated(!setStateUpdated);
+    setStageSkipStatus(!status);
+    dispatch(setNetworkingStatus(status));
+    dispatch(setNextStepEnabled(status));
+  }
 
   const toggleEditorVisibility = (type: any) => {
     setContentType(type);
@@ -609,15 +627,15 @@ const Networking = () => {
 
   const onSaveYaml = (e: any) => {
     e.preventDefault();
+    updateProgress(false);
     alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
     dispatch(setNetworkingStatus(false));
     window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
       if(res && res.status) {
-        dispatch(setNextStepEnabled(true));
-        dispatch(setNetworkingStatus(true));
+        updateProgress(true);
         alertEmitter.emit('showAlert', res.details, 'success');
       } else {
-        dispatch(setNetworkingStatus(false));
+        updateProgress(false);
         alertEmitter.emit('showAlert', res.details, 'error');
       }
       dispatch(setInitializationStatus(isInitComplete()));

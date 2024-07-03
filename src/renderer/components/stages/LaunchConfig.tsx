@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml,setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
@@ -22,7 +22,7 @@ import { selectInitializationStatus, setInitializationStatus, setLaunchConfigSta
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_OUTPUT, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, LAUNCH_CONFIG_STAGE_LABEL } from "../common/Utils";
 import { IResponse } from "../../../types/interfaces";
-import { getInstallationArguments, getProgress, isInitComplete } from "./progress/StageProgressStatus";
+import { getInstallationArguments, getProgress, isInitComplete, mapAndSetSubStepSkipStatus } from "./progress/StageProgressStatus";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { alertEmitter } from "../Header";
 
@@ -442,6 +442,14 @@ const LaunchConfig = () => {
 
   const [isInitializationSkipped] = useState(!useAppSelector(selectInitializationStatus));
 
+  const [stateUpdated, setStateUpdated] = useState(false);
+  const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+  const stageStatusRef = useRef(stageStatus);
+
+  useEffect(() => {
+    stageStatusRef.current = stageStatus;
+  }, [stageStatus]);
+
   useEffect(() => {
 
     if(!yaml){
@@ -461,11 +469,26 @@ const LaunchConfig = () => {
     dispatch(setNextStepEnabled(getProgress('launchConfigStatus')));
 
     setIsFormInit(true);
+    updateProgress(!stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
 
     return () => {
+      mapAndSetSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
+
+  const setStageSkipStatus = (status: boolean) => {
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = status;
+    setStageStatus(status);
+  }
+
+  const updateProgress = (status: boolean) => {
+    setStateUpdated(!setStateUpdated);
+    setStageSkipStatus(!status);
+    dispatch(setLaunchConfigStatus(status));
+    dispatch(setNextStepEnabled(status));
+  }
 
   const toggleEditorVisibility = (type: any) => {
     setContentType(type);
@@ -506,15 +529,15 @@ const LaunchConfig = () => {
 
   const onSaveYaml = (e: any) => {
     e.preventDefault();
+    updateProgress(false);
     dispatch(setLaunchConfigStatus(false));
     alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
     window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
       if(res && res.status) {
-        dispatch(setNextStepEnabled(true));
-        dispatch(setLaunchConfigStatus(true));
+        updateProgress(true);
         alertEmitter.emit('showAlert', res.details, 'success');
       } else {
-        dispatch(setLaunchConfigStatus(false));
+        updateProgress(false);
         alertEmitter.emit('showAlert', res.details, 'error');
       }
       dispatch(setInitializationStatus(isInitComplete()));
