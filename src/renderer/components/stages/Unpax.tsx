@@ -109,8 +109,9 @@ const Unpax = () => {
       dispatch(setNextStepEnabled(res.status));
       dispatch(setDownloadUnpaxStatus(res.status));
       clearInterval(timer);
-    }).catch(() => {
+    }).catch((err: any) => {
       clearInterval(timer);
+      alertEmitter.emit('showAlert', typeof err === "string" ? err : err.toString(), 'error');
       dispatch(setNextStepEnabled(false));
     });
   }
