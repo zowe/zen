@@ -24,7 +24,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSubStepSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
+import { getProgress, setCertificateInitState, getCertificateInitState, mapAndSetSubStepSkipStatus, getInstallationArguments, isInitializationStageComplete } from "./progress/StageProgressStatus";
 import { CertInitSubStepsState } from "../../../types/stateInterfaces";
 import { TYPE_YAML, TYPE_OUTPUT, INIT_STAGE_LABEL, CERTIFICATES_STAGE_LABEL, ajv, deepMerge } from "../common/Utils";
 
@@ -66,7 +66,7 @@ const Certificates = () => {
   }, [stageStatus]);
 
   useEffect(() => {
-    dispatch(setInitializationStatus(isInitComplete()));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
     if(getProgress('certificateStatus')) {
       const nextPosition = document.getElementById('start-certificate-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -152,7 +152,7 @@ const Certificates = () => {
     const allAttributesTrue = Object.values(certificateInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
     dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(isInitComplete()));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
     dispatch(setCertificateStatus(status));
     setCertificateInitializationProgress(getCertificateInitState());
   }

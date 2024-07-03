@@ -23,7 +23,7 @@ import { alertEmitter } from "../Header";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setApfAuthState, getApfAuthState, mapAndSetSubStepSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
+import { getProgress, setApfAuthState, getApfAuthState, mapAndSetSubStepSkipStatus, getInstallationArguments, isInitializationStageComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { JCL_UNIX_SCRIPT_OK, FALLBACK_YAML, INIT_STAGE_LABEL, APF_AUTH_STAGE_LABEL, ajv, SERVER_COMMON } from "../common/Utils";
 
@@ -63,7 +63,7 @@ const InitApfAuth = () => {
   }, [stageStatus]);
 
   useEffect(() => {
-    dispatch(setInitializationStatus(isInitComplete()));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
     let nextPosition;
     if(getProgress('apfAuthStatus')) {
       nextPosition = document.getElementById('start-apf-progress');
@@ -155,7 +155,7 @@ const InitApfAuth = () => {
     const allAttributesTrue = Object.values(apfAuthInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
     dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(isInitComplete()));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
     dispatch(setApfAuthStatus(status));
     setApfAuthorizationInitProgress(getApfAuthState());
   }

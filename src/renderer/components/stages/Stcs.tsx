@@ -22,7 +22,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setStcsInitState, getStcsInitState, mapAndSetSubStepSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
+import { getProgress, setStcsInitState, getStcsInitState, mapAndSetSubStepSkipStatus, getInstallationArguments, isInitializationStageComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
 import { INIT_STAGE_LABEL, STC_STAGE_LABEL, ajv } from "../common/Utils";
@@ -70,7 +70,7 @@ const Stcs = () => {
   }, [stageStatus]);
 
   useEffect(() => {
-    dispatch(setInitializationStatus(isInitComplete()));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
     setShowProgress(initClicked || getProgress('stcsStatus'));
     let nextPosition;
 
@@ -165,7 +165,7 @@ const Stcs = () => {
     }
     const allAttributesTrue = Object.values(stcsInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setInitializationStatus(isInitComplete()));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
     dispatch(setStcsStatus(status));
     dispatch(setNextStepEnabled(status));
     setStcsInitializationProgress(getStcsInitState());

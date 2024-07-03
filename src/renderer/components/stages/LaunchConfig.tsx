@@ -22,7 +22,7 @@ import { selectInitializationStatus, setInitializationStatus, setLaunchConfigSta
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_OUTPUT, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, LAUNCH_CONFIG_STAGE_LABEL } from "../common/Utils";
 import { IResponse } from "../../../types/interfaces";
-import { getInstallationArguments, getProgress, isInitComplete, mapAndSetSubStepSkipStatus } from "./progress/StageProgressStatus";
+import { getInstallationArguments, getProgress, isInitializationStageComplete, mapAndSetSubStepSkipStatus } from "./progress/StageProgressStatus";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { alertEmitter } from "../Header";
 
@@ -467,7 +467,7 @@ const LaunchConfig = () => {
     nextPosition.scrollIntoView({behavior: 'smooth'});
 
     dispatch(setNextStepEnabled(getProgress('launchConfigStatus')));
-    dispatch(setInitializationStatus(isInitComplete()));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
 
     setIsFormInit(true);
     updateProgress(getProgress('launchConfigStatus') && !stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
@@ -541,7 +541,7 @@ const LaunchConfig = () => {
         updateProgress(false);
         alertEmitter.emit('showAlert', res.details, 'error');
       }
-      dispatch(setInitializationStatus(isInitComplete()));
+      dispatch(setInitializationStatus(isInitializationStageComplete()));
     });
   }
 

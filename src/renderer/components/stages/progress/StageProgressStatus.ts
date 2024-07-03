@@ -11,6 +11,7 @@
 import { flatten, unflatten } from 'flat';
 import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, subStepState, stepSkipState, InstallationArgs, DownloadUnpaxState} from '../../../../types/stateInterfaces';
 import { stages } from '../../configuration-wizard/Wizard';
+// import { getStageDetails } from '../../../../../src/services/StageDetails';
 
 const installationTypeStatus: InstallationType = {
   installationType: 'download',
@@ -577,11 +578,12 @@ export const getCompleteProgress = () : ProgressState => {
   }
 }
 
-export const isInitComplete = (): boolean => {
+export const isInitializationStageComplete = (): boolean => {
   const progress = localStorage.getItem(progressStateKey);
   if(progress) {
     const data:any = unflatten(JSON.parse(progress));
-    return data.datasetInstallationStatus && data.networkingStatus && data.apfAuthStatus && data.securityStatus && data.stcsStatus && data.certificateStatus && data.vsamStatus && data.launchConfigStatus;
+    const status = data.datasetInstallationStatus && data.networkingStatus && data.apfAuthStatus && data.securityStatus && data.stcsStatus && data.certificateStatus && data.vsamStatus && data.launchConfigStatus;
+    return status;
   } else {
     return false;
   }
