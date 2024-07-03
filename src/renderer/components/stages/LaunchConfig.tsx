@@ -467,9 +467,10 @@ const LaunchConfig = () => {
     nextPosition.scrollIntoView({behavior: 'smooth'});
 
     dispatch(setNextStepEnabled(getProgress('launchConfigStatus')));
+    dispatch(setInitializationStatus(isInitComplete()));
 
     setIsFormInit(true);
-    updateProgress(!stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+    updateProgress(getProgress('launchConfigStatus') && !stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
 
     return () => {
       mapAndSetSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
