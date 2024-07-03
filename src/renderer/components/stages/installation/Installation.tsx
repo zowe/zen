@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import { Box, Button, FormControl, Typography, debounce } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading} from '../../configuration-wizard/wizardSlice';
@@ -60,14 +60,19 @@ const Installation = () => {
   const [mvsDatasetInitProgress, setMvsDatasetInitProgress] = useState(getDatasetInstallationState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
-
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   const [version] = useState(useAppSelector(selectZoweVersion));
+  const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+  const stageStatusRef = useRef(stageStatus);
+
   let timer: any;
   const [installationType] = useState(getInstallationTypeStatus().installationType);
 
   const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema));
 
+  useEffect(() => {
+    stageStatusRef.current = stageStatus;
+  }, [stageStatus]);
   
   useEffect(() => {
     dispatch(setInitializationStatus(isInitComplete()));
@@ -167,6 +172,7 @@ const Installation = () => {
     }
 
     return () => {
+      mapAndSetSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
@@ -221,7 +227,7 @@ const Installation = () => {
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
     stages[STAGE_ID].isSkipped = status;
-    mapAndSetSubStepSkipStatus(SUB_STAGE_ID, status);
+    setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
