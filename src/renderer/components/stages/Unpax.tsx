@@ -47,6 +47,7 @@ const Unpax = () => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].isSkipped);
   const stageStatusRef = useRef(stageStatus);
+  const [isYamlFetched, setIsYamlFetched] = useState(false);
 
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   let timer: any;
@@ -103,7 +104,11 @@ const Unpax = () => {
   const setDownloadAndUnpaxProgress = (downloadUnpaxState: DownloadUnpaxState) => {
     setDownloadUnpaxProgress(downloadUnpaxState);
     setDownloadUnpaxState(downloadUnpaxState);
-    const allAttributesTrue = Object.values(downloadUnpaxState).every(value => value === true);
+    let allAttributesTrue = Object.values(downloadUnpaxState).every(value => value === true);
+    if(isYamlFetched) {
+      allAttributesTrue = downloadUnpaxState.getSchemas && downloadUnpaxState.getExampleYaml;
+      setIsYamlFetched(false);
+    }
     if(allAttributesTrue) {
       dispatchActions(true);
     }
@@ -157,6 +162,7 @@ const Unpax = () => {
   }
 
   const fetchExampleYaml = (event: any) => {
+    setIsYamlFetched(true);
     event.preventDefault();
     setShowProgress(true);
     updateProgress(false);
