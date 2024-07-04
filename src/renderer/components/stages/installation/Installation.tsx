@@ -183,6 +183,7 @@ const Installation = () => {
     if(initClicked) {
       const nextPosition = document.getElementById('installation-progress');
       if(nextPosition) nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      installProceedActions(false);
       setStateUpdated(!stateUpdated);
     }
   }, [initClicked]);
@@ -190,8 +191,7 @@ const Installation = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-      dispatch(setDatasetInstallationStatus(true));
+      installProceedActions(true);
       setStageSkipStatus(false);
     }
   }, [mvsDatasetInitProgress]);
@@ -218,9 +218,7 @@ const Installation = () => {
     setDatasetInstallationState(datasetInitState);
     const allAttributesTrue = Object.values(datasetInitState).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-      dispatch(setDatasetInstallationStatus(true));
-      setStageSkipStatus(false);
+      installProceedActions(true);
     }
   }
 
@@ -240,8 +238,15 @@ const Installation = () => {
     }
     const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    installProceedActions(status);
     setMvsDatasetInitializationProgress(getDatasetInstallationState());
+    installProceedActions(status);
+  }
+
+  // True - a proceed, False - blocked
+  const installProceedActions = (status: boolean) => {
+    dispatch(setDatasetInstallationStatus(status));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    dispatch(setNextStepEnabled(status));
     setStageSkipStatus(!status);
   }
 
@@ -290,13 +295,6 @@ const Installation = () => {
       });
       
     })
-  }
-
-  // True - a proceed, False - blocked
-  const installProceedActions = (status: boolean) => {
-    dispatch(setNextStepEnabled(status));
-    dispatch(setDatasetInstallationStatus(status));
-    dispatch(setInitializationStatus(isInitializationStageComplete()));
   }
 
   const debouncedChange = useCallback(
