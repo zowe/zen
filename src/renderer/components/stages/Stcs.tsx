@@ -106,8 +106,8 @@ const Stcs = () => {
     if(initClicked) {
       let nextPosition = document.getElementById('start-stcs-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      dispatchActions(false);
       setStateUpdated(!stateUpdated);
-      dispatch(setStcsStatus(false));
     }
   }, [initClicked]);
 
@@ -116,6 +116,9 @@ const Stcs = () => {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInitStcsProgress().then((res: any) => {
           setStcsInitializationProgress(res);
+          if(res.success){
+            clearInterval(timer);
+          }
         })
       }, 3000);
 
@@ -132,8 +135,7 @@ const Stcs = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(stcsInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setStcsStatus(true));
-      dispatch(setNextStepEnabled(true));
+      dispatchActions(true);
       setShowProgress(initClicked || getProgress('stcsStatus'));
     }
   }, [stcsInitProgress]);
@@ -143,8 +145,7 @@ const Stcs = () => {
     setStcsInitState(stcsInitState);
     const allAttributesTrue = Object.values(stcsInitState).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setStcsStatus(true));
-      dispatch(setNextStepEnabled(true));
+      dispatchActions(true);
     }
   }
 
@@ -164,10 +165,14 @@ const Stcs = () => {
     }
     const allAttributesTrue = Object.values(stcsInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    setStageSkipStatus(!status);
+    dispatchActions(status);
+  }
+
+  const dispatchActions = (status: boolean) => {
     dispatch(setStcsStatus(status));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
     dispatch(setNextStepEnabled(status));
-    setStcsInitializationProgress(getStcsInitState());
     setStageSkipStatus(!status);
   }
 
