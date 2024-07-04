@@ -93,17 +93,16 @@ const InitApfAuth = () => {
         nextPosition = document.getElementById('start-apf-progress');
         nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+      dispatchActions(false);
       setStateUpdated(!stateUpdated);
-      dispatch(setApfAuthStatus(false));
     }
   }, [initClicked]);
 
   useEffect(() => {
     const allAttributesTrue = Object.values(apfAuthInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-      dispatch(setApfAuthStatus(true));
       setShowProgress(initClicked || getProgress('apfAuthStatus'));
+      dispatchActions(true);
     }
   }, [apfAuthInitProgress]);
 
@@ -113,7 +112,6 @@ const InitApfAuth = () => {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
           setApfAuthorizationInitProgress(res);
-          dispatch(setApfAuthStatus(stageComplete))
           if(res.success){
             clearInterval(timer);
           }
@@ -131,8 +129,7 @@ const InitApfAuth = () => {
     setApfAuthInitProgress(aftAuthorizationState);
     const allAttributesTrue = Object.values(aftAuthorizationState).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-      dispatch(setApfAuthStatus(true));
+      dispatchActions(true);
     }
   }
 
@@ -152,10 +149,14 @@ const InitApfAuth = () => {
     }
     const allAttributesTrue = Object.values(apfAuthInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(isInitializationStageComplete()));
-    dispatch(setApfAuthStatus(status));
     setApfAuthorizationInitProgress(getApfAuthState());
+    dispatchActions(status);
+  }
+
+  const dispatchActions = (status: boolean) => {
+    dispatch(setApfAuthStatus(status));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    dispatch(setNextStepEnabled(status));
     setStageSkipStatus(!status);
   }
   
@@ -173,7 +174,6 @@ const InitApfAuth = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    dispatch(setApfAuthStatus(false));
     window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
          // Some parts of Zen pass the response as a string directly into the object
          if (res.status == false && typeof res.details == "string") {
@@ -185,16 +185,13 @@ const InitApfAuth = () => {
             toggleEditorVisibility("output");
           })
           updateProgress(false); //res.status may not necessarily be false, even if things go wrong
-          apfAuthProceedActions(false);
           clearInterval(timer);
         } else {
           updateProgress(res.status);
-          apfAuthProceedActions(res.status);
           clearInterval(timer);
         }
       }).catch((err: any) => {
         clearInterval(timer);
-        apfAuthProceedActions(false);
         updateProgress(false);
         // TODO: Test this
         //alertEmitter.emit('showAlert', err.toString(), 'error');
@@ -202,12 +199,6 @@ const InitApfAuth = () => {
           toggleEditorVisibility("output");
         })
       });
-  }
-
-  // True - a proceed, False - blocked
-  const apfAuthProceedActions = (status: boolean) => {
-    dispatch(setNextStepEnabled(status));
-    dispatch(setApfAuthStatus(status));
   }
 
   const formChangeHandler = (data: any, isYamlUpdated?: boolean) => {
