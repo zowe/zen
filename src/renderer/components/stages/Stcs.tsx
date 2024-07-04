@@ -165,7 +165,7 @@ const Stcs = () => {
     }
     const allAttributesTrue = Object.values(stcsInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    setStageSkipStatus(!status);
+    setStcsInitializationProgress(status);
     dispatchActions(status);
   }
 
