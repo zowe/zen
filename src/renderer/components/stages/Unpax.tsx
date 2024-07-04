@@ -69,9 +69,6 @@ const Unpax = () => {
 
     updateProgress(getProgress('downloadUnpaxStatus') && !stages[STAGE_ID].isSkipped);
 
-    dispatch(setNextStepEnabled(getProgress('downloadUnpaxStatus')));
-    dispatch(setDownloadUnpaxStatus(getProgress('downloadUnpaxStatus')));
-
     return () => {
       updateStepSkipStatus(STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
@@ -85,7 +82,6 @@ const Unpax = () => {
         window.electron.ipcRenderer.getDownloadUnpaxProgress().then((res: any) => {
           setDownloadAndUnpaxProgress(res)
           if(stageComplete){
-            setStageStatus(true);
             clearInterval(timer);
           }
         })
@@ -99,8 +95,7 @@ const Unpax = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(downloadUnpaxProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setDownloadUnpaxStatus(true));
-      dispatch(setNextStepEnabled(true));
+      dispatchActions(true);
       setShowProgress(getProgress('downloadUnpaxStatus'));
     }
   }, [downloadUnpaxProgress]);
@@ -110,8 +105,7 @@ const Unpax = () => {
     setDownloadUnpaxState(downloadUnpaxState);
     const allAttributesTrue = Object.values(downloadUnpaxState).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setDownloadUnpaxStatus(true));
-      dispatch(setNextStepEnabled(true));
+      dispatchActions(true);
     }
   }
 
@@ -131,9 +125,14 @@ const Unpax = () => {
     }
     const allAttributesTrue = Object.values(downloadUnpaxProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
+    setDownloadAndUnpaxProgress(getDownloadUnpaxState());
+    dispatchActions(status);
+  }
+
+  const dispatchActions = (status: boolean) => {
     dispatch(setDownloadUnpaxStatus(status));
     dispatch(setNextStepEnabled(status));
-    setDownloadAndUnpaxProgress(getDownloadUnpaxState());
+    setStageSkipStatus(!status);
   }
 
   const process = (event: any) => {
