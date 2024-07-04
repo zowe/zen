@@ -229,7 +229,19 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     eventDispatcher.emit('saveAndCloseEvent');
   }
 
-  const isNextStepEnabled = useAppSelector(selectNextStepEnabled);
+  const nextStepButtonDisabled = (stages: any, activeStep: number, activeSubStep: number) => {
+    if(stages[activeStep]) {
+      if(stages[activeStep].subStages) {
+        const completion = getProgress(stages[activeStep].subStages[activeSubStep].statusKey);
+        return !completion;
+      } else {
+        const completion = getProgress(stages[activeStep].statusKey);
+        return !completion;
+      }
+    } else {
+      return true;
+    }
+  }
 
   const skipButtonDisabled = (stages: any, activeStep: number, activeSubStep: number) => {
     if(stages[activeStep]) {
@@ -354,7 +366,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
             }
             {stages[activeStep] && stages[activeStep].nextButton &&
               <Button 
-              disabled={!isNextStepEnabled}
+              disabled={nextStepButtonDisabled(stages, activeStep, activeSubStep)}
               variant="contained" 
               sx={{ textTransform: 'none', mr: 1 }}
               onClick={() => handleNext()}
