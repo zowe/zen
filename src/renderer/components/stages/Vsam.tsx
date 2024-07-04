@@ -106,7 +106,7 @@ const Vsam = () => {
       let nextPosition = document.getElementById('start-vsam-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setStateUpdated(!stateUpdated);
-      dispatch(setVsamStatus(false));
+      dispatchActions(false);
     }
   }, [initClicked]);
 
@@ -115,6 +115,9 @@ const Vsam = () => {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInitVsamProgress().then((res: any) => {
           setVsamInitializationProgress(res);
+          if(res.success){
+            clearInterval(timer);
+          }
         })
       }, 3000);
 
@@ -131,8 +134,7 @@ const Vsam = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(vsamInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setVsamStatus(true));
-      dispatch(setNextStepEnabled(true));
+      dispatchActions(true);
       setShowProgress(initClicked || getProgress('vsamStatus'));
     }
   }, [vsamInitProgress]);
@@ -142,8 +144,7 @@ const Vsam = () => {
     setVsamInitState(vsamInitState);
     const allAttributesTrue = Object.values(vsamInitState).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setVsamStatus(true));
-      dispatch(setNextStepEnabled(true));
+      dispatchActions(true);
     }
   }
 
@@ -163,10 +164,14 @@ const Vsam = () => {
     }
     const allAttributesTrue = Object.values(vsamInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setInitializationStatus(isInitializationStageComplete()));
-    dispatch(setVsamStatus(status));
-    dispatch(setNextStepEnabled(status));
     setVsamInitializationProgress(getVsamInitState());
+    dispatchActions(status);
+  }
+
+  const dispatchActions = (status: boolean) => {
+    dispatch(setVsamStatus(status));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    dispatch(setNextStepEnabled(status));
     setStageSkipStatus(!status);
   }
 
