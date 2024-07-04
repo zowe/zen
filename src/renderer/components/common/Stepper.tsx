@@ -242,7 +242,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
       } else if(stages[activeStep].subStages) {
         if(stages[activeStep].subStages[activeSubStep].label === ("Installation")) {
           return true;
-        } else if(!stages[activeStep].subStages[activeSubStep].isSkipped) {
+        } else if(getProgress(stages[activeStep].subStages[activeSubStep].statusKey)) {
           return true;
         } else {
           return false;
