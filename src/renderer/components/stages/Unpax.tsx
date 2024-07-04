@@ -82,7 +82,7 @@ const Unpax = () => {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getDownloadUnpaxProgress().then((res: any) => {
           setDownloadAndUnpaxProgress(res)
-          if(stageComplete){
+          if(res.success){
             clearInterval(timer);
           }
         })
