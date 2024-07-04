@@ -76,7 +76,6 @@ const Certificates = () => {
     }
 
     setShowProgress(initClicked || getProgress('certificateStatus'));
-    updateProgress(getProgress('certificateStatus') && !stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
     setIsFormInit(true);
 
     return () => {

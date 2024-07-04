@@ -89,7 +89,6 @@ const Vsam = () => {
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
-    updateProgress(getProgress('vsamStatus') && !stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
     setInit(true);
 
     return () => {

@@ -82,7 +82,6 @@ const Stcs = () => {
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
-    updateProgress(getProgress('stcsStatus') && !stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
     setInit(true);
 
     if(!setupYaml) {

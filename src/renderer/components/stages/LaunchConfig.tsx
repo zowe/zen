@@ -470,7 +470,6 @@ const LaunchConfig = () => {
     dispatch(setInitializationStatus(isInitializationStageComplete()));
 
     setIsFormInit(true);
-    updateProgress(getProgress('launchConfigStatus') && !stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
 
     return () => {
       updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
