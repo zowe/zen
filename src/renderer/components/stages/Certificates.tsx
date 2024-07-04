@@ -91,6 +91,8 @@ const Certificates = () => {
     if(initClicked) {
       let nextPosition = document.getElementById('start-certificate-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      dispatchActions(false);
+      setStateUpdated(!stateUpdated);
     }
 
   }, [initClicked]);
@@ -99,7 +101,10 @@ const Certificates = () => {
     if(!getProgress('certificateStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getCertificateProgress().then((res: any) => {
-          setCertificateInitializationProgress(res)
+          setCertificateInitializationProgress(res);
+          if(res.success){
+            clearInterval(timer);
+          }
         })
       }, 3000);
     }
@@ -117,8 +122,7 @@ const Certificates = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(certificateInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-      dispatch(setCertificateStatus(true));
+      dispatchActions(true);
       setShowProgress(initClicked || getProgress('certificateStatus'));
     }
   }, [certificateInitProgress]);
@@ -128,8 +132,7 @@ const Certificates = () => {
     setCertificateInitState(certificateInitState);
     const allAttributesTrue = Object.values(certificateInitState).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-      dispatch(setCertificateStatus(true));
+      dispatchActions(true);
     }
   }
 
@@ -149,10 +152,14 @@ const Certificates = () => {
     }
     const allAttributesTrue = Object.values(certificateInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(isInitializationStageComplete()));
-    dispatch(setCertificateStatus(status));
     setCertificateInitializationProgress(getCertificateInitState());
+    dispatchActions(status);
+  }
+
+  const dispatchActions = (status: boolean) => {
+    dispatch(setCertificateStatus(status));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    dispatch(setNextStepEnabled(status));
     setStageSkipStatus(!status);
   }
 
@@ -203,8 +210,6 @@ const Certificates = () => {
     setIsFormInit(false);
 
     if (newData) {
-      dispatch(setCertificateStatus(false));
-
       if(validate) {
         validate(newData);
         if(validate.errors) {
@@ -247,7 +252,7 @@ const Certificates = () => {
               id="demo-simple-select"
               value={verifyCerts}
               onChange={(e) => {
-                dispatch(setCertificateStatus(false));
+                dispatchActions(false);
                 const newConfig = {...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value, setup: {...yaml.zowe.setup}}};
                 window.electron.ipcRenderer.setConfig(newConfig);
                 setLYaml(newConfig)
