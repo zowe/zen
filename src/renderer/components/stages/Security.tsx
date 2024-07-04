@@ -94,8 +94,8 @@ const Security = () => {
     if(initClicked) {
       let nextPosition = document.getElementById('start-security-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      dispatchActions(false);
       setStateUpdated(!stateUpdated);
-      dispatch(setSecurityStatus(false));
     }
   }, [initClicked]);
 
@@ -120,9 +120,8 @@ const Security = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(securityInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setSecurityStatus(true));
-      dispatch(setNextStepEnabled(true));
       setShowProgress(initClicked || getProgress('securityStatus'));
+      dispatchActions(true);
     }
   }, [securityInitProgress]);
 
@@ -131,8 +130,7 @@ const Security = () => {
     setSecurityInitState(securityInitState);
     const allAttributesTrue = Object.values(securityInitState).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setSecurityStatus(true));
-      dispatch(setNextStepEnabled(true));
+      dispatchActions(true);
     }
   }
 
@@ -152,10 +150,14 @@ const Security = () => {
     }
     const allAttributesTrue = Object.values(securityInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setInitializationStatus(isInitializationStageComplete()));
-    dispatch(setSecurityStatus(status));
-    dispatch(setNextStepEnabled(status));
     setSecurityInitializationProgress(getSecurityInitState());
+    dispatchActions(status);
+  }
+
+  const dispatchActions = (status: boolean) => {
+    dispatch(setSecurityStatus(status));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    dispatch(setNextStepEnabled(status));
     setStageSkipStatus(!status);
   }
 
@@ -180,11 +182,9 @@ const Security = () => {
           toggleEditorVisibility("output");
         })
         updateProgress(false);
-        securityProceedActions(false);
         clearInterval(timer);
       } else {
         updateProgress(res.status);
-        securityProceedActions(res.status);
         clearInterval(timer);
       }
     }).catch((err: any) => {
@@ -192,18 +192,10 @@ const Security = () => {
       //alertEmitter.emit('showAlert', err.toString(), 'error');
       updateProgress(false);
       clearInterval(timer);
-      securityProceedActions(false);
       window.electron.ipcRenderer.setStandardOutput(`zwe init security failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
         toggleEditorVisibility("output");
       })
     });
-  }
-
-  // True - a proceed, False - blocked
-  const securityProceedActions = (status: boolean) => {
-    dispatch(setNextStepEnabled(status));
-    dispatch(setSecurityStatus(status));
-    dispatch(setInitializationStatus(isInitializationStageComplete()));
   }
 
   const handleFormChange = (data: any) => {
