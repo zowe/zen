@@ -46,7 +46,6 @@ const PasswordDialog = ({ onPasswordSubmit }:{ onPasswordSubmit: any }) => {
           onPasswordSubmit(res.status);
           setError(false, '');
           setIsDialogVisible(false);
-          dispatch(setPassword(''));
         } else {
           setError(true, 'Incorrect Password');
         }
