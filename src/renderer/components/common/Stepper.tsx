@@ -34,14 +34,16 @@ import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
 import { getStageDetails } from '../../../services/StageDetails';
 import { IResponse } from '../../../types/interfaces';
-import { selectConnectionArgs } from '../stages/connection/connectionSlice';
+import { selectConnectionArgs, selectResumeProgress, setResumeProgress } from '../stages/connection/connectionSlice';
 import { selectInstallationArgs } from '../stages/installation/installationSlice';
+import PasswordDialog from './passwordDialog';
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
 
 export default function HorizontalLinearStepper({stages, initialization}:{stages: any, initialization?:boolean}) {
 
   const connectionStatus = useSelector(selectConnectionStatus);
+  const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
 
   const INIT_STAGE_ID = getStageDetails(INIT_STAGE_LABEL).id;
   const REVIEW_STAGE_ID = getStageDetails(REVIEW_INSTALL_STAGE_LABEL).id;
@@ -78,6 +80,13 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const installationArgs = useAppSelector(selectInstallationArgs);
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const dispatch = useAppDispatch();
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+
+  if(isResume && connectionStatus && activeStep!==0) {
+    setShowPasswordDialog(true);
+    console.log('~~~~~~~~~~~~~~~~~~~~~~~~ASK FOR PASSWORD');
+    setIsResume(false);
+  }
 
   useEffect(() => {
     const mvsCompleteListener = (completed: boolean) => {
@@ -95,7 +104,10 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     };
   }, []); 
 
-  const updateActiveStepListener = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
+  const updateActiveStepListener = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number, recentlyConnected?: boolean) => {
+    if(recentlyConnected) {
+      setIsResume(false);
+    }
     setActiveStep(newActiveStep);
     const newSubStep = isSubStep ? subStepIndex : 0;
     setActiveSubStep(newSubStep);
@@ -238,6 +250,8 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const onSaveAndClose = () => {
     alertEmitter.emit('hideAlert');
     eventDispatcher.emit('saveAndCloseEvent');
+    setIsResume(false);
+    dispatch(setResumeProgress(false))
   }
 
   const isNextStepEnabled = useAppSelector(selectNextStepEnabled);
