@@ -42,11 +42,11 @@ const PasswordDialog = ({ onPasswordSubmit }:{ onPasswordSubmit: any }) => {
     window.electron.ipcRenderer
       .connectionButtonOnClick(connectionArgs)
       .then((res: IResponse) => {
-        dispatch(setConnectionStatus(res.status));
         if(res.status) {
           onPasswordSubmit(res.status);
           setError(false, '');
           setIsDialogVisible(false);
+          dispatch(setPassword(''));
         } else {
           setError(true, 'Incorrect Password');
         }
