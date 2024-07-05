@@ -9,14 +9,14 @@
  */
 
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, TextField } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 import React, { useEffect, useRef, useState } from 'react';
 import { selectConnectionArgs, setConnectionValidationDetails, setPassword } from '../stages/connection/connectionSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { setLoading } from '../configuration-wizard/wizardSlice';
 import { IResponse } from '../../../types/interfaces'
 import { setConnectionStatus } from '../stages/progress/progressSlice';
 
-const PasswordDialog = ({ onPasswordSubmit }:{onPasswordSubmit: any}) => {
+const PasswordDialog = ({ onPasswordSubmit }:{ onPasswordSubmit: any }) => {
 
   const dispatch = useAppDispatch();
 
@@ -26,42 +26,39 @@ const PasswordDialog = ({ onPasswordSubmit }:{onPasswordSubmit: any}) => {
   const [isDialogVisible, setIsDialogVisible] = useState(true);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleClose = () => {
     setIsDialogVisible(false);
     onPasswordSubmit(false);
   };
 
-  const onSubmit = () => {
-    dispatch(setLoading(true));
-    console.log("connectionArgs: aftersubmit", connectionArgs);
+  const onPasswordUpdate = (password: string) => {
+    setIsLoading(true);
+    dispatch(setPassword(password));
+  }
 
+  const onSubmit = () => {
+    setIsLoading(true);
     window.electron.ipcRenderer
       .connectionButtonOnClick(connectionArgs)
       .then((res: IResponse) => {
         dispatch(setConnectionStatus(res.status));
         if(res.status) {
-          console.log("RESPONSE STATUS: ", res.status);
-          setIsDialogVisible(false);
           onPasswordSubmit(res.status);
           setError(false, '');
+          setIsDialogVisible(false);
         } else {
           setError(true, 'Incorrect Password');
-          console.log("INCPRRECT PASSWORD");
         }
         dispatch(setConnectionValidationDetails(res.details));
-        dispatch(setLoading(false));
+        setIsLoading(false);
       })
       .catch((err: any) => {
-        dispatch(setLoading(false));
-        console.log("ERR: ",err);
-        setError(true, err);
+        setError(true, err.message);
         onPasswordSubmit(false);
+        setIsLoading(false);
       });
-  }
-
-  const onPasswordUpdate = (password: string) => {
-    dispatch(setPassword(password));
   }
 
   const setError = (err: boolean, errMsg: string) => {
@@ -82,6 +79,7 @@ const PasswordDialog = ({ onPasswordSubmit }:{onPasswordSubmit: any}) => {
         }}>
         <DialogTitle>Enter Password</DialogTitle>
         <DialogContent sx={{paddingBottom: '0'}}>
+          {isLoading && <CircularProgress style={{ position: 'absolute', marginTop: '5vh', marginLeft: '10vw' }}/>}
           <FormControl>
             <TextField
               id='uname'
