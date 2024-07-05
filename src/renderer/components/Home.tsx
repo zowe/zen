@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
 import flatten, { unflatten } from 'flat';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
-import { setConnectionArgs, setResumeProgress, selectInitJobStatement } from './stages/connection/connectionSlice';
+import { setConnectionArgs, setResumeProgress, selectInitJobStatement, selectResumeProgress } from './stages/connection/connectionSlice';
 import { setJobStatement } from './stages/PlanningSlice';
 import { selectSchema, selectYaml, setSchema, setYaml, setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
@@ -29,6 +29,7 @@ import { ActiveState } from '../../types/stateInterfaces';
 import { getInstallationArguments, getPreviousInstallation } from './stages/progress/StageProgressStatus';
 import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Utils';
 import { selectInstallationArgs, setInstallationArgs } from './stages/installation/installationSlice';
+import PasswordDialog from './common/PasswordDialog';
 
 // REVIEW: Get rid of routing
 
@@ -111,11 +112,11 @@ const Home = () => {
   const stages: any = [];
   const defaultTooltip: string = "Resume";
   const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [updatedConnection, setUpdatedConnection] = useState(false);
 
   useEffect(() => {
     eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));
-
-
 
     //Home is the first screen the user will always see 100% of the time. Therefore, we will call the loading of the configs, schemas, and installation args here and set them to the redux memory states
 
@@ -150,17 +151,17 @@ const Home = () => {
       }
     })
 
-
-
     window.electron.ipcRenderer.checkZoweCLI().then((res: IResponse) => {
       if (res.status) {
         dispatch(setZoweCLIVersion(res.details));
       } else {
         console.info('No Zowe CLI found on local machine');
       }
-    }); 
+    });
+
     window.electron.ipcRenderer.setStandardOutput(DEF_NO_OUTPUT).then((res: any) => {
     })
+
     window.electron.ipcRenderer.findPreviousInstallations().then((res: IResponse) => {
       const connectionStore = res.details;
       if (connectionStore["connection-type"] === 'ftp') {
@@ -198,6 +199,15 @@ const Home = () => {
   const resumeProgress = () => {
     setShowWizard(true);
     dispatch(setResumeProgress(true));
+
+    if(connectionStatus) {
+      setShowPasswordDialog(true);
+    }
+  }
+
+  const confirmConnection = (status: boolean) => {
+    setUpdatedConnection(status);
+    setShowWizard(status);
   }
 
   return (
@@ -237,7 +247,12 @@ const Home = () => {
         </div>}
       </div>
     }
-    {showWizard && <Wizard initialization={false}/>}
+    {showWizard &&
+      <>
+        {showPasswordDialog && <PasswordDialog onPasswordSubmit={confirmConnection}></PasswordDialog>}
+        {<Wizard initialization={false}/>}
+      </>
+    }
    </>
   );
 };
