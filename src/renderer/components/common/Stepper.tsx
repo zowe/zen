@@ -235,6 +235,10 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
         const completion = getProgress(stages[activeStep].subStages[activeSubStep].statusKey);
         return !completion;
       } else {
+        if(activeStep == 0) {
+          // Because the status for the Connection stage is not persisted
+          return !connectionStatus;
+        }
         const completion = getProgress(stages[activeStep].statusKey);
         return !completion;
       }
