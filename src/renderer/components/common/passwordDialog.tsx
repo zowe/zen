@@ -16,7 +16,7 @@ import { setLoading } from '../configuration-wizard/wizardSlice';
 import { IResponse } from '../../../types/interfaces'
 import { setConnectionStatus } from '../stages/progress/progressSlice';
 
-const PasswordDialog = ({ onSubmit }:{onSubmit: any}) => {
+const PasswordDialog = ({ onPasswordSubmit }:{onPasswordSubmit: any}) => {
 
   const dispatch = useAppDispatch();
 
@@ -29,10 +29,10 @@ const PasswordDialog = ({ onSubmit }:{onSubmit: any}) => {
 
   const handleClose = () => {
     setIsDialogVisible(false);
-    onSubmit(false);
+    onPasswordSubmit(false);
   };
 
-  const onPasswordSubmit = () => {
+  const onSubmit = () => {
     dispatch(setLoading(true));
     console.log("connectionArgs: aftersubmit", connectionArgs);
 
@@ -43,7 +43,7 @@ const PasswordDialog = ({ onSubmit }:{onSubmit: any}) => {
         if(res.status) {
           console.log("RESPONSE STATUS: ", res.status);
           setIsDialogVisible(false);
-          onSubmit(res.status);
+          onPasswordSubmit(res.status);
           setError(false, '');
         } else {
           setError(true, 'Incorrect Password');
@@ -56,7 +56,7 @@ const PasswordDialog = ({ onSubmit }:{onSubmit: any}) => {
         dispatch(setLoading(false));
         console.log("ERR: ",err);
         setError(true, err);
-        onSubmit(false);
+        onPasswordSubmit(false);
       });
   }
 
@@ -104,7 +104,7 @@ const PasswordDialog = ({ onSubmit }:{onSubmit: any}) => {
         </DialogContent>
         <DialogActions>
           <div>
-            <Button onClick={onPasswordSubmit}>Submit</Button>
+            <Button onClick={onSubmit}>Submit</Button>
             <Button onClick={handleClose}>Close</Button>
           </div>
         </DialogActions>
