@@ -34,7 +34,6 @@ const PasswordDialog = ({ onPasswordSubmit }:{ onPasswordSubmit: any }) => {
   };
 
   const onPasswordUpdate = (password: string) => {
-    setIsLoading(true);
     dispatch(setPassword(password));
   }
 
@@ -78,8 +77,8 @@ const PasswordDialog = ({ onPasswordSubmit }:{ onPasswordSubmit: any }) => {
           },
         }}>
         <DialogTitle>Enter Password</DialogTitle>
-        <DialogContent sx={{paddingBottom: '0'}}>
-          {isLoading && <CircularProgress style={{ position: 'absolute', marginTop: '5vh', marginLeft: '10vw' }}/>}
+        <DialogContent sx={{ paddingBottom: '0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+          {isLoading && <CircularProgress style={{ position: 'absolute', top: '40%', left: '45%', transform: 'translate(-50%, -50%)' }}/>}
           <FormControl>
             <TextField
               id='uname'
