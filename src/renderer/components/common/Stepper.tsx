@@ -34,7 +34,7 @@ import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
 import { getStageDetails } from '../../../services/StageDetails';
 import { IResponse } from '../../../types/interfaces';
-import { selectConnectionArgs } from '../stages/connection/connectionSlice';
+import { selectConnectionArgs, setPassword } from '../stages/connection/connectionSlice';
 import { selectInstallationArgs } from '../stages/installation/installationSlice';
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
@@ -238,6 +238,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const onSaveAndClose = () => {
     alertEmitter.emit('hideAlert');
     eventDispatcher.emit('saveAndCloseEvent');
+    dispatch(setPassword(''));
   }
 
   const isNextStepEnabled = useAppSelector(selectNextStepEnabled);
