@@ -49,7 +49,7 @@ const cards: Array<ICard> = [
     media: installationImg,
   }, 
   {
-    id: "configure", 
+    id: "dry run", 
     name: "Zowe Installation Dry Run", 
     description: "It will guide you through the installation steps without running the installation.", 
     link: "/wizard",
@@ -70,7 +70,7 @@ const Home = () => {
   const connectionStatus = useAppSelector(selectConnectionStatus);
   const [showWizard, setShowWizard] = useState(false);
   const [showLoginDialog, setShowLogin] = useState(false);
-  const [yaml] = useState(useAppSelector(selectYaml));
+  const [localYaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
   const installationArgs = useAppSelector(selectInstallationArgs);
 
@@ -88,14 +88,18 @@ const Home = () => {
     const handleClick = () => {
       const flattenedData = flatten(lastActiveState);
       localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
-      let newInstallationArgs;
+      let newInstallationArgs = {};
       if (id === "install") {
-        dispatch(setYaml(FALLBACK_YAML));
-        newInstallationArgs = {...installationArgs, dryRunMode: false};
-      } else if (id === "configure") {
-        newInstallationArgs = {...installationArgs, dryRunMode: true};
+        newInstallationArgs = {...newInstallationArgs, dryRunMode: false};
+      } else if (id === "dry run") {
+        newInstallationArgs = {...newInstallationArgs, dryRunMode: true};
       }
+      dispatch(setYaml(FALLBACK_YAML));
       dispatch(setInstallationArgs(newInstallationArgs));
+      window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", newInstallationArgs);
+      setLocalYaml(FALLBACK_YAML);
+      window.electron.ipcRenderer.setConfig(FALLBACK_YAML);
+      // TODO: Ideally, reset connectionArgs too
     };
   
     return (  
@@ -125,12 +129,10 @@ const Home = () => {
   useEffect(() => {
     eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));
 
-
-
     //Home is the first screen the user will always see 100% of the time. Therefore, we will call the loading of the configs, schemas, and installation args here and set them to the redux memory states
 
     //YAML LOADING - necessary for editor state as well as form values
-    if(yaml == undefined || (typeof yaml === "object" && Object.keys(yaml).length === 0)){
+    if(localYaml == undefined || (typeof localYaml === "object" && Object.keys(localYaml).length === 0)){
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           dispatch(setYaml(res.details));
@@ -175,7 +177,7 @@ const Home = () => {
       const connectionStore = res.details;
       if (connectionStore["connection-type"] === 'ftp') {
         const jobStatement = connectionStore['ftp-details'].jobStatement.trim() || useAppSelector(selectInitJobStatement);
-        console.log(JSON.stringify(connectionStore['ftp-details'],null,2));
+        // console.log(JSON.stringify(connectionStore['ftp-details'],null,2));
         const connectionArgs: IIpcConnectionArgs = {
           ...connectionStore["ftp-details"],
           password: "",

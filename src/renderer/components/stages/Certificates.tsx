@@ -38,7 +38,7 @@ const Certificates = () => {
 
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [installationArgs] = useState(getInstallationArguments());
   const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.certificate);
@@ -219,7 +219,7 @@ const Certificates = () => {
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
           window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
-          setLYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
+          setLocalYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
           setStageConfig(true, '', newData);
         }
       }
@@ -256,7 +256,7 @@ const Certificates = () => {
                 dispatch(setCertificateStatus(false));
                 const newConfig = {...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value, setup: {...yaml.zowe.setup}}};
                 window.electron.ipcRenderer.setConfig(newConfig);
-                setLYaml(newConfig)
+                setLocalYaml(newConfig)
                 setVerifyCerts(e.target.value);
               }}
             >

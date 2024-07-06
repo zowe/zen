@@ -40,7 +40,7 @@ const Unpax = () => {
   const [paxPath, setPaxPath] = useState(getInstallationTypeStatus()?.userUploadedPaxPath || '');
   const [showProgress, setShowProgress] = useState(getProgress('downloadUnpaxStatus'));
   const [downloadUnpaxProgress, setDownloadUnpaxProgress] = useState(getDownloadUnpaxState());
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const version = useAppSelector(selectZoweVersion);
 
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());

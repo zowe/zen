@@ -427,7 +427,7 @@ const LaunchConfig = () => {
       }
     }
   }
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [setupSchema] = useState(schema.properties.zowe);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe);
   const [isFormInit, setIsFormInit] = useState(false);
@@ -448,10 +448,10 @@ const LaunchConfig = () => {
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           dispatch(setYaml(res.details));
-          setLYaml(res.details);
+          setLocalYaml(res.details);
         } else {
           dispatch(setYaml(FALLBACK_YAML));
-          setLYaml(FALLBACK_YAML);
+          setLocalYaml(FALLBACK_YAML);
         }
       })
     }

@@ -47,7 +47,7 @@ const Installation = () => {
   // Maybe we shouldnt allow the user to skip the installation stage??
 
   const [schema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [setupSchema, setSetupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.dataset);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || FALLBACK_YAML?.zowe?.setup?.dataset);
@@ -142,7 +142,7 @@ const Installation = () => {
           //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux but not on disk. This should never occur
           let yamlObj = mergeInstallationArgsAndYaml(FALLBACK_YAML);
           // console.log('setting yaml:', yamlObj);
-          setLYaml(yamlObj)
+          setLocalYaml(yamlObj)
           dispatch(setYaml(yamlObj))
         } else {
           let yamlObj = mergeInstallationArgsAndYaml(res.details);
@@ -326,7 +326,7 @@ const Installation = () => {
         setStageConfig(false, errPath+' '+errMsg, updatedData);
       } else {
         const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}};
-        setLYaml(newYaml);
+        setLocalYaml(newYaml);
         window.electron.ipcRenderer.setConfig(newYaml)
         setStageConfig(true, '', updatedData);
       }

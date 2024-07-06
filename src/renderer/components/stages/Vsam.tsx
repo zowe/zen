@@ -43,7 +43,7 @@ const Vsam = () => {
 
   const dispatch = useAppDispatch();
   const [schema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.vsam);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.vsam);
   const [showProgress, setShowProgress] = useState(getProgress('vsamStatus'));
@@ -226,7 +226,7 @@ const Vsam = () => {
     setFormError(errorMsg);
     setSetupYaml(data);
     if(updatedYaml?.zowe) {
-      setLYaml(updatedYaml);
+      setLocalYaml(updatedYaml);
     }
     handleUpdateYaml(data, updatedYaml);
   }
@@ -245,7 +245,7 @@ const Vsam = () => {
         }
       }
     };
-    setLYaml(updatedYaml);
+    setLocalYaml(updatedYaml);
     window.electron.ipcRenderer.setConfig(updatedYaml);
     dispatch(setYaml(updatedYaml));
   }
@@ -268,7 +268,7 @@ const Vsam = () => {
       }
     };
     window.electron.ipcRenderer.setConfig(updatedYaml);
-    setLYaml(updatedYaml);
+    setLocalYaml(updatedYaml);
     dispatch(setYaml(updatedYaml));
   };
 
