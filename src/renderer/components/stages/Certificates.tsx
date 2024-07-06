@@ -66,8 +66,12 @@ const Certificates = () => {
   }, [stageStatus]);
 
   useEffect(() => {
+    const stepProgress = getProgress('certificateStatus');
+
     dispatch(setInitializationStatus(isInitializationStageComplete()));
-    if(getProgress('certificateStatus')) {
+    setShowProgress(initClicked || stepProgress);
+
+    if(stepProgress) {
       const nextPosition = document.getElementById('start-certificate-progress');
       nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
@@ -75,7 +79,8 @@ const Certificates = () => {
       nextPosition.scrollIntoView({behavior: 'smooth'});
     }
 
-    setShowProgress(initClicked || getProgress('certificateStatus'));
+    dispatch(setNextStepEnabled(stepProgress));
+
     setIsFormInit(true);
 
     return () => {

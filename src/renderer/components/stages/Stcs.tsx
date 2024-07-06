@@ -70,11 +70,13 @@ const Stcs = () => {
   }, [stageStatus]);
 
   useEffect(() => {
-    dispatch(setInitializationStatus(isInitializationStageComplete()));
-    setShowProgress(initClicked || getProgress('stcsStatus'));
     let nextPosition;
+    const stepProgress = getProgress('stcsStatus');
 
-    if(getProgress('stcsStatus')) {
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    setShowProgress(initClicked || stepProgress);
+
+    if(stepProgress) {
       nextPosition = document.getElementById('stcs-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     } else {
@@ -83,6 +85,7 @@ const Stcs = () => {
     }
 
     setInit(true);
+    dispatch(setNextStepEnabled(stepProgress));
 
     if(!setupYaml) {
       const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: {...yaml.zowe.setup.security, stcs: {zowe: DEFAULT_ZOWE, zis: DEFAULT_ZIS, aux: DEFAULT_AUX}}}}};

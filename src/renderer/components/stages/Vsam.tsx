@@ -72,16 +72,18 @@ const Vsam = () => {
   }, [stageStatus]);
 
   useEffect(() => {
-    dispatch(setInitializationStatus(isInitializationStageComplete()));
-    setShowProgress(initClicked || getProgress('vsamStatus'));
     let nextPosition;
+    const stepProgress = getProgress('vsamStatus');
+
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    setShowProgress(initClicked || stepProgress);
 
     const vsamDatasetName = yaml?.components[`caching-service`]?.storage?.vsam?.name|| '';
     if(vsamDatasetName) {
       datasetValidation(vsamDatasetName);
     }
 
-    if(getProgress('vsamStatus')) {
+    if(stepProgress) {
       nextPosition = document.getElementById('vsam-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     } else {
@@ -90,6 +92,7 @@ const Vsam = () => {
     }
 
     setInit(true);
+    dispatch(setNextStepEnabled(stepProgress));
 
     return () => {
       alertEmitter.emit('hideAlert');

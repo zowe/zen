@@ -67,17 +67,21 @@ const Security = () => {
   }, [stageStatus]);
 
   useEffect(() => {
-    dispatch(setInitializationStatus(isInitializationStageComplete()));
-    setShowProgress(initClicked || getProgress('securityStatus'));
     let nextPosition;
+    const stepProgress = getProgress('securityStatus');
 
-    if(getProgress('securityStatus')) {
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    setShowProgress(initClicked || stepProgress);
+
+    if(stepProgress) {
       nextPosition = document.getElementById('security-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     } else {
       nextPosition = document.getElementById('container-box-id');
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
+
+    dispatch(setNextStepEnabled(stepProgress));
 
     setInit(true);
 
