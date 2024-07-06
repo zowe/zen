@@ -144,6 +144,29 @@ const Planning = () => {
   useEffect(() => {
     const nextPosition = document.getElementById(`position-${step}`);
     nextPosition.scrollIntoView({behavior: 'smooth'});
+
+    /* TODO: Fixes "Please fill in all remaining values" bug
+    This sets the localYaml values to installationArg values in case they have been pre-populated by the UI
+    (when onChange detectors haven't run yet to do the job of setting localYaml). This is a workaround and should
+    be investigated why edgecases exist where the UI input fields has text visible, yet localYaml is not set */
+    if (!localYaml?.java?.home && installationArgs.javaHome)
+    {
+      const updatedYaml: any = updateAndReturnYaml('java.home', installationArgs.javaHome)
+      dispatch(setYaml(updatedYaml));
+      setLocalYaml(updatedYaml);
+    }
+    if (!localYaml?.node?.home && installationArgs.nodeHome)
+    {
+      const updatedYaml: any = updateAndReturnYaml('node.home', installationArgs.nodeHome)
+      dispatch(setYaml(updatedYaml));
+      setLocalYaml(updatedYaml);
+    }
+    if (!localYaml?.zowe?.runtimeDirectory && installationArgs.installationDir)
+    {
+      const updatedYaml: any = updateAndReturnYaml('zowe.runtimeDirectory', installationArgs.installationDir)
+      dispatch(setYaml(updatedYaml));
+      setLocalYaml(updatedYaml);
+    }
   }, [step]);
 
   const setPlanningState = (status: boolean): void => {
@@ -268,7 +291,7 @@ const Planning = () => {
     dispatch(setLoading(true));
 
     // TODO: Possible feature for future: add to checkDir to see if existing Zowe install exists.
-    // Then give the user ability to use existing zowe.yaml to auto-fill in fields from Zen
+    // Then give the user ability to use existing zowe.yaml to auto-fill in fields from Wizard
     if(!installationArgs.dryRunMode){
       Promise.all([
         window.electron.ipcRenderer.checkJava(connectionArgs, localYaml?.java?.home || installationArgs.javaHome),
@@ -413,7 +436,7 @@ For some stages, you may need additional permissions:
           <Link href="https://docs.zowe.org/stable/user-guide/install-zos" rel="noreferrer" target="_blank">Here is the most up to date, high-level installation overview for Zowe</Link>
         </Typography>
         <Typography sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">    
-        {`Zen will run installation (zwe install) and initialization (zwe init) commands on the mainframe by submitting jobs through the FTP connection. 
+        {`Wizard will run installation (zwe install) and initialization (zwe init) commands on the mainframe by submitting jobs through the FTP connection. 
 Please customize the job statement below to match your system requirements.
   `}
         </Typography>
@@ -452,7 +475,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Run-time Directory (or installation location)"
                 variant="standard"
-                value={localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir}
+                value={localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir || ''}
                 inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   formChangeHandler("zowe.runtimeDirectory", e.target.value, "installationDir");
@@ -626,7 +649,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Java Location"
                 variant="standard"
-                value={localYaml?.java?.home || installationArgs.javaHome}
+                value={localYaml?.java?.home || installationArgs.javaHome || ''}
                 onChange={(e) => {
                   formChangeHandler("java.home", e.target.value, "javaHome");
                   if(localYaml){
@@ -647,7 +670,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Node.js Location"
                 variant="standard"
-                value={localYaml?.node?.home || installationArgs.nodeHome}
+                value={localYaml?.node?.home || installationArgs.nodeHome || ''}
                 onChange={(e) => {
                   formChangeHandler("node.home", e.target.value, "nodeHome");
                   if(localYaml){

@@ -29,7 +29,7 @@ import { ActiveState } from '../../types/stateInterfaces';
 import { getInstallationArguments, getPreviousInstallation } from './stages/progress/StageProgressStatus';
 import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Utils';
 import { selectInstallationArgs, setInstallationArgs } from './stages/installation/installationSlice';
-import PasswordDialog from './common/PasswordDialog';
+import PasswordDialog from './common/passwordDialog';
 
 // REVIEW: Get rid of routing
 

@@ -170,7 +170,7 @@ const InitApfAuth = () => {
     dispatch(setApfAuthStatus(false));
     if(!installationArgs.dryRunMode){
       window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-        // Some parts of Zen pass the response as a string directly into the object
+        // Some parts of Wizard pass the response as a string directly into the object
         if (res.status == false && typeof res.details == "string") {
           res.details = { 3: res.details };
         }

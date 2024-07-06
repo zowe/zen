@@ -112,10 +112,10 @@ const InstallationType = () => {
     {installValue === "download" &&
       <div>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-          Zen will download the latest Zowe convenience build in PAX archive format from.
+          Wizard will download the latest Zowe convenience build in PAX archive format from&nbsp;
           { !agreeLicense && <><br />Please accept the license agreement to continue.<br/></>}
-          <Link href="https://zowe.org" target="_blank" rel="noopener noreferrer">
-            {'https://zowe.org'}
+          <Link href="https://www.zowe.org/download" target="_blank" rel="noopener noreferrer">
+            {'https://www.zowe.org/download'}
           </Link>
         </Typography>
         <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>

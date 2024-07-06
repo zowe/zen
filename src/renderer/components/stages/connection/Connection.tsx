@@ -190,7 +190,7 @@ const FTPConnectionForm = () => {
           type="number"
           InputLabelProps={{ shrink: true }}
           variant="standard"
-          helperText="FTP port number. If not specified, Zen will try to use a default service port."
+          helperText="FTP port number. If not specified, Wizard will try to use a default service port."
           value={connectionArgs.port}
     onChange={(e) => { dispatch(setPort(Number(e.target.value))); handleFormChange(); }}
         />

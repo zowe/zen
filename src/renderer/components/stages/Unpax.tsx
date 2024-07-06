@@ -160,7 +160,7 @@ const Unpax = () => {
   return (<>
       {installValue === "smpe" && <ContainerCard title="Continue to Initialization" description="">
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-            {`The SMP/E process has already downloaded the required Zowe runtime files. Zen will now retrieve the example-zowe.yaml and schemas for the yaml. Skip this step if you have already fetched these files.`}
+            {`The SMP/E process has already downloaded the required Zowe runtime files. Wizard will now retrieve the example-zowe.yaml and schemas for the yaml. Skip this step if you have already fetched these files.`}
           </Typography>
           {!showProgress && <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
             <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} 
@@ -179,11 +179,11 @@ const Unpax = () => {
       </ContainerCard>}
       {installValue === "download" && <ContainerCard title="Download Zowe Pax" description=""> 
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-            {`Zen will download the latest Zowe convenience build in PAX archive format from `}
-            <Link href="https://zowe.org" target="_blank" rel="noopener noreferrer">
-              {'https://zowe.org'}
+            {`Wizard will download the latest Zowe convenience build in PAX archive format from `}
+            <Link href="https://www.zowe.org/download" target="_blank" rel="noopener noreferrer">
+              {'https://www.zowe.org/download'}
             </Link>
-            {` Skip this step if you have already downloaded Zowe.`}
+            {`. Skip this step if you have already downloaded Zowe.`}
           </Typography>
           {!showProgress && <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
             <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} 
@@ -206,7 +206,7 @@ const Unpax = () => {
       </ContainerCard>}
       {installValue === "upload" && <ContainerCard title="Upload Zowe Pax" description=""> 
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-            {`Zen will upload and unpax the Zowe runtime files from ${paxPath}. Skip this step if you have already uploaded a Zowe pax.`}
+            {`Wizard will upload and unpax the Zowe runtime files from ${paxPath}. Skip this step if you have already uploaded a Zowe pax.`}
           </Typography>
           {!showProgress && <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
             <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} 
