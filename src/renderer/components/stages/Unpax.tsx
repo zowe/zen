@@ -62,13 +62,16 @@ const Unpax = () => {
         setInstArgs((res as any));
       }
     })
+
     let nextPosition;
-    if(getProgress('downloadUnpaxStatus')) {
+    const stepProgress = getProgress('downloadUnpaxStatus')
+
+    if(stepProgress) {
       nextPosition = document.getElementById('download-progress-card');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    updateProgress(getProgress('downloadUnpaxStatus') && !stages[STAGE_ID].isSkipped);
+    dispatch(setNextStepEnabled(stepProgress));
 
     return () => {
       updateStepSkipStatus(STAGE_ID, stageStatusRef.current);
