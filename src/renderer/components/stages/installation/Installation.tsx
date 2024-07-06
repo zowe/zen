@@ -76,6 +76,7 @@ const Installation = () => {
   
   useEffect(() => {
     dispatch(setInitializationStatus(isInitializationStageComplete()));
+
     if(getProgress("datasetInstallationStatus")) {
       const nextPosition = document.getElementById('save-installation-progress');
       if(nextPosition) nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
