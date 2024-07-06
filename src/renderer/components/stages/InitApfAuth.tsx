@@ -63,8 +63,9 @@ const InitApfAuth = () => {
   }, [stageStatus]);
 
   useEffect(() => {
-    dispatch(setInitializationStatus(isInitializationStageComplete()));
     let nextPosition;
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+
     if(getProgress('apfAuthStatus')) {
       nextPosition = document.getElementById('start-apf-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -72,6 +73,8 @@ const InitApfAuth = () => {
       nextPosition = document.getElementById('container-box-id');
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
+
+    dispatch(setNextStepEnabled(getProgress('apfAuthStatus')));
 
     setInit(true);
 
