@@ -627,7 +627,7 @@ const Networking = () => {
       });
     }
     else{
-      alertEmitter.emit('showAlert', 'success');
+      alertEmitter.emit('showAlert', 'Successfully uploaded yaml config');
       dispatch(setNextStepEnabled(true));
       dispatch(setNetworkingStatus(true));
       dispatch(setInitializationStatus(isInitComplete()));

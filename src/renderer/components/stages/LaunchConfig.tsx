@@ -523,7 +523,7 @@ const LaunchConfig = () => {
       });
     }
     else{
-      alertEmitter.emit('showAlert', 'success');
+      alertEmitter.emit('showAlert', 'Successfully uploaded yaml config');
       dispatch(setNextStepEnabled(true));
       dispatch(setLaunchConfigStatus(true));
       dispatch(setInitializationStatus(isInitComplete()));
