@@ -40,7 +40,7 @@ const Unpax = () => {
   const [paxPath, setPaxPath] = useState(getInstallationTypeStatus()?.userUploadedPaxPath || '');
   const [showProgress, setShowProgress] = useState(getProgress('downloadUnpaxStatus'));
   const [downloadUnpaxProgress, setDownloadUnpaxProgress] = useState(getDownloadUnpaxState());
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const version = useAppSelector(selectZoweVersion);
 
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
@@ -66,27 +66,45 @@ const Unpax = () => {
     };
   }, [showProgress]);
 
+  const downloadUnpaxProgressAndStateTrue = {
+    uploadYaml: true,
+    download: true,
+    upload: true,
+    unpax: true,
+    getExampleYaml: true,
+    getSchemas: true,
+  };
+
   const process = (event: any) => {
     event.preventDefault();
     setShowProgress(true);
     dispatch(setDownloadUnpaxStatus(false));
     setDownloadUnpaxProgress(downloadUnpaxStatus);
     dispatch(setNextStepEnabled(false));
-    window.electron.ipcRenderer.downloadButtonOnClick(connectionArgs, {...installationArgs, userUploadedPaxPath: paxPath}, version).then((res: IResponse) => {
-      if(!res.status){ //errors during runInstallation()
-        alertEmitter.emit('showAlert', res.details, 'error');
-      }
-      if(res.details?.mergedYaml != undefined){
-        dispatch(setYaml(res.details.mergedYaml));
-        window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
-      }
-      dispatch(setNextStepEnabled(res.status));
-      dispatch(setDownloadUnpaxStatus(res.status));
+
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.downloadButtonOnClick(connectionArgs, {...installationArgs, userUploadedPaxPath: paxPath}, version).then((res: IResponse) => {
+        if(!res.status){ //errors during runInstallation()
+          alertEmitter.emit('showAlert', res.details, 'error');
+        }
+        if(res.details?.mergedYaml != undefined){
+          dispatch(setYaml(res.details.mergedYaml));
+          window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
+        }
+        dispatch(setNextStepEnabled(res.status));
+        dispatch(setDownloadUnpaxStatus(res.status));
       clearInterval(timer);
     }).catch(() => {
       clearInterval(timer);
       dispatch(setNextStepEnabled(false));
     });
+  }
+  else{
+    setDownloadUnpaxProgress(downloadUnpaxProgressAndStateTrue);
+    setDownloadUnpaxState(downloadUnpaxProgressAndStateTrue);
+    dispatch(setNextStepEnabled(true));
+    dispatch(setDownloadUnpaxStatus(true));
+  }
   }
 
   const fetchExampleYaml = (event: any) => {
@@ -95,8 +113,10 @@ const Unpax = () => {
     dispatch(setDownloadUnpaxStatus(false));
     setDownloadUnpaxProgress(downloadUnpaxStatus);
     dispatch(setNextStepEnabled(false));
-    window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-      if(!res.status){ //errors during runInstallation()
+    if(!installationArgs.dryRunMode){
+
+      window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+        if(!res.status){ //errors during runInstallation()
         alertEmitter.emit('showAlert', res.details.message ? res.details.message : res.details, 'error');
       }
       if(res.details?.mergedYaml != undefined){
@@ -110,6 +130,13 @@ const Unpax = () => {
       clearInterval(timer);
       dispatch(setNextStepEnabled(false));
     });
+  }
+  else{
+    setDownloadUnpaxProgress(downloadUnpaxProgressAndStateTrue);
+    setDownloadUnpaxState(downloadUnpaxProgressAndStateTrue);
+    dispatch(setNextStepEnabled(true));
+    dispatch(setDownloadUnpaxStatus(true));
+  }
   }
 
   useEffect(() => {
@@ -133,7 +160,7 @@ const Unpax = () => {
   return (<>
       {installValue === "smpe" && <ContainerCard title="Continue to Initialization" description="">
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-            {`The SMP/E process has already downloaded the required Zowe runtime files. Zen will now retrieve the example-zowe.yaml and schemas for the yaml. Skip this step if you have already fetched these files.`}
+            {`The SMP/E process has already downloaded the required Zowe runtime files. Wizard will now retrieve the example-zowe.yaml and schemas for the yaml. Skip this step if you have already fetched these files.`}
           </Typography>
           {!showProgress && <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
             <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} 
@@ -152,9 +179,11 @@ const Unpax = () => {
       </ContainerCard>}
       {installValue === "download" && <ContainerCard title="Download Zowe Pax" description=""> 
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-            {`Zen will download the latest Zowe convenience build in PAX archive format from `}
-            <Link href="zowe.org">{'https://zowe.org/'}</Link>
-            {` Skip this step if you have already downloaded Zowe.`}
+            {`Wizard will download the latest Zowe convenience build in PAX archive format from `}
+            <Link href="https://www.zowe.org/download" target="_blank" rel="noopener noreferrer">
+              {'https://www.zowe.org/download'}
+            </Link>
+            {`. Skip this step if you have already downloaded Zowe.`}
           </Typography>
           {!showProgress && <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
             <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} 
@@ -177,7 +206,7 @@ const Unpax = () => {
       </ContainerCard>}
       {installValue === "upload" && <ContainerCard title="Upload Zowe Pax" description=""> 
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-            {`Zen will upload and unpax the Zowe runtime files from ${paxPath}. Skip this step if you have already uploaded a Zowe pax.`}
+            {`Wizard will upload and unpax the Zowe runtime files from ${paxPath}. Skip this step if you have already uploaded a Zowe pax.`}
           </Typography>
           {!showProgress && <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
             <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} 

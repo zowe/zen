@@ -43,7 +43,7 @@ const Vsam = () => {
 
   const dispatch = useAppDispatch();
   const [schema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.vsam);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.vsam);
   const [showProgress, setShowProgress] = useState(getProgress('vsamStatus'));
@@ -174,9 +174,11 @@ const Vsam = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initVsamButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-      updateProgress(res.status);
-      if(res.error) {
+
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.initVsamButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+        updateProgress(res.status);
+        if(res.error) {
         alertEmitter.emit('showAlert', res.errorMsg+" "+defaultErrorMessage, 'error');
       }
       clearInterval(timer);
@@ -187,6 +189,15 @@ const Vsam = () => {
         toggleEditorVisibility("output");
       })
     });
+    }
+    else{
+      setVsamInitState({
+        writeYaml: true,
+        uploadYaml: true,
+        success: true
+      });
+      updateProgress(true);
+    }
   }
 
   const handleFormChange = (data: any) => {
@@ -215,7 +226,7 @@ const Vsam = () => {
     setFormError(errorMsg);
     setSetupYaml(data);
     if(updatedYaml?.zowe) {
-      setLYaml(updatedYaml);
+      setLocalYaml(updatedYaml);
     }
     handleUpdateYaml(data, updatedYaml);
   }
@@ -234,7 +245,7 @@ const Vsam = () => {
         }
       }
     };
-    setLYaml(updatedYaml);
+    setLocalYaml(updatedYaml);
     window.electron.ipcRenderer.setConfig(updatedYaml);
     dispatch(setYaml(updatedYaml));
   }
@@ -257,7 +268,7 @@ const Vsam = () => {
       }
     };
     window.electron.ipcRenderer.setConfig(updatedYaml);
-    setLYaml(updatedYaml);
+    setLocalYaml(updatedYaml);
     dispatch(setYaml(updatedYaml));
   };
 
