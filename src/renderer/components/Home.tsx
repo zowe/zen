@@ -264,7 +264,8 @@ const Home = () => {
     {showWizard &&
       <>
         {showPasswordDialog && <PasswordDialog onPasswordSubmit={confirmConnection}></PasswordDialog>}
-        {<Wizard initialization={false}/>}
+        {(showPasswordDialog && updatedConnection) && <Wizard initialization={false}/>}
+        {!showPasswordDialog && <Wizard initialization={false}/>}
       </>
     }
    </>
