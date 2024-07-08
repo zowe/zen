@@ -27,14 +27,14 @@ import savedInstall from '../../assets/saved-install-green.png';
 import eventDispatcher from '../../../services/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL, UNPAX_STAGE_LABEL } from '../common/Constants';
+import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL, UNPAX_STAGE_LABEL } from '../common/Utils';
 import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus } from '../stages/progress/StageProgressStatus';
 
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
 import { getStageDetails } from '../../../services/StageDetails';
 import { IResponse } from '../../../types/interfaces';
-import { selectConnectionArgs } from '../stages/connection/connectionSlice';
+import { selectConnectionArgs, setPassword } from '../stages/connection/connectionSlice';
 import { selectInstallationArgs } from '../stages/installation/installationSlice';
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
@@ -238,6 +238,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const onSaveAndClose = () => {
     alertEmitter.emit('hideAlert');
     eventDispatcher.emit('saveAndCloseEvent');
+    dispatch(setPassword(''));
   }
 
   const isNextStepEnabled = useAppSelector(selectNextStepEnabled);

@@ -12,6 +12,7 @@ import {IIpcConnectionArgs} from "../types/interfaces";
 import Header from "../renderer/components/Header"
 import { AlertColor } from "@mui/material/Alert";
 import zos from 'zos-node-accessor';
+import { isValidUSSPath } from "../renderer/components/common/Utils";
 
 // Note: This file is not usable by the Renderer
 
@@ -107,12 +108,6 @@ export async function makeDir(config: IIpcConnectionArgs, dir: string, stopRecur
 // /u/tsxxx/blaa --> /u/tsxxx, eventually goes down to "/" then empty
 export function reducePath(path: string): string {
   return path.substring(0, path.lastIndexOf('/'));
-}
-
-// Check if the path starts with a slash and does not contain spaces
-export function isValidUSSPath(path: string): boolean {
-  const validUSSRegex = /^\/[\w\/-]+$/;
-  return validUSSRegex.test(path);
 }
 
 // This adds a "\n" inside Unix commands separated by ";" if char limit reached

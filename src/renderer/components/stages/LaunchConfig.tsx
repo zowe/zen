@@ -20,7 +20,7 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { stages } from "../configuration-wizard/Wizard";
 import { selectInitializationStatus, setInitializationStatus, setLaunchConfigStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { TYPE_YAML, TYPE_OUTPUT, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, LAUNCH_CONFIG_STAGE_LABEL } from "../common/Constants";
+import { TYPE_YAML, TYPE_OUTPUT, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, LAUNCH_CONFIG_STAGE_LABEL } from "../common/Utils";
 import { IResponse } from "../../../types/interfaces";
 import { getInstallationArguments, getProgress, isInitComplete } from "./progress/StageProgressStatus";
 import { selectConnectionArgs } from "./connection/connectionSlice";
@@ -427,7 +427,7 @@ const LaunchConfig = () => {
       }
     }
   }
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [setupSchema] = useState(schema.properties.zowe);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe);
   const [isFormInit, setIsFormInit] = useState(false);
@@ -448,10 +448,10 @@ const LaunchConfig = () => {
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           dispatch(setYaml(res.details));
-          setLYaml(res.details);
+          setLocalYaml(res.details);
         } else {
           dispatch(setYaml(FALLBACK_YAML));
-          setLYaml(FALLBACK_YAML);
+          setLocalYaml(FALLBACK_YAML);
         }
       })
     }
@@ -509,9 +509,10 @@ const LaunchConfig = () => {
     e.preventDefault();
     dispatch(setLaunchConfigStatus(false));
     alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
-    window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
-      if(res && res.status) {
-        dispatch(setNextStepEnabled(true));
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
+        if(res && res.status) {
+          dispatch(setNextStepEnabled(true));
         dispatch(setLaunchConfigStatus(true));
         alertEmitter.emit('showAlert', res.details, 'success');
       } else {
@@ -519,7 +520,14 @@ const LaunchConfig = () => {
         alertEmitter.emit('showAlert', res.details, 'error');
       }
       dispatch(setInitializationStatus(isInitComplete()));
-    });
+      });
+    }
+    else{
+      alertEmitter.emit('showAlert', 'Successfully uploaded yaml config');
+      dispatch(setNextStepEnabled(true));
+      dispatch(setLaunchConfigStatus(true));
+      dispatch(setInitializationStatus(isInitComplete()));
+    }
   }
 
   return (

@@ -18,7 +18,7 @@ import { ProgressStore } from "../storage/ProgressStore";
 import * as fs from 'fs';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { InstallationArgs } from '../types/stateInterfaces';
-import { FALLBACK_SCHEMA, deepMerge } from '../renderer/components/common/Constants';
+import { FALLBACK_SCHEMA, deepMerge } from '../renderer/components/common/Utils';
 
 
 //AJV did not like the regex in our current schema
@@ -58,6 +58,7 @@ class Installation {
     }
   }
 
+  // Mutates yamlObj from source installationArgs
   mergeYamlAndInstallationArgs = function(yamlObj: any, installationArgs: InstallationArgs){
     if (installationArgs.installationDir) {
       yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;
@@ -120,6 +121,8 @@ class Installation {
     installationArgs: InstallationArgs,
   ): Promise<IResponse> {
     try{
+      ProgressStore.set('downloadUnpax.getSchemas', false);
+      ProgressStore.set('downloadUnpax.getExampleYaml', false);
       const currentConfig: any = ConfigurationStore.getConfig();
       let yamlObj
       const zoweRuntimePath = installationArgs.installationDir;
@@ -172,6 +175,11 @@ class Installation {
             ConfigurationStore.setSchema(FALLBACK_SCHEMA);
             return {status: false, details: {message: e.message}}
           }
+        } else {
+          console.log('no schema found from pax');
+          ProgressStore.set('downloadUnpax.getSchemas', false);
+          ConfigurationStore.setSchema(FALLBACK_SCHEMA);
+          return {status: false, details: {message: 'no schemas found from pax'}}
         }
         return {status: parsedSchema && parsedYaml, details: {message: "Successfully retrieved example-zowe.yaml and schemas", mergedYaml: yamlObj}}
       }

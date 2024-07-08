@@ -27,15 +27,16 @@ import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
 import { setConnectionValidationDetails, setHost, setPort,
-               setUser, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress, setConnectionArgs, setPassword} from './connectionSlice';
-import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
-import { setConnectionStatus,  selectConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setDownloadUnpaxStatus, setInitializationStatus, setDatasetInstallationStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setCertificateStatus, setVsamStatus, setStcsStatus} from '../progress/progressSlice';
+               setUser, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress, setPassword} from './connectionSlice';
+import { setLoading, setNextStepEnabled, selectZoweCLIVersion} from '../../configuration-wizard/wizardSlice';
+import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
-import { initializeProgress, getActiveStage, setPlanningStageStatus } from "../progress/StageProgressStatus";
+import { initializeProgress, getActiveStage, } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../services/eventDispatcher";
 import { setLocationValidationDetails } from "../PlanningSlice";
+import { selectInstallationArgs } from "../installation/installationSlice";
 
 const Connection = () => {
 
@@ -50,6 +51,18 @@ const Connection = () => {
   const connectionStatus = useAppSelector(selectConnectionStatus);
 
   useEffect(() => {
+    //This is a dirty hack to stop app from reloading to connection screen instead of home
+    const pageAccessedByReload = (
+      (window.performance.navigation && window.performance.navigation.type === 1) ||
+        window.performance
+          .getEntriesByType('navigation')
+          .map((nav: any) => nav.type)
+          .includes('reload')
+    );
+    if(pageAccessedByReload){
+      window.location.assign(window.location.href.substring(0, window.location.href.lastIndexOf('/')));
+    }
+    //End of dirty hack
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
   }, []);
 
@@ -116,6 +129,8 @@ const FTPConnectionForm = () => {
 
   const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
 
+  const installationArgs = useAppSelector(selectInstallationArgs);
+
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
     dispatch(setNextStepEnabled(false));
@@ -128,7 +143,9 @@ const FTPConnectionForm = () => {
     }
     alertEmitter.emit('hideAlert');
     dispatch(setLoading(true));
-    window.electron.ipcRenderer
+    
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer
       .connectionButtonOnClick(connectionArgs)
       .then((res: IResponse) => {
         dispatch(setConnectionStatus(res.status));
@@ -143,6 +160,13 @@ const FTPConnectionForm = () => {
         dispatch(setConnectionValidationDetails(res.details));
         dispatch(setLoading(false));
       }); 
+    }
+    else{
+      dispatch(setConnectionStatus(true));
+      toggleFormProcessed(true);
+      dispatch(setNextStepEnabled(true));
+      dispatch(setLoading(false));
+    }
   };
 
   const setResume = () => {
@@ -178,7 +202,7 @@ const FTPConnectionForm = () => {
           type="number"
           InputLabelProps={{ shrink: true }}
           variant="standard"
-          helperText="FTP port number. If not specified, Zen will try to use a default service port."
+          helperText="FTP port number. If not specified, Wizard will try to use a default service port."
           value={connectionArgs.port}
     onChange={(e) => { dispatch(setPort(Number(e.target.value))); handleFormChange(); }}
         />

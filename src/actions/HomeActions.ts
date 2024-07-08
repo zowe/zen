@@ -26,7 +26,8 @@ export class HomeActions {
         const status = ConnectionStore.set('zowe-cli-version', stdout);
         return {status, details: stdout};
       } catch (err) {
-        console.info('Failed to detect Zowe CLI version', err);
+        // "No Zowe CLI found on local machine" printed upstream
+        // console.info('Failed to detect Zowe CLI version', err);
         return {status: false, details: ''};
       }
     }

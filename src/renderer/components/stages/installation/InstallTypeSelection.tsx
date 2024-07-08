@@ -21,7 +21,7 @@ import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
 import { getStageDetails } from "../../../../services/StageDetails";
 import { getInstallationTypeStatus } from "../progress/StageProgressStatus";
-import { INSTALLATION_TYPE_STAGE_LABEL } from "../../common/Constants";
+import { INSTALLATION_TYPE_STAGE_LABEL } from "../../common/Utils";
 const InstallationType = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
@@ -112,9 +112,11 @@ const InstallationType = () => {
     {installValue === "download" &&
       <div>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-          Zen will download the latest Zowe convenience build in PAX archive format from.
+          Wizard will download the latest Zowe convenience build in PAX archive format from&nbsp;
           { !agreeLicense && <><br />Please accept the license agreement to continue.<br/></>}
-          <Link href="zowe.org">{'https://zowe.org'}</Link>
+          <Link href="https://www.zowe.org/download" target="_blank" rel="noopener noreferrer">
+            {'https://www.zowe.org/download'}
+          </Link>
         </Typography>
         <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
           <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} 
@@ -131,15 +133,19 @@ const InstallationType = () => {
       </Typography>
       <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '16px'}} type="submit" onClick={e => {
         e.preventDefault();
-        window.electron.ipcRenderer.uploadPax().then((res: any) => {
-          if(res.filePaths && res.filePaths[0] != undefined){
-            setPaxPath(res.filePaths[0]);
-            dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: res.filePaths[0]}));
-            dispatch(setUserUploadedPaxPath(res.filePaths[0]));
-          } else {
-            setPaxPath("");
-          }
-        });
+        if(!installationArgs.dryRunMode){
+          window.electron.ipcRenderer.uploadPax().then((res: any) => {
+            if(res.filePaths && res.filePaths[0] != undefined){
+              setPaxPath(res.filePaths[0]);
+              dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: res.filePaths[0]}));
+              dispatch(setUserUploadedPaxPath(res.filePaths[0]));
+            } else {
+              setPaxPath("");
+            }
+          });
+        }
+        else
+          updateProgress(true);
       }}>Upload PAX</Button>
       <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
         {`${paxPath === "" ? "No pax file selected." : paxPath}`}

@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
 import flatten, { unflatten } from 'flat';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
-import { setConnectionArgs, setResumeProgress, selectInitJobStatement } from './stages/connection/connectionSlice';
+import { setConnectionArgs, setResumeProgress, selectInitJobStatement, selectResumeProgress } from './stages/connection/connectionSlice';
 import { setJobStatement } from './stages/PlanningSlice';
 import { selectSchema, selectYaml, setSchema, setYaml, setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
@@ -27,8 +27,9 @@ import  HorizontalLinearStepper  from './common/Stepper';
 import Wizard from './configuration-wizard/Wizard'
 import { ActiveState } from '../../types/stateInterfaces';
 import { getInstallationArguments, getPreviousInstallation } from './stages/progress/StageProgressStatus';
-import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Constants';
-import { selectInstallationArgs, setInstallationArgs } from './stages/installation/installationSlice';
+import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Utils';
+import { selectInstallationArgs, setInstallationArgs, installationSlice } from './stages/installation/installationSlice';
+import PasswordDialog from './common/passwordDialog';
 
 // REVIEW: Get rid of routing
 
@@ -49,10 +50,10 @@ const cards: Array<ICard> = [
     media: installationImg,
   }, 
   {
-    id: "configure", 
+    id: "dry run", 
     name: "Zowe Installation Dry Run", 
     description: "It will guide you through the installation steps without running the installation.", 
-    link: "/",
+    link: "/wizard",
     media: installationDryImg,
   }
 ]
@@ -64,45 +65,15 @@ const lastActiveState: ActiveState = {
   activeSubStepIndex: 0,
 };
 
-const makeCard = (card: ICard) => {
-  const dispatch = useAppDispatch();
-  const {id, name, description, link, media} = card;
-  return (  
-    <Link key={`link-${id}`} to={link} >
-      <Box sx={{ width: '40vw', height: '40vh'}} onClick={(e) => {
-        const flattenedData = flatten(lastActiveState);
-        localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
-        if(id === "install") dispatch(setYaml(FALLBACK_YAML));
-      }}>
-        <Card id={`card-${id}`} square={true}>
-          <CardMedia
-            sx={{ height: 240 }}
-            image={media}
-          />
-          <CardContent className="action-card">
-            <Box>
-              <Typography variant="subtitle1" component="div">
-                {name}
-              </Typography>
-              <Typography sx={{ mb: 1.5, mt: 1.5, fontSize: '0.875rem' }} color="text.secondary">
-                {description}
-              </Typography>
-            </Box>
-          </CardContent>
-        </Card>
-      </Box>
-    </Link>
-  )
-}
-
 const Home = () => {
 
   const dispatch = useAppDispatch();
   const connectionStatus = useAppSelector(selectConnectionStatus);
   const [showWizard, setShowWizard] = useState(false);
   const [showLoginDialog, setShowLogin] = useState(false);
-  const [yaml] = useState(useAppSelector(selectYaml));
+  const [localYaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
+  const installationArgs = useAppSelector(selectInstallationArgs);
 
   const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getPreviousInstallation();
 
@@ -111,16 +82,60 @@ const Home = () => {
   const stages: any = [];
   const defaultTooltip: string = "Resume";
   const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [updatedConnection, setUpdatedConnection] = useState(false);
+
+  const makeCard = (card: ICard) => {
+    const {id, name, description, link, media} = card;
+  
+    const handleClick = () => {
+      const flattenedData = flatten(lastActiveState);
+      localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
+      let newInstallationArgs = installationSlice.getInitialState().installationArgs;
+      if (id === "install") {
+        newInstallationArgs = {...newInstallationArgs, dryRunMode: false};
+      } else if (id === "dry run") {
+        newInstallationArgs = {...newInstallationArgs, dryRunMode: true};
+      }
+      dispatch(setYaml(FALLBACK_YAML));
+      dispatch(setInstallationArgs(newInstallationArgs));
+      window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", newInstallationArgs);
+      setLocalYaml(FALLBACK_YAML);
+      window.electron.ipcRenderer.setConfig(FALLBACK_YAML);
+      // TODO: Ideally, reset connectionArgs too
+    };
+  
+    return (  
+      <Link key={`link-${id}`} to={link} >
+        <Box sx={{ width: '40vw', height: '40vh'}} onClick={handleClick}>
+          <Card id={`card-${id}`} square={true}>
+            <CardMedia
+              sx={{ height: 240 }}
+              image={media}
+            />
+            <CardContent className="action-card">
+              <Box>
+                <Typography variant="subtitle1" component="div">
+                  {name}
+                </Typography>
+                <Typography sx={{ mb: 1.5, mt: 1.5, fontSize: '0.875rem' }} color="text.secondary">
+                  {description}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+        </Link>
+    )
+  }
 
   useEffect(() => {
     eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));
 
-
-
     //Home is the first screen the user will always see 100% of the time. Therefore, we will call the loading of the configs, schemas, and installation args here and set them to the redux memory states
 
     //YAML LOADING - necessary for editor state as well as form values
-    if(yaml == undefined || (typeof yaml === "object" && Object.keys(yaml).length === 0)){
+    if(localYaml == undefined || (typeof localYaml === "object" && Object.keys(localYaml).length === 0)){
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           dispatch(setYaml(res.details));
@@ -150,22 +165,22 @@ const Home = () => {
       }
     })
 
-
-
     window.electron.ipcRenderer.checkZoweCLI().then((res: IResponse) => {
       if (res.status) {
         dispatch(setZoweCLIVersion(res.details));
       } else {
         console.info('No Zowe CLI found on local machine');
       }
-    }); 
+    });
+
     window.electron.ipcRenderer.setStandardOutput(DEF_NO_OUTPUT).then((res: any) => {
     })
+
     window.electron.ipcRenderer.findPreviousInstallations().then((res: IResponse) => {
       const connectionStore = res.details;
       if (connectionStore["connection-type"] === 'ftp') {
         const jobStatement = connectionStore['ftp-details'].jobStatement.trim() || useAppSelector(selectInitJobStatement);
-        console.log(JSON.stringify(connectionStore['ftp-details'],null,2));
+        // console.log(JSON.stringify(connectionStore['ftp-details'],null,2));
         const connectionArgs: IIpcConnectionArgs = {
           ...connectionStore["ftp-details"],
           password: "",
@@ -198,6 +213,16 @@ const Home = () => {
   const resumeProgress = () => {
     setShowWizard(true);
     dispatch(setResumeProgress(true));
+
+    if(connectionStatus) {
+      setShowPasswordDialog(true);
+      setUpdatedConnection(false);
+    }
+  }
+
+  const confirmConnection = (status: boolean) => {
+    setUpdatedConnection(status);
+    setShowWizard(status);
   }
 
   return (
@@ -237,7 +262,13 @@ const Home = () => {
         </div>}
       </div>
     }
-    {showWizard && <Wizard initialization={false}/>}
+    {showWizard &&
+      <>
+        {showPasswordDialog && <PasswordDialog onPasswordSubmit={confirmConnection}></PasswordDialog>}
+        {(showPasswordDialog && updatedConnection) && <Wizard initialization={false}/>}
+        {!showPasswordDialog && <Wizard initialization={false}/>}
+      </>
+    }
    </>
   );
 };

@@ -24,7 +24,7 @@ interface AlertData {
   severity: AlertColor;
 }
 
-// Global event emmitter Zen can use
+// Global event emmitter Wizard can use
 export const alertEmitter = new EventEmitter();
 
 export default function Header() {

@@ -30,7 +30,7 @@ import { setActiveStep } from './progress/activeStepSlice';
 import EditorDialog from "../common/EditorDialog";
 import { getStageDetails } from "../../../services/StageDetails";
 import { getProgress, getPlanningStageStatus, setPlanningValidationDetailsState, getPlanningValidationDetailsState, getInstallationTypeStatus } from "./progress/StageProgressStatus";
-import { FALLBACK_YAML } from "../common/Constants";
+import { FALLBACK_YAML, isValidUSSPath } from "../common/Utils";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -111,13 +111,14 @@ const Planning = () => {
 
     dispatch(setJobStatementVal(jobStatementValue));
 
-    window.electron.ipcRenderer.getZoweVersion().then((res: IResponse) => dispatch(setZoweVersion(res.status ? res.details : '' )));
-
-    window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.getZoweVersion().then((res: IResponse) => dispatch(setZoweVersion(res.status ? res.details : '' )));
+      
+      window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
       if(res != undefined){
         setInstArgs((res as any));
       }
-    })
+      })
 
     window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
       if (res.status) {
@@ -133,9 +134,9 @@ const Planning = () => {
         dispatch(setInstallationArgs({...installationArgs, installationDir: res.details?.zowe?.runtimeDirectory ?? '', installationType: getInstallationTypeStatus()?.installationType, userUploadedPaxPath: getInstallationTypeStatus()?.userUploadedPaxPath}));
       }
     })
-
+  }
   }, []); 
-
+  
   useEffect(() => {
     setPlanningState(jobHeaderSaved && locationsValidated);
   }, [jobHeaderSaved, locationsValidated]);
@@ -143,6 +144,29 @@ const Planning = () => {
   useEffect(() => {
     const nextPosition = document.getElementById(`position-${step}`);
     nextPosition.scrollIntoView({behavior: 'smooth'});
+
+    /* TODO: Fixes "Please fill in all remaining values" bug
+    This sets the localYaml values to installationArg values in case they have been pre-populated by the UI
+    (when onChange detectors haven't run yet to do the job of setting localYaml). This is a workaround and should
+    be investigated why edgecases exist where the UI input fields has text visible, yet localYaml is not set */
+    if (!localYaml?.java?.home && installationArgs.javaHome)
+    {
+      const updatedYaml: any = updateAndReturnYaml('java.home', installationArgs.javaHome)
+      dispatch(setYaml(updatedYaml));
+      setLocalYaml(updatedYaml);
+    }
+    if (!localYaml?.node?.home && installationArgs.nodeHome)
+    {
+      const updatedYaml: any = updateAndReturnYaml('node.home', installationArgs.nodeHome)
+      dispatch(setYaml(updatedYaml));
+      setLocalYaml(updatedYaml);
+    }
+    if (!localYaml?.zowe?.runtimeDirectory && installationArgs.installationDir)
+    {
+      const updatedYaml: any = updateAndReturnYaml('zowe.runtimeDirectory', installationArgs.installationDir)
+      dispatch(setYaml(updatedYaml));
+      setLocalYaml(updatedYaml);
+    }
   }, [step]);
 
   const setPlanningState = (status: boolean): void => {
@@ -196,7 +220,9 @@ const Planning = () => {
     }
     e.preventDefault();
     dispatch(setLoading(true));
-    window.electron.ipcRenderer.saveJobHeader(jobStatementValue)
+
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.saveJobHeader(jobStatementValue)
       .then(() => getENVVars())
       .then((res: IResponse) => {
         setEditorContentAndType(res.details, 'output');
@@ -226,8 +252,20 @@ const Planning = () => {
         alertEmitter.emit('showAlert', err.message, 'error');
         dispatch(setLoading(false));
       });    
+    } else{
+      if(locationsValidated){
+        setPlanningState(true);
+        setStep(2);
+      } else if (step<1)
+      {
+        setStep(1);
+      }
+      setJobHeaderSaved(true);
+      dispatch(setJobStatementValid(true));
+      dispatch(setLoading(false));
+    }
   }
-
+    
   const validateLocations = (e: any, click?: boolean) => {
     setPlanningState(false);
     setLocValidations(false);
@@ -253,16 +291,26 @@ const Planning = () => {
     dispatch(setLoading(true));
 
     // TODO: Possible feature for future: add to checkDir to see if existing Zowe install exists.
-    // Then give the user ability to use existing zowe.yaml to auto-fill in fields from Zen
-    Promise.all([
-      window.electron.ipcRenderer.checkJava(connectionArgs, localYaml?.java?.home || installationArgs.javaHome),
-      window.electron.ipcRenderer.checkNode(connectionArgs, localYaml?.node?.home || installationArgs.nodeHome),
-      window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir),
-    ]).then((res: Array<IResponse>) => {
+    // Then give the user ability to use existing zowe.yaml to auto-fill in fields from Wizard
+    if(!installationArgs.dryRunMode){
+      Promise.all([
+        window.electron.ipcRenderer.checkJava(connectionArgs, localYaml?.java?.home || installationArgs.javaHome),
+        window.electron.ipcRenderer.checkNode(connectionArgs, localYaml?.node?.home || installationArgs.nodeHome),
+        window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir),
+      ]).then((res: Array<IResponse>) => {
       const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
       setEditorContent(res.map(item=>item?.details).join('\n'));
       setContentType('output');
 
+      if (localYaml?.zowe?.logDirectory && !isValidUSSPath(localYaml.zowe.logDirectory)) {
+        details.error = localYaml.zowe.logDirectory + " is not a valid z/OS Unix path"
+      }
+      if (localYaml?.zowe?.extensionDirectory && !isValidUSSPath(localYaml.zowe.extensionDirectory)) {
+        details.error = localYaml.zowe.extensionDirectory + " is not a valid z/OS Unix path"
+      }
+      if (localYaml?.zowe?.workspaceDirectory && !isValidUSSPath(localYaml.zowe.workspaceDirectory)) {
+        details.error = localYaml.zowe.logDirectory + " is not a valid z/OS Unix path"
+      }
       // If res[?] doesn't exist, ?-th window.electronc.ipcRender call failed...
       try {
         details.javaVersion = res[0].details.split('\n').filter((i: string) => i.trim().startsWith('java version'))[0].trim().slice(14, -1);
@@ -282,51 +330,57 @@ const Planning = () => {
       }
       //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks.
       // try {
-      //   const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
-      //   details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
-      //   // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
+        //   const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
+        //   details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
+        //   // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
       //   if (parseInt(details.spaceAvailableMb, 10) < requiredSpace) { 
-      //     details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
-      //   }
-      // } catch (error) {
-      //   details.error = details.error + `Can't check space available; `;
-      //   console.warn(res[2].details);
-      // }
-      setValidationDetails(details);
-      setPlanningValidationDetailsState(details);
-      dispatch(setLocationValidationDetails(details))
-      dispatch(setLoading(false));
-      if (!details.error) {
-        alertEmitter.emit('hideAlert');
-        setLocValidations(true);
-        setPlanningState(true);
-        // setStep(2); // This step is meant to show some usefull status, removing for now.
-      } else {
+        //     details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
+        //   }
+        // } catch (error) {
+          //   details.error = details.error + `Can't check space available; `;
+          //   console.warn(res[2].details);
+          // }
+          setValidationDetails(details);
+          setPlanningValidationDetailsState(details);
+          dispatch(setLocationValidationDetails(details))
+          dispatch(setLoading(false));
+          if (!details.error) {
+            alertEmitter.emit('hideAlert');
+            setLocValidations(true);
+            setPlanningState(true);
+            // setStep(2); // This step is meant to show some usefull status, removing for now.
+          } else {
         dispatch(setPlanningStatus(false));
         dispatch(setLoading(false));
         alertEmitter.emit('showAlert', details.error, 'error');
       }
     })
   }
-
-  const onJobStatementChange = (newJobStatement: string) => {
-    setIsJobStatementUpdated(true);
-    setJobStatementValue(newJobStatement);
-    setJobHeaderSaved(false);
-    setJobStatementValidation(false);
-    dispatch(setJobStatement(newJobStatement));
-    dispatch(setJobStatementValid(false));
-    setPlanningState(false);
-    setStep(0);
+  else{
+    setPlanningState(true);
+    setLocValidations(true);
+    dispatch(setLoading(false));
   }
-
-  const formChangeHandler = (key?: string, value?: (string | number), installationArg?: string) => {
-    setIsLocationsUpdated(true);
-    setPlanningStatus(false);
-    setLocationsValidated(false);
-    dispatch(setPlanningStatus(false));
-    dispatch(setNextStepEnabled(false));
-    setStep(1);
+}
+        
+const onJobStatementChange = (newJobStatement: string) => {
+          setIsJobStatementUpdated(true);
+          setJobStatementValue(newJobStatement);
+          setJobHeaderSaved(false);
+          setJobStatementValidation(false);
+          dispatch(setJobStatement(newJobStatement));
+          dispatch(setJobStatementValid(false));
+          setPlanningState(false);
+          setStep(0);
+        }
+        
+        const formChangeHandler = (key?: string, value?: (string | number), installationArg?: string) => {
+          setIsLocationsUpdated(true);
+          setPlanningStatus(false);
+          setLocationsValidated(false);
+          dispatch(setPlanningStatus(false));
+          dispatch(setNextStepEnabled(false));
+          setStep(1);
 
     if (!key || !value) {
       return;
@@ -382,7 +436,7 @@ For some stages, you may need additional permissions:
           <Link href="https://docs.zowe.org/stable/user-guide/install-zos" rel="noreferrer" target="_blank">Here is the most up to date, high-level installation overview for Zowe</Link>
         </Typography>
         <Typography sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">    
-        {`Zen will run installation (zwe install) and initialization (zwe init) commands on the mainframe by submitting jobs through the FTP connection. 
+        {`Wizard will run installation (zwe install) and initialization (zwe init) commands on the mainframe by submitting jobs through the FTP connection. 
 Please customize the job statement below to match your system requirements.
   `}
         </Typography>
@@ -421,7 +475,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Run-time Directory (or installation location)"
                 variant="standard"
-                value={localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir}
+                value={localYaml?.zowe?.runtimeDirectory || installationArgs.installationDir || ''}
                 inputProps={{ maxLength: JCL_UNIX_SCRIPT_CHARS }}
                 onChange={(e) => {
                   formChangeHandler("zowe.runtimeDirectory", e.target.value, "installationDir");
@@ -595,7 +649,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Java Location"
                 variant="standard"
-                value={localYaml?.java?.home || installationArgs.javaHome}
+                value={localYaml?.java?.home || installationArgs.javaHome || ''}
                 onChange={(e) => {
                   formChangeHandler("java.home", e.target.value, "javaHome");
                   if(localYaml){
@@ -616,7 +670,7 @@ Please customize the job statement below to match your system requirements.
                 style={{marginLeft: 0}}
                 label="Node.js Location"
                 variant="standard"
-                value={localYaml?.node?.home || installationArgs.nodeHome}
+                value={localYaml?.node?.home || installationArgs.nodeHome || ''}
                 onChange={(e) => {
                   formChangeHandler("node.home", e.target.value, "nodeHome");
                   if(localYaml){
