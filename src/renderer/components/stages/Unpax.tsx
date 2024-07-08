@@ -84,8 +84,16 @@ const Unpax = () => {
     if(!stageComplete && showProgress) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getDownloadUnpaxProgress().then((res: any) => {
-          setDownloadAndUnpaxProgress(res)
-          if(res.success){
+          let success;
+          setDownloadAndUnpaxProgress(res);
+
+          if(isYamlFetched) {
+            success = res.getExampleYaml && res.getSchemas;
+          } else {
+            success = res.download && res.getExampleYaml && res.getSchemas && res.unpax && res.upload && res.uploadYaml;
+          }
+
+          if(success){
             clearInterval(timer);
           }
         })
