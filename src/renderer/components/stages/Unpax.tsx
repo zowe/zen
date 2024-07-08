@@ -48,7 +48,7 @@ const Unpax = () => {
 
   useEffect(() => {
     const stageComplete = downloadUnpaxProgress.uploadYaml && downloadUnpaxProgress.download && downloadUnpaxProgress.upload && downloadUnpaxProgress.unpax;
-    if(!stageComplete && showProgress) {
+    if(!stageComplete && showProgress && !(downloadUnpaxProgress.getExampleYaml && downloadUnpaxProgress.getSchemas)) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getDownloadUnpaxProgress().then((res: any) => {
           setDownloadUnpaxProgress(res);
@@ -64,7 +64,7 @@ const Unpax = () => {
     return () => {
       clearInterval(timer);
     };
-  }, [showProgress]);
+  }, [showProgress, downloadUnpaxProgress]);
 
   const downloadUnpaxProgressAndStateTrue = {
     uploadYaml: true,
@@ -79,7 +79,6 @@ const Unpax = () => {
     event.preventDefault();
     setShowProgress(true);
     dispatch(setDownloadUnpaxStatus(false));
-    setDownloadUnpaxProgress(downloadUnpaxStatus);
     dispatch(setNextStepEnabled(false));
 
     if(!installationArgs.dryRunMode){
@@ -111,12 +110,15 @@ const Unpax = () => {
     event.preventDefault();
     setShowProgress(true);
     dispatch(setDownloadUnpaxStatus(false));
-    setDownloadUnpaxProgress(downloadUnpaxStatus);
     dispatch(setNextStepEnabled(false));
     if(!installationArgs.dryRunMode){
-
-      window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-        if(!res.status){ //errors during runInstallation()
+    window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+      setDownloadUnpaxProgress({
+        ...downloadUnpaxProgress,
+        getExampleYaml: false,
+        getSchemas: false, 
+      });
+      if(!res.status){ //errors during runInstallation()
         alertEmitter.emit('showAlert', res.details.message ? res.details.message : res.details, 'error');
       }
       if(res.details?.mergedYaml != undefined){
@@ -126,8 +128,9 @@ const Unpax = () => {
       dispatch(setNextStepEnabled(res.status));
       dispatch(setDownloadUnpaxStatus(res.status));
       clearInterval(timer);
-    }).catch(() => {
+    }).catch((err: any) => {
       clearInterval(timer);
+      alertEmitter.emit('showAlert', typeof err === "string" ? err : err.toString(), 'error');
       dispatch(setNextStepEnabled(false));
     });
   }
