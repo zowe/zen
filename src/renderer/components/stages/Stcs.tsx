@@ -40,7 +40,7 @@ const Stcs = () => {
 
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security?.stcs);
   const [setupDsYaml, setSetupDsYaml] = useState(yaml?.zowe?.setup?.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('stcsStatus'));
@@ -83,7 +83,7 @@ const Stcs = () => {
       const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: {...yaml.zowe.setup.security, stcs: {zowe: DEFAULT_ZOWE, zis: DEFAULT_ZIS, aux: DEFAULT_AUX}}}}};
       window.electron.ipcRenderer.setConfig(newYaml);
       setSetupYaml({zowe: DEFAULT_ZOWE, zis: DEFAULT_ZIS, aux: DEFAULT_AUX});
-      setLYaml(newYaml);
+      setLocalYaml(newYaml);
       dispatch(setYaml(newYaml));
     }
 
@@ -179,7 +179,9 @@ const Stcs = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initStcsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+    
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.initStcsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
         updateProgress(res.status);
         if(res.error) {
           alertEmitter.emit('showAlert', res.errorMsg+" "+defaultErrorMessage, 'error');
@@ -192,6 +194,15 @@ const Stcs = () => {
           toggleEditorVisibility("output");
         })
       });
+    }
+    else{
+      setStcsInitState({
+        writeYaml: true,
+        uploadYaml: true,
+        success: true
+      });
+      updateProgress(true);
+    }
   }
 
   const handleFormChange = (data: any) => {

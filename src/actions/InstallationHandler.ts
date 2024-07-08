@@ -58,6 +58,7 @@ class Installation {
     }
   }
 
+  // Mutates yamlObj from source installationArgs
   mergeYamlAndInstallationArgs = function(yamlObj: any, installationArgs: InstallationArgs){
     if (installationArgs.installationDir) {
       yamlObj.zowe.runtimeDirectory = installationArgs.installationDir;

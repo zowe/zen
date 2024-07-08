@@ -545,7 +545,7 @@ const Networking = () => {
   const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
 
   const dispatch = useAppDispatch();
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
@@ -606,24 +606,32 @@ const Networking = () => {
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
-    setLYaml(data);
+    setLocalYaml(data);
   }
 
   const onSaveYaml = (e: any) => {
     e.preventDefault();
     alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
     dispatch(setNetworkingStatus(false));
-    window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
-      if(res && res.status) {
-        dispatch(setNextStepEnabled(true));
-        dispatch(setNetworkingStatus(true));
-        alertEmitter.emit('showAlert', res.details, 'success');
-      } else {
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
+        if(res && res.status) {
+          dispatch(setNextStepEnabled(true));
+          dispatch(setNetworkingStatus(true));
+          alertEmitter.emit('showAlert', res.details, 'success');
+        } else {
         dispatch(setNetworkingStatus(false));
         alertEmitter.emit('showAlert', res.details, 'error');
       }
       dispatch(setInitializationStatus(isInitComplete()));
-    });
+      });
+    }
+    else{
+      alertEmitter.emit('showAlert', 'Successfully uploaded yaml config');
+      dispatch(setNextStepEnabled(true));
+      dispatch(setNetworkingStatus(true));
+      dispatch(setInitializationStatus(isInitComplete()));
+    }
   }
 
   return (
@@ -643,7 +651,7 @@ const Networking = () => {
             window.electron.ipcRenderer.setConfig(newYaml )
             dispatch(setYaml(newYaml))
             dispatch(setNetworkingStatus(false));
-            setLYaml(newYaml);
+            setLocalYaml(newYaml);
           }}><AddIcon /></IconButton></p>
           {yaml.zowe.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box key={`box-${index}`} sx={{display: "flex", flexDirection: "row"}}><TextField
             variant="standard"
@@ -656,7 +664,7 @@ const Networking = () => {
               window.electron.ipcRenderer.setConfig(newYaml )
               dispatch(setYaml(newYaml))
               dispatch(setNetworkingStatus(false));
-              setLYaml(newYaml);
+              setLocalYaml(newYaml);
             }}
           /><IconButton onClick={(e) => {
             let domains = [...yaml.zowe?.externalDomains];
@@ -665,7 +673,7 @@ const Networking = () => {
             window.electron.ipcRenderer.setConfig(newYaml )
             dispatch(setYaml(newYaml))
             dispatch(setNetworkingStatus(false));
-            setLYaml(newYaml);
+            setLocalYaml(newYaml);
           }}><DeleteIcon /></IconButton></Box>)}
           <br />
           <TextField
@@ -678,7 +686,7 @@ const Networking = () => {
               const newYaml = {...yaml, zowe: {...yaml.zowe, externalPort: Number(e.target.value)}};
               window.electron.ipcRenderer.setConfig(newYaml)
               dispatch(setYaml(newYaml))
-              setLYaml(newYaml);
+              setLocalYaml(newYaml);
               // // props.setYaml(newYaml);
               // await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
               // // dispatch(setYaml(newYaml));
@@ -713,7 +721,7 @@ const Networking = () => {
                                         control={<Checkbox checked={yaml[schemaKey][matchedPattern][schemaProperty]} onChange={async (e) => {
                                           // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
                                           const newYaml = {...yaml, [schemaKey]: {...yaml[schemaKey], [matchedPattern]: {...yaml[schemaKey][matchedPattern], [schemaProperty]: !yaml[schemaKey][matchedPattern][schemaProperty]}}};
-                                          setLYaml(newYaml);
+                                          setLocalYaml(newYaml);
                                           await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${schemaKey}.${matchedPattern}.${schemaProperty}`, !yaml[schemaKey][matchedPattern][schemaProperty])
                                           dispatch(setYaml(newYaml));
                                           dispatch(setNetworkingStatus(false));
@@ -728,7 +736,7 @@ const Networking = () => {
                                       onChange={async (e) => {
                                         if(!Number.isNaN(Number(e.target.value))){
                                           const newYaml = {...yaml, [schemaKey]: {...yaml[schemaKey], [matchedPattern]: {...yaml[schemaKey][matchedPattern], [schemaProperty]: Number(e.target.value)}}};
-                                          setLYaml(newYaml);
+                                          setLocalYaml(newYaml);
                                           await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${schemaKey}.${matchedPattern}.${schemaProperty}`, Number(e.target.value))
                                           dispatch(setYaml(newYaml));
                                           dispatch(setNetworkingStatus(false));

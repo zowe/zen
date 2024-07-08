@@ -37,7 +37,8 @@ const initialState: InstallationState = {
     cookieId: '1',
     zosmfHost: '',
     zosmfPort: '443',
-    zosmfApplId: 'IZUDFLT'
+    zosmfApplId: 'IZUDFLT',
+    dryRunMode: false
   },
   zoweVersion: '',
   licenseAgreement: getInstallationTypeStatus()?.licenseAgreement || false,

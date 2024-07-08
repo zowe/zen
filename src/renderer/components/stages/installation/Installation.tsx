@@ -47,7 +47,7 @@ const Installation = () => {
   // Maybe we shouldnt allow the user to skip the installation stage??
 
   const [schema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [setupSchema, setSetupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.dataset);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || FALLBACK_YAML?.zowe?.setup?.dataset);
@@ -79,7 +79,7 @@ const Installation = () => {
       if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
     }
 
-    if(installationArgs != undefined){
+    if(installationArgs != undefined && !installationArgs.dryRunMode){
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         function mergeInstallationArgsAndYaml(yaml: any){
           let yamlObj = JSON.parse(JSON.stringify(yaml));
@@ -142,7 +142,7 @@ const Installation = () => {
           //for fallback scenario where user does NOT download or upload a pax and clicks "skip" on the installation stage. sets in redux but not on disk. This should never occur
           let yamlObj = mergeInstallationArgsAndYaml(FALLBACK_YAML);
           // console.log('setting yaml:', yamlObj);
-          setLYaml(yamlObj)
+          setLocalYaml(yamlObj)
           dispatch(setYaml(yamlObj))
         } else {
           let yamlObj = mergeInstallationArgsAndYaml(res.details);
@@ -250,7 +250,7 @@ const Installation = () => {
     setMvsDatasetInitProgress(datasetInstallationStatus)
     dispatch(setDatasetInstallationStatus(false));
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
-
+    if(!installationArgs.dryRunMode){
     Promise.all([
       window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.setup.dataset', setupYaml),
     ]).then(async () => {
@@ -259,7 +259,7 @@ const Installation = () => {
       setShowProgress(true);
       dispatch(setLoading(false)); /* change skipDownload ?? false --> true to skip upload/download steps for quicker development */
       window.electron.ipcRenderer.installButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-        // Some parts of Zen pass the response as a string directly into the object
+        // Some parts of Wizard pass the response as a string directly into the object
         if (res.status == false && typeof res.details == "string") {
           res.details = { 3: res.details };
         }
@@ -288,10 +288,19 @@ const Installation = () => {
           toggleEditorVisibility("output");
         })
       });
-      
     })
   }
-
+  else{
+    dispatch(setLoading(false));
+    setMvsDatasetInitializationProgress({
+      uploadYaml: true,
+      install: true,
+      initMVS: true
+    })
+    updateProgress(true);
+  }
+  }
+  
   // True - a proceed, False - blocked
   const installProceedActions = (status: boolean) => {
     dispatch(setNextStepEnabled(status));
@@ -317,7 +326,7 @@ const Installation = () => {
         setStageConfig(false, errPath+' '+errMsg, updatedData);
       } else {
         const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, dataset: updatedData}}};
-        setLYaml(newYaml);
+        setLocalYaml(newYaml);
         window.electron.ipcRenderer.setConfig(newYaml)
         setStageConfig(true, '', updatedData);
       }

@@ -38,7 +38,7 @@ const Certificates = () => {
 
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [installationArgs] = useState(getInstallationArguments());
   const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.certificate);
@@ -159,11 +159,12 @@ const Certificates = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-      clearInterval(timer);
-      updateProgress(res.status);
-      if(!res.status){
-        window.electron.ipcRenderer.setStandardOutput(JSON.stringify(res.details.jobOutput, null, 2)).then((res: any) => {
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+        clearInterval(timer);
+        updateProgress(res.status);
+        if(!res.status){
+          window.electron.ipcRenderer.setStandardOutput(JSON.stringify(res.details.jobOutput, null, 2)).then((res: any) => {
           toggleEditorVisibility("output");
         })
       }
@@ -174,14 +175,25 @@ const Certificates = () => {
         window.electron.ipcRenderer.setConfig(updatedYaml);
         dispatch(setYaml(updatedYaml));
       }
-    }).catch((e: any) => {
-      clearInterval(timer);
-      updateProgress(false);
-      console.warn('zwe init certificate failed', e);
-      window.electron.ipcRenderer.setStandardOutput(`zwe init certificate failed:  ${e}`).then((res: any) => {
-        toggleEditorVisibility("output");
-      })
-    });
+      }).catch((e: any) => {
+        clearInterval(timer);
+        updateProgress(false);
+        console.warn('zwe init certificate failed', e);
+        window.electron.ipcRenderer.setStandardOutput(`zwe init certificate failed:  ${e}`).then((res: any) => {
+          toggleEditorVisibility("output");
+        })
+      });
+    }
+    else{
+      setCertificateInitState(
+        {
+          writeYaml: true,
+          uploadYaml: true,
+          zweInitCertificate: true
+        }
+      )
+      updateProgress(true);
+    }
   }
 
   const toggleEditorVisibility = (type: any) => {
@@ -207,7 +219,7 @@ const Certificates = () => {
           setStageConfig(false, errPath+' '+errMsg, newData);
         } else {
           window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
-          setLYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
+          setLocalYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
           setStageConfig(true, '', newData);
         }
       }
@@ -244,7 +256,7 @@ const Certificates = () => {
                 dispatch(setCertificateStatus(false));
                 const newConfig = {...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value, setup: {...yaml.zowe.setup}}};
                 window.electron.ipcRenderer.setConfig(newConfig);
-                setLYaml(newConfig)
+                setLocalYaml(newConfig)
                 setVerifyCerts(e.target.value);
               }}
             >

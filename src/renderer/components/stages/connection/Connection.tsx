@@ -35,6 +35,8 @@ import { alertEmitter } from "../../Header";
 import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
 import { initializeProgress, getActiveStage, } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../services/eventDispatcher";
+import { setLocationValidationDetails } from "../PlanningSlice";
+import { selectInstallationArgs } from "../installation/installationSlice";
 
 const Connection = () => {
 
@@ -127,6 +129,8 @@ const FTPConnectionForm = () => {
 
   const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
 
+  const installationArgs = useAppSelector(selectInstallationArgs);
+
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
     dispatch(setNextStepEnabled(false));
@@ -139,7 +143,9 @@ const FTPConnectionForm = () => {
     }
     alertEmitter.emit('hideAlert');
     dispatch(setLoading(true));
-    window.electron.ipcRenderer
+    
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer
       .connectionButtonOnClick(connectionArgs)
       .then((res: IResponse) => {
         dispatch(setConnectionStatus(res.status));
@@ -154,6 +160,13 @@ const FTPConnectionForm = () => {
         dispatch(setConnectionValidationDetails(res.details));
         dispatch(setLoading(false));
       }); 
+    }
+    else{
+      dispatch(setConnectionStatus(true));
+      toggleFormProcessed(true);
+      dispatch(setNextStepEnabled(true));
+      dispatch(setLoading(false));
+    }
   };
 
   const setResume = () => {
@@ -189,7 +202,7 @@ const FTPConnectionForm = () => {
           type="number"
           InputLabelProps={{ shrink: true }}
           variant="standard"
-          helperText="FTP port number. If not specified, Zen will try to use a default service port."
+          helperText="FTP port number. If not specified, Wizard will try to use a default service port."
           value={connectionArgs.port}
     onChange={(e) => { dispatch(setPort(Number(e.target.value))); handleFormChange(); }}
         />
