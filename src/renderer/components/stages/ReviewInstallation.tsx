@@ -51,8 +51,8 @@ const ReviewInstallation = () => {
     useSelector(selectConnectionStatus),
     completeProgress.planningStatus,
     completeProgress.installationTypeStatus,
+    completeProgress.downloadUnpaxStatus,
     completeProgress.initializationStatus,
-    completeProgress.downloadUnpaxStatus
   ];
   
   const subStageProgressStatus = [
