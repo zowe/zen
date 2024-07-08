@@ -40,7 +40,7 @@ const InitApfAuth = () => {
 
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.dataset || FALLBACK_YAML.zowe.setup.dataset);
   const [showProgress, setShowProgress] = useState(getProgress('apfAuthStatus'));
@@ -178,9 +178,10 @@ const InitApfAuth = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-         // Some parts of Zen pass the response as a string directly into the object
-         if (res.status == false && typeof res.details == "string") {
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+        // Some parts of Wizard pass the response as a string directly into the object
+        if (res.status == false && typeof res.details == "string") {
           res.details = { 3: res.details };
         }
         if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe init apfAuth
@@ -203,6 +204,15 @@ const InitApfAuth = () => {
           toggleEditorVisibility("output");
         })
       });
+    }
+    else{
+      setApfAuthState({
+        writeYaml: true,
+        uploadYaml: true,
+        success: true
+      });
+      updateProgress(true);
+    }
   }
 
   const formChangeHandler = (data: any, isYamlUpdated?: boolean) => {

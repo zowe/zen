@@ -135,7 +135,8 @@ const installationArgsStatus: InstallationArgs = {
     cookieId: '1',
     zosmfHost: '',
     zosmfPort: '443',
-    zosmfApplId: 'IZUDFLT'
+    zosmfApplId: 'IZUDFLT',
+    dryRunMode:false
 }
 
 let progressStateKey = 'stage_progress';

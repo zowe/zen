@@ -41,7 +41,7 @@ const Security = () => {
 
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.security);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security ?? {product: 'RACF'});
   const [showProgress, setShowProgress] = useState(getProgress('securityStatus'));
@@ -174,14 +174,15 @@ const Security = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-      // Some parts of Zen pass the response as a string directly into the object
-      if (res.status == false && typeof res.details == "string") {
-        res.details = { 3: res.details };
-      }
-      if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe init security
-        alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
-        window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+        // Some parts of Wizard pass the response as a string directly into the object
+        if (res.status == false && typeof res.details == "string") {
+          res.details = { 3: res.details };
+        }
+        if (res?.details && res.details[3] && res.details[3].indexOf(JCL_UNIX_SCRIPT_OK) == -1) { // This check means we got an error during zwe init security
+          alertEmitter.emit('showAlert', 'Please view Job Output for more details', 'error');
+          window.electron.ipcRenderer.setStandardOutput(res.details[3]).then((res: any) => {
           toggleEditorVisibility("output");
         })
         updateProgress(false);
@@ -199,6 +200,15 @@ const Security = () => {
         toggleEditorVisibility("output");
       })
     });
+  }
+  else{
+    setSecurityInitState({
+      writeYaml: true,
+      uploadYaml: true,
+      success: true
+    });
+    updateProgress(true);
+  }
   }
 
   const handleFormChange = (data: any) => {

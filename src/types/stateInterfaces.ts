@@ -116,8 +116,9 @@ export interface InstallationArgs {
   cookieId: string;
   zosmfHost: string,
   zosmfPort: string,
-  zosmfApplId: string
-};
+  zosmfApplId: string,
+  dryRunMode: boolean,
+}
 
 
 

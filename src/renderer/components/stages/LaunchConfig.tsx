@@ -427,7 +427,7 @@ const LaunchConfig = () => {
       }
     }
   }
-  const [yaml, setLYaml] = useState(useAppSelector(selectYaml));
+  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [setupSchema] = useState(schema.properties.zowe);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe);
   const [isFormInit, setIsFormInit] = useState(false);
@@ -456,10 +456,10 @@ const LaunchConfig = () => {
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           dispatch(setYaml(res.details));
-          setLYaml(res.details);
+          setLocalYaml(res.details);
         } else {
           dispatch(setYaml(FALLBACK_YAML));
-          setLYaml(FALLBACK_YAML);
+          setLocalYaml(FALLBACK_YAML);
         }
       })
     }
@@ -532,16 +532,23 @@ const LaunchConfig = () => {
     updateProgress(false);
     dispatch(setLaunchConfigStatus(false));
     alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
-    window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
-      if(res && res.status) {
-        updateProgress(true);
-        alertEmitter.emit('showAlert', res.details, 'success');
-      } else {
-        updateProgress(false);
-        alertEmitter.emit('showAlert', res.details, 'error');
-      }
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
+        if(res && res.status) {
+          updateProgress(true);
+          alertEmitter.emit('showAlert', res.details, 'success');
+        } else {
+          updateProgress(false);
+          alertEmitter.emit('showAlert', res.details, 'error');
+        }
+        dispatch(setInitializationStatus(isInitializationStageComplete()));
+      });
+    }
+    else{
+      alertEmitter.emit('showAlert', 'Successfully uploaded yaml config');
+      updateProgress(true);
       dispatch(setInitializationStatus(isInitializationStageComplete()));
-    });
+    }
   }
 
   return (
