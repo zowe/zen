@@ -216,6 +216,7 @@ const Home = () => {
 
     if(connectionStatus) {
       setShowPasswordDialog(true);
+      setUpdatedConnection(false);
     }
   }
 
