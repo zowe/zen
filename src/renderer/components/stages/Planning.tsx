@@ -687,10 +687,10 @@ Please customize the job statement below to match your system requirements.
           </div>
           <FormControlLabel
             control={
-              <Checkbox
-                checked={showZosmfAttributes}
+              <Checkbox // TODO: Add z/OSMF off support
+                checked={true}
                 onChange={(e) => {
-                  setShowZosmfAttributes(e.target.checked);
+                  setShowZosmfAttributes(true);
                   formChangeHandler();
                 }}
               />
