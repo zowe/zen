@@ -647,7 +647,7 @@ Please customize the job statement below to match your system requirements.
                 id="java-home-input"
                 required
                 style={{marginLeft: 0}}
-                label="Java Location"
+                label="Java Home Directory"
                 variant="standard"
                 value={localYaml?.java?.home || installationArgs.javaHome || ''}
                 onChange={(e) => {
@@ -659,7 +659,7 @@ Please customize the job statement below to match your system requirements.
                   }
                 }}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>z/OS Unix location of Java.</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>The z/OS Unix home directory for Java (JAVA_HOME).</p>
             </div>
           </FormControl>
           <FormControl>
@@ -668,7 +668,7 @@ Please customize the job statement below to match your system requirements.
                 id="node-home-input"
                 required
                 style={{marginLeft: 0}}
-                label="Node.js Location"
+                label="Node.js Home Directory"
                 variant="standard"
                 value={localYaml?.node?.home || installationArgs.nodeHome || ''}
                 onChange={(e) => {
@@ -680,22 +680,22 @@ Please customize the job statement below to match your system requirements.
                   }
                 }}
               />
-              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>z/OS Unix location of Node.js.</p>
+              <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>The z/OS Unix home directory for Node.js (NODE_HOME).</p>
             </div>
           </FormControl>
           </div>
           </div>
           <FormControlLabel
             control={
-              <Checkbox
-                checked={showZosmfAttributes}
+              <Checkbox // TODO: Add z/OSMF off support
+                checked={true}
                 onChange={(e) => {
-                  setShowZosmfAttributes(e.target.checked);
+                  setShowZosmfAttributes(true);
                   formChangeHandler();
                 }}
               />
             }
-            label="Set z/OSMF Attributes (optional)"
+            label="Set z/OSMF Attributes (Recommended)"
           />
 
           {showZosmfAttributes && (

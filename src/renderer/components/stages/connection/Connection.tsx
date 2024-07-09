@@ -27,7 +27,7 @@ import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
 import { setConnectionValidationDetails, setHost, setPort,
-               setUser, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress, setPassword} from './connectionSlice';
+               setUser, setSecure, setSecureOptions, selectConnectionArgs, setAcceptAllCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptAllCertificates, selectResumeProgress, setPassword} from './connectionSlice';
 import { setLoading, setNextStepEnabled, selectZoweCLIVersion} from '../../configuration-wizard/wizardSlice';
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
@@ -60,7 +60,8 @@ const Connection = () => {
           .includes('reload')
     );
     if(pageAccessedByReload){
-      window.location.assign(window.location.href.substring(0, window.location.href.lastIndexOf('/')));
+      if(window.location.href.substring(0, window.location.href.lastIndexOf('/')) != window.location.origin)
+        window.location.assign(window.location.href.substring(0, window.location.href.lastIndexOf('/')));
     }
     //End of dirty hack
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
@@ -122,7 +123,7 @@ const FTPConnectionForm = () => {
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const connValidationDetails = useAppSelector(selectConnectionValidationDetails);
   const [isFtpConnection, setIsFtpConnection] = useState(useAppSelector(selectConnectionSecure));
-  const [isCertificateAccepted, setIsCertificateAccepted] = useState(useAppSelector(selectAcceptCertificates));
+  const [isAllCertificatesAccepted, setIsAllCertificatesAccepted] = useState(useAppSelector(selectAcceptAllCertificates));
 
   const [formProcessed, toggleFormProcessed] = React.useState(false);
   const [validationDetails, setValidationDetails] = React.useState('');
@@ -297,12 +298,12 @@ const FTPConnectionForm = () => {
         <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>
           <FormControlLabel
             control={<Checkbox  
-                checked = {isCertificateAccepted} 
+                checked = {isAllCertificatesAccepted} 
                 onChange={(e) => { 
                   dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.value}));
-                  dispatch(setAcceptCertificates(e.target.checked));
+                  dispatch(setAcceptAllCertificates(e.target.checked));
                   handleFormChange(); 
-                  setIsCertificateAccepted(e.target.checked);
+                  setIsAllCertificatesAccepted(e.target.checked);
                 }}
               />
             }
