@@ -695,7 +695,7 @@ Please customize the job statement below to match your system requirements.
                 }}
               />
             }
-            label="Set z/OSMF Attributes (optional)"
+            label="Set z/OSMF Attributes (Recommended)"
           />
 
           {showZosmfAttributes && (
