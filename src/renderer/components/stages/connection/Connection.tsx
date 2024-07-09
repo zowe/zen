@@ -52,17 +52,18 @@ const Connection = () => {
 
   useEffect(() => {
     //This is a dirty hack to stop app from reloading to connection screen instead of home
-    const pageAccessedByReload = (
-      (window.performance.navigation && window.performance.navigation.type === 1) ||
-        window.performance
-          .getEntriesByType('navigation')
-          .map((nav: any) => nav.type)
-          .includes('reload')
-    );
-    if(pageAccessedByReload){
-      if(window.location.href.substring(0, window.location.href.lastIndexOf('/')) != '/')
-        window.location.assign(window.location.href.substring(0, window.location.href.lastIndexOf('/')));
-    }
+    //This was previously used to fix a timeout bug but is causing more issues currently than its worth - Tue Jul 9 2024
+    // const pageAccessedByReload = (
+    //   (window.performance.navigation && window.performance.navigation.type === 1) ||
+    //     window.performance
+    //       .getEntriesByType('navigation')
+    //       .map((nav: any) => nav.type)
+    //       .includes('reload')
+    // );
+    // if(pageAccessedByReload){
+    //   if(window.location.href.substring(0, window.location.href.lastIndexOf('/')) != '/')
+    //     window.location.assign(window.location.href.substring(0, window.location.href.lastIndexOf('/')));
+    // }
     //End of dirty hack
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
   }, []);
