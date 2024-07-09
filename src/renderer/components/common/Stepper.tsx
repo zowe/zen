@@ -239,6 +239,8 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     alertEmitter.emit('hideAlert');
     eventDispatcher.emit('saveAndCloseEvent');
     dispatch(setPassword(''));
+    // TODO: This is a workaround for same session, Save & Close + new install not resetting the Wizard properly
+    // by reloading page. This is not ideal and should be investigated
     window.location.reload();
   }
 
