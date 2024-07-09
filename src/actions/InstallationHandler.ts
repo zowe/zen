@@ -253,21 +253,8 @@ class Installation {
         return {status: false, details: `Error uploading pax: ${upload.details}`};
       }
 
-      // console.log("unpaxing...");
-      // unpax = await this.unpax(connectionArgs, installationArgs.installationDir); 
-      // ProgressStore.set('downloadUnpax.unpax', unpax.status);
-
-      // if(!unpax.status){
-      //   return {status: false, details: `Error unpaxing Zowe archive: ${unpax.details}`};
-      // }
-    
-
       if(!download.status){
         return {status: false, details: `Error downloading pax: ${download.details}`};
-      }
-
-      if(!upload.status){
-        return {status: false, details: `Error uploading pax: ${upload.details}`};
       }
 
       if (!SMPE_INSTALL) {

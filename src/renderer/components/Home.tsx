@@ -216,7 +216,6 @@ const Home = () => {
 
     if(connectionStatus) {
       setShowPasswordDialog(true);
-      setUpdatedConnection(false);
     }
   }
 
@@ -265,8 +264,7 @@ const Home = () => {
     {showWizard &&
       <>
         {showPasswordDialog && <PasswordDialog onPasswordSubmit={confirmConnection}></PasswordDialog>}
-        {(showPasswordDialog && updatedConnection) && <Wizard initialization={false}/>}
-        {!showPasswordDialog && <Wizard initialization={false}/>}
+        {<Wizard initialization={false}/>}
       </>
     }
    </>
