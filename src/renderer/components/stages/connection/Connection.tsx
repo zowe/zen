@@ -60,7 +60,8 @@ const Connection = () => {
           .includes('reload')
     );
     if(pageAccessedByReload){
-      window.location.assign(window.location.href.substring(0, window.location.href.lastIndexOf('/')));
+      if(window.location.href.substring(0, window.location.href.lastIndexOf('/')) != '/')
+        window.location.assign(window.location.href.substring(0, window.location.href.lastIndexOf('/')));
     }
     //End of dirty hack
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
