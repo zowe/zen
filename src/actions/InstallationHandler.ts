@@ -253,10 +253,6 @@ class Installation {
         return {status: false, details: `Error uploading pax: ${upload.details}`};
       }
 
-      if(!download.status){
-        return {status: false, details: `Error downloading pax: ${download.details}`};
-      }
-
       if (!SMPE_INSTALL) {
         console.log("unpaxing...");
         unpax = await this.unpax(connectionArgs, installationArgs.installationDir); 
