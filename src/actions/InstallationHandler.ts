@@ -121,6 +121,8 @@ class Installation {
     installationArgs: InstallationArgs,
   ): Promise<IResponse> {
     try{
+      ProgressStore.set('downloadUnpax.getSchemas', false);
+      ProgressStore.set('downloadUnpax.getExampleYaml', false);
       const currentConfig: any = ConfigurationStore.getConfig();
       let yamlObj
       const zoweRuntimePath = installationArgs.installationDir;
@@ -173,6 +175,11 @@ class Installation {
             ConfigurationStore.setSchema(FALLBACK_SCHEMA);
             return {status: false, details: {message: e.message}}
           }
+        } else {
+          console.log('no schema found from pax');
+          ProgressStore.set('downloadUnpax.getSchemas', false);
+          ConfigurationStore.setSchema(FALLBACK_SCHEMA);
+          return {status: false, details: {message: 'no schemas found from pax'}}
         }
         return {status: parsedSchema && parsedYaml, details: {message: "Successfully retrieved example-zowe.yaml and schemas", mergedYaml: yamlObj}}
       }

@@ -81,7 +81,7 @@ const Unpax = () => {
 
   useEffect(() => {
     const stageComplete = downloadUnpaxProgress.uploadYaml && downloadUnpaxProgress.download && downloadUnpaxProgress.upload && downloadUnpaxProgress.unpax;
-    if(!stageComplete && showProgress) {
+    if(!stageComplete && showProgress && !(downloadUnpaxProgress.getExampleYaml && downloadUnpaxProgress.getSchemas)) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getDownloadUnpaxProgress().then((res: any) => {
           let success;
@@ -197,9 +197,13 @@ const Unpax = () => {
     updateProgress(false);
 
     if(!installationArgs.dryRunMode){
-
-      window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
-        if(!res.status){ //errors during runInstallation()
+    window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
+      setDownloadUnpaxProgress({
+        ...downloadUnpaxProgress,
+        getExampleYaml: false,
+        getSchemas: false, 
+      });
+      if(!res.status){ //errors during runInstallation()
         alertEmitter.emit('showAlert', res.details.message ? res.details.message : res.details, 'error');
         updateProgress(false);
       }
@@ -209,8 +213,9 @@ const Unpax = () => {
       }
       updateProgress(res.status);
       clearInterval(timer);
-    }).catch(() => {
+    }).catch((err: any) => {
       clearInterval(timer);
+      alertEmitter.emit('showAlert', typeof err === "string" ? err : err.toString(), 'error');
       updateProgress(false);
     });
   }
