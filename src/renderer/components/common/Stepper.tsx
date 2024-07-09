@@ -239,6 +239,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     alertEmitter.emit('hideAlert');
     eventDispatcher.emit('saveAndCloseEvent');
     dispatch(setPassword(''));
+    window.location.reload();
   }
 
   const isNextStepEnabled = useAppSelector(selectNextStepEnabled);
