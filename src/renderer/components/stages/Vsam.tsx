@@ -214,8 +214,9 @@ const Vsam = () => {
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData, data);
         } else {
-          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, vsam: newData}}});
-          setStageConfig(true, '', newData, data);
+          const updatedYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, vsam: newData}}};
+          window.electron.ipcRenderer.setConfig(updatedYaml);
+          setStageConfig(true, '', newData, updatedYaml);
         }
       }
     }
