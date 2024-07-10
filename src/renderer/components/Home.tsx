@@ -90,8 +90,6 @@ const Home = () => {
     const {id, name, description, link, media} = card;
   
     const handleClick = () => {
-      const flattenedData = flatten(lastActiveState);
-      localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
       let newInstallationArgs = installationSlice.getInitialState().installationArgs;
       if (id === "install") {
         newInstallationArgs = {...newInstallationArgs, dryRunMode: false};
@@ -205,7 +203,7 @@ const Home = () => {
         setIsNewInstallation(true);
       } else {
         const data: ActiveState = unflatten(JSON.parse(lastInstallation));
-        setIsNewInstallation(!(data && data.lastActiveDate));
+        setIsNewInstallation(false);
       }
 
 
@@ -252,7 +250,7 @@ const Home = () => {
             </div>
 
             <Box sx={{display: 'flex', flexDirection: 'row', marginTop: '10px'}}>
-              <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {lastActiveDate}</div>
+              {lastActiveDate && <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {lastActiveDate}</div>}
               <div style={{marginBottom: '1px', marginTop: '-5px'}}>
                 <Tooltip title={resumeTooltip} arrow>
                   <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '9px', padding: '4px'}} onClick={resumeProgress}>
