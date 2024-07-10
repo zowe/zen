@@ -179,7 +179,7 @@ const FTPConnectionForm = () => {
     }
   }
 
-  useEffect(() => {
+  useEffect(() => { // Set Wizard init to defaults - acceptAll -> false, rejectUnauth -> true
     dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: true}));
     dispatch(setAcceptAllCertificates(false));
     handleFormChange(); 
