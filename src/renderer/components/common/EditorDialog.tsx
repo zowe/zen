@@ -96,8 +96,10 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
       window.electron.ipcRenderer.setConfig(jsonData);
       dispatch(setYaml(jsonData));
     } else if(isSchemaValid && jsonData) {
-      delete jsonData.installationArgs;
-      setEditorContent(stringify(jsonData));
+      if(jsonData?.installationArgs) {
+        delete jsonData.installationArgs;
+        setEditorContent(stringify(jsonData));
+      }
       window.electron.ipcRenderer.setConfig(jsonData);
       dispatch(setYaml(jsonData));
       setSetupYaml(jsonData);

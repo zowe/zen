@@ -203,7 +203,7 @@ const Home = () => {
         setIsNewInstallation(true);
       } else {
         const data: ActiveState = unflatten(JSON.parse(lastInstallation));
-        setIsNewInstallation(false);
+        setIsNewInstallation(!(data && data.lastActiveDate));
       }
 
 
