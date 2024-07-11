@@ -79,7 +79,6 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
     try {
       // To parse the yaml and convert it to the javascript object
       jsonData = parse(newCode);
-      delete jsonData.installationArgs;
     } catch (error) {
       console.error('Error parsing YAML:', error);
       jsonData = newCode;
@@ -97,6 +96,10 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
       window.electron.ipcRenderer.setConfig(jsonData);
       dispatch(setYaml(jsonData));
     } else if(isSchemaValid && jsonData) {
+      if(jsonData?.installationArgs) {
+        delete jsonData.installationArgs;
+        setEditorContent(stringify(jsonData));
+      }
       window.electron.ipcRenderer.setConfig(jsonData);
       dispatch(setYaml(jsonData));
       setSetupYaml(jsonData);
