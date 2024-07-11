@@ -214,8 +214,9 @@ const Vsam = () => {
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData, data);
         } else {
-          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, vsam: newData}}});
-          setStageConfig(true, '', newData, data);
+          const updatedYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, vsam: newData}}};
+          window.electron.ipcRenderer.setConfig(updatedYaml);
+          setStageConfig(true, '', newData, updatedYaml);
         }
       }
     }
@@ -273,7 +274,12 @@ const Vsam = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
       <ContainerCard title="Vsam" description="Configure Zowe Vsam.">
-        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={(data: any) => {
+          const newData = init ? (Object.keys(setupYaml).length > 0 ? setupYaml : data?.zowe?.setup?.vsam) : (data?.zowe?.setup?.vsam ? data?.zowe?.setup?.vsam : data);
+          setInit(false);
+          setStageConfig(true, '', newData);
+        }
+        }/> }
 
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
