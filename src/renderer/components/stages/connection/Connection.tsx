@@ -179,6 +179,13 @@ const FTPConnectionForm = () => {
     }
   }
 
+  useEffect(() => { // Set Wizard init to defaults - acceptAll -> false, rejectUnauth -> true
+    dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: true}));
+    dispatch(setAcceptAllCertificates(false));
+    handleFormChange(); 
+    setIsAllCertificatesAccepted(false);
+  }, []);
+
   return (
     <Box
       onSubmit={(e: SyntheticEvent) => {e.preventDefault(); processForm();}} 
@@ -300,7 +307,7 @@ const FTPConnectionForm = () => {
             control={<Checkbox  
                 checked = {isAllCertificatesAccepted} 
                 onChange={(e) => { 
-                  dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.value}));
+                  dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.checked}));
                   dispatch(setAcceptAllCertificates(e.target.checked));
                   handleFormChange(); 
                   setIsAllCertificatesAccepted(e.target.checked);
