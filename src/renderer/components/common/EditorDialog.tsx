@@ -46,9 +46,6 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
     /* TODO: Should use an array for the Store to house separate outputs (Security vs Certificates for example) */
     if(isEditorVisible) { 
        if(contentType == 'yaml') {
-        if (setupYaml?.installationArgs) {
-          delete setupYaml.installationArgs;
-        }
         setEditorContent(stringify(setupYaml));
       }
       if(contentType == 'jcl') {
