@@ -642,7 +642,16 @@ const Networking = () => {
         <Button key="job" variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Networking" description="Zowe networking configurations."> 
-        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={(data: any) => {
+          let newYaml;
+          if (data.zowe && data.zowe.externalDomains && data.zowe.externalPort) {
+            newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: data.zowe.externalDomains, externalPort: data.zowe.externalPort}};
+          }
+          if(data.components){
+            newYaml = {...newYaml, components: data.components};
+          }
+          setStageConfig(true, '', newYaml);
+        }}/>}
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <p key="external-domains" style={{fontSize: "24px"}}>External Domains <IconButton onClick={(e) => {

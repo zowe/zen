@@ -238,7 +238,11 @@ const Stcs = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
       <ContainerCard title="Stcs" description="Install Zowe Main Started Tasks.">
-        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/> }
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={(data: any) => {
+          const newData = init ? (Object.keys(setupYaml).length > 0 ? setupYaml : data?.zowe?.setup?.security?.stcs) : (data?.zowe?.setup?.security?.stcs ? data?.zowe?.setup?.security?.stcs : data);
+          setStageConfig(true, '', newData);
+        }
+        }/> }
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap', color: 'text.secondary', fontSize: '13px' }}>
           {`Please review the following started task (STC) configuration values from the security stage before initializing stcs.\n`}
         </Typography>
