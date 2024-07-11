@@ -46,6 +46,9 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
     /* TODO: Should use an array for the Store to house separate outputs (Security vs Certificates for example) */
     if(isEditorVisible) { 
        if(contentType == 'yaml') {
+        if (setupYaml?.installationArgs) {
+          delete setupYaml.installationArgs;
+        }
         setEditorContent(stringify(setupYaml));
       }
       if(contentType == 'jcl') {
@@ -96,8 +99,10 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
       window.electron.ipcRenderer.setConfig(jsonData);
       dispatch(setYaml(jsonData));
     } else if(isSchemaValid && jsonData) {
-      delete jsonData.installationArgs;
-      setEditorContent(stringify(jsonData));
+      if(jsonData?.installationArgs) {
+        delete jsonData.installationArgs;
+        setEditorContent(stringify(jsonData));
+      }
       window.electron.ipcRenderer.setConfig(jsonData);
       dispatch(setYaml(jsonData));
       setSetupYaml(jsonData);
