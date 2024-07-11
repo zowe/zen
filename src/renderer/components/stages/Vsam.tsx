@@ -206,6 +206,19 @@ const Vsam = () => {
     let newData = init ? (Object.keys(setupYaml).length > 0 ? setupYaml : data?.zowe?.setup?.vsam) : (data?.zowe?.setup?.vsam ? data?.zowe?.setup?.vsam : data);
     setInit(false);
 
+    const updatedYaml = {
+      ...yaml,
+      zowe: {
+        ...yaml.zowe,
+        setup: {
+          ...yaml.zowe.setup,
+          vsam: newData
+        }
+      }
+    };
+
+    dispatch(setYaml(updatedYaml))
+
     if (newData) {
       if(validate) {
         validate(newData);
