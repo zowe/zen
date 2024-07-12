@@ -10,23 +10,39 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
-import { IIpcConnectionArgs } from '../../../../types/interfaces';
+import { IIpcConnectionArgs, IIpcConnectionArgsSecureOptions } from '../../../../types/interfaces';
+import { DEF_JOB_STATEMENT } from '../../common/Utils';
 
 export interface ConnectionState {
-  connectionStatus: boolean;
   connectionArgs: IIpcConnectionArgs;
+  connectionValidationDetails: string;
+  acceptCertificates: boolean;
+  resumeProgress: boolean;
 }
 
+//TODO also seen in ConnectionStore. Necessary or duplication?
 const initialState: ConnectionState = {
-  connectionStatus: false,
   connectionArgs: {
     host: '',
     connectionType: 'ftp',
     port: 21,
     user: '',
     password: '',
-    jobStatement: '',
+    jobStatement: DEF_JOB_STATEMENT,
+    secure: false,
+    secureOptions: {
+      enableTrace: false,
+      rejectUnauthorized: true,
+      //per node doc, if secureContext missing, this object will be used to create instead
+      //the content below is from the object meant to be passed to secureContext.
+      //TODO create a "MAX" and "MIN" that gets set to tls.DEFAULT_MAX/MIN_VERSION on server-side?
+      maxVersion: "TLSv1.3",
+      minVersion: "TLSv1.2"
+    }
   },
+  connectionValidationDetails: 'connectionValidationDetails',
+  acceptCertificates: false,
+  resumeProgress: false
 };
 
 export const connectionSlice = createSlice({
@@ -36,16 +52,48 @@ export const connectionSlice = createSlice({
     setConnectionArgs: (state, action: PayloadAction<IIpcConnectionArgs>) => {
       state.connectionArgs = action.payload;
     },
-    setConnectionStatus: (state, action: PayloadAction<boolean>) => {
-      state.connectionStatus = action.payload;
+    setHost: (state, action: PayloadAction<string>) => {
+      state.connectionArgs.host = action.payload;
     },
+    setPort: (state, action: PayloadAction<number>) => {
+      state.connectionArgs.port = action.payload;
+    },
+    setUser: (state, action: PayloadAction<string>) => {
+      state.connectionArgs.user = action.payload;
+    },
+    setPassword: (state, action: PayloadAction<string>) => {
+      state.connectionArgs.password = action.payload;
+    },
+    setJobStatementVal: (state, action: PayloadAction<string>) => {
+      state.connectionArgs.jobStatement = action.payload;
+    },
+    setSecure: (state, action: PayloadAction<boolean>) => {
+      state.connectionArgs.secure = action.payload;
+    },
+    setSecureOptions: (state, action: PayloadAction<IIpcConnectionArgsSecureOptions>) => {
+      state.connectionArgs.secureOptions = action.payload;
+    },
+    setConnectionValidationDetails: (state, action: PayloadAction<string>) => {
+      state.connectionValidationDetails = action.payload;
+    },
+    setAcceptAllCertificates: (state, action: PayloadAction<boolean>) => {
+      state.acceptCertificates = action.payload;
+    },
+    setResumeProgress: (state, action: PayloadAction<boolean>) => {
+      state.resumeProgress = action.payload;
+    }
   },
 });
 
-// REVIEW: Split to distinct: setHost, setPort, setConnectionType, setUser, setPassword 
-export const { setConnectionArgs, setConnectionStatus } = connectionSlice.actions;
+export const { setConnectionArgs, setHost, setPort,
+               setUser, setPassword, setJobStatementVal, setSecure, setSecureOptions, setConnectionValidationDetails, setAcceptAllCertificates, setResumeProgress,
+             } = connectionSlice.actions;
 
 export const selectConnectionArgs = (state: RootState) => state.connection.connectionArgs;
-export const selectConnectionStatus = (state: RootState) => state.connection.connectionStatus;
+export const selectConnectionSecure= (state: RootState) => state.connection.connectionArgs.secure;
+export const selectConnectionValidationDetails = (state: RootState) => state.connection.connectionValidationDetails;
+export const selectAcceptAllCertificates = (state: RootState) => state.connection.acceptCertificates;
+export const selectInitJobStatement = (state: RootState) => state.connection.connectionArgs.jobStatement;
+export const selectResumeProgress = (state: RootState) => state.connection.resumeProgress;
 
 export default connectionSlice.reducer;

@@ -7,7 +7,8 @@ body {
   width: 100vw;
   background-color: #eeeeee;
   margin: 0;
-  color: #4D4B45
+  color: #4D4B45;
+  font-family: "Roboto","Helvetica","Arial",sans-serif;
 }
 
 button {
@@ -53,14 +54,14 @@ a:hover {
 .home-container {
   display: flex;
   justify-content: space-evenly;
-  padding-top: 100px;
+  padding-top: 50px;
 }
 
 .wizard-container {
   display: flex;
   flex-direction: column;
   height: calc(100% - 80px);
-  padding-top: 16px;
+  padding-top: 10px;
   background-color: #fafafa;
 }
 
@@ -71,7 +72,7 @@ a:hover {
   height: 100%;
   position: fixed;
   background: #222;
-  z-index: 2;
+  z-index: 9000;
   opacity: 0.4;
 }
 
@@ -110,13 +111,24 @@ a:hover {
 
 .stepper-container {
   flex-grow: 1;
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .stepper {
-  padding: 6px 24px 18px;
+  padding: 8px 24px 18px;
   border-bottom: 1px solid #E0E0E0;
+  box-shadow: 0px 5px 5px 1px rgb(0 0 0 / 15%);
+  z-index: 1000;
+}
+
+.substepper {
+  padding: 18px 100px 12px;
+  /* border-bottom: 1px solid #E0E0E0; */
+  background-color: #E0E0E0;
+  box-shadow: inset 0px 4px 4px 1px rgb(0 0 0 / 10%), rgb(0 0 0 / 20%) 0px 6px 7px -1px;
+  z-index: 999;
 }
 
 .action-card {

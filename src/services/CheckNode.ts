@@ -10,18 +10,17 @@
 
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
+import { startBPXBATCHAndShellSession } from "./ServiceUtils";
+import { JCL_UNIX_SCRIPT_OK } from "../renderer/components/common/Utils";
 
 export class CheckNode {
 
   public async run(config: IIpcConnectionArgs, node: string) {
 
     const jcl = `${config.jobStatement}
-//SETPR4    EXEC PGM=BPXBATCH,REGION=0M
-//STDOUT DD SYSOUT=*
-//STDPARM      DD *
-sh set -x;
-${node}/bin/node -v;
-echo "Script finished."
+${startBPXBATCHAndShellSession("ZNCKNOD")}
+${node}/bin/node -v &&
+echo "${JCL_UNIX_SCRIPT_OK}"
 /* `
 
     const resp: IJobResults = await submitJcl(config, jcl, ["STDOUT", "STDERR"])

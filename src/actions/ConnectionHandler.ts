@@ -9,7 +9,7 @@
  */
 
 import { ConnectionStore } from "../storage/ConnectionStore";
-import { connectFTPServer } from "../services/utils";
+import { connectFTPServer } from "../services/ServiceUtils";
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 
 class Connection {
@@ -22,7 +22,7 @@ class Connection {
 
 export class FTPConnection extends Connection {
   
-  async checkConnectionData(config: any): Promise<IResponse> {
+  async checkConnectionData(config: IIpcConnectionArgs): Promise<IResponse> {
     const response: IResponse = {
       status: false,
       details: ""
@@ -36,6 +36,7 @@ export class FTPConnection extends Connection {
         response.details = e.message;
       }
     }
+    config.password = "";
     if (response.status) {
       this.saveConnectionData(config);
     }
@@ -44,9 +45,12 @@ export class FTPConnection extends Connection {
 
   saveConnectionData(args: IIpcConnectionArgs): IResponse {
     const details = Object.keys(args).reduce((acc: string, k: keyof IIpcConnectionArgs) => {
-      const value = args[k].toString();
-      const status = ConnectionStore.set(`ftp-details.${k}`, value);
-      return acc + status ? '' : `\n Can't set ftp-details.${k}, check the store schema`;
+      if(k != "password"){
+        const value = (typeof args[k] == 'number') ? args[k].toString() : args[k]; 
+        const status = ConnectionStore.set(`ftp-details.${k}`, value);
+        return acc + status ? '' : `\n Can't set ftp-details.${k}, check the store schema`;
+      }
+      return;
     }, "");
   return {status: true, details}
   }
@@ -60,12 +64,16 @@ export class FTPConnection extends Connection {
 
 export class CLIConnection extends Connection {
 
-  async checkConnectionData(config: any): Promise<IResponse> {
-    throw new Error('CLIConnection is not implemented');
+  async checkConnectionData(): Promise<IResponse> {
+    return {status: false, details: 'CLIConnection is not implemented'};
   }
 
-  saveConnectionData(config: any) {
-    throw new Error('CLIConnection is not implemented');
+  saveConnectionData() {
+    return {status: false, details: 'CLIConnection is not implemented'};
+  }
+
+  saveJobStatement() {
+    return {status: false, details: 'CLIConnection is not implemented'};
   }
 
 }

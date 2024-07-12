@@ -9,11 +9,11 @@
  */
 
 import {IncomingMessage} from "http";
-import {connectFTPServer} from "./utils";
-import {IIpcConnectionArgs} from "../types/interfaces";
+import {connectFTPServer} from "./ServiceUtils";
+import {IIpcConnectionArgs, IResponse} from "../types/interfaces";
 
-const fs = require('fs');
-const https = require('https');
+import * as fs from 'fs';
+import * as https from 'https';
 
 export enum DataType {
   ASCII = 'ascii',
@@ -29,7 +29,7 @@ export class FileTransfer {
     return downFile.toString();
   }
 
-  public async download_PAX(file: any, fullPath: string) {
+  public async downloadPax(file: any, fullPath: string): Promise<IResponse> {
     return new Promise(resolve => {
       const saveFile: NodeJS.WritableStream = fs.createWriteStream(fullPath);
       https.get(file, function (response: IncomingMessage) {

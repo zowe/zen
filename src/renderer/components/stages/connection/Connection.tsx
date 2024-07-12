@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { SyntheticEvent, useEffect } from "react";
+import React, { SyntheticEvent, useEffect, useState } from "react";
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -16,18 +16,27 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import secureIcon from '../../../assets/secure.png';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import CheckCircle from '@mui/icons-material/CheckCircle';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
-import { setConnectionArgs, setConnectionStatus, selectConnectionArgs, selectConnectionStatus } from './connectionSlice';
-import { setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
+import { setConnectionValidationDetails, setHost, setPort,
+               setUser, setSecure, setSecureOptions, selectConnectionArgs, setAcceptAllCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptAllCertificates, selectResumeProgress, setPassword} from './connectionSlice';
+import { setLoading, setNextStepEnabled, selectZoweCLIVersion} from '../../configuration-wizard/wizardSlice';
+import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
+import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
+import { initializeProgress, getActiveStage, } from "../progress/StageProgressStatus";
+import eventDispatcher from "../../../../services/eventDispatcher";
+import { setLocationValidationDetails } from "../PlanningSlice";
+import { selectInstallationArgs } from "../installation/installationSlice";
 
 const Connection = () => {
 
@@ -39,14 +48,29 @@ const Connection = () => {
     setExpanded(isExpanded ? panel : false);
   };
 
+  const connectionStatus = useAppSelector(selectConnectionStatus);
+
   useEffect(() => {
-    dispatch(setNextStepEnabled(false));
+    //This is a dirty hack to stop app from reloading to connection screen instead of home
+    const pageAccessedByReload = (
+      (window.performance.navigation && window.performance.navigation.type === 1) ||
+        window.performance
+          .getEntriesByType('navigation')
+          .map((nav: any) => nav.type)
+          .includes('reload')
+    );
+    if(pageAccessedByReload){
+      if(window.location.href.substring(0, window.location.href.lastIndexOf('/')) != window.location.origin)
+        window.location.assign(window.location.href.substring(0, window.location.href.lastIndexOf('/')));
+    }
+    //End of dirty hack
+    connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
   }, []);
 
   return (
     <ContainerCard 
       title="Connection" 
-      description="Specify connection details" 
+      description="Specify connection details to your z/OS mainframe." 
       onSubmit={(e: SyntheticEvent) => e.preventDefault()} 
       sx={{display: 'flex', flexDirection: 'column', height: '-webkit-fill-available'}}
     >
@@ -88,32 +112,85 @@ Found Zowe CLI ${zoweCLIVersion}It can be used as a provider to install Zowe Ser
 
 const FTPConnectionForm = () => {
 
+  const stageLabel = "Connection";
+
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+
   const dispatch = useAppDispatch();
   
+  const connectionStatus = useAppSelector(selectConnectionStatus);
   const connectionArgs = useAppSelector(selectConnectionArgs);
+  const connValidationDetails = useAppSelector(selectConnectionValidationDetails);
+  const [isFtpConnection, setIsFtpConnection] = useState(useAppSelector(selectConnectionSecure));
+  const [isAllCertificatesAccepted, setIsAllCertificatesAccepted] = useState(useAppSelector(selectAcceptAllCertificates));
+
   const [formProcessed, toggleFormProcessed] = React.useState(false);
   const [validationDetails, setValidationDetails] = React.useState('');
-  
+
+  const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
+
+  const installationArgs = useAppSelector(selectInstallationArgs);
+
+  const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
+    dispatch(setConnectionStatus(false));
+    dispatch(setNextStepEnabled(false));
+  }
+
   const processForm = () => {
+    if(connectionStatus) {
+      toggleFormProcessed(true);
+      setValidationDetails(connValidationDetails);
+    }
     alertEmitter.emit('hideAlert');
     dispatch(setLoading(true));
-    window.electron.ipcRenderer
+    
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer
       .connectionButtonOnClick(connectionArgs)
       .then((res: IResponse) => {
         dispatch(setConnectionStatus(res.status));
         if(res.status) {
           dispatch(setNextStepEnabled(true));
+          initializeProgress(connectionArgs.host, connectionArgs.user, isResume);
+          initStageSkipStatus();
+          setResume();
         }
         toggleFormProcessed(true);
         setValidationDetails(res.details);
+        dispatch(setConnectionValidationDetails(res.details));
         dispatch(setLoading(false));
       }); 
+    }
+    else{
+      dispatch(setConnectionStatus(true));
+      toggleFormProcessed(true);
+      dispatch(setNextStepEnabled(true));
+      dispatch(setLoading(false));
+    }
   };
 
+  const setResume = () => {
+    const { activeStepIndex, isSubStep, activeSubStepIndex } = getActiveStage();
+
+    if(isResume) {
+      eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
+      setIsResume(false);
+    }
+  }
+
+  useEffect(() => { // Set Wizard init to defaults - acceptAll -> false, rejectUnauth -> true
+    dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: true}));
+    dispatch(setAcceptAllCertificates(false));
+    handleFormChange(); 
+    setIsAllCertificatesAccepted(false);
+  }, []);
+
   return (
-    <Box 
-      onSubmit={(e: SyntheticEvent) => e.preventDefault()} 
+    <Box
+      onSubmit={(e: SyntheticEvent) => {e.preventDefault(); processForm();}} 
       onChange={() => toggleFormProcessed(false)}
+      onKeyDown={(e) => e.key === 'Enter' && processForm()}
     >
       <FormControl>
         <TextField
@@ -121,9 +198,9 @@ const FTPConnectionForm = () => {
           id="standard-required"
           label="Host"
           variant="standard"
-          helperText="Target system for Zowe z/OS components installation"
+          helperText="Target z/OS system for Zowe's installation."
           value={connectionArgs.host}
-          onChange={(e) => {dispatch(setConnectionArgs({...connectionArgs, host: e.target.value}))}}
+          onChange={(e) => { dispatch(setHost(e.target.value)); handleFormChange(); }}
         />
       </FormControl>
       <FormControl>
@@ -133,9 +210,9 @@ const FTPConnectionForm = () => {
           type="number"
           InputLabelProps={{ shrink: true }}
           variant="standard"
-          helperText="FTP port number. If you'll not specify we try use default service port"
+          helperText="FTP port number. If not specified, Wizard will try to use a default service port."
           value={connectionArgs.port}
-          onChange={(e) => dispatch(setConnectionArgs({...connectionArgs, port: Number(e.target.value)}))}
+    onChange={(e) => { dispatch(setPort(Number(e.target.value))); handleFormChange(); }}
         />
       </FormControl>
       <FormControl>
@@ -144,9 +221,9 @@ const FTPConnectionForm = () => {
           id="standard-required"
           label="User Name"
           variant="standard"
-          helperText="Your z/OS (Mainframe) user name"
+          helperText="Your z/OS user name or user ID."
           value={connectionArgs.user}
-          onChange={(e) => dispatch(setConnectionArgs({...connectionArgs, user: e.target.value}))}
+          onChange={(e) => { dispatch(setUser(e.target.value)); handleFormChange(); }}
         />
       </FormControl>
       <FormControl>
@@ -159,17 +236,107 @@ const FTPConnectionForm = () => {
           variant="standard"
           helperText={<span style={{display: 'flex', margin: 0}}>
               <img style={{width: '12px', height: '16px', paddingRight: '8px'}} src={secureIcon} alt="secure"/> 
-              <span>We keep your password only for the current session</span>
+              <span>Your password is securely stored for only the current session.</span>
             </span>}
           value={connectionArgs.password}
-          onChange={(e) => dispatch(setConnectionArgs({...connectionArgs, password: e.target.value}))}
+          onChange={(e) => { dispatch(setPassword(e.target.value)); handleFormChange(); }}
         />
       </FormControl>
-      <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>
-        <Button sx={{boxShadow: 'none'}} type="submit" variant="text" onClick={() => processForm()}>Validate credentials</Button>
-        <div style={{opacity: formProcessed ? '1' : '0', minWidth: '32px', paddingLeft: '12px'}}>
-          {useAppSelector(selectConnectionStatus) ? <CheckCircleOutlineIcon color="success" sx={{ fontSize: 32 }}/> 
-          : validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error')}
+      <FormControl>
+        <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>  
+          <FormControlLabel
+            control={<Checkbox 
+              checked={isFtpConnection} 
+              onChange={(e) => { 
+                dispatch(setSecure(e.target.checked)); 
+                handleFormChange(); 
+                setIsFtpConnection(e.target.checked);
+              }} 
+            />}
+            label="(Recommended) Use FTP with TLS."
+            labelPlacement="start"
+          />
+        </Container>
+      </FormControl>
+
+      {connectionArgs.secure &&
+      <Container sx={{
+        borderTopLeftRadius: "1rem", borderTopRightRadius: "1rem", borderBottomRightRadius: "1rem", borderBottomLeftRadius: "1rem",
+        borderColor: "#aaaaaa", backgroundColor: "#f0f0f0", borderStyle: "solid", padding: "1rem"
+      }}>
+      <FormControl>
+        <TextField
+          id="standard-required"
+          label="Min TLS"
+          variant="standard"
+          select={true}
+          helperText="Minimum TLS version to accept from server."
+          value={connectionArgs.secureOptions.minVersion}
+          onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, minVersion: e.target.value})); handleFormChange(); }} 
+
+        >
+          {/* TODO: This needs to be conditionally added, because older Zowe versions support 1.0-1.1 */}
+          {/* <MenuItem value={"TLSv1"}>1.0</MenuItem>
+          <MenuItem value={"TLSv1.1"}>1.1</MenuItem> */}
+          <MenuItem value={"TLSv1.2"}>1.2</MenuItem>
+          <MenuItem value={"TLSv1.3"}>1.3</MenuItem>
+      </TextField>
+      </FormControl>
+      <FormControl>
+        <TextField
+          id="standard-required"
+          label="Max TLS"
+          variant="standard"
+          select={true}
+          helperText="Maximum TLS version to accept from server."
+          value={connectionArgs.secureOptions.maxVersion}
+          onChange={(e) => { dispatch(setSecureOptions({...connectionArgs.secureOptions, maxVersion: e.target.value})); handleFormChange(); }} 
+
+        >
+          {/* TODO: This needs to be conditionally added, because older Zowe versions support 1.0-1.1 */}
+          {/* <MenuItem value={"TLSv1"}>1.0</MenuItem>
+          <MenuItem value={"TLSv1.1"}>1.1</MenuItem> */}
+          <MenuItem value={"TLSv1.2"}>1.2</MenuItem>
+          <MenuItem value={"TLSv1.3"}>1.3</MenuItem>
+        </TextField>
+      </FormControl>
+
+      <FormControl>
+        <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>
+          <FormControlLabel
+            control={<Checkbox  
+                checked = {isAllCertificatesAccepted} 
+                onChange={(e) => { 
+                  dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.checked}));
+                  dispatch(setAcceptAllCertificates(e.target.checked));
+                  handleFormChange(); 
+                  setIsAllCertificatesAccepted(e.target.checked);
+                }}
+              />
+            }
+            label="(Not recommended) Accept all certificates."
+            labelPlacement="start"
+          />
+        </Container>
+      </FormControl>
+
+      </Container>
+      }
+          
+      <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row", paddingTop: '12px', paddingBottom: '12px'}}>
+
+        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
+          <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '12px'}} 
+            onClick={processForm}
+          >
+            {isResume && `Validate credentials & Resume`}
+            {!isResume && `Validate credentials`}
+          </Button>
+        </Box>
+        <div>{connectionStatus && <CheckCircle sx={{ color: 'green', fontSize: '1.3rem', marginTop: '6px', marginLeft: '5px' }} />}</div>
+
+        <div style={{opacity: formProcessed ? '1' : '0'}}>
+          {!connectionStatus && (validationDetails && alertEmitter.emit('showAlert', validationDetails, 'error'))}
         </div>
       </Container>
     </Box>

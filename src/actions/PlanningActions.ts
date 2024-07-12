@@ -16,7 +16,7 @@ import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 import { ConfigurationStore } from "../storage/ConfigurationStore";
 import { parse } from 'yaml';
 import * as https from 'https';
-import { checkDirExists, makeDir } from '../services/utils'
+import { checkDirExists, makeDir } from '../services/ServiceUtils'
 
 export class PlanningActions {
 
@@ -32,17 +32,26 @@ export class PlanningActions {
     return await new CheckNode().run(connectionArgs, location);
   }
 
-  public static async checkSpace(connectionArgs: IIpcConnectionArgs, location: string): Promise<IResponse> {
-    // TODO: Check if there is zowe.yaml in this dir already, use it.
+  public static async checkSpaceAndCreateDir(connectionArgs: IIpcConnectionArgs, location: string): Promise<IResponse> {
+    await this.checkOrCreateDir(connectionArgs, location);
+    return await new CheckSpace().run(connectionArgs, location);
+  }
+
+  public static async checkOrCreateDir(connectionArgs: IIpcConnectionArgs, location: string): Promise<IResponse> {
     const dirExists = await checkDirExists(connectionArgs, location);
     if (!dirExists) {
       const dirCreated = await makeDir(connectionArgs, location);
-      if (!dirCreated) return {status: false, details: `Can't create dir ${location}`}
+      if (!dirCreated) {
+        return Promise.resolve({status: false, details: `Can't create dir ${location}`});
+      } else {
+        return Promise.resolve({status: true, details: `Directory successfully created at ${location}`});
+      }
+    } else {
+      return Promise.resolve({status: true, details: `Directory already existed at ${location}`});
     }
-    return await new CheckSpace().run(connectionArgs, location);
   }
   
-  public static getExampleZowe(): Promise<{status: boolean, details: any}> {
+  public static getExampleZowe(): Promise<IResponse> {
     return new Promise((resolve, reject) => {
       https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/example-zowe.yaml', (res) => {
         let data = '';
@@ -66,7 +75,7 @@ export class PlanningActions {
     });
   }
 
-  public static getZoweSchema(): Promise<{status: boolean, details: any}> {
+  public static getZoweSchema(): Promise<IResponse> {
     return new Promise((resolve, reject) => {
       https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/schemas/zowe-yaml-schema.json', (res) => {
         let data = '';
@@ -78,7 +87,7 @@ export class PlanningActions {
         res.on('end', () => {
           try {
             const parsedData = JSON.parse(data);
-            ConfigurationStore.setSchema(parse(parsedData));
+            ConfigurationStore.setSchema(parsedData);
             resolve({status: true, details: parsedData});
           } catch (error) {
             reject({status: false, details: {error}});
@@ -90,7 +99,7 @@ export class PlanningActions {
     });
   }
 
-  public static async getConfig() {
+  public static async getConfig(): Promise<IResponse> {
     const details = ConfigurationStore.getAll();
     if (details.config && details.schema) {
       return {status: true, details};
@@ -99,8 +108,8 @@ export class PlanningActions {
     }
   }
 
-  public static async getZoweVersion() {
-    return new Promise<{ status: boolean, details: any }>((resolve, reject) => {
+  public static async getZoweVersion(): Promise<IResponse> {
+    return new Promise<IResponse>((resolve, reject) => {
       https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/manifest.json.template', (res) => {
         let data = '';
   
@@ -123,8 +132,8 @@ export class PlanningActions {
     });
   }
 
-public static async setConfigByKey(key: string, value: any) {
-    const status = ConfigurationStore.setConfigByKey(key, value);
+  public static async setConfigByKeyAndValidate(key: string, value: string | Array<string>): Promise<IResponse> {
+    const status = ConfigurationStore.setConfigByKeyAndValidate(key, value);
     return {status, details: ''};
   }
 

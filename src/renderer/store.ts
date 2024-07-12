@@ -12,12 +12,19 @@ import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import connectionReducer from './components/stages/connection/connectionSlice';
 import wizardReducer from './components/configuration-wizard/wizardSlice';
 import installationReducer from './components/stages/installation/installationSlice';
+import progressReducer from './components/stages/progress/progressSlice';
+import { planningReducer, locationValidationReducer } from './components/stages/PlanningSlice';
+import activeStepReducer from './components/stages/progress/activeStepSlice'
 
 export const store = configureStore({
   reducer: {
     wizard: wizardReducer,
     connection: connectionReducer,
     installation: installationReducer,
+    progress: progressReducer,
+    planning: planningReducer,
+    locationValidation: locationValidationReducer,
+    activeStep: activeStepReducer,
   },
 });
 

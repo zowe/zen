@@ -8,20 +8,19 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+import { JCL_UNIX_SCRIPT_OK } from "../renderer/components/common/Utils";
 import {IIpcConnectionArgs, IJobResults} from "../types/interfaces";
 import {submitJcl} from "./SubmitJcl";
+import { startBPXBATCHAndShellSession } from "./ServiceUtils";
 
 export class CheckJava {
 
   public async run(config: IIpcConnectionArgs, java: string) {
 
     const jcl = `${config.jobStatement}
-//SETPR2    EXEC PGM=BPXBATCH,REGION=0M
-//STDOUT DD SYSOUT=*
-//STDPARM      DD *
-sh set -x;
-${java}/bin/java -version;
-echo "Script finished."
+${startBPXBATCHAndShellSession("ZNCHKJV")}
+${java}/bin/java -version &&
+echo "${JCL_UNIX_SCRIPT_OK}"
 /* `
 
     const resp: IJobResults = await submitJcl(config, jcl, ["STDOUT", "STDERR"])

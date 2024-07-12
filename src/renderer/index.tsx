@@ -36,7 +36,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Header/>}>
               <Route index element={<Home />} />
-              <Route path="wizard" element={<Wizard/>}/>  
+              <Route path="wizard" element={<Wizard initialization={true}/>}/>  
             </Route>
             <Route path="*" element={<Home />} />
           </Routes>

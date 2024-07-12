@@ -8,30 +8,34 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {connectFTPServer} from "./utils";
+import {connectFTPServer} from "./ServiceUtils";
 import {IIpcConnectionArgs, IJobResults, JobOutput} from "../types/interfaces";
 
-export async function submitJcl(config: IIpcConnectionArgs, jcl: string, returnDDs: string[]): Promise<IJobResults> {
+export function submitJcl(config: IIpcConnectionArgs, jcl: string, returnDDs: string[]): Promise<IJobResults> {
 
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     let jobOutput: IJobResults;
-    let client
-    try {
-      client = await connectFTPServer(config);
-      const jobId = await client.submitJCL(jcl);
-      console.log(`jobId: ${jobId}`);
-      jobOutput = await waitForjobToFinish(client, jobId, returnDDs)
+    let client: any;
 
-      client.close();
-
-      resolve(jobOutput);
-
-    } catch (err) {
-      console.error(err)
-      client.close()
-      reject(err)
+    async function submitAndResolve() {
+      try {
+        client = await connectFTPServer(config);
+        console.log('About to submit jcl=', jcl);
+        const jobId = await client.submitJCL(jcl);
+        console.log(`jobId: ${jobId}`);
+        jobOutput = await waitForjobToFinish(client, jobId, returnDDs);
+        client.close();
+        console.log(`job result=`, jobOutput);
+        resolve(jobOutput);
+      } catch (err) {
+        console.error(err);
+        client.close();
+        reject(err);
+      }
     }
-  })
+
+    submitAndResolve();
+  });
 }
 
 async function waitForjobToFinish(client: any, jobId: string, returnDDs: string[]): Promise<IJobResults> {

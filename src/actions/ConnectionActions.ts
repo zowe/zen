@@ -9,21 +9,22 @@
  */
 
 import { FTPConnection, CLIConnection } from './ConnectionHandler'
+import { IIpcConnectionArgs } from '../types/interfaces';
 
 export class ConnectionActions {
-  mode: any;
-  strategy: any;
+  mode: IIpcConnectionArgs["connectionType"];
+  strategy: FTPConnection | CLIConnection;
 
   constructor() {
     this.mode = 'ftp'; // REVIEW: get from storage when picking strategy?
-    this.strategy = this.getStartegy();
+    this.strategy = this.getStrategy();
   }
 
-  setMode(mode: string) {
+  setMode(mode: IIpcConnectionArgs["connectionType"]) {
     this.mode = mode;
   }
 
-  getStartegy(): any {
+  getStrategy(): FTPConnection | CLIConnection {
     switch (this.mode) {
       case 'ftp':
         return new FTPConnection();
@@ -34,15 +35,15 @@ export class ConnectionActions {
     }
   }
 
-  checkConnectionData(config: any) {
+  checkConnectionData(config: IIpcConnectionArgs) {
     return this.strategy.checkConnectionData(config);
   }
 
-  saveConnectionData(config: any) {
+  saveConnectionData(config: IIpcConnectionArgs) {
     return this.strategy.saveConnectionData(config);
   }
 
-  saveJobStatement(jobStatement: any) {
+  saveJobStatement(jobStatement: string) {
     return this.strategy.saveJobStatement(jobStatement);
   }
 }

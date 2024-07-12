@@ -9,63 +9,58 @@
  */
 
 import Store from 'electron-store';
+import { DefaultStore } from './DefaultStore';
 
-const store = new Store({cwd: 'zen-configuration-store'});
+const STORE_NAME = 'zen-configuration-store';
+const KEY_SCHEMA = 'schema'
+const KEY_CONFIG = 'config'
+const STORE_DEFAULT = {config: {}, schema: {}};
 
-export class ConfigurationStore {
-  static schema: any = {};
+export class ConfigurationStore extends DefaultStore {
 
-  private static validateWithSchema(key: string): boolean {
-    const keys = key.split('.');
-    const schema = store.get('schema') as any;
-    let schemaPart: any = schema.properties;
-    for (const key of keys) {
-        if (!schemaPart.hasOwnProperty(key)) {
-            return false;
-        }
-        schemaPart = schemaPart[key].properties;        
-    }
-    return true;
+  protected static getStore(): Store {
+    return new Store({cwd: STORE_NAME});
   }
 
-  public static setSchema(schema: any) {
-    store.set('schema', schema);
+  public static setSchema(value: any): boolean {
+    return this.set(KEY_SCHEMA, value);
   }
 
   public static getSchema(): any {
-    return store.get('schema');
+    return this.get(KEY_SCHEMA);
   }
 
   public static setConfig(value: any) {
-    store.set('config', value);
+    return this.set(KEY_CONFIG, value);
   }
 
-  public static getConfig() {
-    return store.get(`config`);
+  public static getConfig(): any {
+    return this.get(KEY_CONFIG);
   }
 
   public static getConfigByKey(key: string): any {
-    return store.get(`config.${key}`);
+    return this.get(`${KEY_CONFIG}.${key}`);
   }
 
-  public static getAll(): any {
-    return store.store;
-  }
-
-  public static setConfigByKey(key: string, value: string): boolean {
-    if (this.validateWithSchema(key)) {
-      store.set(`config.${key}`, value);
+  public static setConfigByKeyAndValidate(key: string, value: string | Array<string>, schema?: any): boolean {
+    if (this.validateWithSchema(key, KEY_SCHEMA)) {
+      this.getStore().set(`config.${key}`, value);
       return true;
     }
     console.warn(`failed validate against schema config.${key}`);
     return false;
   }
 
+  public static setConfigByKeyNoValidate(key: string, value: string | Array<string>): boolean {
+    this.getStore().set(`config.${key}`, value);
+    return true;
+  }
+
   public static deleteConfigByKey(key: any): void {
-    store.delete(`config.${key}`);
+    this.delete(`${KEY_CONFIG}.${key}`);
   }
 
   public static deleteAll(): void {
-    store.store = {config: {}, schema: {}};
+    this.getStore().store = STORE_DEFAULT;
   }
 }

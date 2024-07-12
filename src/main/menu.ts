@@ -44,6 +44,26 @@ export default class MenuBuilder {
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
 
+    const textModMenu = Menu.buildFromTemplate([
+      { role: 'undo' },
+      { role: 'redo' },
+      { type: 'separator' },
+      { role: 'cut' },
+      { role: 'copy' },
+      { role: 'paste' },
+      { type: 'separator' },
+      { role: 'selectAll' }
+    ])
+
+    this.mainWindow.webContents.on('context-menu', (_, props) => {
+      const { isEditable } = props;
+      if(isEditable) {
+        textModMenu.popup({window: this.mainWindow});
+      } else {
+        Menu.buildFromTemplate([ {role: 'selectAll'}]).popup({window: this.mainWindow});
+      }
+    });
+
     return menu;
   }
 
@@ -58,6 +78,15 @@ export default class MenuBuilder {
             this.mainWindow.webContents.inspectElement(x, y);
           },
         },
+        { type: 'separator' },
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { type: 'separator' },
+        { role: 'selectAll' }
       ]).popup({ window: this.mainWindow });
     });
   }
