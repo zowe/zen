@@ -1,13 +1,11 @@
 import { test, ElectronApplication, expect, _electron as electron } from '@playwright/test';
 import ConnectionPage from '../Pages/connection.page';
 import TitlePage from '../Pages/title.page';
-import path from 'path';
-import { spawn } from 'child_process';
 import { prepareEnvironment } from '../prepare.js';
 
 let electronApp: ElectronApplication
 const SSH_HOST = process.env.SSH_HOST;
-const SSH_PASSWD =  process.env.SSH_PASSWD;
+const SSH_PASSWD = process.env.SSH_PASSWD;
 const SSH_PORT = process.env.SSH_PORT;
 const SSH_USER = process.env.SSH_USER;
 const CONNECTION_PAGE_TITLE = 'Connection'
@@ -28,7 +26,7 @@ test.describe('ConnectionTab', () => {
   test.beforeEach(async ({ page }) => {
     test.setTimeout(900000);
     electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
-    page= await electronApp.firstWindow()
+    page = await electronApp.firstWindow()
     connectionPage = new ConnectionPage(page);
     titlePage = new TitlePage(page);
   });
@@ -39,10 +37,8 @@ test.describe('ConnectionTab', () => {
 
   test('Test Save and close and Resume Progress', async ({ page }) => {
     titlePage.navigateToConnectionTab()
-    connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
+    connectionPage.performLogin(SSH_HOST, SSH_PORT, SSH_USER, SSH_PASSWD)
     await page.waitForTimeout(5000);
-    connectionPage.SubmitValidateCredential()
-    await page.waitForTimeout(2000);
     connectionPage.click_saveAndClose()
     await page.waitForTimeout(3000);
     titlePage.clickOnResumeProgress();
@@ -59,10 +55,8 @@ test.describe('ConnectionTab', () => {
 
   test('test invalid credentials', async ({ page }) => {
     titlePage.navigateToConnectionTab()
-    connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
+    connectionPage.performLogin(SSH_HOST, SSH_PORT, SSH_USER, SSH_PASSWD)
     await page.waitForTimeout(5000);
-    connectionPage.SubmitValidateCredential()
-    await page.waitForTimeout(2000);
     const isGreenIconHidden = await connectionPage.isGreenCheckIconVisible();
     expect(isGreenIconHidden).toBe(true);
     const isContinueDisable = await connectionPage.isContinueButtonVisible();
@@ -71,21 +65,19 @@ test.describe('ConnectionTab', () => {
 
   test('test valid credentials', async ({ page }) => {
     titlePage.navigateToConnectionTab()
-    connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
+    connectionPage.performLogin(SSH_HOST, SSH_PORT, SSH_USER, SSH_PASSWD)
     await page.waitForTimeout(5000);
-    connectionPage.SubmitValidateCredential()
-    await page.waitForTimeout(8000);
     const isGreenIconHidden = await connectionPage.isGreenCheckIconVisible();
     expect(isGreenIconHidden).toBe(false);
     const isContinueDisable = await connectionPage.isContinueButtonVisible();
     expect(isContinueDisable).toBe(false);
-   })
+  })
 
   test('test required fields', async ({ page }) => {
-    await expect(connectionPage.userName).toBeTruthy()
-    await expect(connectionPage.password).toBeTruthy()
-    await expect(connectionPage.port).toBeTruthy()
-    await expect(connectionPage.host).toBeTruthy()
+    expect(connectionPage.userName).toBeTruthy()
+    expect(connectionPage.password).toBeTruthy()
+    expect(connectionPage.port).toBeTruthy()
+    expect(connectionPage.host).toBeTruthy()
     await page.waitForTimeout(2000);
   })
 
