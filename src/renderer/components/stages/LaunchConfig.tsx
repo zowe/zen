@@ -559,7 +559,12 @@ const LaunchConfig = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Configuration" description="Basic zowe.yaml configurations."> 
-        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={handleFormChange}/>}
+        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={(data: any) => {
+          const newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe) : (data.zowe ? data.zowe : data);
+          setIsFormInit(false);
+          setStageConfig(true, '', newData);
+        }
+        }/>}
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>

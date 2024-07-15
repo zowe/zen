@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
 import flatten, { unflatten } from 'flat';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
-import { setConnectionArgs, setResumeProgress, selectInitJobStatement, selectResumeProgress } from './stages/connection/connectionSlice';
+import { setConnectionArgs, setResumeProgress, selectInitJobStatement, selectResumeProgress, connectionSlice } from './stages/connection/connectionSlice';
 import { setJobStatement } from './stages/PlanningSlice';
 import { selectSchema, selectYaml, setSchema, setYaml, setZoweCLIVersion } from './configuration-wizard/wizardSlice';
 import { useAppDispatch, useAppSelector } from '../hooks';
@@ -84,13 +84,12 @@ const Home = () => {
   const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [updatedConnection, setUpdatedConnection] = useState(false);
+  const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
 
   const makeCard = (card: ICard) => {
     const {id, name, description, link, media} = card;
   
     const handleClick = () => {
-      const flattenedData = flatten(lastActiveState);
-      localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
       let newInstallationArgs = installationSlice.getInitialState().installationArgs;
       if (id === "install") {
         newInstallationArgs = {...newInstallationArgs, dryRunMode: false};
@@ -103,6 +102,10 @@ const Home = () => {
       setLocalYaml(FALLBACK_YAML);
       window.electron.ipcRenderer.setConfig(FALLBACK_YAML);
       // TODO: Ideally, reset connectionArgs too
+      // but this introduces bug with "self certificate chain" it's the checkbox, it looks checked but
+      // it acts like it's not unless you touch it
+      // dispatch(setConnectionArgs(connectionSlice.getInitialState().connectionArgs));
+      setIsResume(false);
     };
   
     return (  
@@ -247,7 +250,7 @@ const Home = () => {
             </div>
 
             <Box sx={{display: 'flex', flexDirection: 'row', marginTop: '10px'}}>
-              <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {lastActiveDate}</div>
+              {lastActiveDate && <div style={{paddingRight: '10px'}}><span style={{color: 'black'}}>Last updated on:</span> {lastActiveDate}</div>}
               <div style={{marginBottom: '1px', marginTop: '-5px'}}>
                 <Tooltip title={resumeTooltip} arrow>
                   <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: '9px', padding: '4px'}} onClick={resumeProgress}>
