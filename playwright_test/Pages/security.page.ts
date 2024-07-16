@@ -30,8 +30,7 @@ class SecurityPage{
   product: Locator;
   APFAUTH_TITLE: Locator;
   continueToComponentInstallation: Locator;
-
-
+  security_tab: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -59,7 +58,6 @@ class SecurityPage{
     this.certificateTab_title = page.locator('//div[text()="Certificates"]')
     this.securityTab_title = page.locator('//div[text()="Security"]')
     this.continue_CertificateSelector = page.locator('//button[contains(text(), "Continue to Certificates Setup")]')
-
     this.admin = page.getByLabel('Admin');
     this.stc =  page.getByLabel('Stc');
     this.sys_prog =  page.getByLabel('Sys Prog');
@@ -68,7 +66,7 @@ class SecurityPage{
     this.aux =  page.getByLabel('Aux');
     this.stc_zowe =  page.locator(this.stc_mainXpath + 'div[1]/div/div[1]/div/div/input');
     this.stc_zis =  page.locator(this.stc_mainXpath + 'div[1]/div/div[2]/div/div/input');
-
+    this.security_tab = page.locator("//span[text()='Security']")
   }
 
   async movetoSecurityPage(){
@@ -94,6 +92,10 @@ class SecurityPage{
    await this.aux.fill(aux,{ timeout: 10000 })
    await this.stc_zowe.fill(stc_zowe,{ timeout: 10000 })
    await this.stc_zis.fill(stc_zis,{ timeout: 10000 })
+  }
+
+  async clickSecurityTab(){
+    await this.security_tab.click({ timeout: 2000 })
   }
 
   async fillAdmin(admin:string){
@@ -150,6 +152,10 @@ class SecurityPage{
    const editor_title = await this.editor_title_element.textContent();
    return editor_title;
   }
+
+  async isContinueButtonEnabled(){
+    return await this.continue_CertificateSelector.isEnabled({ timeout: 5000 });
+   }
 
   async isContinueButtonDisable(){
    return await this.continue_CertificateSelector.isDisabled({ timeout: 5000 });

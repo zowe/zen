@@ -149,7 +149,7 @@ test.describe('PlanningTab', () => {
       await page.waitForTimeout(2000);
       planningPage.enterZosmfPort(ZOSMF_PORT);
       await page.waitForTimeout(2000);
-      planningPage.enterZosmfApplicationId(ZOSMF_APPID);
+      planningPage.enterZosmfApplicationId(ZOSMF_APP_ID);
       await page.waitForTimeout(2000);
       planningPage.clickValidateLocations();
       await page.waitForTimeout(20000);
