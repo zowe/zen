@@ -177,5 +177,17 @@ class InstallationPage{
     await this.page.waitForTimeout(500)
     await this.closeEditorButton.click();
   }
+
+  async fillInstallationPage(DATASET_PREFIX: string, PROC_LIB: string, PARM_LIB: string, ZIS: string, JCL_LIB:string,LOAD_LIB:string,AUTH_LOAD_LIB:string,AUTH_PLUGIN_LIB:string){
+    await this.page.waitForTimeout(2000);
+    await this.enterPrefix(DATASET_PREFIX)
+    await this.enterProcLib(PROC_LIB)
+    await this.enterParmLib(PARM_LIB)
+    await this.enterZis(ZIS)
+    await this.enterJclLib(JCL_LIB)
+    await this.enterLoadLib(LOAD_LIB)
+    await this.enterAuthLoadLib(AUTH_LOAD_LIB)
+    await this.enterAuthPluginLib(AUTH_PLUGIN_LIB)
+  }
 }
   export default InstallationPage;
