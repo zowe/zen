@@ -22,7 +22,7 @@ import { Tooltip } from '@mui/material';
 import installationImg from '../assets/installation.png'
 import installationDryImg from '../assets/installation-dry-run.png'
 import eventDispatcher from "../../services/eventDispatcher";
-import { selectConnectionStatus} from './stages/progress/progressSlice';
+import { selectConnectionStatus, setConnectionStatus} from './stages/progress/progressSlice';
 import  HorizontalLinearStepper  from './common/Stepper';
 import Wizard from './configuration-wizard/Wizard'
 import { ActiveState } from '../../types/stateInterfaces';
@@ -94,6 +94,7 @@ const Home = () => {
       if (id === "install") {
         dispatch(setIsNewerInstallation(true));
         setIsNewInstallation(true);
+        dispatch(setConnectionStatus(false));
         newInstallationArgs = {...newInstallationArgs, dryRunMode: false};
       } else if (id === "dry run") {
         newInstallationArgs = {...newInstallationArgs, dryRunMode: true};
