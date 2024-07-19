@@ -13,20 +13,20 @@ import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetIns
 import { initProgressStatus, initInstallationTypeStatus, initDownloadUnpaxStatus, initActiveStatus, initPlanningStageStatus, initDatasetInstallationStatus, initApfAuthStatus, initSecurityInitStatus, initStcsInitStatus, initCertificateInitStatus, initVsamInitStatus, initPlanningValidationDetailsStatus, initStepSkipStatus, initInstallationArgsStatus } from './progressConst';
 import { stages } from '../../configuration-wizard/Wizard';
 
-const installationTypeStatus: InstallationType = { ...initInstallationTypeStatus };
-export const downloadUnpaxStatus: DownloadUnpaxState = { ...initDownloadUnpaxStatus }
-const progressStatus: ProgressState = { ...initProgressStatus }
-const activeStatus: ActiveState = { ...initActiveStatus };
-const planningStageStatus: PlanningState = { ...initPlanningStageStatus }
-export const datasetInstallationStatus: DatasetInstallationState = { ...initDatasetInstallationStatus }
-const apfAuthStatus: InitSubStepsState = { ...initApfAuthStatus }
-const securityInitStatus: InitSubStepsState = { ...initSecurityInitStatus }
-const stcsInitStatus: InitSubStepsState = { ...initStcsInitStatus }
-const certificateInitStatus: CertInitSubStepsState = { ...initCertificateInitStatus }
-const vsamInitStatus: InitSubStepsState = { ...initVsamInitStatus }
-const planningValidationDetailsStatus: PlanningValidationDetails = { ...initPlanningValidationDetailsStatus }
-const stepSkipStatus: SkipState = { ...initStepSkipStatus }
-const installationArgsStatus: InstallationArgs = { ...initInstallationArgsStatus }
+let installationTypeStatus: InstallationType;
+export let downloadUnpaxStatus: DownloadUnpaxState;
+let progressStatus: ProgressState;
+let activeStatus: ActiveState;
+let planningStageStatus: PlanningState;
+export let datasetInstallationStatus: DatasetInstallationState;
+let apfAuthStatus: InitSubStepsState;
+let securityInitStatus: InitSubStepsState;
+let stcsInitStatus: InitSubStepsState;
+let certificateInitStatus: CertInitSubStepsState;
+let vsamInitStatus: InitSubStepsState;
+let planningValidationDetailsStatus: PlanningValidationDetails;
+let stepSkipStatus: SkipState;
+let installationArgsStatus: InstallationArgs;
 
 let progressStateKey = 'stage_progress';
 let activeStateKey = 'active_state';
@@ -44,7 +44,8 @@ let prevInstallationKey = `prev_installation`;
 let skipStateKey = `skip_state`;
 let installationArgsKey = `intallation_args`;
 
-let skipKeysArray: (keyof SkipState)[] = Object.keys(stepSkipStatus) as (keyof SkipState)[];
+// let skipKeysArray: (keyof SkipState)[] = Object.keys(stepSkipStatus) as (keyof SkipState)[];
+let skipKeysArray: (keyof SkipState)[];
 
 const setKeys = (id: string) => {
 
@@ -68,6 +69,26 @@ const setKeys = (id: string) => {
   installationArgsKey = `${installationArgsKey}_${id}`;
 }
 
+const resetProgressObjects = () => {
+  installationTypeStatus = { ...initInstallationTypeStatus };
+  downloadUnpaxStatus = { ...initDownloadUnpaxStatus };
+  progressStatus = { ...initProgressStatus };
+  activeStatus = { ...initActiveStatus };
+  planningStageStatus = { ...initPlanningStageStatus };
+  datasetInstallationStatus = { ...initDatasetInstallationStatus };
+  apfAuthStatus = { ...initApfAuthStatus };
+  securityInitStatus = { ...initSecurityInitStatus };
+  stcsInitStatus = { ...initStcsInitStatus };
+  certificateInitStatus = { ...initCertificateInitStatus };
+  vsamInitStatus = { ...initVsamInitStatus };
+  planningValidationDetailsStatus = { ...initPlanningValidationDetailsStatus };
+  stepSkipStatus = { ...initStepSkipStatus };
+  installationArgsStatus = { ...initInstallationArgsStatus };
+
+  skipKeysArray = Object.keys(stepSkipStatus) as (keyof SkipState)[];
+
+}
+
 export const resetProgress = (host: string, user: string,) => {
   if(host && user) {
     const id = `${host}_${user}`;
@@ -82,12 +103,16 @@ export const resetProgress = (host: string, user: string,) => {
       localStorage.removeItem(key);
     }
   })
+
+  resetProgressObjects();
 }
 
 export const initializeProgress = (host: string, user: string, isResume: boolean) => {
   const id = `${host}_${user}`;
   setKeys(id);
   
+  resetProgressObjects();
+
   const progress = localStorage.getItem(progressStateKey);
   if(!progress || !isResume) {
     const flattenedData = flatten(progressStatus);
@@ -358,6 +383,9 @@ export const getDownloadUnpaxState = (): DownloadUnpaxState => {
 };
 
 export const setPlanningStageStatus = <K extends keyof PlanningState>(key: K, newValue: PlanningState[K]): void => {
+  if(!planningStageStatus) {
+    return;
+  }
   const planningData = localStorage.getItem(planningStateKey);
   if (planningData) {
     const flattenedData = JSON.parse(planningData);
@@ -380,6 +408,9 @@ export const getPlanningStageStatus = (): PlanningState => {
 }
 
 export const setInstallationArguments = (newInstallationArgs: InstallationArgs): void => {
+  if(!installationArgsStatus) {
+    return;
+  }
   Object.assign(installationArgsStatus, newInstallationArgs);
   const flattenedData = flatten(installationArgsStatus);
   localStorage.setItem(installationArgsKey, JSON.stringify(flattenedData));
@@ -414,6 +445,9 @@ export const getProgress = (key: keyof ProgressState): boolean => {
     const unFlattenedData = unflatten(flattenedData) as ProgressState;
     return unFlattenedData[key];
   } else {
+    if(!progressStatus) {
+      return false;
+    }
     return progressStatus[key];
   }
 }
@@ -424,6 +458,9 @@ export const getCompleteProgress = () : ProgressState => {
     const flattenedData =  JSON.parse(progress);
     return unflatten(flattenedData);
   } else {
+    if(!progressStatus) {
+      return initProgressStatus;
+    }
     return progressStatus;
   }
 }

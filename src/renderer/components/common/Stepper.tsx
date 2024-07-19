@@ -41,7 +41,7 @@ import { selectInstallationArgs, selectIsNewInstallation } from '../stages/insta
 
 export default function HorizontalLinearStepper({stages, initialization}:{stages: any, initialization?:boolean}) {
 
-  const connectionStatus = useSelector(selectConnectionStatus);
+  const connectionStatus = useState(useAppSelector(selectConnectionStatus));
 
   const INIT_STAGE_ID = getStageDetails(INIT_STAGE_LABEL).id;
   const REVIEW_STAGE_ID = getStageDetails(REVIEW_INSTALL_STAGE_LABEL).id;
@@ -243,7 +243,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     alertEmitter.emit('hideAlert');
     eventDispatcher.emit('saveAndCloseEvent');
     dispatch(setPassword(''));
-    dispatch(setConnectionStatus(false));
+    // dispatch(setConnectionStatus(false));
     // TODO: This is a workaround for same session + Save & Close + new install not resetting the Wizard properly.
     // Fixed by reloading page. This is not ideal and should be investigated
     // window.location.reload();
