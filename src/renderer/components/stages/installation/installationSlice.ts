@@ -17,6 +17,7 @@ interface InstallationState {
   installationArgs: InstallationArgs;
   zoweVersion: string;
   licenseAgreement: boolean;
+  isNewInstallation?: boolean;
 }
 
 const initialState: InstallationState = {
@@ -42,6 +43,7 @@ const initialState: InstallationState = {
   },
   zoweVersion: '',
   licenseAgreement: getInstallationTypeStatus()?.licenseAgreement || false,
+  isNewInstallation: false,
 };
 
 export const installationSlice = createSlice({
@@ -67,14 +69,18 @@ export const installationSlice = createSlice({
       state.licenseAgreement = action.payload;
       setInstallationTypeStatus('licenseAgreement', action.payload)
     },
+    setIsNewerInstallation: (state, action: PayloadAction<boolean>) => {
+      state.isNewInstallation = action.payload;
+    }
   }
 });
 
-export const { setInstallationArgs, setZoweVersion, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath} = installationSlice.actions;
+export const { setInstallationArgs, setZoweVersion, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath, setIsNewerInstallation} = installationSlice.actions;
 
 export const selectInstallationArgs = (state: RootState) => state.installation.installationArgs;
 export const selectZoweVersion = (state: RootState) => state.installation.zoweVersion;
 export const selectInstallationType = (state: RootState) => state.installation.installationArgs.installationType;
 export const selectLicenseAgreement = (state: RootState) => state.installation.licenseAgreement;
+export const selectIsNewInstallation = (state: RootState) => state.installation.isNewInstallation;
 
 export default installationSlice.reducer;

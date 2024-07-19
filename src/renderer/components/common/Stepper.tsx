@@ -17,7 +17,7 @@ import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import { selectConnectionStatus } from '../stages/progress/progressSlice';
+import { selectConnectionStatus, setConnectionStatus } from '../stages/progress/progressSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { selectNextStepEnabled, setLoading, setYaml } from '../configuration-wizard/wizardSlice';
 import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progress/activeStepSlice';
@@ -29,13 +29,13 @@ import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL, UNPAX_STAGE_LABEL } from '../common/Utils';
 import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus } from '../stages/progress/StageProgressStatus';
-
+import {initProgressStatus} from '../stages/progress/progressConst';
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
 import { getStageDetails } from '../../../services/StageDetails';
 import { IResponse } from '../../../types/interfaces';
 import { selectConnectionArgs, setPassword } from '../stages/connection/connectionSlice';
-import { selectInstallationArgs } from '../stages/installation/installationSlice';
+import { selectInstallationArgs, selectIsNewInstallation } from '../stages/installation/installationSlice';
 // TODO: define props, stages, stage interfaces
 // TODO: One rule in the store to enable/disable button
 
@@ -46,8 +46,14 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const INIT_STAGE_ID = getStageDetails(INIT_STAGE_LABEL).id;
   const REVIEW_STAGE_ID = getStageDetails(REVIEW_INSTALL_STAGE_LABEL).id;
 
-  const completeProgress = getCompleteProgress();
+  const isNewInstallation = useAppSelector(selectIsNewInstallation);
 
+  let completeProgress = {...initProgressStatus};
+
+  if(!isNewInstallation) {
+    completeProgress = getCompleteProgress();
+  }
+  
   const stageProgressStatus = [
     useSelector(selectConnectionStatus),
     completeProgress.planningStatus,
@@ -66,11 +72,9 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     completeProgress.certificateStatus,
     completeProgress.launchConfigStatus
   ])
-  
 
-
-  const [activeStep, setActiveStep] =  initialization ? useState(0) : useState(useAppSelector(selectActiveStepIndex));
-  const [activeSubStep, setActiveSubStep] = initialization ? useState(0) : useState(useAppSelector(selectActiveSubStepIndex));
+  const [activeStep, setActiveStep] =  isNewInstallation ?  useState(0) : useState(useAppSelector(selectActiveStepIndex));
+  const [activeSubStep, setActiveSubStep] = isNewInstallation ? useState(0) : useState(useAppSelector(selectActiveSubStepIndex));
   const [nextText, setNextText] = useState("Continue");
   const [contentType, setContentType] = useState('output');
   const [editorVisible, setEditorVisible] = useState(false);
@@ -239,9 +243,10 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     alertEmitter.emit('hideAlert');
     eventDispatcher.emit('saveAndCloseEvent');
     dispatch(setPassword(''));
+    dispatch(setConnectionStatus(false));
     // TODO: This is a workaround for same session + Save & Close + new install not resetting the Wizard properly.
     // Fixed by reloading page. This is not ideal and should be investigated
-    window.location.reload();
+    // window.location.reload();
   }
 
   const isNextStepEnabled = useAppSelector(selectNextStepEnabled);

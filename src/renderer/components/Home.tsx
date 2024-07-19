@@ -28,7 +28,7 @@ import Wizard from './configuration-wizard/Wizard'
 import { ActiveState } from '../../types/stateInterfaces';
 import { getInstallationArguments, getPreviousInstallation } from './stages/progress/StageProgressStatus';
 import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Utils';
-import { selectInstallationArgs, setInstallationArgs, installationSlice } from './stages/installation/installationSlice';
+import { selectInstallationArgs, setInstallationArgs, installationSlice, setIsNewerInstallation } from './stages/installation/installationSlice';
 import PasswordDialog from './common/passwordDialog';
 
 // REVIEW: Get rid of routing
@@ -88,10 +88,12 @@ const Home = () => {
 
   const makeCard = (card: ICard) => {
     const {id, name, description, link, media} = card;
-  
+
     const handleClick = () => {
       let newInstallationArgs = installationSlice.getInitialState().installationArgs;
       if (id === "install") {
+        dispatch(setIsNewerInstallation(true));
+        setIsNewInstallation(true);
         newInstallationArgs = {...newInstallationArgs, dryRunMode: false};
       } else if (id === "dry run") {
         newInstallationArgs = {...newInstallationArgs, dryRunMode: true};
@@ -216,6 +218,7 @@ const Home = () => {
   const resumeProgress = () => {
     setShowWizard(true);
     dispatch(setResumeProgress(true));
+    dispatch(setIsNewerInstallation(false));
 
     if(connectionStatus) {
       setShowPasswordDialog(true);
@@ -268,8 +271,8 @@ const Home = () => {
     {showWizard &&
       <>
         {showPasswordDialog && <PasswordDialog onPasswordSubmit={confirmConnection}></PasswordDialog>}
-        {(showPasswordDialog && updatedConnection) && <Wizard initialization={false}/>}
-        {!showPasswordDialog && <Wizard initialization={false}/>}
+        {(showPasswordDialog && updatedConnection) && <Wizard initialization={isNewInstallation}/>}
+        {!showPasswordDialog && <Wizard initialization={isNewInstallation}/>}
       </>
     }
    </>

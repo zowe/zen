@@ -147,9 +147,20 @@ let prevInstallationKey = `prev_installation`;
 let skipStateKey = `skip_state`;
 let installationArgsKey = `intallation_args`;
 
+let isNewInstallation = false;
+
 let skipKeysArray: (keyof SkipState)[] = Object.keys(stepSkipStatus) as (keyof SkipState)[];
 
+const setNewInstallation = (isNewerInstallation: boolean) => {
+  
+}
+
 const setKeys = (id: string) => {
+
+  if (progressStateKey.endsWith(`_${id}`)) {
+    return;
+  }
+
   progressStateKey = `${progressStateKey}_${id}`;
   activeStateKey = `${activeStateKey}_${id}`;
   planningStateKey = `${planningStateKey}_${id}`;
@@ -164,6 +175,22 @@ const setKeys = (id: string) => {
   planningValidationDetailsKey = `${planningValidationDetailsKey}_${id}`;
   skipStateKey = `${skipStateKey}_${id}`;
   installationArgsKey = `${installationArgsKey}_${id}`;
+}
+
+export const resetProgress = (host: string, user: string,) => {
+  if(host && user) {
+    const id = `${host}_${user}`;
+    setKeys(id);
+  }
+
+  const keysArray = [progressStateKey, activeStateKey, planningStateKey, installationTypeKey, downloadUnpaxKey, datasetInstallationKey, apfAuthKey, securityKey, stcsKey, certificateKey, vsamKey, planningValidationDetailsKey, prevInstallationKey, skipStateKey, installationArgsKey]; 
+  console.log('keysArray: ', keysArray);
+  keysArray.forEach(key => {
+    if(localStorage.getItem(key) !== null) {
+      console.log('removing key: ', key);
+      localStorage.removeItem(key);
+    }
+  })
 }
 
 export const initializeProgress = (host: string, user: string, isResume: boolean) => {
