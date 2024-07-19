@@ -10,126 +10,23 @@
 
 import { flatten, unflatten } from 'flat';
 import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, SkipState, InstallationArgs, DownloadUnpaxState} from '../../../../types/stateInterfaces';
+import { initProgressStatus, initInstallationTypeStatus, initDownloadUnpaxStatus, initActiveStatus, initPlanningStageStatus, initDatasetInstallationStatus, initApfAuthStatus, initSecurityInitStatus, initStcsInitStatus, initCertificateInitStatus, initVsamInitStatus, initPlanningValidationDetailsStatus, initStepSkipStatus, initInstallationArgsStatus } from './progressConst';
 import { stages } from '../../configuration-wizard/Wizard';
 
-const installationTypeStatus: InstallationType = {
-  installationType: 'download',
-  licenseAgreement: false,
-  userUploadedPaxPath: '',
-}
-
-export const downloadUnpaxStatus: DownloadUnpaxState = {
-  uploadYaml: false,
-  download: false,
-  upload: false,
-  unpax: false,
-  getExampleYaml: false,
-  getSchemas: false,
-}
-
-const progressStatus: ProgressState = {
-  connectionStatus: false,
-  planningStatus: false,
-  installationTypeStatus: false,
-  downloadUnpaxStatus: false,
-  initializationStatus: false,
-  datasetInstallationStatus: false,
-  networkingStatus: false,
-  apfAuthStatus: false,
-  securityStatus: false,
-  stcsStatus: false,
-  certificateStatus: false,
-  vsamStatus: false,
-  launchConfigStatus: false,
-  reviewStatus: false,
-}
-
-const activeStatus: ActiveState = {
-  activeStepIndex: 0,
-  isSubStep: false,
-  activeSubStepIndex: 0,
-};
-
-const planningStageStatus: PlanningState = {
-  jobStatement: '',
-  isJobStatementValid: false,
-  isLocationValid: false,
-}
-
-export const datasetInstallationStatus: DatasetInstallationState = {
-  uploadYaml: false,
-  install: false,
-  initMVS: false
-}
-
-const apfAuthStatus: InitSubStepsState = {
-  writeYaml: false,
-  uploadYaml: false,
-  success: false
-}
-
-const securityInitStatus: InitSubStepsState = {
-  writeYaml: false,
-  uploadYaml: false,
-  success: false
-}
-
-const stcsInitStatus: InitSubStepsState = {
-  writeYaml: false,
-  uploadYaml: false,
-  success: false
-}
-
-const certificateInitStatus: CertInitSubStepsState = {
-  writeYaml: false,
-  uploadYaml: false,
-  zweInitCertificate: false
-}
-
-const vsamInitStatus: InitSubStepsState = {
-  writeYaml: false,
-  uploadYaml: false,
-  success: false
-}
-
-const planningValidationDetailsStatus: PlanningValidationDetails = {
-  javaVersion: '',
-  nodeVersion: '',
-  spaceAvailableMb: '',
-  error: ''
-}
-
-const stepSkipStatus: SkipState = {
-  downloadUnpax: false,
-  datasetInstallation: false,
-  networking: false,
-  apfAuth: false,
-  security: false,
-  certificate: false,
-  vsam: false,
-  launchConfig: false
-}
-
-const installationArgsStatus: InstallationArgs = {
-  installationDir: '',
-    workspaceDir: '',
-    logDir:'',
-    extensionDir:'',
-    installationType: 'download',
-    userUploadedPaxPath: '',
-    downloadDir: '',
-    javaHome: '',
-    nodeHome: '',
-    setupConfig: {},
-    jobName: 'ZWE1SV',
-    jobPrefix: 'ZWE1',
-    rbacProfile: '1',
-    cookieId: '1',
-    zosmfHost: '',
-    zosmfPort: '443',
-    zosmfApplId: 'IZUDFLT',
-    dryRunMode:false
-}
+const installationTypeStatus: InstallationType = { ...initInstallationTypeStatus };
+export const downloadUnpaxStatus: DownloadUnpaxState = { ...initDownloadUnpaxStatus }
+const progressStatus: ProgressState = { ...initProgressStatus }
+const activeStatus: ActiveState = { ...initActiveStatus };
+const planningStageStatus: PlanningState = { ...initPlanningStageStatus }
+export const datasetInstallationStatus: DatasetInstallationState = { ...initDatasetInstallationStatus }
+const apfAuthStatus: InitSubStepsState = { ...initApfAuthStatus }
+const securityInitStatus: InitSubStepsState = { ...initSecurityInitStatus }
+const stcsInitStatus: InitSubStepsState = { ...initStcsInitStatus }
+const certificateInitStatus: CertInitSubStepsState = { ...initCertificateInitStatus }
+const vsamInitStatus: InitSubStepsState = { ...initVsamInitStatus }
+const planningValidationDetailsStatus: PlanningValidationDetails = { ...initPlanningValidationDetailsStatus }
+const stepSkipStatus: SkipState = { ...initStepSkipStatus }
+const installationArgsStatus: InstallationArgs = { ...initInstallationArgsStatus }
 
 let progressStateKey = 'stage_progress';
 let activeStateKey = 'active_state';
@@ -147,13 +44,7 @@ let prevInstallationKey = `prev_installation`;
 let skipStateKey = `skip_state`;
 let installationArgsKey = `intallation_args`;
 
-let isNewInstallation = false;
-
 let skipKeysArray: (keyof SkipState)[] = Object.keys(stepSkipStatus) as (keyof SkipState)[];
-
-const setNewInstallation = (isNewerInstallation: boolean) => {
-  
-}
 
 const setKeys = (id: string) => {
 
