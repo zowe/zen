@@ -507,7 +507,7 @@ export const getPreviousInstallation = () : ActiveState => {
     const flattenedData = JSON.parse(activeStage);
     return unflatten(flattenedData);
   } else {
-    return activeStatus;
+    return initActiveStatus;
   }
 }
 
