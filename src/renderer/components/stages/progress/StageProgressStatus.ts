@@ -44,7 +44,6 @@ let prevInstallationKey = `prev_installation`;
 let skipStateKey = `skip_state`;
 let installationArgsKey = `intallation_args`;
 
-// let skipKeysArray: (keyof SkipState)[] = Object.keys(stepSkipStatus) as (keyof SkipState)[];
 let skipKeysArray: (keyof SkipState)[];
 
 const setKeys = (id: string) => {
@@ -96,10 +95,8 @@ export const resetProgress = (host: string, user: string,) => {
   }
 
   const keysArray = [progressStateKey, activeStateKey, planningStateKey, installationTypeKey, downloadUnpaxKey, datasetInstallationKey, apfAuthKey, securityKey, stcsKey, certificateKey, vsamKey, planningValidationDetailsKey, prevInstallationKey, skipStateKey, installationArgsKey]; 
-  console.log('keysArray: ', keysArray);
   keysArray.forEach(key => {
     if(localStorage.getItem(key) !== null) {
-      console.log('removing key: ', key);
       localStorage.removeItem(key);
     }
   })
