@@ -159,6 +159,7 @@ const Installation = () => {
     setIsFormInit(true);
 
     dispatch(setNextStepEnabled(getProgress('datasetInstallationStatus')));
+    dispatch(setNextStepEnabled(true));
     
     if(installationType === 'smpe') {
       const status = getProgress('datasetInstallationStatus');
