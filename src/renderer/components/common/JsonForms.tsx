@@ -107,28 +107,15 @@ const conditionalSchema = (schema: any, formData: any, prop: any): boolean=> {
 
 export default function JsonForm(props: any) {
   const {schema, onChange, formData} = props;
-  const [localFormData, setLocalFormData] = useState(formData || {});
 
-  // const isFormDataEmpty = formData === null || formData === undefined || Object.keys(formData).length < 1;
-  const isFormDataEmpty = localFormData === null || localFormData === undefined || Object.keys(localFormData).length < 1;
-
-  useEffect(() => {
-    setLocalFormData(formData);
-    console.log("Form Data Updated");
-  }, [formData])
+  const isFormDataEmpty = formData === null || formData === undefined || Object.keys(formData).length < 1;
 
   useEffect(() => {
     if (isFormDataEmpty) {
       const defaultFormData = getDefaultFormData(schema, formData);
-      setLocalFormData(defaultFormData);
       onChange(defaultFormData);
     }
   }, [isFormDataEmpty, schema, onChange]);
-
-  const onJsonFormChange = (data: any) => {
-    setLocalFormData(data);
-    onChange(data);
-  }
 
   const getDefaultFormData = (schema: any, formData: any) => {
     if (schema && schema.properties) {
@@ -162,7 +149,7 @@ export default function JsonForm(props: any) {
       renderers={materialRenderers}
       cells={materialCells}
       config={{showUnfocusedDescription: true}}
-      onChange={({ data, errors }) => { onJsonFormChange(data) }}
+      onChange={({ data, errors }) => { onChange(data) }}
     />
     </ThemeProvider>
   );
