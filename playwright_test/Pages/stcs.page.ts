@@ -11,8 +11,6 @@ class StcsPage{
   previous_step_button: Locator;
   continue_ReviewSelector: Locator;
   editor_title_element: Locator;
-  licenseAgreement: Locator;
-  acceptLicense: Locator;
   skip_button:Locator;
   view_yaml:Locator;
   view_submit_job:Locator;
@@ -40,7 +38,7 @@ class StcsPage{
     this.editor_title_element = page.locator('//h2[text()="Editor"]')
     this.STCS_TITLE = page.locator(' //div[text()="Stcs"]')
     this.continueToComponentInstallation = page.locator('//button[contains(text(), "Continue to Components Installation")]')
-    this.view_yaml =  page.locator('//button[contains(text(),"View Yaml")]')
+    this.view_yaml =  page.locator('//button[contains(text(),"View/Edit Yaml")]')
     this.viewAndSubmitJob =  page.locator('//button[contains(text(), "Preview Job")]')
     this.view_job_output =  page.locator('//button[contains(text(), "View Job Output")]')
     this.save_and_close =  page.locator('//button[contains(text(),"Save & close")]')
@@ -51,13 +49,13 @@ class StcsPage{
     this.continue_ReviewSelector = page.locator('//button[contains(text(), "Review")]')
     this.errorMsg = page.locator('//p[text()="is a required property"]')
     this.continue_CertificateSelector = page.locator('//button[contains(text(), "Continue to Certificates Setup")]')
-    this.get_zoweValue = page.locator('//html/body/div[1]/div[2]/div/div[4]/div/form/div/div[2]/div[1]/div[1]/div/input')
-    this.get_zisValue = page.locator('//html/body/div[1]/div[2]/div/div[4]/div/form/div/div[2]/div[1]/div[2]/div/input')
-    this.get_auxValue = page.locator('//html/body/div[1]/div[2]/div/div[4]/div/form/div/div[2]/div[1]/div[3]/div/input')
-    this.get_datasetProclib = page.locator('//html/body/div[1]/div[2]/div/div[4]/div/form/div/div[2]/div[1]/div[4]/div/input')
-    this.writeConfig_greenCheckXpath = page.locator('#card-download-progress-card svg.MuiSvgIcon-colorSuccess')
-    this.uploadYaml_greenCheckXpath = page.locator('#card-download-progress-card svg.MuiSvgIcon-colorSuccess')
-    this.init_stcs_greenCheckXpath = page.locator("#card-upload-progress-card svg.MuiSvgIcon-colorSuccess")
+    this.get_zoweValue = page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[2]/div[1]/div/input')
+    this.get_zisValue = page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[2]/div[2]/div/input')
+    this.get_auxValue = page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[2]/div[3]/div/input')
+    this.get_datasetProclib = page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[2]/div[4]/div/input')
+    this.writeConfig_greenCheckXpath = page.locator('#card-init-stcs-progress-card')
+    this.uploadYaml_greenCheckXpath = page.locator('#card-download-progress-card')
+    this.init_stcs_greenCheckXpath = page.locator("#card-success-progress-card")
   }
 
   async movetoStcsPage(){
@@ -68,8 +66,7 @@ class StcsPage{
    return Stcs_title;
   }
   async get_zowe_value(){
-  const inputLocator = await this.get_zowe_value.inputValue();
-  const value = await inputLocator.inputValue();
+  const value = await this.get_zoweValue.evaluate(el => el.value);
   console.log('Input field value:', value);
   return value;
   }
@@ -81,22 +78,19 @@ class StcsPage{
   }
 
   async get_zis_value(){
-  const inputLocator = await this.get_zisValue.inputValue();
-  const value = await inputLocator.inputValue();
+  const value = await this.get_zisValue.evaluate(el => el.value);
   console.log('Input field value:', value);
   return value;
   }
 
   async get_aux_value(){
-  const inputLocator = await this.get_auxValue.inputValue();
-  const value = await inputLocator.inputValue();
+  const value = await this.get_auxValue.evaluate(el => el.value);
   console.log('Input field value:', value);
   return value;
   }
 
   async get_datasetProclib_value(){
-  const inputLocator = await this.get_datasetProclib_value.inputValue();
-  const value = await inputLocator.inputValue();
+  const value = await this.get_datasetProclib.evaluate(el => el.value);
   console.log('Input field value:', value);
   return value;
   }
@@ -114,7 +108,9 @@ class StcsPage{
    this.view_job_output.click({ timeout: 2000 })
   }
   async click_skipStcsButton(){
-   this.skip_button.click({ timeout: 2000 })
+   await this.skip_button.click({ timeout: 2000 });
+   const certificate_title = await this.certificateTab_title.textContent();
+   return certificate_title;
   }
   async is_skipStcsButtonEnable(){
    return await this.skip_button.isEnabled({ timeout: 5000 });
@@ -138,7 +134,7 @@ class StcsPage{
   }
 
   async initializeSTC(){
-   await this.initSTC.click()
+   await this.initSTC.click({ timeout: 5000 })
   }
   async isWriteConfigGreenCheckVisible(){
    return await this.writeConfig_greenCheckXpath.isVisible({ timeout: 50000 });
@@ -153,7 +149,7 @@ class StcsPage{
    return await this.continue_ReviewSelector.isDisabled({ timeout: 5000 });
   }
   async click_saveAndClose(){
-   this.save_and_close.click({ timeout: 2000 })
+   this.save_and_close.click({ timeout: 5000 })
   }
 
   async isContinueButtonDisable(){
@@ -195,6 +191,27 @@ class StcsPage{
 
     console.log('All text:', allText);
     return allText;
+}
+ async isStatusChecked() {
+    try {
+        await this.page.waitForTimeout(1000);
+
+        const isGreen = await this.page.evaluate(() => {
+            const svgElement = document.querySelector('#zen-root-container > div.wizard-container > div > div.MuiStepper-root.MuiStepper-horizontal.substepper.css-m5vj9m-MuiStepper-root > div:nth-child(9) > span > span.MuiStepLabel-iconContainer.Mui-active.Mui-error.css-vnkopk-MuiStepLabel-iconContainer > svg');
+
+            if (!svgElement) {
+                return false;
+            }
+            const style = window.getComputedStyle(svgElement);
+
+            return style.color === 'green' || style.fill === 'green';
+        });
+
+        return isGreen;
+    } catch (error) {
+        console.error('Error in isStatusChecked:', error);
+        return false;
+    }
 }
 
 

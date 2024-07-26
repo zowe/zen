@@ -6,6 +6,7 @@ import InstallationTypePage from '../Pages/installationType.page.ts';
 import InstallationPage from '../Pages/installation.page.ts';
 import NetworkingPage from '../Pages/networking.page.ts';
 import SecurityPage from '../Pages/security.page.ts'
+import StcsPage from '../Pages/stcs.page.ts'
 
 let electronApp: ElectronApplication
 const STCS_TITLE = 'Stcs'
@@ -34,7 +35,15 @@ const JCL_LIB = process.env.JCL_LIB;
 const LOAD_LIB = process.env.LOAD_LIB;
 const AUTH_LOAD_LIB = process.env.AUTH_LOAD_LIB;
 const AUTH_PLUGIN_LIB = process.env.AUTH_PLUGIN_LIB;
-const UPLOAD_PAX_PATH= process.env.ZOWE_ROOT_DIR
+const UPLOAD_PAX_PATH = process.env.ZOWE_ROOT_DIR
+const SECURITY_ADMIN = process.env.SECURITY_ADMIN;
+const SECURITY_STC = process.env.SECURITY_STC;
+const SECURITY_SYSPROG = process.env.SECURITY_SYSPROG;
+const SECURITY_USER_ZIS = process.env.SECURITY_USER_ZIS;
+const SECURITY_USER_ZOWE = process.env.SECURITY_USER_ZOWE;
+const SECURITY_AUX = process.env.SECURITY_AUX;
+const SECURITY_STC_ZOWE = process.env.SECURITY_STC_ZOWE;
+const SECURITY_STC_ZIS = process.env.SECURITY_STC_ZIS;
 
 test.describe('StcsTab', () => {
   let connectionPage: ConnectionPage;
@@ -57,8 +66,9 @@ test.describe('StcsTab', () => {
     installationTypePage = new InstallationTypePage(page);
     installationPage = new InstallationPage(page);
     networkingPage = new NetworkingPage(page);
-    titlePage.navigateToConnectionTab()
     securityPage = new SecurityPage(page);
+    stcsPage = new StcsPage(page);
+    titlePage.navigateToConnectionTab()
     connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
     await page.waitForTimeout(5000);
     connectionPage.SubmitValidateCredential()
@@ -78,15 +88,20 @@ test.describe('StcsTab', () => {
     await page.waitForTimeout(30000);
     installationTypePage.clickSkipUnpaxButton()
     await page.waitForTimeout(2000);
-    installationTypePage.clickContinueToInstallation()
+//     installationTypePage.clickContinueToInstallation()
     installationPage.fillInstallationPage(DATASET_PREFIX, PROC_LIB, PARM_LIB, ZIS, JCL_LIB,LOAD_LIB,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
-    await page.waitForTimeout(1800000);
+    await page.waitForTimeout(10000)
+    installationPage.clickInstallMvsDatasets()
+    await page.waitForTimeout(70000);
     const is_Continue_Button_enable = await installationPage.isContinueToNetworkSetupEnabled();
     expect(is_Continue_Button_enable).toBe(true);
     await page.waitForTimeout(10000);
     installationPage.clickContinueToNetworkSetup()
+    await page.waitForTimeout(10000);
     securityPage.movetoSecurityPage()
+    await page.waitForTimeout(10000);
     securityPage.fillSecurityDetails('RACF',SECURITY_ADMIN,SECURITY_STC,SECURITY_SYSPROG,SECURITY_USER_ZIS,SECURITY_USER_ZOWE,SECURITY_AUX,SECURITY_STC_ZOWE,SECURITY_STC_ZIS)
+    await page.waitForTimeout(30000);
     stcsPage.movetoStcsPage()
   })
 
@@ -146,7 +161,7 @@ test.describe('StcsTab', () => {
    })
 
    test('test click skip STCS button', async ({ page }) => {
-     await page.waitForTimeout(2000);
+     await page.waitForTimeout(5000);
      const certificate_title = await stcsPage.click_skipStcsButton();
      expect(certificate_title).toBe(CERTIFICATE_TITLE);
 
@@ -174,7 +189,11 @@ test.describe('StcsTab', () => {
 
    test('Test Resume Progress', async ({ page }) => {
      await page.waitForTimeout(8000);
+     stcsPage.click_saveAndClose()
      connectionPage.click_resumeProgress()
+     connectionPage.fillpassword(SSH_PASSWD)
+     await page.waitForTimeout(5000);
+     connectionPage.SubmitValidateCredential()
      await page.waitForTimeout(8000);
      const title = await stcsPage.returnTitleOfStcsPage();
      expect(title).toBe(STCS_TITLE);
@@ -194,7 +213,7 @@ test.describe('StcsTab', () => {
      await page.waitForTimeout(10000);
      const isWriteConfig_check_visible = await stcsPage.isWriteConfigGreenCheckVisible();
      expect(isWriteConfig_check_visible).toBe(true);
-     const isUploadConfig_check_visible = await stcsPage.isUploadConfig_check_visible();
+     const isUploadConfig_check_visible = await stcsPage.isUploadConfigGreenCheckVisible();
      expect(isUploadConfig_check_visible).toBe(true);
      const isInitStcs_check_visible = await stcsPage.isInitSTCSGreenCheckVisible();
      expect(isInitStcs_check_visible).toBe(true);
@@ -206,13 +225,29 @@ test.describe('StcsTab', () => {
      await page.waitForTimeout(10000);
      const isWriteConfig_check_visible = await stcsPage.isWriteConfigGreenCheckVisible();
      expect(isWriteConfig_check_visible).toBe(true);
-     const isUploadConfig_check_visible = await stcsPage.isUploadConfig_check_visible();
+     const isUploadConfig_check_visible = await stcsPage.isUploadConfigGreenCheckVisible();
      expect(isUploadConfig_check_visible).toBe(true);
      const isInitStcs_check_visible = await stcsPage.isInitSTCSGreenCheckVisible();
      expect(isInitStcs_check_visible).toBe(true);
      await page.waitForTimeout(2000);
      const is_ContinueButtonDisable = await stcsPage.isContinueButtonDisable();
      expect(is_ContinueButtonDisable).toBe(false);
+     await page.waitForTimeout(2000);
+     })
+
+   test('Test status after successfull init stcs', async ({ page }) => {
+     await page.waitForTimeout(8000);
+     stcsPage.initializeSTC()
+     await page.waitForTimeout(10000);
+     const isWriteConfig_check_visible = await stcsPage.isWriteConfigGreenCheckVisible();
+     expect(isWriteConfig_check_visible).toBe(true);
+     const isUploadConfig_check_visible = await stcsPage.isUploadConfigGreenCheckVisible();
+     expect(isUploadConfig_check_visible).toBe(true);
+     const isInitStcs_check_visible = await stcsPage.isInitSTCSGreenCheckVisible();
+     expect(isInitStcs_check_visible).toBe(true);
+     await page.waitForTimeout(2000);
+     const is_GreenCheck_Visible = await stcsPage.isStatusChecked();
+     expect(is_GreenCheck_Visible).toBe(false);
      await page.waitForTimeout(2000);
      })
 
