@@ -29,6 +29,8 @@ import { getStageDetails, getSubStageDetails } from "../../../../services/StageD
 import { getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments, datasetInstallationStatus, isInitComplete } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
 import eventDispatcher from '../../../../services/eventDispatcher';
+import { isDatasetValid } from '../../../../services/DatasetValidation';
+import ErrorIcon from '@mui/icons-material/Error';
 
 const Installation = () => {
 
@@ -67,7 +69,6 @@ const Installation = () => {
   const [installationType] = useState(getInstallationTypeStatus().installationType);
 
   const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema));
-
   
   useEffect(() => {
     dispatch(setInitializationStatus(isInitComplete()));
@@ -221,6 +222,7 @@ const Installation = () => {
     stages[STAGE_ID].isSkipped = status;
     mapAndSetSkipStatus(SUB_STAGE_ID, status);
   }
+
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
     setStageSkipStatus(!status);
@@ -242,6 +244,12 @@ const Installation = () => {
   };
 
   const process = async (event: any) => {
+
+    const areDatasetsValid = validateDatasets();
+    if (!areDatasetsValid){
+      event.preventDefault();
+      return;
+    }
 
     setInitClicked(true);
     updateProgress(false);
@@ -300,6 +308,31 @@ const Installation = () => {
     updateProgress(true);
   }
   }
+
+  const validateDatasets = () => {
+    for (const key of Object.keys(setupYaml)) {
+      let value = setupYaml[key];
+
+      if (typeof value === 'object' && value !== null) {
+        const firstKey = Object.keys(value)[0];
+        value = value[firstKey];
+      }
+
+      const isValid = isDatasetValid(value);
+      if (!isValid) {
+        setIsFormValid(false);
+        setFormError(`The dataset '${key.toUpperCase()}' is invalid. Please verify the dataset name and try again.`);
+        return false;
+      }
+    }
+    if(Object.keys(setupYaml).length < 8) {
+      setIsFormValid(false);
+      setFormError(`One or more required dataset values are missing. Please ensure all fields are filled in.`);
+      return false;
+    }
+    return true;
+  };
+
   
   // True - a proceed, False - blocked
   const installProceedActions = (status: boolean) => {
@@ -357,8 +390,12 @@ const Installation = () => {
         </Typography>
 
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
-          {!isFormValid && formError && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
+          {!isFormValid && formError &&
+            <div style={{ display: 'flex', marginBottom: '10px' }}>
+              <ErrorIcon color="error" sx={{ fontSize: 20 }}/>
+              <span style={{color: 'red', fontSize: 'small', marginTop: '3px', marginLeft: '5px', fontWeight: 'bold'}}>{formError}</span>
+            </div>}
         </Box>
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => process(e)}>{'Install MVS datasets'}</Button>
