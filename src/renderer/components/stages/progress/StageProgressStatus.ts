@@ -12,8 +12,6 @@ import { flatten, unflatten } from 'flat';
 import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, SkipState, InstallationArgs, DownloadUnpaxState} from '../../../../types/stateInterfaces';
 import { initProgressStatus, initInstallationTypeStatus, initDownloadUnpaxStatus, initActiveStatus, initPlanningStageStatus, initDatasetInstallationStatus, initApfAuthStatus, initSecurityInitStatus, initStcsInitStatus, initCertificateInitStatus, initVsamInitStatus, initPlanningValidationDetailsStatus, initStepSkipStatus, initInstallationArgsStatus } from './progressConstants';
 
-
-
 let installationTypeStatus: InstallationType = { ...initInstallationTypeStatus };
 export let downloadUnpaxStatus: DownloadUnpaxState = { ...initDownloadUnpaxStatus };
 let progressStatus: ProgressState = { ...initProgressStatus };
