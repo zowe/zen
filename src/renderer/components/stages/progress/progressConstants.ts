@@ -60,34 +60,24 @@ export const initDatasetInstallationStatus: DatasetInstallationState = {
   initMVS: false
 }
 
-export const initApfAuthStatus: InitSubStepsState = {
+const initSubStepsDefault: InitSubStepsState = {
   writeYaml: false,
   uploadYaml: false,
-  success: false
-}
+  success: false,
+};
 
-export const initSecurityInitStatus: InitSubStepsState = {
-  writeYaml: false,
-  uploadYaml: false,
-  success: false
-}
+export const initApfAuthStatus: InitSubStepsState = { ...initSubStepsDefault };
 
-export const initStcsInitStatus: InitSubStepsState = {
-  writeYaml: false,
-  uploadYaml: false,
-  success: false
-}
+export const initSecurityInitStatus: InitSubStepsState = { ...initSubStepsDefault };
+
+export const initStcsInitStatus: InitSubStepsState = { ...initSubStepsDefault };
+
+export const initVsamInitStatus: InitSubStepsState = { ...initSubStepsDefault };
 
 export const initCertificateInitStatus: CertInitSubStepsState = {
   writeYaml: false,
   uploadYaml: false,
   zweInitCertificate: false
-}
-
-export const initVsamInitStatus: InitSubStepsState = {
-  writeYaml: false,
-  uploadYaml: false,
-  success: false
 }
 
 export const initPlanningValidationDetailsStatus: PlanningValidationDetails = {
