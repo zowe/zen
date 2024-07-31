@@ -159,6 +159,12 @@ class Installation {
             if(yamlSchema && serverCommon){
               yamlSchema.additionalProperties = true;
               yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = zoweDatasetMemberRegexFixed;
+              if(yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12 === undefined){
+                yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12 = {properties: {
+                  directory: '/global/zowe/keystore'
+                }
+                }
+              }
               yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
               if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
                 delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
