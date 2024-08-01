@@ -18,7 +18,8 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
   if (!schema || !formData) {
     return "";
   }
-  const properties = Object.keys(schema?.properties);
+
+  const properties = schema?.properties ? Object.keys(schema.properties) : [];
 
   // Creates a basic input element in the UI schema
   const createControl = (scope: string) => ({
