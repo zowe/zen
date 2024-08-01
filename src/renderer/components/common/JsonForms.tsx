@@ -13,43 +13,106 @@ import { JsonForms } from '@jsonforms/react';
 import { materialRenderers, materialCells } from '@jsonforms/material-renderers';
 import { ThemeProvider } from '@mui/material/styles';
 import jsonFormTheme from '../../jsonFormsTheme';
+import { Tabs, Tab, Box } from '@mui/material';
+
+// Create a Tabbed Layout for `oneOf` schemas
+const createTabbedLayout = (schemas: any[], formData: any) => {
+  const tabElements = schemas.map((schema: any, index: number) => {
+    const title = schema.title || `Schema ${index + 1}`; // Use schema title if available, else default
+    const uiSchema = makeUISchema(schema, '/', formData); // Generate UI schema for each schema
+    return (
+      <TabPanel key={index} value={index}>
+        <JsonForms
+          schema={schema}
+          uischema={uiSchema}
+          data={formData}
+          renderers={materialRenderers}
+          cells={materialCells}
+          config={{ showUnfocusedDescription: true }}
+          onChange={({ data, errors }) => { onChange(data) }}
+        />
+      </TabPanel>
+    );
+  });
+
+  return (
+    <Box sx={{ width: '100%' }}>
+      <Tabs value={0} aria-label="schema tabs">
+        {schemas.map((schema, index) => (
+          <Tab key={index} label={schema.title || `Schema ${index + 1}`} />
+        ))}
+      </Tabs>
+      {tabElements}
+    </Box>
+  );
+};
+
+// Create a TabPanel component to display tab contents
+const TabPanel = (props: { value: number, index: number, children: React.ReactNode }) => {
+  const { value, index, children } = props;
+  return (
+    <div role="tabpanel" hidden={value !== index}>
+      {value === index && <Box p={3}>{children}</Box>}
+    </div>
+  );
+};
+// Handle `oneOf` schemas
+const getActiveSchema = (schemas: any[], data: any) => {
+  for (const schema of schemas) {
+    if (isValidSchema(schema, data)) {
+      return schema;
+    }
+  }
+  return null;
+};
+
+const isValidSchema = (schema: any, data: any): boolean => {
+  // Check if the data matches the schema requirements
+  const requiredFields = schema.required || [];
+  return requiredFields.every((field: string) => data[field] !== undefined);
+};
+
+// Creates a basic input element in the UI schema
+const createControl = (scope: string) => ({
+  type: 'Control',
+  scope, // Scope specifies the JSON path
+});
+
+// createGroup generates a group object, used to group together multiple form elements - can optionally include a rule (like visibility)
+const createGroup = (label: string, elements: any[], rule?: any) => ({
+  type: 'Group',
+  label: `\n${label}`,
+  elements: elements || [],
+  ...(rule && {rule}),
+});
+
+// createVerticalLayout generates a layout object that arranges its child elements vertically.
+const createVerticalLayout = (elements: any[]) => ({
+  type: 'VerticalLayout',
+  elements,
+});
+
+// Same as above, but arranges its child elements horizontally.
+const createHorizontalLayout = (elements: any[]) => ({
+  type: 'HorizontalLayout',
+  elements,
+});
 
 const makeUISchema = (schema: any, base: string, formData: any): any => {
   if (!schema || !formData) {
     return "";
   }
 
+  // Handle `oneOf` schemas by generating a tabbed layout
+  if (schema.oneOf) {
+    return createTabbedLayout(schema.oneOf, formData);
+  }
+
   const properties = schema?.properties ? Object.keys(schema.properties) : [];
-
-  // Creates a basic input element in the UI schema
-  const createControl = (scope: string) => ({
-    type: 'Control',
-    scope, // Scope specifies the JSON path
-  });
-
-  // createGroup generates a group object, used to group together multiple form elements - can optionally include a rule (like visibility)
-  const createGroup = (label: string, elements: any[], rule?: any) => ({
-    type: 'Group',
-    label: `\n${label}`,
-    elements: elements || [],
-    ...(rule && {rule}),
-  });
-
-  // createVerticalLayout generates a layout object that arranges its child elements vertically.
-  const createVerticalLayout = (elements: any[]) => ({
-    type: 'VerticalLayout',
-    elements,
-  });
-
-  // Same as above, but arranges its child elements horizontally.
-  const createHorizontalLayout = (elements: any[]) => ({
-    type: 'HorizontalLayout',
-    elements,
-  });
 
   // Map each property in the JSON schema to an appropriate UI element based on its type and structure.
   const elements = properties.map((prop: any) => {
-    if (schema.properties[prop].type === 'object') {
+    if (schema.properties[prop]?.type && schema.properties[prop].type === 'object') {
       // Create a group with a hide rule if patternProperties are present or conditional hiding is required.
       if (schema.properties[prop].patternProperties || (schema.if && conditionalSchema(schema, formData, prop))) {
         return createGroup(prop, [], {

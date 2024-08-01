@@ -59,23 +59,24 @@ const Certificates = () => {
 
   const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema))
 
-  if(setupYaml && setupSchema && !setupSchema.properties) {
-    if(setupSchema.oneOf) {
+  // setSetupSchema({type: "object", ...setupSchema});
+  // if(setupYaml && setupSchema && !setupSchema.properties) {
+  //   if(setupSchema.oneOf) {
 
-      // Convert formData.type to lowercase to ensure case-insensitive comparison
-      const formDataType = setupYaml.type?.toLowerCase();
+  //     // Convert formData.type to lowercase to ensure case-insensitive comparison
+  //     const formDataType = setupYaml.type?.toLowerCase();
 
-      // Find the element in schema.oneOf that matches the formData.type
-      const matchingElement = setupSchema.oneOf.find((element: any) => element.required[0] === formDataType);
+  //     // Find the element in schema.oneOf that matches the formData.type
+  //     const matchingElement = setupSchema.oneOf.find((element: any) => element.required[0] === formDataType);
 
-      if (matchingElement) {
-        // Assign the properties from the matching element to schema.properties
-        setSetupSchema({...matchingElement });
-      } else {
-        setSetupSchema({...setupSchema.oneOf[0] });
-      }
-    }
-  }
+  //     if (matchingElement) {
+  //       // Assign the properties from the matching element to schema.properties
+  //       setSetupSchema({...matchingElement });
+  //     } else {
+  //       setSetupSchema({...setupSchema.oneOf[0] });
+  //     }
+  //   }
+  // }
 
   useEffect(() => {
     dispatch(setInitializationStatus(isInitComplete()));
@@ -269,7 +270,8 @@ const Certificates = () => {
         }/> }
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
+          {/* <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/> */}
+          <JsonForm schema={{type: "object", ...setupSchema}} onChange={handleFormChange} formData={setupYaml}/>
           {/* <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/> */}
           <p style={{fontSize: "24px"}}>Verify Certificates</p>
           <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
