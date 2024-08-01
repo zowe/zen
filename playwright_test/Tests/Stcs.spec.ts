@@ -35,7 +35,6 @@ const JCL_LIB = process.env.JCL_LIB;
 const LOAD_LIB = process.env.LOAD_LIB;
 const AUTH_LOAD_LIB = process.env.AUTH_LOAD_LIB;
 const AUTH_PLUGIN_LIB = process.env.AUTH_PLUGIN_LIB;
-const UPLOAD_PAX_PATH = process.env.ZOWE_ROOT_DIR
 const SECURITY_ADMIN = process.env.SECURITY_ADMIN;
 const SECURITY_STC = process.env.SECURITY_STC;
 const SECURITY_SYSPROG = process.env.SECURITY_SYSPROG;
@@ -88,7 +87,6 @@ test.describe('StcsTab', () => {
     await page.waitForTimeout(30000);
     installationTypePage.clickSkipUnpaxButton()
     await page.waitForTimeout(2000);
-//     installationTypePage.clickContinueToInstallation()
     installationPage.fillInstallationPage(DATASET_PREFIX, PROC_LIB, PARM_LIB, ZIS, JCL_LIB,LOAD_LIB,AUTH_LOAD_LIB,AUTH_PLUGIN_LIB)
     await page.waitForTimeout(10000)
     installationPage.clickInstallMvsDatasets()
@@ -190,7 +188,7 @@ test.describe('StcsTab', () => {
    test('Test Resume Progress', async ({ page }) => {
      await page.waitForTimeout(8000);
      stcsPage.click_saveAndClose()
-     connectionPage.click_resumeProgress()
+     titlePage.clickOnResumeProgress()
      connectionPage.fillpassword(SSH_PASSWD)
      await page.waitForTimeout(5000);
      connectionPage.SubmitValidateCredential()

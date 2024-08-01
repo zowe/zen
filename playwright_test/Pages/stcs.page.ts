@@ -3,23 +3,37 @@ let electronApp: ElectronApplication
 
 class StcsPage{
   page: Page;
-  zis: Locator;
-  zowe: Locator;
-  aux: Locator;
-  dataset_proclib: Locator;
-  readYaml: Locator;
-  previous_step_button: Locator;
-  continue_ReviewSelector: Locator;
-  editor_title_element: Locator;
-  skip_button:Locator;
-  view_yaml:Locator;
-  view_submit_job:Locator;
-  view_job_output:Locator;
-  save_and_close:Locator;
-  previous_step:Locator;
-  close_button:Locator;
-  STCS_TITLE: Locator;
-  continueToComponentInstallation: Locator;
+  click_stcs = Locator;
+  Security_title = Locator;
+  zis = Locator;
+  zowe = Locator;
+  aux = Locator;
+  dataset_proclib = Locator;
+  readYaml = Locator;
+  initSTC = Locator;
+  previous_step_button = Locator;
+  skip_button = Locator;
+  editor_title_element = Locator;
+  STCS_TITLE = Locator;
+  continueToComponentInstallation = Locator;
+  view_yaml =  Locator;
+  viewAndSubmitJob =  Locator;
+  view_job_output =  Locator;
+  save_and_close =  Locator;
+  previous_step = Locator;
+  skip_button = Locator;
+  close_button = Locator;
+  certificateTab_title = Locator;
+  continue_ReviewSelector = Locator;
+  errorMsg = Locator;
+  continue_CertificateSelector = Locator;
+  get_zoweValue = Locator;
+  get_zisValue = Locator;
+  get_auxValue = Locator;
+  get_datasetProclib = Locator;
+  writeConfig_greenCheckXpath = Locator;
+  uploadYaml_greenCheckXpath = Locator;
+  init_stcs_greenCheckXpath = Locator;
 
 
 

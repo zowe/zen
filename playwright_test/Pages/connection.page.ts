@@ -87,10 +87,6 @@ class ConnectionPage{
     return await this.greenCheckIconSelector.isHidden();
   }
 
-  async click_resumeProgress(){
-    await this.page.waitForTimeout(1000);
-    await this.resumeProgress.click()
-  }
 }
 
   export default ConnectionPage;

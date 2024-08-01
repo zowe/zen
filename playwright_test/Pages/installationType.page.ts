@@ -136,14 +136,14 @@ class InstallationTypePage{
     this.selectDownloadZowePax()
     this.clickLicenseAgreement()
     this.clickAgreeLicense()
-  } 
+  }
 
   async uploadZowePaxAndNavigateToInstallationPage(uploadPaxPath: any){
     this.selectUploadZowePax()
     await this.page.waitForTimeout(2000)
     await this.uploadPaxButton.setInputFiles(uploadPaxPath)
     await this.page.waitForTimeout(2000)
-  } 
+  }
 
   async smpeZowePaxAndNavigateToInstallationPage(runtimeDir: any){
     this.selectSmpe()
