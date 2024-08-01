@@ -159,12 +159,21 @@ class Installation {
             if(yamlSchema && serverCommon){
               yamlSchema.additionalProperties = true;
               yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = zoweDatasetMemberRegexFixed;
-              yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
+
+              if(yamlSchema.properties?.zowe?.properties?.setup?.properties?.certificate?.properties?.pkcs12?.properties?.directory) {
+                yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
+              } else if (yamlSchema.properties?.zowe?.properties?.setup?.properties?.certificate?.oneOf) {
+                const certificateSchemaArray = yamlSchema.properties.zowe.properties.setup.properties.certificate.oneOf;
+                const filteredArray = certificateSchemaArray.filter((element:any) => element.required && element.required.includes('pkcs12'));
+                if(filteredArray.length === 1) {
+                  filteredArray[0].properties.pkcs12.properties.directory = serverCommon.$defs.path;
+                }
+              }
+
               if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
                 delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
                 yamlSchema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverCommon.$defs.ipv4
               }
-              // console.log('Setting schema from runtime dir:', JSON.stringify(yamlSchema));
               ConfigurationStore.setSchema(yamlSchema);
               parsedSchema = true;
               ProgressStore.set('downloadUnpax.getSchemas', true);
