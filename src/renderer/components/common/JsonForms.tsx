@@ -15,47 +15,6 @@ import { ThemeProvider } from '@mui/material/styles';
 import jsonFormTheme from '../../jsonFormsTheme';
 import { Tabs, Tab, Box } from '@mui/material';
 
-// Create a Tabbed Layout for `oneOf` schemas
-const createTabbedLayout = (schemas: any[], formData: any) => {
-  const tabElements = schemas.map((schema: any, index: number) => {
-    const title = schema.title || `Schema ${index + 1}`; // Use schema title if available, else default
-    const uiSchema = makeUISchema(schema, '/', formData); // Generate UI schema for each schema
-    return (
-      <TabPanel key={index} value={index}>
-        <JsonForms
-          schema={schema}
-          uischema={uiSchema}
-          data={formData}
-          renderers={materialRenderers}
-          cells={materialCells}
-          config={{ showUnfocusedDescription: true }}
-          onChange={({ data, errors }) => { onChange(data) }}
-        />
-      </TabPanel>
-    );
-  });
-
-  return (
-    <Box sx={{ width: '100%' }}>
-      <Tabs value={0} aria-label="schema tabs">
-        {schemas.map((schema, index) => (
-          <Tab key={index} label={schema.title || `Schema ${index + 1}`} />
-        ))}
-      </Tabs>
-      {tabElements}
-    </Box>
-  );
-};
-
-// Create a TabPanel component to display tab contents
-const TabPanel = (props: { value: number, index: number, children: React.ReactNode }) => {
-  const { value, index, children } = props;
-  return (
-    <div role="tabpanel" hidden={value !== index}>
-      {value === index && <Box p={3}>{children}</Box>}
-    </div>
-  );
-};
 // Handle `oneOf` schemas
 const getActiveSchema = (schemas: any[], data: any) => {
   for (const schema of schemas) {
@@ -103,35 +62,36 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
     return "";
   }
 
-  // Handle `oneOf` schemas by generating a tabbed layout
-  if (schema.oneOf) {
-    return createTabbedLayout(schema.oneOf, formData);
+  const activeSchema = schema.oneOf ? getActiveSchema(schema.oneOf, formData) : schema;
+
+  if (!activeSchema) {
+    console.error('No valid schema found');
+    return "";
   }
 
-  const properties = schema?.properties ? Object.keys(schema.properties) : [];
+  const properties = activeSchema?.properties ? Object.keys(activeSchema.properties) : [];
 
   // Map each property in the JSON schema to an appropriate UI element based on its type and structure.
   const elements = properties.map((prop: any) => {
-    if (schema.properties[prop]?.type && schema.properties[prop].type === 'object') {
-      // Create a group with a hide rule if patternProperties are present or conditional hiding is required.
-      if (schema.properties[prop].patternProperties || (schema.if && conditionalSchema(schema, formData, prop))) {
+    if (activeSchema.properties[prop]?.type && activeSchema.properties[prop].type === 'object') {
+      // Create a group with a hide rule if patternProperties are present or conditional hiding is required
+      if (activeSchema.properties[prop].patternProperties || (activeSchema.if && conditionalSchema(activeSchema, formData, prop))) {
         return createGroup(prop, [], {
           effect: "HIDE",
           condition: {}
         });
       }
 
-      // For objects, iterate through their properties to create controls and group them if needed.
-      const subSchema = schema.properties[prop];
+      // For objects, iterate through their properties to create controls and group them if needed
+      const subSchema = activeSchema.properties[prop];
       const groupedControls: any = [];
       let row: any = [];
 
-      if (subSchema && subSchema.properties) { // If the object has its own properties, create controls for them and organize into layouts.
-        const subProperties = Object.keys(subSchema?.properties);
+      if (subSchema && subSchema.properties) {
+        const subProperties = Object.keys(subSchema.properties);
         subProperties.forEach((subProp, index) => {
-          row.push(createControl(`#/properties${base}${prop}/properties/${subProp}`)); // Create a control for each sub-property.
+          row.push(createControl(`#/properties${base}${prop}/properties/${subProp}`));
 
-          // Group controls into horizontal layouts for visual arrangement, resetting the row after adding.
           if (row.length === 2 || (row.length === 1 && index === subProperties.length - 1)) {
             groupedControls.push(createHorizontalLayout(row));
             row = [];
@@ -139,10 +99,10 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
         });
       }
 
-      return createGroup(prop, [ // Return a group containing a vertical layout of the organized controls for the object.
+      return createGroup(prop, [
         createVerticalLayout(groupedControls)
       ]);
-    } else { // For simple properties, create a basic control.
+    } else {
       return createControl(`#/properties${base}${prop}`);
     }
   });
