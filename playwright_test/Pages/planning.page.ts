@@ -45,8 +45,8 @@ class PlanningPage{
     this.jobName = page.locator("//label[contains(text(),'Job Name')]//following-sibling::div/input")
     this.jobPrefix = page.locator("//label[contains(text(),'Job Prefix')]//following-sibling::div/input")
     this.cookieIdentifier = page.locator("//label[contains(text(),'Cookie Identifier')]//following-sibling::div/input")
-    this.javaLocation = page.locator("//label[contains(text(),'Java location')]//following-sibling::div/input")
-    this.nodeJsLocation = page.locator("//label[contains(text(),'Node.js location')]//following-sibling::div/input")
+    this.javaLocation = page.locator("//label[contains(text(),'Java Home Directory')]//following-sibling::div/input")
+    this.nodeJsLocation = page.locator("//label[contains(text(),'Node.js Home Directory')]//following-sibling::div/input")
     this.setZosmf = page.locator("//span[text()='Set z/OSMF Attributes (optional)']/preceding-sibling::span/input")
     this.zosmfHost = page.locator("//label[contains(text(),'z/OSMF Host')]//following-sibling::div/input")
     this.zosmfPort = page.locator("//label[contains(text(),'z/OSMF Port')]//following-sibling::div/input")
@@ -235,10 +235,10 @@ class PlanningPage{
     await this.page.waitForTimeout(500);
     await this.jobStatement.fill("//HELLOJOB JOB 'HELLO, WORLD!',CLASS=A,MSGCLASS=A\n//STEP01   EXEC PGM=IEFBR14\n//SYSPRINT DD  SYSOUT=A\n//SYSIN    DD  DUMMY")
     await this.saveAndValidate.click();
+    await this.page.waitForTimeout(7000);
   }
-  async fillPlanningPageWithRequiredFields(runtimeDir: any, workspaceDir: any, extensionDir: any, logDir: any, profileIdentifier:any, jobPrefix:any,jobname:any, javaLocation:any,nodejsLocation:any,zOSMFHost:any,zOSMFPort:any,zOSMFAppID:any){
-    await this.page.waitForTimeout(2000);
-    await this.clickSaveValidate();
+  async fillPlanningPageWithRequiredFields(runtimeDir: any, workspaceDir: any, extensionDir: any, logDir: any, profileIdentifier:any,jobname:any,jobPrefix:any, javaLocation:any,nodejsLocation:any,zOSMFHost:any,zOSMFPort:any,zOSMFAppID:any){
+    await this.page.waitForTimeout(5000);
     await this.enterRuntimeDir(runtimeDir);
     await this.enterWorkspaceDir(workspaceDir);
     await this.enterLogsDir(logDir);
@@ -251,7 +251,7 @@ class PlanningPage{
     await this.enterZosmfHost(zOSMFHost);
     await this.enterZosmfPort(zOSMFPort);
     await this.enterZosmfApplicationId(zOSMFAppID);
-    await this.page.waitForTimeout(2000);
+    await this.page.waitForTimeout(25000);
   }
 
 }

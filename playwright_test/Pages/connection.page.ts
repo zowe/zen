@@ -24,8 +24,7 @@ class ConnectionPage{
     this.resumeProgress =  page.locator('//button[contains(text(),"Resume Progress")]')
     this.continueButton = page.locator('.MuiButton-containedPrimary.MuiButton-sizeMedium')
     this.greenCheckIconSelector = page.locator('.MuiContainer-root svg[data-testid="CheckCircleIcon"]')
-
-
+    this.status_check = page.locator(".svg.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium[data-testid='CheckCircleIcon']")
 
   }
   async fillConnectionDetails(host: string, port: string, username: string, password: string){
@@ -37,6 +36,12 @@ class ConnectionPage{
     await this.userName.fill(username)
     await this.page.waitForTimeout(1000);
     await this.password.fill(password)
+    await this.page.waitForTimeout(1000);
+  }
+
+   async fillpassword(password: string){
+    await this.password.fill(password,{timeout: 5000});
+    await this.page.waitForTimeout(1000);
   }
 
   async getHostValue(){
@@ -81,6 +86,7 @@ class ConnectionPage{
   async isGreenCheckIconVisible() {
     return await this.greenCheckIconSelector.isHidden();
   }
+
 }
 
   export default ConnectionPage;
