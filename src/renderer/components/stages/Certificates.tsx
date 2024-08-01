@@ -41,7 +41,7 @@ const Certificates = () => {
   const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [installationArgs] = useState(getInstallationArguments());
-  const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.certificate);
+  const [setupSchema, setSetupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.certificate);
   const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
   const [verifyCerts, setVerifyCerts] = useState(yaml?.zowe?.verifyCertificates ?? "STRICT");
   const [isFormInit, setIsFormInit] = useState(false);
@@ -58,6 +58,24 @@ const Certificates = () => {
   let timer: any;
 
   const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema))
+
+  if(setupYaml && setupSchema && !setupSchema.properties) {
+    if(setupSchema.oneOf) {
+
+      // Convert formData.type to lowercase to ensure case-insensitive comparison
+      const formDataType = setupYaml.type?.toLowerCase();
+
+      // Find the element in schema.oneOf that matches the formData.type
+      const matchingElement = setupSchema.oneOf.find((element: any) => element.required[0] === formDataType);
+
+      if (matchingElement) {
+        // Assign the properties from the matching element to schema.properties
+        setSetupSchema({...matchingElement });
+      } else {
+        setSetupSchema({...setupSchema.oneOf[0] });
+      }
+    }
+  }
 
   useEffect(() => {
     dispatch(setInitializationStatus(isInitComplete()));
