@@ -150,8 +150,33 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
   return createVerticalLayout(elements); // Return whole structure
 }
 
+const TabPanel = (props: {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}) => {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`tabpanel-${index}`}
+      aria-labelledby={`tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box p={3}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+};
+
 export default function JsonForm(props: any) {
   const {schema, onChange, formData} = props;
+  const [tabIndex, setTabIndex] = useState(0);
 
   const isFormDataEmpty = formData === null || formData === undefined;
 
@@ -164,17 +189,52 @@ export default function JsonForm(props: any) {
 
   // const [formState, setFormState] = useState(isFormDataEmpty ? getDefaultFormData(schema, {}) : formData);
 
+  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setTabIndex(newValue);
+  };
+
+  const renderTabs = () => {
+    if (schema.oneOf) {
+      return (
+        <>
+          <Tabs value={tabIndex} onChange={handleTabChange} aria-label="schema tabs">
+            {schema.oneOf.map((subSchema: any, index: number) => (
+              <Tab key={index} label={`Schema ${index + 1}`} />
+            ))}
+          </Tabs>
+          {schema.oneOf.map((subSchema: any, index: number) => (
+            <TabPanel key={index} value={tabIndex} index={index}>
+              <JsonForms
+                schema={subSchema}
+                uischema={makeUISchema(subSchema, '/', formData)}
+                data={formData}
+                renderers={materialRenderers}
+                cells={materialCells}
+                config={{showUnfocusedDescription: true}}
+                onChange={({ data, errors }) => { onChange(data) }}
+              />
+            </TabPanel>
+          ))}
+        </>
+      );
+    } else {
+      return (
+        <JsonForms
+          schema={schema}
+          uischema={makeUISchema(schema, '/', formData)}
+          data={formData}
+          renderers={materialRenderers}
+          cells={materialCells}
+          config={{showUnfocusedDescription: true}}
+          onChange={({ data, errors }) => { onChange(data) }}
+        />
+      );
+    }
+  };
+
   return (
     <ThemeProvider theme={jsonFormTheme}>
-    <JsonForms
-      schema={schema}
-      uischema={makeUISchema(schema, '/', formData)}
-      data={formData}
-      renderers={materialRenderers}
-      cells={materialCells}
-      config={{showUnfocusedDescription: true}}
-      onChange={({ data, errors }) => { onChange(data) }}
-    />
+      {renderTabs()}
     </ThemeProvider>
   );
 }
