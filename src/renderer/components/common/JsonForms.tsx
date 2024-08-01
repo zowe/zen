@@ -31,6 +31,25 @@ const isValidSchema = (schema: any, data: any): boolean => {
   return requiredFields.every((field: string) => data[field] !== undefined);
 };
 
+// To handle the "if", "else", and "then" in the schema
+const conditionalSchema = (schema: any, formData: any, prop: any): boolean=> {
+  if(schema.if && schema.then && schema.else){
+    const ifProp = Object.keys(schema.if.properties)[0];
+    const ifPropValue = schema.if.properties[ifProp].const.toLowerCase();
+    const thenProp = schema.then.required[0].toLowerCase();
+    const elseProp = schema.else.required[0].toLowerCase();
+
+    if(formData && formData[ifProp]) {
+      const formDataPropValue = formData[ifProp].toLowerCase();
+      if( (formDataPropValue == ifPropValue && prop == elseProp) || (formDataPropValue != ifPropValue && prop == thenProp) ) {
+        return true;
+      }
+    }
+    return false;
+  }
+  return false;
+}
+
 // Creates a basic input element in the UI schema
 const createControl = (scope: string) => ({
   type: 'Control',
@@ -56,6 +75,27 @@ const createHorizontalLayout = (elements: any[]) => ({
   type: 'HorizontalLayout',
   elements,
 });
+
+const getDefaultFormData = (schema: any, formData: any) => {
+  if (schema && schema.properties) {
+    const defaultFormData = { ...formData };
+    Object.keys(schema.properties).forEach((property) => {
+      if (schema.properties[property].type && schema.properties[property].default !== undefined || schema.properties[property].type === 'object') {
+        // If the property is an object, recursively set default values
+        if (schema.properties[property].type === 'object') {
+          defaultFormData[property] = getDefaultFormData(
+            schema.properties[property],
+            defaultFormData[property] || {}
+          );
+        } else {
+          defaultFormData[property] = schema.properties[property].default;
+        }
+      }
+    });
+    return defaultFormData;
+  }
+  return null;
+};
 
 const makeUISchema = (schema: any, base: string, formData: any): any => {
   if (!schema || !formData) {
@@ -110,25 +150,6 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
   return createVerticalLayout(elements); // Return whole structure
 }
 
-// To handle the "if", "else", and "then" in the schema
-const conditionalSchema = (schema: any, formData: any, prop: any): boolean=> {
-  if(schema.if && schema.then && schema.else){
-    const ifProp = Object.keys(schema.if.properties)[0];
-    const ifPropValue = schema.if.properties[ifProp].const.toLowerCase();
-    const thenProp = schema.then.required[0].toLowerCase();
-    const elseProp = schema.else.required[0].toLowerCase();
-
-    if(formData && formData[ifProp]) {
-      const formDataPropValue = formData[ifProp].toLowerCase();
-      if( (formDataPropValue == ifPropValue && prop == elseProp) || (formDataPropValue != ifPropValue && prop == thenProp) ) {
-        return true;
-      }
-    }
-    return false;
-  }
-  return false;
-}
-
 export default function JsonForm(props: any) {
   const {schema, onChange, formData} = props;
 
@@ -140,27 +161,6 @@ export default function JsonForm(props: any) {
       onChange(defaultFormData);
     }
   }, [isFormDataEmpty, schema, onChange]);
-
-  const getDefaultFormData = (schema: any, formData: any) => {
-    if (schema && schema.properties) {
-      const defaultFormData = { ...formData };
-      Object.keys(schema.properties).forEach((property) => {
-        if (schema.properties[property].type && schema.properties[property].default !== undefined || schema.properties[property].type === 'object') {
-          // If the property is an object, recursively set default values
-          if (schema.properties[property].type === 'object') {
-            defaultFormData[property] = getDefaultFormData(
-              schema.properties[property],
-              defaultFormData[property] || {}
-            );
-          } else {
-            defaultFormData[property] = schema.properties[property].default;
-          }
-        }
-      });
-      return defaultFormData;
-    }
-    return null;
-  };
 
   // const [formState, setFormState] = useState(isFormDataEmpty ? getDefaultFormData(schema, {}) : formData);
 
