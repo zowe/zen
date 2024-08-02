@@ -203,7 +203,9 @@ const Certificates = () => {
   
   const handleFormChange = (data: any, schemaIndex?: number) => {
 
-    if(setupSchema.oneOf && schemaIndex) {
+    setIsFormValid(true);
+
+    if(setupSchema.oneOf && schemaIndex !== undefined && schemaIndex !== null) {
       setValidate(() => ajv.compile(setupSchema.oneOf[schemaIndex]));
     }
 
