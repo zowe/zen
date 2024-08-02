@@ -150,11 +150,7 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
   return createVerticalLayout(elements); // Return whole structure
 }
 
-const TabPanel = (props: {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}) => {
+const TabPanel = (props: { children?: React.ReactNode; index: number; value: number; }) => {
   const { children, value, index, ...other } = props;
 
   return (
@@ -166,7 +162,7 @@ const TabPanel = (props: {
       {...other}
     >
       {value === index && (
-        <Box p={3}>
+        <Box sx={{padding: '25px'}}>
           {children}
         </Box>
       )}
@@ -186,8 +182,6 @@ export default function JsonForm(props: any) {
       onChange(defaultFormData);
     }
   }, [isFormDataEmpty, schema, onChange]);
-
-  // const [formState, setFormState] = useState(isFormDataEmpty ? getDefaultFormData(schema, {}) : formData);
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setTabIndex(newValue);
