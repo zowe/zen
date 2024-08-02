@@ -57,7 +57,7 @@ const Certificates = () => {
 
   let timer: any;
 
-  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema))
+  const [validate, setValidate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema))
 
   useEffect(() => {
     dispatch(setInitializationStatus(isInitComplete()));
@@ -201,7 +201,12 @@ const Certificates = () => {
     setEditorVisible(!editorVisible);
   };
   
-  const handleFormChange = (data: any) => {
+  const handleFormChange = (data: any, schemaIndex?: number) => {
+
+    if(setupSchema.oneOf && schemaIndex) {
+      setValidate(() => ajv.compile(setupSchema.oneOf[schemaIndex]));
+    }
+
     if(data?.zowe?.verifyCertificates){
       setVerifyCerts(data.zowe.verifyCertificates);
     }
