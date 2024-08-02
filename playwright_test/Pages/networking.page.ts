@@ -86,7 +86,6 @@ class NetworkingPage{
     this.deleteDomainName = page.locator('//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/div[2]/button');
     this.readYaml = page.locator('div.view-lines');
     this.previous_step_button = page.locator('//button[contains(text(),"Previous step")]');
-    this.skip_button = page.locator('//button[contains(text(),"Skip")]');
     this.editor_title_element = page.locator('//h2[text()="Editor"]');
     this.NETWORKING_TITLE = page.locator(' //div[text()="Networking"]');
     this.licenseAgreement = page.locator('//button[contains(text(), "License Agreement")]');

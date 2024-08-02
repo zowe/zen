@@ -96,13 +96,13 @@ class InstallationPage{
   }
 
   async enterAuthLoadLib(authloadlib: any){
-    await this.page.waitForTimeout(500)
     await this.authLoadLib.fill(authloadlib);
+	await this.page.waitForTimeout(5000)
   }
 
   async getAuthLoadLibValue(){
-    await this.page.waitForTimeout(500)
     return await this.authLoadLib.textContent();
+	await this.page.waitForTimeout(5000)
   }
 
   async enterAuthPluginLib(authpluginlib: any){
@@ -116,8 +116,8 @@ class InstallationPage{
   }
 
   async clickInstallMvsDatasets(){
-    await this.page.waitForTimeout(1000)
-    await this.installMVSDatasets.click();
+	await this.installMVSDatasets.click();
+	await this.waitForContinueButtonToBeEnabled();
   }
 
   async clickViewEditYaml(){
@@ -165,6 +165,20 @@ class InstallationPage{
     await this.page.waitForTimeout(500)
     return await this.continueToNetworkSetup.isEnabled()
   }
+  
+  private async waitForContinueButtonToBeEnabled(): Promise<void> {
+    const timeout = 100000; 
+    const interval = 500; 
+    const endTime = Date.now() + timeout;
+    while (Date.now() < endTime) {
+      if (await this.isContinueToNetworkSetupEnabled()) {
+        return; 
+      }
+      await this.page.waitForTimeout(interval);
+    }
+
+    throw new Error('Continue button was not enabled within the timeout period');
+  }
 
   async open_monacoEditor(){
     await this.page.waitForTimeout(1000)
@@ -176,6 +190,20 @@ class InstallationPage{
   async clickCloseEditor(){
     await this.page.waitForTimeout(500)
     await this.closeEditorButton.click();
+  }
+  
+  async fillAllFields(datasetPrefix: string, parmLib: string, procLib: string, jclLib: string, loadLib: string, authLoadLib: string, authPluginLib: string){
+    await this.enterPrefix(datasetPrefix);
+	await this.enterParmLib(parmLib);
+	await this.enterProcLib(procLib);
+	await this.enterJclLib(jclLib);
+	await this.enterLoadLib(loadLib);
+	await this.enterAuthLoadLib(authLoadLib);
+	await this.enterAuthPluginLib(authPluginLib);
+	await this.enterAuthLoadLib(authLoadLib);
+	await this.enterAuthPluginLib(authPluginLib);
+	await this.enterAuthLoadLib(authLoadLib);
+	await this.enterAuthPluginLib(authPluginLib);
   }
 }
   export default InstallationPage;

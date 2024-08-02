@@ -26,7 +26,7 @@ class InstallationTypePage{
     this.uploadPax = page.locator("//span[text()='Upload Zowe PAX for offline install']/preceding-sibling::span/input")
     this.smpe = page.locator("//span[text()='SMP/E']/preceding-sibling::span/input")
     this.licenseAgreement = page.locator("//button[text()='License Agreement']")
-	  this.saveAndClose = page.locator("//button[contains(text(),'Save & close')]")
+	this.saveAndClose = page.locator("//button[contains(text(),'Save & close')]")
     this.previousStep = page.locator("//button[contains(text(),'Previous step')]")
     this.continueToComponentInstallation = page.locator("//button[text()='Continue to Components Installation']")
     this.zoweLink = page.locator("//a[@href='zowe.org']")
@@ -36,6 +36,9 @@ class InstallationTypePage{
     this.validateLocation = page.locator("//button[text()= 'Validate location']")
     this.validateLocationGreenCheck = page.locator("//button[text()='Validate location']//following-sibling::*[@data-testid='CheckCircleIcon']")
     this.licenseAgreementGreenCheck = page.locator("//button[text()='License Agreement']//following-sibling::*[@data-testid='CheckCircleIcon']")
+	this.continueUpnax = page.locator("//button[contains(text(),'Continue to Unpax')]")
+	this.retrieveExampleZoweYaml = page.locator("//button[contains(text(),'Retrieve example-zowe.yaml')]")
+	this.continueCompInstallation = page.locator("//button[contains(text(),'Continue to Components Installation')]")
   }
 
   async getInstallationTypePageTitle(){
@@ -56,6 +59,27 @@ class InstallationTypePage{
   async selectSmpe(){
     await this.page.waitForTimeout(1000)
     await this.smpe.click({timeout: 5000});
+  }
+  
+  async continueToUnpax(){
+    await this.continueUpnax.click({timeout: 5000});
+  }
+  
+  async retrieveExampleYaml(){
+    await this.retrieveExampleZoweYaml.click({timeout: 5000});
+  }
+  
+  async continueComponentInstallation(){
+    const timeout = 5000;
+	const interval = 500;
+	while (true) {
+		if (await this.continueCompInstallation.isEnabled()) {
+		  await this.continueCompInstallation.click();
+		  return;
+      }
+      await this.page.waitForTimeout(interval);
+    }
+	await this.continueCompInstallation.click({timeout: timeout});
   }
 
   async clickZoweLink(){

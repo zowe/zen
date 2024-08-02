@@ -45,11 +45,12 @@ class PlanningPage{
     this.jobName = page.locator("//label[contains(text(),'Job Name')]//following-sibling::div/input")
     this.jobPrefix = page.locator("//label[contains(text(),'Job Prefix')]//following-sibling::div/input")
     this.cookieIdentifier = page.locator("//label[contains(text(),'Cookie Identifier')]//following-sibling::div/input")
-    this.javaLocation = page.locator("//label[contains(text(),'Java location')]//following-sibling::div/input")
-    this.nodeJsLocation = page.locator("//label[contains(text(),'Node.js location')]//following-sibling::div/input")
+    this.javaLocation = page.locator("//label[contains(text(),'Java Home Directory')]//following-sibling::div/input")
+    this.nodeJsLocation = page.locator("//label[contains(text(),'Node.js Home Directory')]//following-sibling::div/input")
     this.setZosmf = page.locator("//span[text()='Set z/OSMF Attributes (optional)']/preceding-sibling::span/input")
     this.zosmfHost = page.locator("//label[contains(text(),'z/OSMF Host')]//following-sibling::div/input")
-    this.zosmfPort = page.locator("//label[contains(text(),'z/OSMF Port')]//following-sibling::div/input")
+    this.zosmfPort = page.locator('//label[contains(text(), "z/OSMF Port")]/following-sibling::div/input[@id="zosmf-port"]')
+	//this.zosmfPort = page.locator('//input[@id="zosmf-port"]');
     this.zosmfApplicationId = page.locator("//label[contains(text(),'z/OSMF Application Id')]//following-sibling::div/input")
     this.validateLocations = page.locator("//button[contains(text(), 'Validate locations')]")
     this.ValidateLocationsGreenCheck = page.locator("//button[text()='Validate locations']//following-sibling::*[@data-testid='CheckCircleIcon']")
@@ -97,7 +98,7 @@ class PlanningPage{
 
   async enterRuntimeDir(runtimeDir: any){
     await this.page.waitForTimeout(500);
-    await this.runtimeDir.clear({timeout: 2000})
+    //await this.runtimeDir.clear({timeout: 2000})
     await this.runtimeDir.fill(runtimeDir);
   }
 
@@ -213,7 +214,7 @@ class PlanningPage{
 
   async clickContinueToInstallation(){
     await this.page.waitForTimeout(500);
-   await this.continueInstallationOptions.click();
+    await this.continueInstallationOptions.click();
   }
 
   async isContinueToInstallationDisabled(){
@@ -232,12 +233,11 @@ class PlanningPage{
   }
 
   async clickSaveValidate(){
-    await this.page.waitForTimeout(500);
-    await this.jobStatement.fill("//HELLOJOB JOB 'HELLO, WORLD!',CLASS=A,MSGCLASS=A\n//STEP01   EXEC PGM=IEFBR14\n//SYSPRINT DD  SYSOUT=A\n//SYSIN    DD  DUMMY")
+    await this.jobStatement.fill("//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,\n//         MSGLEVEL=(1,1),MSGCLASS=A")
     await this.saveAndValidate.click();
+	await this.page.waitForTimeout(500);
   }
   async fillPlanningPageWithRequiredFields(runtimeDir: any, workspaceDir: any, extensionDir: any, logDir: any, profileIdentifier:any, jobPrefix:any,jobname:any, javaLocation:any,nodejsLocation:any,zOSMFHost:any,zOSMFPort:any,zOSMFAppID:any){
-    await this.page.waitForTimeout(2000);
     await this.clickSaveValidate();
     await this.enterRuntimeDir(runtimeDir);
     await this.enterWorkspaceDir(workspaceDir);
@@ -248,8 +248,8 @@ class PlanningPage{
     await this.enterJobPrefix(jobPrefix);
     await this.enterJavaLocation(javaLocation);
     await this.enterNodeJsLocation(nodejsLocation);
-    await this.enterZosmfHost(zOSMFHost);
-    await this.enterZosmfPort(zOSMFPort);
+    //await this.enterZosmfHost(zOSMFHost);
+    //await this.enterZosmfPort(zOSMFPort);
     await this.enterZosmfApplicationId(zOSMFAppID);
     await this.page.waitForTimeout(2000);
   }
