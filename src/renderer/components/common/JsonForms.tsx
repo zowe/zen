@@ -14,22 +14,8 @@ import { materialRenderers, materialCells } from '@jsonforms/material-renderers'
 import { ThemeProvider } from '@mui/material/styles';
 import jsonFormTheme from '../../jsonFormsTheme';
 import { Tabs, Tab, Box } from '@mui/material';
+import { ajv } from './Utils';
 
-// Handle `oneOf` schemas
-const getActiveSchema = (schemas: any[], data: any) => {
-  for (const schema of schemas) {
-    if (isValidSchema(schema, data)) {
-      return schema;
-    }
-  }
-  return null;
-};
-
-const isValidSchema = (schema: any, data: any): boolean => {
-  // Check if the data matches the schema requirements
-  const requiredFields = schema.required || [];
-  return requiredFields.every((field: string) => data[field] !== undefined);
-};
 
 // To handle the "if", "else", and "then" in the schema
 const conditionalSchema = (schema: any, formData: any, prop: any): boolean=> {
@@ -102,20 +88,13 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
     return "";
   }
 
-  const activeSchema = schema.oneOf ? getActiveSchema(schema.oneOf, formData) : schema;
-
-  if (!activeSchema) {
-    console.error('No valid schema found');
-    return "";
-  }
-
-  const properties = activeSchema?.properties ? Object.keys(activeSchema.properties) : [];
+  const properties = schema?.properties ? Object.keys(schema.properties) : [];
 
   // Map each property in the JSON schema to an appropriate UI element based on its type and structure.
   const elements = properties.map((prop: any) => {
-    if (activeSchema.properties[prop]?.type && activeSchema.properties[prop].type === 'object') {
+    if (schema.properties[prop]?.type && schema.properties[prop].type === 'object') {
       // Create a group with a hide rule if patternProperties are present or conditional hiding is required
-      if (activeSchema.properties[prop].patternProperties || (activeSchema.if && conditionalSchema(activeSchema, formData, prop))) {
+      if (schema.properties[prop].patternProperties || (schema.if && conditionalSchema(schema, formData, prop))) {
         return createGroup(prop, [], {
           effect: "HIDE",
           condition: {}
@@ -123,7 +102,7 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
       }
 
       // For objects, iterate through their properties to create controls and group them if needed
-      const subSchema = activeSchema.properties[prop];
+      const subSchema = schema.properties[prop];
       const groupedControls: any = [];
       let row: any = [];
 
@@ -150,6 +129,32 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
   return createVerticalLayout(elements); // Return whole structure
 }
 
+// Function to filter form data based on the schema
+const filterFormData = (data: { [key: string]: any }, schema: any) => {
+  const filteredData: { [key: string]: any } = {};
+  const schemaProperties = schema.properties || {};
+
+  Object.keys(data).forEach(key => {
+    if (key in schemaProperties) {
+      filteredData[key] = data[key];
+    }
+  });
+
+  return filteredData;
+};
+
+// Function to find the matching schema for the form data
+const findMatchingSchemaIndex = (formData: any, oneOfSchemas: any) => {
+  for (let i = 0; i < oneOfSchemas.length; i++) {
+    const subSchema = oneOfSchemas[i];
+    const filteredData = filterFormData(formData, subSchema);
+    if (JSON.stringify(filteredData) === JSON.stringify(formData)) {
+      return i;
+    }
+  }
+  return 0; // Default to the first schema if no match is found
+};
+
 const TabPanel = (props: { children?: React.ReactNode; index: number; value: number; }) => {
   const { children, value, index, ...other } = props;
 
@@ -173,6 +178,8 @@ const TabPanel = (props: { children?: React.ReactNode; index: number; value: num
 export default function JsonForm(props: any) {
   const {schema, onChange, formData} = props;
   const [tabIndex, setTabIndex] = useState(0);
+  const [schemaUpdatedOnClick, setSchemaUpdatedOnClick] = useState(false);
+  const [validateSchema, setValidate] = useState(()=> ajv.compile(schema))
 
   const isFormDataEmpty = formData === null || formData === undefined;
 
@@ -183,8 +190,21 @@ export default function JsonForm(props: any) {
     }
   }, [isFormDataEmpty, schema, onChange]);
 
+  useEffect(() => {
+    if (schema.oneOf) {
+      const matchingIndex = findMatchingSchemaIndex(formData, schema.oneOf);
+      setTabIndex(matchingIndex);
+      setValidate(() => ajv.compile(schema.oneOf[tabIndex]));
+    }
+  }, [])
+
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setSchemaUpdatedOnClick(true);
     setTabIndex(newValue);
+    const selectedSchema = schema.oneOf[newValue];
+    const filteredData = filterFormData(formData, selectedSchema);
+    setValidate(() => ajv.compile(schema.oneOf[tabIndex]));
+    onChange(filteredData, newValue);
   };
 
   const renderTabs = () => {
