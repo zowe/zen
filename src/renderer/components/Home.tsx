@@ -92,6 +92,7 @@ const Home = () => {
       if (id === "install") {
         dispatch(setIsNewInstallation(true));
         dispatch(setConnectionStatus(false));
+        dispatch(setResumeProgress(false));
         newInstallationArgs = {...newInstallationArgs, dryRunMode: false};
       } else if (id === "dry run") {
         newInstallationArgs = {...newInstallationArgs, dryRunMode: true};
