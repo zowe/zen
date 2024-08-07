@@ -41,9 +41,6 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const connectionStatus = useAppSelector(selectConnectionStatus);
 
-  const INIT_STAGE_ID = getStageDetails(INIT_STAGE_LABEL).id;
-  const REVIEW_STAGE_ID = getStageDetails(REVIEW_INSTALL_STAGE_LABEL).id;
-
   const isNewInstallation = useAppSelector(selectIsNewInstallation);
 
   const completeProgress = getCompleteProgress();
@@ -69,10 +66,8 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const [activeStep, setActiveStep] =  isNewInstallation ?  useState(0) : useState(useAppSelector(selectActiveStepIndex));
   const [activeSubStep, setActiveSubStep] = isNewInstallation ? useState(0) : useState(useAppSelector(selectActiveSubStepIndex));
-  const [nextText, setNextText] = useState("Continue");
   const [contentType, setContentType] = useState('output');
   const [editorVisible, setEditorVisible] = useState(false);
-  const [editorContent, setEditorContent] = useState('');
   const installationArgs = useAppSelector(selectInstallationArgs);
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const dispatch = useAppDispatch();
@@ -104,14 +99,6 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
       setContentType(type);
     }
     setEditorVisible(!editorVisible);
-  };
-
-  const getContinueText = () => {
-    return 'Continue to next step';//'+stages[activeStep+1].label;
-  };
-
-  const getSkipText = () => {
-    return 'Skip step';//+stages[activeStep+1].label;
   };
 
   const handleYAML = () => {
@@ -166,24 +153,17 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
         return;
       }
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
-      setNextText(getContinueText());
     }
   };
 
   const handleBack = () => {
     alertEmitter.emit('hideAlert');
     stages[activeStep].subStages && activeSubStep > 0 ? setActiveSubStep((prevActiveSubStep) => prevActiveSubStep - 1) : setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    setNextText(getContinueText());
   };
 
   const handleReset = () => {
     alertEmitter.emit('hideAlert');
     setActiveStep(0);
-  };
-
-  const handlePreview = (test_jcl: any) => {
-    toggleEditorVisibility(TYPE_JCL);    
-    setEditorContent(test_jcl);
   };
 
   const handleStepperClick = (newActiveStep: number, isSubStep: boolean, subStepIndex?: number) => {
