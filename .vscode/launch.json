@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Electron: Renderer",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000/main_window",  // Change this to the URL your Electron app serves on
+      "webRoot": "${workspaceFolder}/src/services/ResolveRef",
+      "timeout": 30000
+    }
+  ],
+}

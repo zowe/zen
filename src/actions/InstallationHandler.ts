@@ -19,7 +19,7 @@ import * as fs from 'fs';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { InstallationArgs } from '../types/stateInterfaces';
 import { FALLBACK_SCHEMA, deepMerge } from '../renderer/components/common/Utils';
-
+import { updateSchemaReferences } from '../services/ResolveRef';
 
 //AJV did not like the regex in our current schema
 const zoweDatasetMemberRegexFixed = {
@@ -157,6 +157,7 @@ class Installation {
             let yamlSchema = JSON.parse(readPaxYamlAndSchema.details.yamlSchema);
             const serverCommon = JSON.parse(readPaxYamlAndSchema.details.serverCommon);
             if(yamlSchema && serverCommon){
+              updateSchemaReferences(yamlSchema, serverCommon);
               yamlSchema.additionalProperties = true;
               yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = zoweDatasetMemberRegexFixed;
               yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
