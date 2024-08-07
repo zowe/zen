@@ -68,7 +68,7 @@ const setKeys = (id: string) => {
   installationArgsKey = `${installationArgsKey}_${id}`;
 }
 
-const resetProgressObjects = () => {
+const setProgressObjects = () => {
   installationTypeStatus = { ...initInstallationTypeStatus };
   downloadUnpaxStatus = { ...initDownloadUnpaxStatus };
   progressStatus = { ...initProgressStatus };
@@ -100,15 +100,13 @@ export const resetProgress = (host: string, user: string,) => {
       localStorage.removeItem(key);
     }
   })
-
-  resetProgressObjects();
 }
 
 export const initializeProgress = (host: string, user: string, isResume: boolean) => {
   const id = `${host}_${user}`;
   setKeys(id);
   
-  resetProgressObjects();
+  setProgressObjects();
 
   const progress = localStorage.getItem(progressStateKey);
   if(!progress || !isResume) {
