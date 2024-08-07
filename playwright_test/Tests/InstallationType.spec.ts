@@ -4,26 +4,12 @@ import ConnectionPage from '../Pages/connection.page.ts';
 import PlanningPage from '../Pages/planning.page.ts';
 import InstallationTypePage from '../Pages/installationType.page.ts';
 import InstallationPage from '../Pages/installation.page.ts';
+import config from '../utils/config';
 
 let electronApp: ElectronApplication
 const PLANNING_TITLE = 'Before you start';
 const INSTALLATION_PAGE_TITLE = 'Installation';
-const RUNTIME_DIR = process.env.ZOWE_ROOT_DIR;
-const SSH_HOST = process.env.SSH_HOST;
-const SSH_PASSWD =  process.env.SSH_PASSWD;
-const SSH_PORT = process.env.SSH_PORT;
-const SSH_USER = process.env.SSH_USER;
-const ZOWE_EXTENSION_DIR= process.env.ZOWE_EXTENSION_DIR;
-const ZOWE_LOG_DIR=process.env.ZOWE_LOG_DIR;
-const ZOWE_WORKSPACE_DIR=process.env.ZOWE_WORKSPACE_DIR;
-const JOB_NAME= process.env.JOB_NAME;
-const JOB_PREFIX=process.env.JOB_PREFIX;
-const JAVA_HOME=process.env.JAVA_HOME;
-const NODE_HOME=process.env.NODE_HOME;
-const ZOSMF_HOST=process.env.ZOSMF_HOST;
-const ZOSMF_PORT=process.env.ZOSMF_PORT;
-const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
-const UPLOAD_PAX_PATH= process.env.ZOWE_ROOT_DIR
+
 
 test.describe('InstallationTypeTab', () => {
   let connectionPage: ConnectionPage;

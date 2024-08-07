@@ -50,69 +50,65 @@ class InstallationPage{
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
-  async enterPrefix(prefix: any){
+  async enterPrefix(prefix: string): Promise<void>{
     await this.page.waitForTimeout(500)
     await this.prefix.fill(prefix);
   }
 
-  async getPrefixValue(){
-    await this.page.waitForTimeout(500)
-    return await this.prefix.textContent();
+  async getPrefixValue(): Promise<string> {
+    return await this.prefix.inputValue();
   }
  
-  async enterProcLib(proclib: any){
+  async enterProcLib(proclib: string): Promise<void> {
     await this.page.waitForTimeout(500)
     await this.procLib.fill(proclib);
   }
 
-  async getProclibValue(){
-    await this.page.waitForTimeout(500)
-    return await this.procLib.textContent();
+  
+  async getProclibValue(): Promise<string> {
+    return await this.procLib.inputValue();
   }
  
-  async enterParmLib(parmlib: any){
+  async enterParmLib(parmlib: string): Promise<void>{
     await this.page.waitForTimeout(500)
     await this.parmLib.fill(parmlib);
   }
 
-  async getParmlibValue(){
-    await this.page.waitForTimeout(500)
-    return await this.parmLib.textContent();
+  async getParmlibValue(): Promise<string> {
+    return await this.parmLib.inputValue();
   }
 
-  async enterZis(zis: any){
+  async enterZis(zis: string): Promise<void> {
     await this.page.waitForTimeout(500)
     await this.zis.fill(zis);
   }
 
-  async enterJclLib(Jcllib: any){
+  async enterJclLib(Jcllib: string): Promise<void> {
     await this.page.waitForTimeout(500)
     await this.jclLib.fill(Jcllib);
   }
 
-  async enterLoadLib(loadlib: any){
+  async enterLoadLib(loadlib: string): Promise<void>{
     await this.page.waitForTimeout(500)
     await this.loadLib.fill(loadlib);
   }
 
-  async enterAuthLoadLib(authloadlib: any){
+  async enterAuthLoadLib(authloadlib: string): Promise<void> {
     await this.authLoadLib.fill(authloadlib);
 	await this.page.waitForTimeout(5000)
   }
 
-  async getAuthLoadLibValue(){
-    return await this.authLoadLib.textContent();
+  async getAuthLoadLibValue(): Promise<string> {
+	return await this.authLoadLib.inputValue();
+  }
+
+  async enterAuthPluginLib(authpluginlib: string): Promise<void> {
+    await this.authPluginLib.fill(authpluginlib);
 	await this.page.waitForTimeout(5000)
   }
 
-  async enterAuthPluginLib(authpluginlib: any){
-    await this.page.waitForTimeout(500)
-    await this.authPluginLib.fill(authpluginlib);
-  }
-
-  async getAuthPluginLibValue(){
-    await this.page.waitForTimeout(500)
-    return await this.authPluginLib.textContent();
+  async getAuthPluginLibValue(): Promise<string> {
+    return await this.authPluginLib.inputValue();
   }
 
   async clickInstallMvsDatasets(){
@@ -121,23 +117,19 @@ class InstallationPage{
   }
 
   async clickViewEditYaml(){
-    await this.page.waitForTimeout(500)
     await this.viewEditYaml.click();
   }
 
   async clickViewSubmitJob(){
-    await this.page.waitForTimeout(500)
     await this.viewSubmitJob.click();
   }
 
   async clickViewJobOutput(){
-    await this.page.waitForTimeout(500)
     await this.viewJobOutput.click();
     await this.page.waitForTimeout(2000);
   }
 
   async clickSaveAndClose(){
-    await this.page.waitForTimeout(500)
     await this.saveAndClose.click({timeout: 2000});
   }
 
@@ -157,13 +149,15 @@ class InstallationPage{
   }
 
   async isContinueToNetworkSetupDisabled(){
-    await this.page.waitForTimeout(500)
     return await this.continueToNetworkSetup.isDisabled()
   }
 
   async isContinueToNetworkSetupEnabled(){
-    await this.page.waitForTimeout(500)
     return await this.continueToNetworkSetup.isEnabled()
+  }
+  
+  async isSkipToNetworkSetupEnabled(){
+    return await this.skipInstallation.isEnabled()
   }
   
   private async waitForContinueButtonToBeEnabled(): Promise<void> {
@@ -190,6 +184,10 @@ class InstallationPage{
   async clickCloseEditor(){
     await this.page.waitForTimeout(500)
     await this.closeEditorButton.click();
+  }
+  
+  async clickInstallMvsDatasetsInvalid(){
+	await this.installMVSDatasets.click();
   }
   
   async fillAllFields(datasetPrefix: string, parmLib: string, procLib: string, jclLib: string, loadLib: string, authLoadLib: string, authPluginLib: string){

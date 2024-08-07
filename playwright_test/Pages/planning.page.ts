@@ -193,8 +193,8 @@ class PlanningPage{
   }
 
   async clickValidateLocations(){
-    await this.page.waitForTimeout(500);
     await this.validateLocations.click({timeout: 5000});
+	await this.isContinueToInstallationEnabled()
   }
 
   async isValidateLocationsGreenCheckVisible(){
@@ -213,7 +213,18 @@ class PlanningPage{
   }
 
   async clickContinueToInstallation(){
-    await this.page.waitForTimeout(500);
+    const timeout = 30000;
+    const interval = 100; 
+    const startTime = Date.now();
+	const isButtonEnabled = async (): Promise<boolean> => {
+      return await this.isContinueToInstallationEnabled();
+    };
+	while (!(await isButtonEnabled())) {
+      if (Date.now() - startTime > timeout) {
+        throw new Error('Timed out waiting for the button to be enabled.');
+      }
+      await new Promise(resolve => setTimeout(resolve, interval));
+    }
     await this.continueInstallationOptions.click();
   }
 
