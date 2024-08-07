@@ -71,10 +71,9 @@ const Home = () => {
   const connectionStatus = useAppSelector(selectConnectionStatus);
   const [showWizard, setShowWizard] = useState(false);
   const [localYaml, setLocalYaml] = useState(useAppSelector(selectYaml));
-  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const installationArgs = useAppSelector(selectInstallationArgs);
+  const schema = useAppSelector(selectSchema);
 
-  const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getPreviousInstallation();
+  const { lastActiveDate } = getPreviousInstallation();
 
   const stages: any = [];
   const defaultTooltip: string = "Resume";
