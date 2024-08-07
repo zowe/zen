@@ -70,7 +70,6 @@ const Home = () => {
   const dispatch = useAppDispatch();
   const connectionStatus = useAppSelector(selectConnectionStatus);
   const [showWizard, setShowWizard] = useState(false);
-  const [showLoginDialog, setShowLogin] = useState(false);
   const [localYaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
   const installationArgs = useAppSelector(selectInstallationArgs);
