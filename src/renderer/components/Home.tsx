@@ -28,7 +28,7 @@ import Wizard from './configuration-wizard/Wizard'
 import { ActiveState } from '../../types/stateInterfaces';
 import { getInstallationArguments, getPreviousInstallation } from './stages/progress/StageProgressStatus';
 import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Utils';
-import { selectInstallationArgs, setInstallationArgs, installationSlice, setIsNewerInstallation } from './stages/installation/installationSlice';
+import { selectInstallationArgs, setInstallationArgs, installationSlice, setIsNewInstallation, selectIsNewInstallation } from './stages/installation/installationSlice';
 import PasswordDialog from './common/passwordDialog';
 
 // REVIEW: Get rid of routing
@@ -76,13 +76,13 @@ const Home = () => {
 
   const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getPreviousInstallation();
 
-  const [isNewInstallation, setIsNewInstallation] = useState(false);
-
   const stages: any = [];
   const defaultTooltip: string = "Resume";
   const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
+
+  const isNewInstallation = useAppSelector(selectIsNewInstallation);
 
   const makeCard = (card: ICard) => {
     const {id, name, description, link, media} = card;
@@ -90,8 +90,7 @@ const Home = () => {
     const handleClick = () => {
       let newInstallationArgs = installationSlice.getInitialState().installationArgs;
       if (id === "install") {
-        dispatch(setIsNewerInstallation(true));
-        setIsNewInstallation(true);
+        dispatch(setIsNewInstallation(true));
         dispatch(setConnectionStatus(false));
         newInstallationArgs = {...newInstallationArgs, dryRunMode: false};
       } else if (id === "dry run") {
@@ -201,10 +200,10 @@ const Home = () => {
       if (!lastInstallation) {
         const flattenedData = flatten(lastActiveState);
         localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
-        setIsNewInstallation(true);
+        dispatch(setIsNewInstallation(true));
       } else {
         const data: ActiveState = unflatten(JSON.parse(lastInstallation));
-        setIsNewInstallation(!(data && data.lastActiveDate));
+        dispatch(setIsNewInstallation(!(data && data.lastActiveDate)));
       }
 
 
@@ -217,7 +216,7 @@ const Home = () => {
   const resumeProgress = () => {
     setShowWizard(true);
     dispatch(setResumeProgress(true));
-    dispatch(setIsNewerInstallation(false));
+    dispatch(setIsNewInstallation(false));
 
     if(connectionStatus) {
       setShowPasswordDialog(true);
@@ -234,7 +233,7 @@ const Home = () => {
       {!showWizard && <div className="home-container" style={{ display: 'flex', flexDirection: 'column' }}>
 
         <div style={{ position: 'absolute', left: '-9999px' }}>
-          <HorizontalLinearStepper stages={stages} />
+          {stages.length > 0 && <HorizontalLinearStepper stages={stages} />}
         </div>
 
         {!connectionStatus && <div style={{marginBottom: '20px'}}></div>}

@@ -69,13 +69,13 @@ export const installationSlice = createSlice({
       state.licenseAgreement = action.payload;
       setInstallationTypeStatus('licenseAgreement', action.payload)
     },
-    setIsNewerInstallation: (state, action: PayloadAction<boolean>) => {
+    setIsNewInstallation: (state, action: PayloadAction<boolean>) => {
       state.isNewInstallation = action.payload;
     }
   }
 });
 
-export const { setInstallationArgs, setZoweVersion, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath, setIsNewerInstallation} = installationSlice.actions;
+export const { setInstallationArgs, setZoweVersion, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath, setIsNewInstallation} = installationSlice.actions;
 
 export const selectInstallationArgs = (state: RootState) => state.installation.installationArgs;
 export const selectZoweVersion = (state: RootState) => state.installation.zoweVersion;
