@@ -9,7 +9,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -40,7 +39,7 @@ import { selectInstallationArgs, selectIsNewInstallation } from '../stages/insta
 
 export default function HorizontalLinearStepper({stages, initialization}:{stages: any, initialization?:boolean}) {
 
-  const connectionStatus = useState(useAppSelector(selectConnectionStatus));
+  const connectionStatus = useAppSelector(selectConnectionStatus);
 
   const INIT_STAGE_ID = getStageDetails(INIT_STAGE_LABEL).id;
   const REVIEW_STAGE_ID = getStageDetails(REVIEW_INSTALL_STAGE_LABEL).id;
@@ -50,7 +49,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const completeProgress = getCompleteProgress();
   
   const stageProgressStatus = [
-    useSelector(selectConnectionStatus),
+    useAppSelector(selectConnectionStatus),
     completeProgress.planningStatus,
     completeProgress.installationTypeStatus,
     completeProgress.downloadUnpaxStatus,
