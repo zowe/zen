@@ -213,7 +213,7 @@ const Security = () => {
   }
 
   const handleFormChange = (data: any) => {
-    let newData = init ? (Object.keys(setupYaml).length > 0 ? setupYaml : data?.zowe?.setup?.security) : (data?.zowe?.setup?.security ? data?.zowe?.setup?.security : data);
+    let newData = (init && setupYaml) ? (Object.keys(setupYaml).length > 0 ? setupYaml : data?.zowe?.setup?.security) : (data?.zowe?.setup?.security ? data?.zowe?.setup?.security : data);
     setInit(false);
 
     if (newData) {
