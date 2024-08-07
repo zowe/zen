@@ -106,6 +106,10 @@ class InstallationTypePage{
   async isContinueToComponentInstallationEnabled(){
     return await this.continueToComponentInstallation.isEnabled()
   }
+  
+  async isContinueUnpaxEnabled(){
+    return await this.continueUpnax.isEnabled()
+  }
 
   async clickAgreeLicense(){
     await this.agreeLicense.click({timeout: 5000});
