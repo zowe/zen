@@ -83,7 +83,6 @@ const Home = () => {
   const defaultTooltip: string = "Resume";
   const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  const [updatedConnection, setUpdatedConnection] = useState(false);
   const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
 
   const makeCard = (card: ICard) => {
@@ -223,12 +222,11 @@ const Home = () => {
 
     if(connectionStatus) {
       setShowPasswordDialog(true);
-      setUpdatedConnection(false);
     }
   }
 
   const confirmConnection = (status: boolean) => {
-    setUpdatedConnection(status);
+    setShowPasswordDialog(!status);
     setShowWizard(status);
   }
 
@@ -272,7 +270,6 @@ const Home = () => {
     {showWizard &&
       <>
         {showPasswordDialog && <PasswordDialog onPasswordSubmit={confirmConnection}></PasswordDialog>}
-        {(showPasswordDialog && updatedConnection) && <Wizard initialization={isNewInstallation}/>}
         {!showPasswordDialog && <Wizard initialization={isNewInstallation}/>}
       </>
     }
