@@ -17,7 +17,7 @@ import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import { selectConnectionStatus, setConnectionStatus } from '../stages/progress/progressSlice';
+import { selectConnectionStatus } from '../stages/progress/progressSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { selectNextStepEnabled, setLoading, setYaml } from '../configuration-wizard/wizardSlice';
 import { selectActiveStepIndex, selectActiveSubStepIndex } from '../stages/progress/activeStepSlice';
@@ -29,7 +29,6 @@ import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL, UNPAX_STAGE_LABEL } from '../common/Utils';
 import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus } from '../stages/progress/StageProgressStatus';
-import {initProgressStatus} from '../stages/progress/progressConst';
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
 import { getStageDetails } from '../../../services/StageDetails';
@@ -48,11 +47,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const isNewInstallation = useAppSelector(selectIsNewInstallation);
 
-  let completeProgress = {...initProgressStatus};
-
-  if(!isNewInstallation) {
-    completeProgress = getCompleteProgress();
-  }
+  const completeProgress = getCompleteProgress();
   
   const stageProgressStatus = [
     useSelector(selectConnectionStatus),
