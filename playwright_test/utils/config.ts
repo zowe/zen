@@ -21,6 +21,8 @@ interface Config {
   PARM_LIB: string | undefined;
   JCL_LIB: string | undefined;
   LOAD_LIB: string | undefined;
+  DOMAIN_NAME: string | undefined;
+  EXTERNAL_PORT: number | undefined;
 }
 
 const config: Config = {
@@ -45,7 +47,9 @@ const config: Config = {
   PROC_LIB: process.env.PROC_LIB,
   PARM_LIB: process.env.PARM_LIB,
   JCL_LIB: process.env.JCL_LIB,
-  LOAD_LIB: process.env.LOAD_LIB
+  LOAD_LIB: process.env.LOAD_LIB,
+  EXTERNAL_PORT: process.env.EXTERNAL_PORT,
+  DOMAIN_NAME: process.env.DOMAIN_NAME
 };
 
 export default config;

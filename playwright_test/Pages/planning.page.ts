@@ -82,13 +82,17 @@ class PlanningPage{
   }
 
   async clickSaveAndValidate(){
-    await this.page.waitForTimeout(1000);
     await this.saveAndValidate.click({ timeout: 5000 });
   }
 
-  async isSaveAndValidateGreenCheckVisible(){
-    await this.page.waitForTimeout(1000);
-    return await this.saveAndValidateGreenCheck.isVisible({ timeout: 5000 });
+  async isSaveAndValidateGreenCheckVisible(): Promise<boolean> {
+    try {
+      await this.saveAndValidateGreenCheck.waitFor({ state: 'visible', timeout: 10000 });
+      return true;
+    } catch (error) {
+      console.error('Error checking visibility:', error);
+      return false;
+    }
   }
 
   async getErrorMessage(){
@@ -197,14 +201,19 @@ class PlanningPage{
 	await this.isContinueToInstallationEnabled()
   }
 
-  async isValidateLocationsGreenCheckVisible(){
-    await this.page.waitForTimeout(500);
-    return await this.ValidateLocationsGreenCheck.isVisible();
+  async isValidateLocationsGreenCheckVisible(): Promise<boolean> {
+    try {
+      await this.ValidateLocationsGreenCheck.waitFor({ state: 'visible', timeout: 15000 });
+      return true;
+    } catch (error) {
+      console.error('Error checking visibility:', error);
+      return false;
+    }
   }
+  
 
   async clickSaveAndClose(){
-    await this.page.waitForTimeout(500);
-    await this.saveAndClose.click({timeout: 2000});
+    await this.saveAndClose.click({timeout: 15000});
   }
 
   async clickPreviousStep(){
@@ -248,6 +257,8 @@ class PlanningPage{
     await this.saveAndValidate.click();
 	await this.page.waitForTimeout(500);
   }
+  
+  
   async fillPlanningPageWithRequiredFields(runtimeDir: any, workspaceDir: any, extensionDir: any, logDir: any, profileIdentifier:any, jobPrefix:any,jobname:any, javaLocation:any,nodejsLocation:any,zOSMFHost:any,zOSMFPort:any,zOSMFAppID:any){
     await this.clickSaveValidate();
     await this.enterRuntimeDir(runtimeDir);

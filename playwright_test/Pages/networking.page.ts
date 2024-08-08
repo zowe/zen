@@ -22,8 +22,6 @@ class NetworkingPage{
   CONFPAGE_TITLE: Locator;
   continueToComponentInstallation: Locator;
 
-
-
   constructor(page: Page) {
     this.page = page;
     this.addDomainField = page.locator('//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/p[1]/button');
@@ -37,7 +35,7 @@ class NetworkingPage{
     this.metricService = page.locator('//strong[text()="metrics-service"]');
     this.metricServiceEnbaled = page.locator('//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/label[2]');
     this.metricServiceDebug = page.locator('//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/label[1]');
-    this.metricServicePort = page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[4]/div/input');
+    this.metricServicePort = page.locator('input[id=":rq:"]');
     this.zss = page.getByLabel('zss');
     this.zssTls = page.locator('//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/label[3]');
     this.zssPort = page.locator('//*[@id=":r1l:-label"]');
@@ -80,8 +78,9 @@ class NetworkingPage{
     this.discoveryDebug = page.locator('//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/label[22]');
     this.discoveryEnabled = page.locator('//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/label[23]');
     this.discoveryPort = page.locator('//*[@id=":r25:-label"]');
-
-    this.metricService_debug_checkbox = page.locator('//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/label[1]/span[1]/input');
+    this.explorerUSS_debug_checkbox = page.locator('//*[@id="container-box-id"]/form/div/div[2]/div[4]/div/div[4]/div[1]/label/span[1]/input');
+	this.app_server_debug = page.locator('//*[@id="container-box-id"]/form/div/div[2]/div[4]/div/div[11]/div[1]/label/span[1]/input');
+    this.metricService_debug_checkbox = page.locator('//*[@id="container-box-id"]/form/div/div[2]/div[4]/div/div[1]/div[1]/label/span[1]/input');
     this.metricService_enabled_checkbox = page.locator('//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/label[2]/span[1]/input');
     this.deleteDomainName = page.locator('//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/div[2]/button');
     this.readYaml = page.locator('div.view-lines');
@@ -91,13 +90,13 @@ class NetworkingPage{
     this.licenseAgreement = page.locator('//button[contains(text(), "License Agreement")]');
     this.acceptLicense = page.locator('//html/body/div[2]/div[3]/div/div[2]/button[1]');
     this.continueToComponentInstallation = page.locator('//button[contains(text(), "Continue to Components Installation")]');
-    this.view_yaml =  page.locator('//button[contains(text(),"View Yaml")]');
+    this.view_yaml =  page.locator('//button[contains(text(), "View/Edit Yaml")]');
     this.viewAndSubmitJob =  page.locator('//button[contains(text(), "Preview Job")]');
     this.view_job_output =  page.locator('//button[contains(text(), "Submit Job")]');
     this.save_and_close =  page.locator('//button[contains(text(),"Save & close")]');
     this.previous_step = page.locator('//button[contains(text(),"Previous step")]');
     this.skip_button = page.locator('//button[contains(text(),"Skip")]');
-    this.close_button = page.locator('//button[contains(text(), "Close")]');
+    this.close_button = page.locator("//button[text()='Close']");
     this.APFAUTH_TITLE = page.locator('//div[text()="APF Authorize Load Libraries"]');
     this.continue_ReviewSelector = page.locator('//button[contains(text(), "Continue to APF Auth Setup")]');
     this.installationTitle = page.locator('//div[text()="Installation"]');
@@ -115,30 +114,24 @@ class NetworkingPage{
    return networking_title;
   }
 
-  async fillExternalDomainPort(port:string){
+  async fillExternalDomainPort(port: number){
    await this.externalPort.fill(port, { timeout: 10000 })
   }
 
-  async fillMetricServicePort(port:string){
-  // Scroll down a bit
-   await this.page.evaluate(() => {
-      window.scrollBy(0, 200);
-    });
-   // Add a wait after scrolling
-   await this.page.waitForTimeout(5000);
-   await this.metricServicePort.fill(port, { timeout: 10000 })
+  async fillMetricServicePort(port: string){
+    await this.metricServicePort.waitFor({ state: 'visible', timeout: 10000 });
+    await this.metricServicePort.fill(port, { timeout: 10000 });
   }
 
-  async get_metricServiceport_value(){
-   const value = await this.metricServicePort.inputValue();
-   return value;
+  async get_metricServiceport_value(): Promise<string> {
+   return await this.metricServicePort.inputValue();
   }
 
   async fillExternalDomainName(externalDomainName: string){
    await this.domainName.fill(externalDomainName, { timeout: 10000 });
   }
 
-  async fillexternal_domainvalues(externalDomainName:string, port: string){
+  async fillexternal_domainvalues(externalDomainName:string, port: number){
    await this.fillExternalDomainName(externalDomainName, { timeout: 10000 });
    await this.fillExternalDomainPort(port, { timeout: 10000 })
   }
@@ -151,43 +144,62 @@ class NetworkingPage{
    return value;
   }
 
-  async click_checkBox(n:string){
-    const xpathLocator = `//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/label[${n}]/span[1]/input`;
-
-    const checkbox = await this.page.waitForSelector(xpathLocator, { state: 'visible' });
-
-    if (checkbox) {
-        const isChecked = await checkbox.evaluate((input) => input.checked);
-        console.log('Is checkbox checked:', isChecked);
-
-        if (!isChecked) {
-            await checkbox.click();
-            console.log('Checkbox clicked');
-        } else {
-            console.log('Checkbox is already checked');
-        }
-    } else {
-        console.log('Checkbox not found');
-  }
-}
-
-
-  async isCheckboxCheckedAndBlue(nthChild: string){
-    const xpathLocator = `//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/label[${nthChild}]/span[1]/input`;
-
-    const checkbox = await this.page.waitForSelector(xpathLocator);
-
-    if (checkbox) {
-        // Check if the checkbox is clicked
-        const isChecked = await checkbox.evaluate((input) => input.checked);
-        console.log('Is checkbox clicked:', isChecked);
-        return isChecked;
-    } else {
-        console.log('Checkbox not found');
+  async click_checkBox(xpath: string): Promise<void> {
+    //const html = await this.page.content(); // Get the HTML content
+    //console.log(html);
+    try {
+	  const checkbox = await this.page.waitForSelector(xpath, { state: 'visible' });
+	  const isChecked = await checkbox.evaluate((input) => input.checked);
+      if (!isChecked) {
+        await checkbox.click();
+	  }
+	 } catch (error) {
+        console.error(`Error checking checkbox with XPath "${xpath}":`, error);
         return false;
-    }
+     }
+  }
+	
+
+
+  async isCheckboxCheckedAndBlue(xpath: string): Promise<boolean>{
+    try{
+      const checkbox = await this.page.waitForSelector(xpath);
+      if (checkbox) {
+          const isChecked = await checkbox.evaluate((input) => input.checked);
+          return isChecked;
+      } else {
+          return false;
+      }
+	 } catch (error){
+	   console.log('Checkbox not found');
+       return false;
+	 
+	 }
+  }
+  
+  async isMetricsServiceDebugChecked(): Promise<boolean> {
+    return await this.isCheckboxCheckedAndBlue(this.metricService_debug_checkbox);
+  }
+  
+  async clickMetricsServiceDebug(): Promise<void> {
+    await this.click_checkBox(this.metricService_debug_checkbox);
+  }
+  
+  async isExplorerUssDebugChecked(): Promise<boolean> {
+    return await this.isCheckboxCheckedAndBlue(this.explorerUSS_debug_checkbox);
   }
 
+  async isAppServerDebugChecked(): Promise<boolean> {
+    return await this.isCheckboxCheckedAndBlue(this.app_server_debug);
+  }
+  
+  async clickExplorerUssDebug(): Promise<void> {
+    await this.click_checkBox(this.explorerUSS_debug_checkbox);
+  }
+  
+  async clickAppServerDebug(): Promise<void> {
+    await this.click_checkBox(this.app_server_debug);
+  }
 
   async delete_DomainNameField(){
    await this.deleteDomainName.click();
@@ -244,7 +256,6 @@ class NetworkingPage{
     let allText = '';
 
     while (true) {
-        // Extract text from all div.view-line elements
         const newText = await this.page.evaluate(() => {
             const viewLines = document.querySelectorAll('.view-lines .view-line');
             let text = '';
@@ -253,36 +264,21 @@ class NetworkingPage{
             });
             return text;
         });
-
-        // Append the new text to the existing text
         allText += newText;
-        console.log(allText)
-
-        // Scroll a little to load more content
         await this.page.evaluate(() => {
             const editor = document.querySelector('.monaco-scrollable-element.editor-scrollable.vs');
-            editor.scrollTop += 100; // Adjust the scroll amount as needed
+            editor.scrollTop += 100; 
         });
-
-        // Wait for a brief moment for new content to load
-        await this.page.waitForTimeout(1000); // Adjust timeout as needed
-
-        // Get the current scroll height
+        await this.page.waitForTimeout(1000); 
         const currentScrollHeight = await this.page.evaluate(() => {
             const editor = document.querySelector('.monaco-scrollable-element.editor-scrollable.vs');
             return editor.scrollHeight;
         });
-
-        // If the scroll height hasn't changed since the last iteration, we've reached the end
         if (currentScrollHeight === previousScrollHeight) {
             break;
         }
-
-        // Update the previous scroll height for the next iteration
         previousScrollHeight = currentScrollHeight;
     }
-
-    console.log('All text:', allText);
     return allText;
 }
 
