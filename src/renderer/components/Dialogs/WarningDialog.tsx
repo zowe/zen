@@ -31,8 +31,8 @@ const WarningDialog = ({onWarningDialogSubmit}: {onWarningDialogSubmit: any}) =>
         <DialogContent> Hey There </DialogContent>
         <DialogActions>
           <div>
-            <Button onClick={handleClose}>Submit</Button>
-            <Button onClick={handleSubmit}>Close</Button>
+            <Button onClick={handleSubmit}>Submit</Button>
+            <Button onClick={handleClose}>Close</Button>
           </div>
         </DialogActions>
       </Dialog>
