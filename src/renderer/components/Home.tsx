@@ -33,6 +33,7 @@ import PasswordDialog from './common/passwordDialog';
 import WarningDialog from './Dialogs/WarningDialog';
 import HomeCardComponent from './HomeCardComponent';
 import { ICard } from '../../types/interfaces';
+import { ROUTES } from '../../Routes/RouteConstant';
 
 // REVIEW: Get rid of routing
 
@@ -79,7 +80,6 @@ const Home = () => {
   const stages: any = [];
   const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
   const isNewInstallation = useAppSelector(selectIsNewInstallation);
-  let newInstallationArgs = installationSlice.getInitialState().installationArgs;
   const { lastActiveDate } = getPreviousInstallation();
 
   const [showWizard, setShowWizard] = useState(false);
@@ -87,6 +87,7 @@ const Home = () => {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [newInstallationClicked, setNewInstallationClick] = useState(false);
   const [previousInstallation, setPreviousInstallation] = useState(false);
+  const [defaultYaml, setDefaultYaml] = useState(FALLBACK_YAML);
 
   useEffect(() => {
     eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));
@@ -98,8 +99,9 @@ const Home = () => {
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           dispatch(setYaml(res.details));
+          setDefaultYaml(res.details);
         } else {
-          dispatch(setYaml(FALLBACK_YAML));
+          dispatch(setYaml(defaultYaml));
         }
       })
     }
@@ -160,7 +162,6 @@ const Home = () => {
         setPreviousInstallation(!!(data && data.lastActiveDate));
       }
 
-
     });
     return () => {
       eventDispatcher.off('saveAndCloseEvent', () => setShowWizard(true));
@@ -183,13 +184,13 @@ const Home = () => {
   }
 
   const handleNewInstallation = (newInstallationArgs: InstallationArgs) => {
-    dispatch(setYaml(FALLBACK_YAML));
+    dispatch(setYaml(defaultYaml));
     dispatch(setInstallationArgs(newInstallationArgs));
 
     window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", newInstallationArgs);
-    window.electron.ipcRenderer.setConfig(FALLBACK_YAML);
+    window.electron.ipcRenderer.setConfig(defaultYaml);
 
-    setLocalYaml(FALLBACK_YAML);
+    setLocalYaml(defaultYaml);
 
     // TODO: Ideally, reset connectionArgs too
     // but this introduces bug with "self certificate chain" it's the checkbox, it looks checked but
@@ -223,7 +224,7 @@ const Home = () => {
       dispatch(setConnectionStatus(false));
       dispatch(setResumeProgress(false));
       handleNewInstallation({ ...installationSlice.getInitialState().installationArgs, dryRunMode: false });
-      navigate('/wizard');
+      navigate(ROUTES.WIZARD);
     }
   }
 
