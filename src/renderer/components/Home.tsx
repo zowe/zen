@@ -30,6 +30,7 @@ import { getInstallationArguments, getPreviousInstallation } from './stages/prog
 import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Utils';
 import { selectInstallationArgs, setInstallationArgs, installationSlice, setIsNewInstallation, selectIsNewInstallation } from './stages/installation/installationSlice';
 import PasswordDialog from './common/passwordDialog';
+import WarningDialog from './Dialogs/WarningDialog';
 
 // REVIEW: Get rid of routing
 
@@ -81,7 +82,9 @@ const Home = () => {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
 
-  const isNewInstallation = useAppSelector(selectIsNewInstallation);
+  // const isNewInstallation = useAppSelector(selectIsNewInstallation);
+  const [isNewInstallation, setNewInstallation] = useState(useAppSelector(selectIsNewInstallation));
+  const [newInstallationClicked, setNewInstallationClick] = useState(false);
 
   const makeCard = (card: ICard) => {
     const {id, name, description, link, media} = card;
@@ -89,6 +92,10 @@ const Home = () => {
     const handleClick = () => {
       let newInstallationArgs = installationSlice.getInitialState().installationArgs;
       if (id === "install") {
+        setNewInstallationClick(true);
+        if(!isNewInstallation) {
+          return;
+        }
         dispatch(setIsNewInstallation(true));
         dispatch(setConnectionStatus(false));
         dispatch(setResumeProgress(false));
@@ -96,6 +103,7 @@ const Home = () => {
       } else if (id === "dry run") {
         newInstallationArgs = {...newInstallationArgs, dryRunMode: true};
       }
+      console.log("isNewInstallation: ", isNewInstallation);
       dispatch(setYaml(FALLBACK_YAML));
       dispatch(setInstallationArgs(newInstallationArgs));
       window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", newInstallationArgs);
@@ -131,6 +139,11 @@ const Home = () => {
         </Link>
     )
   }
+
+  useEffect(() => {
+    console.log("isNewInstallation changed:", isNewInstallation);
+    console.log("newInstallationClicked:", newInstallationClicked);
+  });
 
   useEffect(() => {
     eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));
@@ -217,7 +230,7 @@ const Home = () => {
     setShowWizard(true);
     dispatch(setResumeProgress(true));
     dispatch(setIsNewInstallation(false));
-
+ 
     if(connectionStatus) {
       setShowPasswordDialog(true);
     }
@@ -228,8 +241,17 @@ const Home = () => {
     setShowWizard(status);
   }
 
+  const confirmNewInstallation = (status: boolean) => {
+    setNewInstallation(status);
+    setNewInstallationClick(false);
+  }
+
   return (
     <>
+      { !isNewInstallation && newInstallationClicked &&
+        <WarningDialog onWarningDialogSubmit={confirmNewInstallation}/>
+      }
+
       {!showWizard && <div className="home-container" style={{ display: 'flex', flexDirection: 'column' }}>
 
         <div style={{ position: 'absolute', left: '-9999px' }}>
