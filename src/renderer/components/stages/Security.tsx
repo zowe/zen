@@ -43,7 +43,7 @@ const Security = () => {
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
   const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.security);
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security ?? {product: 'RACF'});
+  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.security);
   const [showProgress, setShowProgress] = useState(getProgress('securityStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -213,7 +213,7 @@ const Security = () => {
   }
 
   const handleFormChange = (data: any) => {
-    let newData = init ? (Object.keys(setupYaml).length > 0 ? setupYaml : data?.zowe?.setup?.security) : (data?.zowe?.setup?.security ? data?.zowe?.setup?.security : data);
+    let newData = (init && setupYaml) ? (Object.keys(setupYaml).length > 0 ? setupYaml : data?.zowe?.setup?.security) : (data?.zowe?.setup?.security ? data?.zowe?.setup?.security : data);
     setInit(false);
 
     if (newData) {
