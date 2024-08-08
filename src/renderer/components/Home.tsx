@@ -88,38 +88,6 @@ const Home = () => {
   const [newInstallationClicked, setNewInstallationClick] = useState(false);
   const [previousInstallation, setPreviousInstallation] = useState(false);
 
-  const handleCardClick = (newInstallationArgs: InstallationArgs) => {
-    dispatch(setYaml(FALLBACK_YAML));
-    dispatch(setInstallationArgs(newInstallationArgs));
-
-    window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", newInstallationArgs);
-    window.electron.ipcRenderer.setConfig(FALLBACK_YAML);
-
-    setLocalYaml(FALLBACK_YAML);
-
-    // TODO: Ideally, reset connectionArgs too
-    // but this introduces bug with "self certificate chain" it's the checkbox, it looks checked but
-    // it acts like it's not unless you touch it
-    // dispatch(setConnectionArgs(connectionSlice.getInitialState().connectionArgs));
-  }
-
-  const handleClick = (id: string) => {
-
-    const initialInstallationArgs = installationSlice.getInitialState().installationArgs;
-    const newInstallationArgs = getNewInstallationArgs(id, initialInstallationArgs);
-
-    if (id === "install") {
-      setNewInstallationClick(true);
-      if(previousInstallation) {
-        return;
-      }
-      dispatch(setIsNewInstallation(true));
-      dispatch(setConnectionStatus(false));
-      dispatch(setResumeProgress(false));
-    }
-    handleCardClick(newInstallationArgs);
-  };
-
   useEffect(() => {
     eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));
 
@@ -214,6 +182,38 @@ const Home = () => {
     setShowWizard(status);
   }
 
+  const handleNewInstallation = (newInstallationArgs: InstallationArgs) => {
+    dispatch(setYaml(FALLBACK_YAML));
+    dispatch(setInstallationArgs(newInstallationArgs));
+
+    window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", newInstallationArgs);
+    window.electron.ipcRenderer.setConfig(FALLBACK_YAML);
+
+    setLocalYaml(FALLBACK_YAML);
+
+    // TODO: Ideally, reset connectionArgs too
+    // but this introduces bug with "self certificate chain" it's the checkbox, it looks checked but
+    // it acts like it's not unless you touch it
+    // dispatch(setConnectionArgs(connectionSlice.getInitialState().connectionArgs));
+  }
+
+  const handleCardClick = (id: string) => {
+
+    const initialInstallationArgs = installationSlice.getInitialState().installationArgs;
+    const newInstallationArgs = getNewInstallationArgs(id, initialInstallationArgs);
+
+    if (id === "install") {
+      setNewInstallationClick(true);
+      if(previousInstallation) {
+        return;
+      }
+      dispatch(setIsNewInstallation(true));
+      dispatch(setConnectionStatus(false));
+      dispatch(setResumeProgress(false));
+    }
+    handleNewInstallation(newInstallationArgs);
+  };
+
   const confirmNewInstallation = (status: boolean) => {
     dispatch(setIsNewInstallation(status))
     setNewInstallationClick(false);
@@ -222,7 +222,7 @@ const Home = () => {
     if(status) {
       dispatch(setConnectionStatus(false));
       dispatch(setResumeProgress(false));
-      handleCardClick({ ...installationSlice.getInitialState().installationArgs, dryRunMode: false });
+      handleNewInstallation({ ...installationSlice.getInitialState().installationArgs, dryRunMode: false });
       navigate('/wizard');
     }
   }
@@ -250,7 +250,7 @@ const Home = () => {
               description={card.description}
               link={card.link}
               media={card.media}
-              handleClick={handleClick}
+              handleCardClick={handleCardClick}
               previousInstallation={previousInstallation}
             />
             ))}
