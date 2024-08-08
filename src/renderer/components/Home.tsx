@@ -36,6 +36,7 @@ import { ICard } from '../../types/interfaces';
 
 // REVIEW: Get rid of routing
 
+// Cards Data
 const cards: Array<ICard> = [
   {
     id: "install", 
@@ -53,11 +54,20 @@ const cards: Array<ICard> = [
   }
 ]
 
+// Constants
 const prevInstallationKey = "prev_installation";
 const lastActiveState: ActiveState = {
   activeStepIndex: 0,
   isSubStep: false,
   activeSubStepIndex: 0,
+};
+const defaultTooltip: string = "Resume";
+
+// Helper Functions
+const getNewInstallationArgs = (id: string, currentArgs: InstallationArgs) => {
+  return id === "install"
+    ? { ...currentArgs, dryRunMode: false }
+    : { ...currentArgs, dryRunMode: true };
 };
 
 const Home = () => {
@@ -65,28 +75,28 @@ const Home = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const connectionStatus = useAppSelector(selectConnectionStatus);
-  const [showWizard, setShowWizard] = useState(false);
-  const [localYaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const schema = useAppSelector(selectSchema);
-
+  const stages: any = [];
+  const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
+  const isNewInstallation = useAppSelector(selectIsNewInstallation);
+  let newInstallationArgs = installationSlice.getInitialState().installationArgs;
   const { lastActiveDate } = getPreviousInstallation();
 
-  const stages: any = [];
-  const defaultTooltip: string = "Resume";
-  const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
+  const [showWizard, setShowWizard] = useState(false);
+  const [localYaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-
-  const isNewInstallation = useAppSelector(selectIsNewInstallation);
   const [newInstallationClicked, setNewInstallationClick] = useState(false);
   const [previousInstallation, setPreviousInstallation] = useState(false);
-  let newInstallationArgs = installationSlice.getInitialState().installationArgs;
 
   const handleCardClick = (newInstallationArgs: InstallationArgs) => {
     dispatch(setYaml(FALLBACK_YAML));
     dispatch(setInstallationArgs(newInstallationArgs));
+
     window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", newInstallationArgs);
-    setLocalYaml(FALLBACK_YAML);
     window.electron.ipcRenderer.setConfig(FALLBACK_YAML);
+
+    setLocalYaml(FALLBACK_YAML);
+
     // TODO: Ideally, reset connectionArgs too
     // but this introduces bug with "self certificate chain" it's the checkbox, it looks checked but
     // it acts like it's not unless you touch it
@@ -94,6 +104,9 @@ const Home = () => {
   }
 
   const handleClick = (id: string) => {
+
+    const initialInstallationArgs = installationSlice.getInitialState().installationArgs;
+    const newInstallationArgs = getNewInstallationArgs(id, initialInstallationArgs);
 
     if (id === "install") {
       setNewInstallationClick(true);
@@ -103,9 +116,6 @@ const Home = () => {
       dispatch(setIsNewInstallation(true));
       dispatch(setConnectionStatus(false));
       dispatch(setResumeProgress(false));
-      newInstallationArgs = {...newInstallationArgs, dryRunMode: false};
-    } else if (id === "dry run") {
-      newInstallationArgs = {...newInstallationArgs, dryRunMode: true};
     }
     handleCardClick(newInstallationArgs);
   };
@@ -153,9 +163,6 @@ const Home = () => {
         console.info('No Zowe CLI found on local machine');
       }
     });
-
-    window.electron.ipcRenderer.setStandardOutput(DEF_NO_OUTPUT).then((res: any) => {
-    })
 
     window.electron.ipcRenderer.findPreviousInstallations().then((res: IResponse) => {
       const connectionStore = res.details;
@@ -215,8 +222,7 @@ const Home = () => {
     if(status) {
       dispatch(setConnectionStatus(false));
       dispatch(setResumeProgress(false));
-      newInstallationArgs = {...newInstallationArgs, dryRunMode: false};
-      handleCardClick(newInstallationArgs);
+      handleCardClick({ ...installationSlice.getInitialState().installationArgs, dryRunMode: false });
       navigate('/wizard');
     }
   }
