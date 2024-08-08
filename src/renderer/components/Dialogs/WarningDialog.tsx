@@ -28,10 +28,10 @@ const WarningDialog = ({onWarningDialogSubmit}: {onWarningDialogSubmit: any}) =>
     <div>
       <Dialog open={isDialogVisible} maxWidth={'xs'}>
         <DialogTitle>Warning!</DialogTitle>
-        <DialogContent> Hey There </DialogContent>
+        <DialogContent style={{ fontSize: '13px', fontFamily: 'Arial, sans-serif', color: 'black' }}> Starting a new installation will erase the previously stored installation data from the wizard. Do you wish to proceed? </DialogContent>
         <DialogActions>
           <div>
-            <Button onClick={handleSubmit}>Submit</Button>
+            <Button onClick={handleSubmit}>Proceed</Button>
             <Button onClick={handleClose}>Close</Button>
           </div>
         </DialogActions>
