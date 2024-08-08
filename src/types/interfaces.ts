@@ -45,3 +45,11 @@ export interface IResponse {
   errorMsg?: string;
 }
 
+export interface ICard {
+  id: string, 
+  name: string, 
+  description: string, 
+  link: string,
+  media: any,
+}
+

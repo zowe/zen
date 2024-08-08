@@ -10,7 +10,7 @@
 
 import '../global.css';
 import { useEffect, useState } from "react";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
 import flatten, { unflatten } from 'flat';
 import { IResponse, IIpcConnectionArgs } from '../../types/interfaces';
@@ -22,25 +22,22 @@ import { Tooltip } from '@mui/material';
 import installationImg from '../assets/installation.png'
 import installationDryImg from '../assets/installation-dry-run.png'
 import eventDispatcher from "../../services/eventDispatcher";
-import { selectConnectionStatus} from './stages/progress/progressSlice';
+import { selectConnectionStatus, setConnectionStatus} from './stages/progress/progressSlice';
 import  HorizontalLinearStepper  from './common/Stepper';
 import Wizard from './configuration-wizard/Wizard'
-import { ActiveState } from '../../types/stateInterfaces';
+import { ActiveState, InstallationArgs } from '../../types/stateInterfaces';
 import { getInstallationArguments, getPreviousInstallation } from './stages/progress/StageProgressStatus';
 import { DEF_NO_OUTPUT, FALLBACK_SCHEMA, FALLBACK_YAML } from './common/Utils';
-import { selectInstallationArgs, setInstallationArgs, installationSlice } from './stages/installation/installationSlice';
+import { selectInstallationArgs, setInstallationArgs, installationSlice, setIsNewInstallation, selectIsNewInstallation } from './stages/installation/installationSlice';
 import PasswordDialog from './common/passwordDialog';
+import WarningDialog from './Dialogs/WarningDialog';
+import HomeCardComponent from './HomeCardComponent';
+import { ICard } from '../../types/interfaces';
+import { ROUTES } from '../../Routes/RouteConstant';
 
 // REVIEW: Get rid of routing
 
-interface ICard {
-  id: string, 
-  name: string, 
-  description: string, 
-  link: string,
-  media: any,
-}
-
+// Cards Data
 const cards: Array<ICard> = [
   {
     id: "install", 
@@ -58,79 +55,39 @@ const cards: Array<ICard> = [
   }
 ]
 
+// Constants
 const prevInstallationKey = "prev_installation";
 const lastActiveState: ActiveState = {
   activeStepIndex: 0,
   isSubStep: false,
   activeSubStepIndex: 0,
 };
+const defaultTooltip: string = "Resume";
+
+// Helper Functions
+const getNewInstallationArgs = (id: string, currentArgs: InstallationArgs) => {
+  return id === "install"
+    ? { ...currentArgs, dryRunMode: false }
+    : { ...currentArgs, dryRunMode: true };
+};
 
 const Home = () => {
 
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const connectionStatus = useAppSelector(selectConnectionStatus);
-  const [showWizard, setShowWizard] = useState(false);
-  const [showLoginDialog, setShowLogin] = useState(false);
-  const [localYaml, setLocalYaml] = useState(useAppSelector(selectYaml));
-  const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const installationArgs = useAppSelector(selectInstallationArgs);
-
-  const { activeStepIndex, isSubStep, activeSubStepIndex, lastActiveDate } = getPreviousInstallation();
-
-  const [isNewInstallation, setIsNewInstallation] = useState(false);
-
+  const schema = useAppSelector(selectSchema);
   const stages: any = [];
-  const defaultTooltip: string = "Resume";
   const resumeTooltip = connectionStatus ? defaultTooltip : `Validate Credentials & ${defaultTooltip}`;
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  const [updatedConnection, setUpdatedConnection] = useState(false);
-  const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
+  const isNewInstallation = useAppSelector(selectIsNewInstallation);
+  const { lastActiveDate } = getPreviousInstallation();
 
-  const makeCard = (card: ICard) => {
-    const {id, name, description, link, media} = card;
-  
-    const handleClick = () => {
-      let newInstallationArgs = installationSlice.getInitialState().installationArgs;
-      if (id === "install") {
-        newInstallationArgs = {...newInstallationArgs, dryRunMode: false};
-      } else if (id === "dry run") {
-        newInstallationArgs = {...newInstallationArgs, dryRunMode: true};
-      }
-      dispatch(setYaml(FALLBACK_YAML));
-      dispatch(setInstallationArgs(newInstallationArgs));
-      window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", newInstallationArgs);
-      setLocalYaml(FALLBACK_YAML);
-      window.electron.ipcRenderer.setConfig(FALLBACK_YAML);
-      // TODO: Ideally, reset connectionArgs too
-      // but this introduces bug with "self certificate chain" it's the checkbox, it looks checked but
-      // it acts like it's not unless you touch it
-      // dispatch(setConnectionArgs(connectionSlice.getInitialState().connectionArgs));
-      setIsResume(false);
-    };
-  
-    return (  
-      <Link key={`link-${id}`} to={link} >
-        <Box sx={{ width: '40vw', height: '40vh'}} onClick={handleClick}>
-          <Card id={`card-${id}`} square={true}>
-            <CardMedia
-              sx={{ height: 240 }}
-              image={media}
-            />
-            <CardContent className="action-card">
-              <Box>
-                <Typography variant="subtitle1" component="div">
-                  {name}
-                </Typography>
-                <Typography sx={{ mb: 1.5, mt: 1.5, fontSize: '0.875rem' }} color="text.secondary">
-                  {description}
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
-        </Link>
-    )
-  }
+  const [showWizard, setShowWizard] = useState(false);
+  const [localYaml, setLocalYaml] = useState(useAppSelector(selectYaml));
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [newInstallationClicked, setNewInstallationClick] = useState(false);
+  const [previousInstallation, setPreviousInstallation] = useState(false);
+  const [defaultYaml, setDefaultYaml] = useState(FALLBACK_YAML);
 
   useEffect(() => {
     eventDispatcher.on('saveAndCloseEvent', () => setShowWizard(false));
@@ -142,8 +99,9 @@ const Home = () => {
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           dispatch(setYaml(res.details));
+          setDefaultYaml(res.details);
         } else {
-          dispatch(setYaml(FALLBACK_YAML));
+          dispatch(setYaml(defaultYaml));
         }
       })
     }
@@ -176,14 +134,10 @@ const Home = () => {
       }
     });
 
-    window.electron.ipcRenderer.setStandardOutput(DEF_NO_OUTPUT).then((res: any) => {
-    })
-
     window.electron.ipcRenderer.findPreviousInstallations().then((res: IResponse) => {
       const connectionStore = res.details;
       if (connectionStore["connection-type"] === 'ftp') {
         const jobStatement = connectionStore['ftp-details'].jobStatement.trim() || useAppSelector(selectInitJobStatement);
-        // console.log(JSON.stringify(connectionStore['ftp-details'],null,2));
         const connectionArgs: IIpcConnectionArgs = {
           ...connectionStore["ftp-details"],
           password: "",
@@ -200,12 +154,13 @@ const Home = () => {
       if (!lastInstallation) {
         const flattenedData = flatten(lastActiveState);
         localStorage.setItem(prevInstallationKey, JSON.stringify(flattenedData));
-        setIsNewInstallation(true);
+        dispatch(setIsNewInstallation(true));
+        setPreviousInstallation(false);
       } else {
         const data: ActiveState = unflatten(JSON.parse(lastInstallation));
-        setIsNewInstallation(!(data && data.lastActiveDate));
+        dispatch(setIsNewInstallation(!(data && data.lastActiveDate)));
+        setPreviousInstallation(!!(data && data.lastActiveDate));
       }
-
 
     });
     return () => {
@@ -216,33 +171,93 @@ const Home = () => {
   const resumeProgress = () => {
     setShowWizard(true);
     dispatch(setResumeProgress(true));
-
+    dispatch(setIsNewInstallation(false));
+ 
     if(connectionStatus) {
       setShowPasswordDialog(true);
-      setUpdatedConnection(false);
     }
   }
 
   const confirmConnection = (status: boolean) => {
-    setUpdatedConnection(status);
+    setShowPasswordDialog(!status);
     setShowWizard(status);
+  }
+
+  const handleNewInstallation = (newInstallationArgs: InstallationArgs) => {
+    dispatch(setYaml(defaultYaml));
+    dispatch(setInstallationArgs(newInstallationArgs));
+
+    window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", newInstallationArgs);
+    window.electron.ipcRenderer.setConfig(defaultYaml);
+
+    setLocalYaml(defaultYaml);
+
+    // TODO: Ideally, reset connectionArgs too
+    // but this introduces bug with "self certificate chain" it's the checkbox, it looks checked but
+    // it acts like it's not unless you touch it
+    // dispatch(setConnectionArgs(connectionSlice.getInitialState().connectionArgs));
+  }
+
+  const handleCardClick = (id: string) => {
+
+    const initialInstallationArgs = installationSlice.getInitialState().installationArgs;
+    const newInstallationArgs = getNewInstallationArgs(id, initialInstallationArgs);
+
+    if (id === "install") {
+      setNewInstallationClick(true);
+      if(previousInstallation) {
+        return;
+      }
+      dispatch(setIsNewInstallation(true));
+      dispatch(setConnectionStatus(false));
+      dispatch(setResumeProgress(false));
+    }
+    handleNewInstallation(newInstallationArgs);
+  };
+
+  const confirmNewInstallation = (status: boolean) => {
+    dispatch(setIsNewInstallation(status))
+    setNewInstallationClick(false);
+    setPreviousInstallation(!status);
+
+    if(status) {
+      dispatch(setConnectionStatus(false));
+      dispatch(setResumeProgress(false));
+      handleNewInstallation({ ...installationSlice.getInitialState().installationArgs, dryRunMode: false });
+      navigate(ROUTES.WIZARD);
+    }
   }
 
   return (
     <>
+      { previousInstallation && newInstallationClicked &&
+        <WarningDialog onWarningDialogSubmit={confirmNewInstallation}/>
+      }
+
       {!showWizard && <div className="home-container" style={{ display: 'flex', flexDirection: 'column' }}>
 
         <div style={{ position: 'absolute', left: '-9999px' }}>
-          <HorizontalLinearStepper stages={stages} />
+          {stages.length > 0 && <HorizontalLinearStepper stages={stages} />}
         </div>
 
         {!connectionStatus && <div style={{marginBottom: '20px'}}></div>}
 
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginLeft: '8%' }}>
-          {cards.map(card => makeCard(card))}
+          {cards.map(card => (
+            <HomeCardComponent
+              key={card.id}
+              id={card.id}
+              name={card.name}
+              description={card.description}
+              link={card.link}
+              media={card.media}
+              handleCardClick={handleCardClick}
+              previousInstallation={previousInstallation}
+            />
+            ))}
         </div>
 
-        {!isNewInstallation && <div style={{marginBottom: '1px',marginTop: '120px',background: 'white', fontSize: 'small',marginLeft: 'calc(8% + 10px)', padding: '15px 0 15px 15px',width: 'calc(80% + 5px)', boxShadow: '1px 1px 3px #a6a6a6'}}>
+        {previousInstallation && <div style={{marginBottom: '1px',marginTop: '120px',background: 'white', fontSize: 'small',marginLeft: 'calc(8% + 10px)', padding: '15px 0 15px 15px',width: 'calc(80% + 5px)', boxShadow: '1px 1px 3px #a6a6a6'}}>
           <Box sx={{display: 'flex', flexDirection: 'column'}}>
 
             <div style={{paddingBottom: '10px', color: 'black'}}>
@@ -268,8 +283,7 @@ const Home = () => {
     {showWizard &&
       <>
         {showPasswordDialog && <PasswordDialog onPasswordSubmit={confirmConnection}></PasswordDialog>}
-        {(showPasswordDialog && updatedConnection) && <Wizard initialization={false}/>}
-        {!showPasswordDialog && <Wizard initialization={false}/>}
+        {!showPasswordDialog && <Wizard initialization={isNewInstallation}/>}
       </>
     }
    </>

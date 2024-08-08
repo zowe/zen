@@ -9,7 +9,6 @@
  */
 
 import React, {useEffect, useState} from "react";
-import { useSelector } from 'react-redux';
 import {Box, Button, Typography, Tooltip} from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -48,7 +47,7 @@ const ReviewInstallation = () => {
   const completeProgress = getCompleteProgress();
 
   const stageProgressStatus = [
-    useSelector(selectConnectionStatus),
+    useAppSelector(selectConnectionStatus),
     completeProgress.planningStatus,
     completeProgress.installationTypeStatus,
     completeProgress.initializationStatus,

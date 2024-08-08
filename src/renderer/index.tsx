@@ -19,6 +19,7 @@ import Wizard from './components/configuration-wizard/Wizard';
 import Header from './components/Header';
 import theme from './theme';
 import { ThemeProvider } from '@mui/material/styles';
+import { ROUTES } from '../Routes/RouteConstant';
 
 // TODO:  Support of Zowe Configuration and Saved Installation actions.
 //        - Add and use state saving
@@ -34,9 +35,9 @@ function App() {
       <ThemeProvider theme={theme}>
         <Router>
           <Routes>
-            <Route path="/" element={<Header/>}>
+            <Route path={ROUTES.HOME} element={<Header/>}>
               <Route index element={<Home />} />
-              <Route path="wizard" element={<Wizard initialization={true}/>}/>  
+              <Route path={ROUTES.WIZARD} element={<Wizard initialization={true}/>}/>
             </Route>
             <Route path="*" element={<Home />} />
           </Routes>

@@ -33,10 +33,10 @@ import { setConnectionStatus,  selectConnectionStatus} from '../progress/progres
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
 import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
-import { initializeProgress, getActiveStage, } from "../progress/StageProgressStatus";
+import { initializeProgress, getActiveStage, resetProgress } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../services/eventDispatcher";
 import { setLocationValidationDetails } from "../PlanningSlice";
-import { selectInstallationArgs } from "../installation/installationSlice";
+import { selectInstallationArgs, selectIsNewInstallation } from "../installation/installationSlice";
 
 const Connection = () => {
 
@@ -125,12 +125,19 @@ const FTPConnectionForm = () => {
   const [isFtpConnection, setIsFtpConnection] = useState(useAppSelector(selectConnectionSecure));
   const [isAllCertificatesAccepted, setIsAllCertificatesAccepted] = useState(useAppSelector(selectAcceptAllCertificates));
 
+  const [isNewInstallation, setIsNewInstallation] = useState(useAppSelector(selectIsNewInstallation));
   const [formProcessed, toggleFormProcessed] = React.useState(false);
   const [validationDetails, setValidationDetails] = React.useState('');
 
   const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
 
   const installationArgs = useAppSelector(selectInstallationArgs);
+
+  useEffect(() => {
+    if(isNewInstallation) {
+      resetProgress(connectionArgs.host, connectionArgs.user);
+    }
+  }, []);
 
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));

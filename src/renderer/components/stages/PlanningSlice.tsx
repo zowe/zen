@@ -11,6 +11,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import { setPlanningStageStatus, getPlanningStageStatus } from './progress/StageProgressStatus';
+import { DEF_JOB_STATEMENT } from '../common/Utils'; 
 
 export interface jobValidation {
   jobStatement: string;
@@ -24,7 +25,7 @@ export interface locationValidation {
 }
 
 const initialState: jobValidation = {
-  jobStatement: getPlanningStageStatus()?.jobStatement || '',
+  jobStatement: getPlanningStageStatus()?.jobStatement || DEF_JOB_STATEMENT,
   isJobStatementValid: getPlanningStageStatus()?.isJobStatementValid || false,
   jobStatementValidMsg: ''
 }
