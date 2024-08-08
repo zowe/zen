@@ -29,6 +29,8 @@ import { getStageDetails, getSubStageDetails } from "../../../../services/StageD
 import { getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, updateSubStepSkipStatus, getInstallationArguments, datasetInstallationStatus, isInitializationStageComplete } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
 import eventDispatcher from '../../../../services/eventDispatcher';
+import { validateDatasetIterator } from '../../../../services/DatasetValidation';
+import ErrorIcon from '@mui/icons-material/Error';
 
 const Installation = () => {
 
@@ -54,8 +56,6 @@ const Installation = () => {
   const [showProgress, setShowProgress] = useState(getProgress('datasetInstallationStatus'));
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
   const [mvsDatasetInitProgress, setMvsDatasetInitProgress] = useState(getDatasetInstallationState());
   const [stateUpdated, setStateUpdated] = useState(false);
@@ -74,6 +74,8 @@ const Installation = () => {
     stageStatusRef.current = stageStatus;
   }, [stageStatus]);
   
+  const datasetPropertiesCount = setupSchema ? Object.keys(setupSchema.properties).length : 0;
+
   useEffect(() => {
     dispatch(setInitializationStatus(isInitializationStageComplete()));
 
@@ -175,6 +177,7 @@ const Installation = () => {
     return () => {
       updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
+      alertEmitter.emit('hideAlert');
     }
   }, []);
 
@@ -258,6 +261,13 @@ const Installation = () => {
 
   const process = async (event: any) => {
 
+    const areDatasetsValid = validateDatasets();
+    if (!areDatasetsValid){
+      event.preventDefault();
+      return;
+    }
+
+    alertEmitter.emit('hideAlert');
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
@@ -304,8 +314,27 @@ const Installation = () => {
       initMVS: true
     })
     updateProgress(true);
+    }
   }
-  }
+
+  const validateDatasets = () => {
+
+    if(Object.keys(setupYaml).length < datasetPropertiesCount) {
+      const errorMessage = `One or more required dataset values are missing. Please ensure all fields are filled in.`;
+      alertEmitter.emit('showAlert', errorMessage, 'error');
+      return false;
+    }
+
+    const {isValid, key} = validateDatasetIterator(setupYaml);
+
+    if (!isValid) {
+      const errorMessage = `The dataset '${key.toUpperCase()}' is invalid. Please verify the dataset name and try again.`;
+      alertEmitter.emit('showAlert', errorMessage, 'error');
+      return false;
+    }
+
+    return true;
+  };
 
   const debouncedChange = useCallback(
     debounce((state: any)=>{handleFormChange(state)}, 1000),
@@ -333,8 +362,9 @@ const Installation = () => {
   }
 
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
-    setIsFormValid(isValid);
-    setFormError(errorMsg);
+    if(!isValid) {
+      alertEmitter.emit('showAlert', errorMsg, 'error');
+    }
     setSetupYaml(data);
   }
 
@@ -356,7 +386,6 @@ const Installation = () => {
         </Typography>
 
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
-          {!isFormValid && formError && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
