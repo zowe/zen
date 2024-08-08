@@ -1,8 +1,9 @@
 import { Box, Card, CardContent, CardMedia, Typography, Tooltip, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-const CardComponent = ({ id, name, description, link, media, previousInstallation, handleClick }:{id: string, name: string, description: string, link: string, media: any, previousInstallation: boolean, handleClick: any}) => {
-  return (
+const HomeCardComponent = ({ id, name, description, link, media, previousInstallation, handleClick }:{id: string, name: string, description: string, link: string, media: any, previousInstallation: boolean, handleClick: any}) => {
+
+    return (
     <Link key={`link-${id}`} to={previousInstallation ? "/" : link}>
       <Box sx={{ width: '40vw', height: '40vh' }} onClick={() => handleClick(id)}>
         <Card id={`card-${id}`} square={true}>
@@ -23,4 +24,4 @@ const CardComponent = ({ id, name, description, link, media, previousInstallatio
   );
 };
 
-export default CardComponent;
+export default HomeCardComponent;
