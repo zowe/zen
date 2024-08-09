@@ -80,8 +80,35 @@ const getDefaultFormData = (schema: any, formData: any) => {
   return null;
 };
 
+// Function to return form data based on the attributes present in the schema
+const filterFormData = (data: { [key: string]: any }, schema: any) => {
+  const filteredData: { [key: string]: any } = {};
+  const schemaProperties = schema.properties || {};
+
+  Object.keys(data).forEach(key => {
+    if (key in schemaProperties) {
+      filteredData[key] = data[key];
+    }
+  });
+
+  return filteredData;
+};
+
+// Function to find the matching schema for the given form data
+const findMatchingSchemaIndex = (formData: any, oneOfSchemas: any) => {
+  for (let i = 0; i < oneOfSchemas.length; i++) {
+    const subSchema = oneOfSchemas[i];
+    const filteredData = filterFormData(formData, subSchema);
+    if (JSON.stringify(filteredData) === JSON.stringify(formData)) {
+      return i;
+    }
+  }
+  return 0; // Default to the first schema if no match is found
+};
+
 const handleOneOfSchema = (schema: any, formData: any): any => {
-  
+  const requiredSchemaIndex = findMatchingSchemaIndex(formData, schema.oneOf);
+  return schema.oneOf[requiredSchemaIndex];
 }
 
 const makeUISchema = (schema: any, base: string, formData: any): any => {
@@ -90,7 +117,7 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
   }
 
   if(schema.oneOf) {
-    handleOneOfSchema(schema, formData);
+   schema = handleOneOfSchema(schema, formData);
   }
 
   const properties = Object.keys(schema?.properties);
