@@ -22,7 +22,16 @@ interface Config {
   JCL_LIB: string | undefined;
   LOAD_LIB: string | undefined;
   DOMAIN_NAME: string | undefined;
+  SECURITY_ADMIN: string | undefined;
   EXTERNAL_PORT: number | undefined;
+  SECURITY_STC: string | undefined;
+  SECURITY_SYSPROG: string | undefined;
+  SECURITY_USER_ZIS: string | undefined;
+  SECURITY_USER_ZOWE: string | undefined;
+  SECURITY_AUX: string | undefined;
+  SECURITY_STC_ZOWE: string | undefined;
+  SECURITY_STC_ZIS: string | undefined;
+  
 }
 
 const config: Config = {
@@ -49,6 +58,14 @@ const config: Config = {
   JCL_LIB: process.env.JCL_LIB,
   LOAD_LIB: process.env.LOAD_LIB,
   EXTERNAL_PORT: process.env.EXTERNAL_PORT,
+  SECURITY_ADMIN: process.env.SECURITY_ADMIN,
+  SECURITY_STC: process.env.SECURITY_STC,
+  SECURITY_SYSPROG: process.env.SECURITY_SYSPROG,
+  SECURITY_USER_ZIS: process.env.SECURITY_USER_ZIS,
+  SECURITY_USER_ZOWE: process.env.SECURITY_USER_ZOWE,
+  SECURITY_AUX: process.env.SECURITY_AUX,
+  SECURITY_STC_ZOWE: process.env.SECURITY_STC_ZOWE,
+  SECURITY_STC_ZIS: process.env.SECURITY_STC_ZIS,
   DOMAIN_NAME: process.env.DOMAIN_NAME
 };
 

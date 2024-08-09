@@ -21,7 +21,7 @@ const INSTALLATION_TITLE = 'Installation';
 
 test.beforeAll(async () => {
   try {
-    await prepareEnvironment({ install: false, remove: false });
+    await prepareEnvironment({ install: true, remove: false });
   } catch (error) {
     console.error('Error during environment preparation:', error);
     process.exit(1); 

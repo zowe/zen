@@ -69,10 +69,9 @@ test.describe('ApfAuthTab', () => {
 	  );
       await planningPage.clickValidateLocations()
       await planningPage.clickContinueToInstallation()
-	  await installationTypePage.selectSmpe()
-	  await installationTypePage.continueToUnpax()
-	  await installationTypePage.retrieveExampleYaml()
-	  await installationTypePage.continueComponentInstallation()
+	  await installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
+      await installationTypePage.continueToUnpax()
+	  await installationTypePage.skipUnpax()
 	  await installationPage.fillAllFields(config.DATASET_PREFIX,
 	    config.PARM_LIB,
 		config.PROC_LIB,
@@ -81,8 +80,8 @@ test.describe('ApfAuthTab', () => {
 		config.AUTH_LOAD_LIB,
 		config.AUTH_PLUGIN_LIB
 	  )
-	  await installationPage.clickInstallMvsDatasets()
-	  await installationPage.clickContinueToNetworkSetup()
+	  await installationPage.clickInstallMvsDatasets();
+	  await installationPage.clickContinueToNetworkSetup();
 	  await networkingPage.click_skipNetworking()
       await page.waitForTimeout(1000);
     })

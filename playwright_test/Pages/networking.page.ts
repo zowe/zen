@@ -95,7 +95,8 @@ class NetworkingPage{
     this.view_job_output =  page.locator('//button[contains(text(), "Submit Job")]');
     this.save_and_close =  page.locator('//button[contains(text(),"Save & close")]');
     this.previous_step = page.locator('//button[contains(text(),"Previous step")]');
-    this.skip_button = page.locator('//button[contains(text(),"Skip")]');
+    this.skip_button = page.locator('//button[contains(text(),"Skip ")]');
+	//*[@id="zen-root-container"]/div[2]/div/div[5]/button[2]
     this.close_button = page.locator("//button[text()='Close']");
     this.APFAUTH_TITLE = page.locator('//div[text()="APF Authorize Load Libraries"]');
     this.continue_ReviewSelector = page.locator('//button[contains(text(), "Continue to APF Auth Setup")]');
@@ -224,9 +225,12 @@ class NetworkingPage{
   }
 
   async click_skipNetworking(){
-   await this.skip_button.click({ timeout: 2000 });
-   const apfAuth_title = await this.APFAUTH_TITLE.textContent();
-   return apfAuth_title;
+   const isEnabled = await this.is_skipNetworkingButtonEnable();
+    if (isEnabled) {
+        await this.skip_button.click({ timeout: 2000 });
+    } else {
+        throw new Error('Skip button is not enabled and cannot be clicked.');
+    }
   }
 
   async isPreviousButtonEnable(){
