@@ -105,47 +105,40 @@ const conditionalSchema = (schema: any, formData: any, prop: any): boolean=> {
   return false;
 }
 
+const getDefaultFormData = (schema: any, formData: any) => {
+  if (schema && schema.properties) {
+    const defaultFormData = { ...formData };
+    Object.keys(schema.properties).forEach((property) => {
+      if (schema.properties[property].type && schema.properties[property].default !== undefined || schema.properties[property].type === 'object') {
+        // If the property is an object, recursively set default values
+        if (schema.properties[property].type === 'object') {
+          defaultFormData[property] = getDefaultFormData(
+            schema.properties[property],
+            defaultFormData[property] || {}
+          );
+        } else {
+          defaultFormData[property] = schema.properties[property].default;
+        }
+      }
+    });
+    return defaultFormData;
+  }
+  return null;
+};
+
 export default function JsonForm(props: any) {
   const {schema, onChange, formData} = props;
 
-  const isFormDataEmpty = formData === null || formData === undefined;
+  const isFormDataEmpty = formData === null || formData === undefined || Object.keys(formData).length < 1;
 
-  useEffect(() => {
-    if (isFormDataEmpty) {
-      const defaultFormData = getDefaultFormData(schema, formData);
-      onChange(defaultFormData);
-    }
-  }, [isFormDataEmpty, schema, onChange]);
-
-  const getDefaultFormData = (schema: any, formData: any) => {
-    if (schema && schema.properties) {
-      const defaultFormData = { ...formData };
-      Object.keys(schema.properties).forEach((property) => {
-        if (schema.properties[property].type && schema.properties[property].default !== undefined || schema.properties[property].type === 'object') {
-          // If the property is an object, recursively set default values
-          if (schema.properties[property].type === 'object') {
-            defaultFormData[property] = getDefaultFormData(
-              schema.properties[property],
-              defaultFormData[property] || {}
-            );
-          } else {
-            defaultFormData[property] = schema.properties[property].default;
-          }
-        }
-      });
-      return defaultFormData;
-    }
-    return null;
-  };
-
-  // const [formState, setFormState] = useState(isFormDataEmpty ? getDefaultFormData(schema, {}) : formData);
+  const formDataToUse = isFormDataEmpty ? getDefaultFormData(schema, {}) : formData;
 
   return (
     <ThemeProvider theme={jsonFormTheme}>
     <JsonForms
       schema={schema}
       uischema={makeUISchema(schema, '/', formData)}
-      data={formData}
+      data={formDataToUse}
       renderers={materialRenderers}
       cells={materialCells}
       config={{showUnfocusedDescription: true}}
