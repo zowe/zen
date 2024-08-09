@@ -80,10 +80,19 @@ const getDefaultFormData = (schema: any, formData: any) => {
   return null;
 };
 
+const handleOneOfSchema = (schema: any, formData: any): any => {
+  
+}
+
 const makeUISchema = (schema: any, base: string, formData: any): any => {
   if (!schema || !formData) {
     return "";
   }
+
+  if(schema.oneOf) {
+    handleOneOfSchema(schema, formData);
+  }
+
   const properties = Object.keys(schema?.properties);
 
   // Map each property in the JSON schema to an appropriate UI element based on its type and structure.
