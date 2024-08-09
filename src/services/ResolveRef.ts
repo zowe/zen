@@ -25,5 +25,5 @@ export const updateSchemaReferences = (schema: any, serverCommon: any): void => 
     return refObject;
   }
 
-  traverseAndUpdate(schema.properties.zowe.properties.setup.properties);
+  traverseAndUpdate(schema);
 }
