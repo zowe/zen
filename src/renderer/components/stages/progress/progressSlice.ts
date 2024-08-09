@@ -12,6 +12,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
 import { setProgress, getProgress } from './StageProgressStatus';
 import { ProgressState } from '../../../../types/stateInterfaces';
+import { stages } from '../../configuration-wizard/Wizard';
 
 const initialState: ProgressState = {
   connectionStatus: getProgress('connectionStatus') || false,

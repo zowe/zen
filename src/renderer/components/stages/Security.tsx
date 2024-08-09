@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Box, Button, FormControl } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
@@ -24,7 +24,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setSecurityInitState, getSecurityInitState, mapAndSetSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
+import { setProgress, getProgress, setSecurityInitState, getSecurityInitState, updateSubStepSkipStatus, getInstallationArguments, isInitializationStageComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { JCL_UNIX_SCRIPT_OK, INIT_STAGE_LABEL, SECURITY_STAGE_LABEL, ajv, SERVER_COMMON } from '../common/Utils';
 import { alertEmitter } from "../Header";
@@ -53,6 +53,8 @@ const Security = () => {
   const [securityInitProgress, setSecurityInitProgress] = useState(getSecurityInitState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
+  const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+  const stageStatusRef = useRef(stageStatus);
 
   const [installationArgs] = useState(getInstallationArguments());
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
@@ -61,11 +63,17 @@ const Security = () => {
   const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema));
 
   useEffect(() => {
-    dispatch(setInitializationStatus(isInitComplete()));
-    setShowProgress(initClicked || getProgress('securityStatus'));
-    let nextPosition;
+    stageStatusRef.current = stageStatus;
+  }, [stageStatus]);
 
-    if(getProgress('securityStatus')) {
+  useEffect(() => {
+    let nextPosition;
+    const stepProgress = getProgress('securityStatus');
+
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    setShowProgress(initClicked || stepProgress);
+
+    if(stepProgress) {
       nextPosition = document.getElementById('security-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     } else {
@@ -73,10 +81,12 @@ const Security = () => {
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
-    updateProgress(getProgress('securityStatus'));
+    dispatch(setNextStepEnabled(stepProgress));
+
     setInit(true);
 
     return () => {
+      updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
@@ -87,8 +97,8 @@ const Security = () => {
     if(initClicked) {
       let nextPosition = document.getElementById('start-security-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      dispatchActions(false);
       setStateUpdated(!stateUpdated);
-      dispatch(setSecurityStatus(false));
     }
   }, [initClicked]);
 
@@ -113,9 +123,8 @@ const Security = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(securityInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setSecurityStatus(true));
-      dispatch(setNextStepEnabled(true));
       setShowProgress(initClicked || getProgress('securityStatus'));
+      dispatchActions(true);
     }
   }, [securityInitProgress]);
 
@@ -124,20 +133,18 @@ const Security = () => {
     setSecurityInitState(securityInitState);
     const allAttributesTrue = Object.values(securityInitState).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setSecurityStatus(true));
-      dispatch(setNextStepEnabled(true));
+      dispatchActions(true);
     }
   }
 
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
-    stages[STAGE_ID].isSkipped = status;
-    mapAndSetSkipStatus(SUB_STAGE_ID, status);
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
+    setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setStageSkipStatus(!status);
     if(!status) {
       for (let key in securityInitProgress) {
         securityInitProgress[key as keyof(InitSubStepsState)] = false;
@@ -146,10 +153,15 @@ const Security = () => {
     }
     const allAttributesTrue = Object.values(securityInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setInitializationStatus(isInitComplete()));
-    dispatch(setSecurityStatus(status));
-    dispatch(setNextStepEnabled(status));
     setSecurityInitializationProgress(getSecurityInitState());
+    dispatchActions(status);
+  }
+
+  const dispatchActions = (status: boolean) => {
+    dispatch(setSecurityStatus(status));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    dispatch(setNextStepEnabled(status));
+    setStageSkipStatus(!status);
   }
 
   const toggleEditorVisibility = (type: any) => {
@@ -174,12 +186,9 @@ const Security = () => {
           toggleEditorVisibility("output");
         })
         updateProgress(false);
-        securityProceedActions(false);
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
         clearInterval(timer);
       } else {
-        securityProceedActions(res.status);
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
+        updateProgress(res.status);
         clearInterval(timer);
       }
     }).catch((err: any) => {
@@ -187,9 +196,6 @@ const Security = () => {
       //alertEmitter.emit('showAlert', err.toString(), 'error');
       updateProgress(false);
       clearInterval(timer);
-      securityProceedActions(false);
-      stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-      stages[STAGE_ID].isSkipped = true;
       window.electron.ipcRenderer.setStandardOutput(`zwe init security failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
         toggleEditorVisibility("output");
       })
@@ -203,13 +209,6 @@ const Security = () => {
     });
     updateProgress(true);
   }
-  }
-
-  // True - a proceed, False - blocked
-  const securityProceedActions = (status: boolean) => {
-    dispatch(setNextStepEnabled(status));
-    dispatch(setSecurityStatus(status));
-    dispatch(setInitializationStatus(isInitComplete()));
   }
 
   const handleFormChange = (data: any) => {
