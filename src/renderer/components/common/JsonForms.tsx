@@ -13,6 +13,11 @@ import { JsonForms } from '@jsonforms/react';
 import { materialRenderers, materialCells } from '@jsonforms/material-renderers';
 import { ThemeProvider } from '@mui/material/styles';
 import jsonFormTheme from '../../jsonFormsTheme';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
 
 // Creates a basic input element in the UI schema
 const createControl = (scope: string) => ({
@@ -60,6 +65,9 @@ const conditionalSchema = (schema: any, formData: any, prop: any): boolean=> {
 }
 
 const getDefaultFormData = (schema: any, formData: any) => {
+  if (schema.oneOf) {
+    schema = schema.oneOf[0];
+  }
   if (schema && schema.properties) {
     const defaultFormData = { ...formData };
     Object.keys(schema.properties).forEach((property) => {
@@ -83,7 +91,7 @@ const getDefaultFormData = (schema: any, formData: any) => {
 // Function to return form data based on the attributes present in the schema
 const filterFormData = (data: { [key: string]: any }, schema: any) => {
   const filteredData: { [key: string]: any } = {};
-  const schemaProperties = schema.properties || {};
+  const schemaProperties = schema?.properties || {};
 
   Object.keys(data).forEach(key => {
     if (key in schemaProperties) {
@@ -108,7 +116,7 @@ const findMatchingSchemaIndex = (formData: any, oneOfSchemas: any) => {
 
 const handleOneOfSchema = (schema: any, formData: any): any => {
   const requiredSchemaIndex = findMatchingSchemaIndex(formData, schema.oneOf);
-  return schema.oneOf[requiredSchemaIndex];
+  return requiredSchemaIndex;
 }
 
 const makeUISchema = (schema: any, base: string, formData: any): any => {
@@ -117,7 +125,8 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
   }
 
   if(schema.oneOf) {
-   schema = handleOneOfSchema(schema, formData);
+   const schemaIndex = handleOneOfSchema(schema, formData);
+   schema = schema.oneOf[schemaIndex];
   }
 
   const properties = Object.keys(schema?.properties);
@@ -163,18 +172,52 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
 }
 
 export default function JsonForm(props: any) {
-  const {schema, onChange, formData} = props;
-
+  let {schema, onChange, formData} = props;
   const isFormDataEmpty = formData === null || formData === undefined || Object.keys(formData).length < 1;
 
-  const formDataToUse = isFormDataEmpty ? getDefaultFormData(schema, {}) : formData;
+  const [reqSchema, setReqSchema] = useState(schema);
+  const [reqFormData, setReqFormData] = useState(isFormDataEmpty ? getDefaultFormData(schema, {}) : formData);
+  const [selectedSchemaIndex, setSelectedSchemaIndex] = useState(0);
+
+  useEffect(() => {
+    if (schema?.oneOf) {
+      const initialSchemaIndex = handleOneOfSchema(schema, formData);
+      setSelectedSchemaIndex(initialSchemaIndex);
+      setReqSchema(schema.oneOf[initialSchemaIndex]);
+      setReqFormData(filterFormData(formData, schema.oneOf[initialSchemaIndex]));
+    }
+  }, []);
+
+  const handleSchemaChange = (event: any) => {
+    const schemaIndex = parseInt(event.target.value);
+    setSelectedSchemaIndex(schemaIndex);
+    setReqSchema(schema.oneOf[schemaIndex]);
+    setReqFormData(filterFormData(formData, schema.oneOf[schemaIndex]));
+  }
 
   return (
     <ThemeProvider theme={jsonFormTheme}>
+      {  schema.oneOf &&
+        <div>
+          <FormControl>
+          <RadioGroup
+            row
+            name="controlled-radio-buttons-group"
+            value={selectedSchemaIndex}
+            onChange={handleSchemaChange}
+          >
+            { schema.oneOf.map((_: any, index: number) => (
+              <FormControlLabel key={index} value={index} control={<Radio />} label={`Certificate ${index}`} />
+            ))}
+          </RadioGroup>
+          </FormControl>
+        </div>
+
+      }
     <JsonForms
-      schema={schema}
-      uischema={makeUISchema(schema, '/', formData)}
-      data={formDataToUse}
+      schema={reqSchema}
+      uischema={makeUISchema(reqSchema, '/', formData)}
+      data={reqFormData}
       renderers={materialRenderers}
       cells={materialCells}
       config={{showUnfocusedDescription: true}}
