@@ -9,7 +9,7 @@
  */
 
 import { flatten, unflatten } from 'flat';
-import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, SkipState, InstallationArgs, DownloadUnpaxState} from '../../../../types/stateInterfaces';
+import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, subStepState, stepSkipState, InstallationArgs, DownloadUnpaxState} from '../../../../types/stateInterfaces';
 import { stages } from '../../configuration-wizard/Wizard';
 
 const installationTypeStatus: InstallationType = {
@@ -99,15 +99,23 @@ const planningValidationDetailsStatus: PlanningValidationDetails = {
   error: ''
 }
 
-const stepSkipStatus: SkipState = {
-  downloadUnpax: false,
+const subStepSkipStatus: subStepState = {
   datasetInstallation: false,
   networking: false,
   apfAuth: false,
   security: false,
+  stcs: false,
   certificate: false,
   vsam: false,
   launchConfig: false
+}
+
+const stepSkipStatus: stepSkipState = {
+  planning: false,
+  installationType: false,
+  unpax: false,
+  initialization: false,
+  reviewInstallation: false
 }
 
 const installationArgsStatus: InstallationArgs = {
@@ -144,10 +152,12 @@ let certificateKey = 'certificate_init';
 let vsamKey = 'vsam_init';
 let planningValidationDetailsKey = `planning_validation_details`;
 let prevInstallationKey = `prev_installation`;
+let skipSubStateKey = `skip_sub_state`;
 let skipStateKey = `skip_state`;
 let installationArgsKey = `intallation_args`;
 
-let skipKeysArray: (keyof SkipState)[] = Object.keys(stepSkipStatus) as (keyof SkipState)[];
+let subStepSkipKeysArray: (keyof subStepState)[] = Object.keys(subStepSkipStatus) as (keyof subStepState)[];
+let stepSkipKeysArray: (keyof stepSkipState)[] = Object.keys(stepSkipStatus) as (keyof stepSkipState)[];
 
 const setKeys = (id: string) => {
   progressStateKey = `${progressStateKey}_${id}`;
@@ -162,6 +172,7 @@ const setKeys = (id: string) => {
   certificateKey = `${certificateKey}_${id}`;
   vsamKey = `${vsamKey}_${id}`;
   planningValidationDetailsKey = `${planningValidationDetailsKey}_${id}`;
+  skipSubStateKey = `${skipSubStateKey}_${id}`;
   skipStateKey = `${skipStateKey}_${id}`;
   installationArgsKey = `${installationArgsKey}_${id}`;
 }
@@ -242,6 +253,12 @@ export const initializeProgress = (host: string, user: string, isResume: boolean
     localStorage.setItem(planningValidationDetailsKey, JSON.stringify(flattenedData));
   }
 
+  const subStepSkipStatusState = localStorage.getItem(skipSubStateKey);
+  if(!subStepSkipStatusState) {
+    const flattenedData = flatten(subStepSkipStatus);
+    localStorage.setItem(skipSubStateKey, JSON.stringify(flattenedData));
+  }
+
   const stepSkipStatusState = localStorage.getItem(skipStateKey);
   if(!stepSkipStatusState || !isResume) {
     const flattenedData = flatten(stepSkipStatus);
@@ -255,31 +272,47 @@ export const initializeProgress = (host: string, user: string, isResume: boolean
   }
 }
 
-export const mapAndSetSkipStatus = (subStageId: number, value: boolean): void => {
-  setSubStageSkipStatus(skipKeysArray[subStageId], value);
+export const updateSubStepSkipStatus = (subStageId: number, value: boolean): void => {
+  if(subStageId < 0 || subStageId > 7) {
+    return;
+  }
+  setSubStageSkipStatus(subStepSkipKeysArray[subStageId], value);
 }
 
-export const mapAndGetSkipStatus = (subStageId: number): boolean => {
-  const skipStatus = getSubStageSkipStatus();
-  const skipStatusArray = [
-    skipStatus.downloadUnpax,
-    skipStatus.datasetInstallation,
-    skipStatus.networking,
-    skipStatus.apfAuth,
-    skipStatus.security,
-    skipStatus.certificate,
-    skipStatus.vsam,
-    skipStatus.launchConfig
-  ]
-
-  return skipStatusArray[subStageId];
+export const updateStepSkipStatus = (stageId: number, value: boolean): void => {
+  if(stageId < 0 || stageId > 5) {
+    return;
+  }
+  setStageSkipStatus(stepSkipKeysArray[stageId-1], value);
 }
 
-export const setSubStageSkipStatus = (key: keyof SkipState, newValue: boolean): void => {
+export const setSubStageSkipStatus = (key: keyof subStepState, newValue: boolean): void => {
+  const skipStatus = localStorage.getItem(skipSubStateKey);
+  if (skipStatus) {
+    const flattenedData = JSON.parse(skipStatus);
+    const unFlattenedData = unflatten(flattenedData) as subStepState;
+    Object.assign(subStepSkipStatus, unFlattenedData);
+  }
+  subStepSkipStatus[key] = newValue;
+  const flattenedData = flatten(subStepSkipStatus);
+  localStorage.setItem(skipSubStateKey, JSON.stringify(flattenedData));
+}
+
+export const getSubStageSkipStatus = () : subStepState => {
+  const skipStatus = localStorage.getItem(skipSubStateKey);
+  if(skipStatus) {
+    const flattenedData =  JSON.parse(skipStatus);
+    return unflatten(flattenedData);
+  } else {
+    return subStepSkipStatus;
+  }
+}
+
+export const setStageSkipStatus = (key: keyof stepSkipState, newValue: boolean): void => {
   const skipStatus = localStorage.getItem(skipStateKey);
   if (skipStatus) {
     const flattenedData = JSON.parse(skipStatus);
-    const unFlattenedData = unflatten(flattenedData) as SkipState;
+    const unFlattenedData = unflatten(flattenedData) as stepSkipState;
     Object.assign(stepSkipStatus, unFlattenedData);
   }
   stepSkipStatus[key] = newValue;
@@ -287,7 +320,7 @@ export const setSubStageSkipStatus = (key: keyof SkipState, newValue: boolean): 
   localStorage.setItem(skipStateKey, JSON.stringify(flattenedData));
 }
 
-export const getSubStageSkipStatus = () : SkipState => {
+export const getStageSkipStatus = () : stepSkipState => {
   const skipStatus = localStorage.getItem(skipStateKey);
   if(skipStatus) {
     const flattenedData =  JSON.parse(skipStatus);
@@ -510,10 +543,10 @@ export const getCompleteProgress = () : ProgressState => {
   }
 }
 
-export const isInitComplete = (): boolean => {
+export const isInitializationStageComplete = (): boolean => {
   const progress = localStorage.getItem(progressStateKey);
   if(progress) {
-    const data:any =  unflatten(JSON.parse(progress));
+    const data:any = unflatten(JSON.parse(progress));
     return data.datasetInstallationStatus && data.networkingStatus && data.apfAuthStatus && data.securityStatus && data.stcsStatus && data.certificateStatus && data.vsamStatus && data.launchConfigStatus;
   } else {
     return false;

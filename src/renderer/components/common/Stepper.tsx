@@ -28,8 +28,7 @@ import eventDispatcher from '../../../services/eventDispatcher';
 import Warning from '@mui/icons-material/Warning';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { TYPE_YAML, TYPE_OUTPUT, TYPE_JCL, INIT_STAGE_LABEL, REVIEW_INSTALL_STAGE_LABEL, UNPAX_STAGE_LABEL } from '../common/Utils';
-import { getProgress, getCompleteProgress, mapAndSetSkipStatus, mapAndGetSkipStatus } from '../stages/progress/StageProgressStatus';
-
+import { getProgress, getCompleteProgress, updateSubStepSkipStatus, updateStepSkipStatus } from '../stages/progress/StageProgressStatus';
 import '../../styles/Stepper.css';
 import { StepIcon } from '@mui/material';
 import { getStageDetails } from '../../../services/StageDetails';
@@ -57,7 +56,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     completeProgress.reviewStatus
   ];
 
-  const [subStageProgressStatus, setProgressStatus] = useState([
+  const [subStageProgressStatus, setSubStageProgressStatus] = useState([
     completeProgress.datasetInstallationStatus,
     completeProgress.networkingStatus,
     completeProgress.apfAuthStatus,
@@ -67,8 +66,6 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     completeProgress.launchConfigStatus
   ])
   
-
-
   const [activeStep, setActiveStep] =  initialization ? useState(0) : useState(useAppSelector(selectActiveStepIndex));
   const [activeSubStep, setActiveSubStep] = initialization ? useState(0) : useState(useAppSelector(selectActiveSubStepIndex));
   const [nextText, setNextText] = useState("Continue");
@@ -80,18 +77,9 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const mvsCompleteListener = (completed: boolean) => {
-      setProgressStatus([true, completeProgress.networkingStatus,
-        completeProgress.apfAuthStatus,
-        completeProgress.securityStatus,
-        completeProgress.certificateStatus,
-        completeProgress.launchConfigStatus])
-    };
     eventDispatcher.on('updateActiveStep', updateActiveStepListener);
-    eventDispatcher.on('initMvsComplete', mvsCompleteListener);
     return () => {
       eventDispatcher.off('updateActiveStep', updateActiveStepListener);
-      eventDispatcher.off('initMvsComplete', mvsCompleteListener);
     };
   }, []); 
 
@@ -129,9 +117,10 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
 
   const handleSkip = async () => {
     stages[activeStep].isSkipped = true;
+    updateStepSkipStatus(activeStep, true);
     if(stages[activeStep].subStages){
       stages[activeStep].subStages[activeSubStep].isSkipped = true;
-      mapAndSetSkipStatus(activeSubStep, true);
+      updateSubStepSkipStatus(activeSubStep, true);
     }
     if(stages[activeStep].label === UNPAX_STAGE_LABEL && installationArgs.installationType != "smpe"){
       alertEmitter.emit('showAlert', 'Retrieving example-zowe.yaml and latest schemas from Zowe runtime files...', 'info');
@@ -200,13 +189,13 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
     }
   }
 
-  const getStepIcon = (error: any, stageId: number, isSubStep?: boolean, subStepId?: number) => {
+  const getStepIcon = (stageId: number, isSubStep?: boolean, subStepId?: number) => {
     
-    if (!error || (isSubStep && getProgress(stages[stageId].subStages[subStepId].statusKey)) || (!isSubStep && getProgress(stages[stageId].statusKey))) {
+    if ((isSubStep && getProgress(stages[stageId].subStages[subStepId].statusKey)) || (!isSubStep && ((stageId == 0 && connectionStatus) || (getProgress(stages[stageId].statusKey))))) {
       return <StepIcon icon={<CheckCircle sx={{ color: 'green', fontSize: '1.2rem' }} />} />;
     }
 
-    if ((isSubStep && mapAndGetSkipStatus(subStepId)) || (error && activeStep>stageId && !isSubStep) || (error && isSubStep && stages[stageId].subStages[subStepId].isSkipped)) {
+    if ((isSubStep && stages[stageId].subStages[subStepId].isSkipped) || (!isSubStep && stages[stageId].isSkipped)) {
       return <StepIcon icon={<Warning sx={{ color: 'orange', fontSize: '1.2rem' }} />} />;
     }
 
@@ -295,9 +284,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
                 borderTopLeftRadius: '7px',
                 boxShadow: 'rgb(0 0 0 / 15%) 0px 6px 4px -1px inset'} : {}}>
                 <StepLabel {...labelProps} 
-                  error={labelProps.error} 
-                  // icon={labelProps.error ? <Warning sx={{ color: 'orange', fontSize: '1.2rem' }} /> : <CheckCircle sx={{ color: 'green', fontSize: '1.2rem' }} />}>
-                  icon={getStepIcon(labelProps.error, stage.id)}>
+                  icon={getStepIcon(stage.id)}>
                   <span className="navigator" onClick={() => handleStepperClick(stage.id, !!stage.subStage)}>{stage.label}</span>
                 </StepLabel>
               </div>
@@ -314,9 +301,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
           return (
             <Step key={stage.id} {...stepProps}>
                 <StepLabel {...labelProps}
-                  error={labelProps.error} 
-                  // icon={labelProps.error ? <Warning sx={{ color: 'orange', fontSize: '1.2rem' }} /> : <CheckCircle sx={{ color: 'green', fontSize: '1.2rem' }} />}>
-                  icon={getStepIcon(labelProps.error, activeStep, true, index)}>
+                  icon={getStepIcon(activeStep, true, index)}>
                 <span className="navigator" onClick={() => handleStepperClick(activeStep, true, stage.id )}>{stage.label}</span>
                 </StepLabel>
             </Step>

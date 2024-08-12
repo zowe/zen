@@ -32,8 +32,8 @@ import { setLoading, setNextStepEnabled, selectZoweCLIVersion} from '../../confi
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
-import { getStageDetails, initStageSkipStatus } from "../../../../services/StageDetails";
-import { initializeProgress, getActiveStage, } from "../progress/StageProgressStatus";
+import { getStageDetails, initSubStageSkipStatus, initStageSkipStatus } from "../../../../services/StageDetails";
+import { initializeProgress, getActiveStage } from "../progress/StageProgressStatus";
 import eventDispatcher from "../../../../services/eventDispatcher";
 import { setLocationValidationDetails } from "../PlanningSlice";
 import { selectInstallationArgs } from "../installation/installationSlice";
@@ -152,8 +152,10 @@ const FTPConnectionForm = () => {
         dispatch(setConnectionStatus(res.status));
         if(res.status) {
           dispatch(setNextStepEnabled(true));
+          dispatch(setConnectionStatus(true));
           initializeProgress(connectionArgs.host, connectionArgs.user, isResume);
           initStageSkipStatus();
+          initSubStageSkipStatus();
           setResume();
         }
         toggleFormProcessed(true);

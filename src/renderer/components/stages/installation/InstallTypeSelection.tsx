@@ -20,7 +20,7 @@ import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
 import { getStageDetails } from "../../../../services/StageDetails";
-import { getInstallationTypeStatus } from "../progress/StageProgressStatus";
+import { getInstallationTypeStatus, downloadUnpaxStatus, setDownloadUnpaxState } from "../progress/StageProgressStatus";
 import { INSTALLATION_TYPE_STAGE_LABEL } from "../../common/Utils";
 const InstallationType = () => {
 
@@ -82,6 +82,14 @@ const InstallationType = () => {
     setInstallValue(type);
     updateProgress(false);
     dispatch(setDownloadUnpaxStatus(false));
+    setDownloadUnpaxState({
+      uploadYaml: false,
+      download: false,
+      upload: false,
+      unpax: false,
+      getExampleYaml: false,
+      getSchemas: false,
+    })
   }
 
   return (
