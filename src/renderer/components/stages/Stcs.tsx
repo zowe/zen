@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
@@ -22,7 +22,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setStcsInitState, getStcsInitState, mapAndSetSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
+import { getProgress, setStcsInitState, getStcsInitState, updateSubStepSkipStatus, getInstallationArguments, isInitializationStageComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
 import { INIT_STAGE_LABEL, STC_STAGE_LABEL, ajv } from "../common/Utils";
@@ -52,6 +52,8 @@ const Stcs = () => {
   const [stcsInitProgress, setStcsInitProgress] = useState(getStcsInitState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
+  const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+  const stageStatusRef = useRef(stageStatus);
 
   const [installationArgs] = useState(getInstallationArguments());
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
@@ -64,11 +66,17 @@ const Stcs = () => {
   const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema?.properties?.zowe?.properties?.setup?.properties?.security?.properties?.stcs))
 
   useEffect(() => {
-    dispatch(setInitializationStatus(isInitComplete()));
-    setShowProgress(initClicked || getProgress('stcsStatus'));
-    let nextPosition;
+    stageStatusRef.current = stageStatus;
+  }, [stageStatus]);
 
-    if(getProgress('stcsStatus')) {
+  useEffect(() => {
+    let nextPosition;
+    const stepProgress = getProgress('stcsStatus');
+
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    setShowProgress(initClicked || stepProgress);
+
+    if(stepProgress) {
       nextPosition = document.getElementById('stcs-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     } else {
@@ -76,8 +84,8 @@ const Stcs = () => {
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
-    updateProgress(getProgress('stcsStatus'));
     setInit(true);
+    dispatch(setNextStepEnabled(stepProgress));
 
     if(!setupYaml) {
       const newYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, security: {...yaml.zowe.setup.security, stcs: {zowe: DEFAULT_ZOWE, zis: DEFAULT_ZIS, aux: DEFAULT_AUX}}}}};
@@ -89,6 +97,7 @@ const Stcs = () => {
 
     return () => {
       alertEmitter.emit('hideAlert');
+      updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
@@ -99,8 +108,8 @@ const Stcs = () => {
     if(initClicked) {
       let nextPosition = document.getElementById('start-stcs-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      dispatchActions(false);
       setStateUpdated(!stateUpdated);
-      dispatch(setStcsStatus(false));
     }
   }, [initClicked]);
 
@@ -109,6 +118,9 @@ const Stcs = () => {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInitStcsProgress().then((res: any) => {
           setStcsInitializationProgress(res);
+          if(res.success){
+            clearInterval(timer);
+          }
         })
       }, 3000);
 
@@ -125,8 +137,7 @@ const Stcs = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(stcsInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setStcsStatus(true));
-      dispatch(setNextStepEnabled(true));
+      dispatchActions(true);
       setShowProgress(initClicked || getProgress('stcsStatus'));
     }
   }, [stcsInitProgress]);
@@ -136,20 +147,18 @@ const Stcs = () => {
     setStcsInitState(stcsInitState);
     const allAttributesTrue = Object.values(stcsInitState).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setStcsStatus(true));
-      dispatch(setNextStepEnabled(true));
+      dispatchActions(true);
     }
   }
 
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
-    stages[STAGE_ID].isSkipped = status;
-    mapAndSetSkipStatus(SUB_STAGE_ID, status);
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
+    setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setStageSkipStatus(!status);
     if(!status) {
       for (let key in stcsInitProgress) {
         stcsInitProgress[key as keyof(InitSubStepsState)] = false;
@@ -158,10 +167,15 @@ const Stcs = () => {
     }
     const allAttributesTrue = Object.values(stcsInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setInitializationStatus(isInitComplete()));
-    dispatch(setStcsStatus(status));
-    dispatch(setNextStepEnabled(status));
     setStcsInitializationProgress(getStcsInitState());
+    dispatchActions(status);
+  }
+
+  const dispatchActions = (status: boolean) => {
+    dispatch(setStcsStatus(status));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    dispatch(setNextStepEnabled(status));
+    setStageSkipStatus(!status);
   }
 
   const toggleEditorVisibility = (type: any) => {
