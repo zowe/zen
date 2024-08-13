@@ -188,7 +188,7 @@ const Home = () => {
           ...connectionStore["ftp-details"],
           password: "",
           connectionType: 'ftp',
-          jobStatement: jobStatement};
+          jobStatement: jobStatement };
         dispatch(setConnectionArgs(connectionArgs));
         dispatch(setJobStatement(jobStatement));
       } else {

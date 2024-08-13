@@ -18,7 +18,7 @@ import Button from '@mui/material/Button';
 import ContainerCard from '../common/ContainerCard';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { setYaml, setNextStepEnabled, setLoading, selectYaml } from '../configuration-wizard/wizardSlice';
-import { selectConnectionArgs, setConnectionArgs, setJobStatementVal } from './connection/connectionSlice';
+import { selectConnectionArgs, setConnectionArgs, setJobStatementVal, selectInitJobStatement } from './connection/connectionSlice';
 import { setPlanningStatus, selectPlanningStatus } from './progress/progressSlice';
 import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from './installation/installationSlice';
 import { setJobStatement, setJobStatementValid, setJobStatementValidMsg, setLocationValidationDetails, setIsLocationValid, selectJobStatementValidMsg, selectLocValidationDetails } from "./PlanningSlice";
@@ -63,8 +63,8 @@ const Planning = () => {
 
   const [jobHeaderSaved, setJobHeaderSaved] = useState(false);
   const [isJobStatementUpdated, setIsJobStatementUpdated] = useState(false);
-  // const [jobStatementValue, setJobStatementValue] = useState(useAppSelector(selectJobStatement));
-  const [jobStatementValue, setJobStatementValue] = useState(getPlanningStageStatus()?.jobStatement);
+
+  const [jobStatementValue, setJobStatementValue] = useState(getPlanningStageStatus()?.jobStatement || useAppSelector(selectInitJobStatement));
   
   const [locationsValidated, setLocationsValidated] = useState(getPlanningStageStatus()?.isLocationValid || false);
   const [isLocationsUpdated, setIsLocationsUpdated] = useState(false);
