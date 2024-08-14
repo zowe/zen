@@ -39,7 +39,6 @@ class SecurityPage{
     this.uploadYaml_greenCheckXpath = page.locator('#card-download-progress-card svg.MuiSvgIcon-colorSuccess')
     this.init_security_greenCheckXpath = page.locator("#card-success-progress-card svg.MuiSvgIcon-colorSuccess")
     this.previous_step_button = page.locator('//button[contains(text(),"Previous step")]')
-    this.skip_button = page.locator('//button[contains(text(),"Skip")]')
     this.editor_title_element = page.locator('//h2[text()="Editor"]')
     this.APFAUTH_TITLE = page.locator('//div[text()="APF Authorize Load Libraries"]')
     this.licenseAgreement = page.locator('//button[contains(text(), "License Agreement")]')
@@ -53,12 +52,13 @@ class SecurityPage{
     this.view_job_output =  page.locator('//button[contains(text(), "Submit Job")]')
     this.save_and_close =  page.locator('//button[contains(text(),"Save & close")]')
     this.previous_step = page.locator('//button[contains(text(),"Previous step")]')
-    this.skip_button = page.locator('//button[contains(text(),"Skip")]')
+    this.skip_button = page.locator('//button[contains(text(),"Skip ")]')
     this.initSecurity = page.locator("//button[contains(text(), 'Initialize Security Config')]")
     this.close_button = page.locator('//button[contains(text(), "Close")]')
     this.certificateTab_title = page.locator('//div[text()="Certificates"]')
+	this.stc_title = page.locator('//div[text()="Stcs"]')
     this.securityTab_title = page.locator('//div[text()="Security"]')
-    this.continue_CertificateSelector = page.locator('//button[contains(text(), "Continue to Certificates Setup")]')
+    this.continue_CertificateSelector = page.locator('//button[contains(text(), "Continue to STC Setup")]')
 
     this.admin = page.getByLabel('Admin');
     this.stc =  page.getByLabel('Stc');
@@ -141,8 +141,6 @@ class SecurityPage{
 
   async click_skipSecurity(){
    await this.skip_button.click({ timeout: 2000 });
-   const certificatePage_title = await this.certificateTab_title.textContent();
-   return certificatePage_title;
   }
 
   async open_monacoEditor(){
@@ -190,10 +188,21 @@ class SecurityPage{
    const sysProg_value = await this.sys_prog.textContent();
    return sysProg_value;
   }
- async returnTitleOfSecurityPage(){
+  async returnTitleOfSecurityPage(){
    const securityPage_title = await this.securityTab_title.textContent();
    return securityPage_title;
   }
 
+  async returnTitleOfCertPage(){
+    const certPage_title = await this.certificateTab_title.textContent();
+    return certPage_title;
+  }
+  
+  async returnTitleOfstcPage(){
+   const stcPage_title = await this.stc_title.textContent();
+   return stcPage_title;
+  }
+
 }
-  export default SecurityPage;
+
+export default SecurityPage;
