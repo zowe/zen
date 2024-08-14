@@ -11,6 +11,15 @@ export const updateSchemaReferences = (schema: any, serverCommon: any): void => 
           } catch(error){
             console.error("Error resolving reference:", error.message);
           }
+        } else if (key === "pattern" && typeof node[key] === "string") {
+          // Sanitize pattern for use in RegExp
+          try {
+            new RegExp(node[key]);
+            console.log("trying----------------------------------------------------");
+          } catch (error) {
+            console.error("Invalid regular expression pattern:", node[key]);
+            continue;
+          }
         } else {
           traverseAndUpdate(node[key]);
         }

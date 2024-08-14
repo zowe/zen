@@ -177,18 +177,12 @@ export default function JsonForm(props: any) {
   let requiredSchema = schema;
   const isFormDataEmpty = formData === null || formData === undefined || Object.keys(formData).length < 1;
 
-  // const [reqSchema, setReqSchema] = useState(schema);
-  // const [reqFormData, setReqFormData] = useState(isFormDataEmpty ? getDefaultFormData(schema, {}) : formData);
   const [selectedSchemaIndex, setSelectedSchemaIndex] = useState(0);
   let formDataToUse = isFormDataEmpty ? getDefaultFormData(schema, {}) : formData;
 
   useEffect(() => {
     if (schema?.oneOf) {
       const initialSchemaIndex = handleOneOfSchema(schema, formData);
-      // setSelectedSchemaIndex(initialSchemaIndex);
-      // setReqSchema(schema.oneOf[initialSchemaIndex]);
-      // setReqFormData(filterFormData(formData, schema.oneOf[initialSchemaIndex]));
-
       requiredSchema = schema.oneOf[initialSchemaIndex];
       formDataToUse = filterFormData(formData, requiredSchema);
     }
@@ -197,9 +191,6 @@ export default function JsonForm(props: any) {
   const handleSchemaChange = (event: any) => {
     const schemaIndex = parseInt(event.target.value);
     setSelectedSchemaIndex(schemaIndex);
-    // setReqSchema(schema.oneOf[schemaIndex]);
-    // setReqFormData(filterFormData(formData, schema.oneOf[schemaIndex]));
-
     requiredSchema = schema.oneOf[schemaIndex];
     formDataToUse = (filterFormData(formData, schema.oneOf[schemaIndex]));
   }
@@ -209,29 +200,29 @@ export default function JsonForm(props: any) {
       {  schema.oneOf &&
         <div>
           <FormControl>
-          <RadioGroup
-            row
-            name="controlled-radio-buttons-group"
-            value={selectedSchemaIndex}
-            onChange={handleSchemaChange}
-          >
-            { schema.oneOf.map((_: any, index: number) => (
-              <FormControlLabel key={index} value={index} control={<Radio />} label={`Certificate ${index}`} />
-            ))}
-          </RadioGroup>
+            <RadioGroup
+              row
+              name="controlled-radio-buttons-group"
+              value={selectedSchemaIndex}
+              onChange={handleSchemaChange}
+            >
+              { schema.oneOf.map((_: any, index: number) => (
+                <FormControlLabel key={index} value={index} control={<Radio />} label={`Certificate ${index}`} />
+              ))}
+            </RadioGroup>
           </FormControl>
         </div>
 
       }
-    <JsonForms
-      schema={requiredSchema}
-      uischema={makeUISchema(schema, '/', formData)}
-      data={formDataToUse}
-      renderers={materialRenderers}
-      cells={materialCells}
-      config={{showUnfocusedDescription: true}}
-      onChange={({ data, errors }) => { onChange(data) }}
-    />
+      <JsonForms
+        schema={requiredSchema}
+        uischema={makeUISchema(requiredSchema, '/', formDataToUse)}
+        data={formDataToUse}
+        renderers={materialRenderers}
+        cells={materialCells}
+        config={{showUnfocusedDescription: true}}
+        onChange={({ data, errors }) => { onChange(data) }}
+      />
     </ThemeProvider>
   );
 }
