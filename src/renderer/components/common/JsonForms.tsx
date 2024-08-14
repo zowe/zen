@@ -172,19 +172,20 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
 }
 
 export default function JsonForm(props: any) {
-  const {schema, onChange, formData} = props;
+  let {schema, onChange, formData} = props;
 
   const isFormDataEmpty = formData === null || formData === undefined || Object.keys(formData).length < 1;
+  formData = isFormDataEmpty ? getDefaultFormData(schema, {}) : formData;
 
   const [selectedSchemaIndex, setSelectedSchemaIndex] = useState(0);
   const [requiredSchema, setRequiredSchema] = useState(schema);
-  const [formDataToUse, setFormDataToUse] = useState(isFormDataEmpty ? getDefaultFormData(schema, {}) : formData);
+
 
   useEffect(() => {
     if (schema?.oneOf) {
-      const initialSchemaIndex = handleOneOfSchema(schema, formDataToUse);
+      const initialSchemaIndex = handleOneOfSchema(schema, formData);
       setRequiredSchema(schema.oneOf[initialSchemaIndex]);
-      setFormDataToUse(filterFormData(formDataToUse, schema.oneOf[initialSchemaIndex]));
+      formData = filterFormData(formData, schema.oneOf[initialSchemaIndex]);
     }
   }, []);
 
@@ -192,7 +193,7 @@ export default function JsonForm(props: any) {
     const schemaIndex = parseInt(event.target.value);
     setSelectedSchemaIndex(schemaIndex);
     setRequiredSchema(schema.oneOf[schemaIndex]);
-    setFormDataToUse((filterFormData(formDataToUse, schema.oneOf[schemaIndex])));
+    formData = filterFormData(formData, schema.oneOf[schemaIndex]);
   }
 
   return (
@@ -216,8 +217,8 @@ export default function JsonForm(props: any) {
       }
       <JsonForms
         schema={requiredSchema}
-        uischema={makeUISchema(requiredSchema, '/', formDataToUse)}
-        data={formDataToUse}
+        uischema={makeUISchema(requiredSchema, '/', formData)}
+        data={formData}
         renderers={materialRenderers}
         cells={materialCells}
         config={{showUnfocusedDescription: true}}
