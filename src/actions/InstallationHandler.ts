@@ -159,6 +159,8 @@ class Installation {
             const serverCommon = JSON.parse(readPaxYamlAndSchema.details.serverCommon);
             updateSchemaReferences(readPaxYamlAndSchema.details, yamlSchema);
             if(yamlSchema && serverCommon){
+              // Hardcoding
+              yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = zoweDatasetMemberRegexFixed;
               ConfigurationStore.setSchema(yamlSchema);
               parsedSchema = true;
               ProgressStore.set('downloadUnpax.getSchemas', true);
