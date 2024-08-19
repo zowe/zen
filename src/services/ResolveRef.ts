@@ -1,12 +1,12 @@
 import { IResponse } from "../types/interfaces";
 
-export const updateSchemaReferences = (readPaxYamlAndSchema: IResponse): void => {
+export const updateSchemaReferences = (readPaxYamlAndSchema: any, schema: any): void => {
 
-  const schemaArray = Object.keys(readPaxYamlAndSchema.details);
+  const schemaArray = Object.keys(readPaxYamlAndSchema);
   const schemaMap: {[key: string]: any} = {};
 
   schemaArray.forEach(key => {
-    const value = readPaxYamlAndSchema.details[key];
+    const value = readPaxYamlAndSchema[key];
     try {
       const schemaObject = JSON.parse(value);
       const id = schemaObject?.$id;
@@ -18,8 +18,7 @@ export const updateSchemaReferences = (readPaxYamlAndSchema: IResponse): void =>
     }
   });
 
-  const schema = JSON.parse(readPaxYamlAndSchema.details.yamlSchema);
-  traverseAndUpdate(schema.properties.zowe.properties.setup.properties, schemaMap);
+  traverseAndUpdate(schema, schemaMap);
 }
 
 const traverseAndUpdate = (node: any, schemaMap: any) => {

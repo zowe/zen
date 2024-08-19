@@ -12,7 +12,7 @@ import {useEffect, useRef, useState} from "react";
 import { Box, Button, Link, Typography } from '@mui/material';
 import ContainerCard from '../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectYaml, setNextStepEnabled, setSchema, setYaml } from '../configuration-wizard/wizardSlice';
 import { selectZoweVersion} from './installation/installationSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { setActiveStep } from "./progress/activeStepSlice"; 
@@ -175,19 +175,22 @@ const Unpax = () => {
           dispatch(setYaml(res.details.mergedYaml));
           window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
         }
-      clearInterval(timer);
-      updateProgress(res.status);
-    }).catch(() => {
-      clearInterval(timer);
-      updateProgress(false);
-    });
-  }
-  else{
-    setDownloadUnpaxProgress(downloadUnpaxProgressAndStateTrue);
-    setDownloadUnpaxState(downloadUnpaxProgressAndStateTrue);
-    dispatch(setNextStepEnabled(true));
-    dispatch(setDownloadUnpaxStatus(true));
-  }
+        if(res.details?.yamlSchema != undefined) {
+          dispatch(setSchema(res.details.yamlSchema));
+          window.electron.ipcRenderer.setSchema(res.details.yamlSchema);
+        }
+        clearInterval(timer);
+        updateProgress(res.status);
+      }).catch(() => {
+        clearInterval(timer);
+        updateProgress(false);
+      });
+    } else{
+      setDownloadUnpaxProgress(downloadUnpaxProgressAndStateTrue);
+      setDownloadUnpaxState(downloadUnpaxProgressAndStateTrue);
+      dispatch(setNextStepEnabled(true));
+      dispatch(setDownloadUnpaxStatus(true));
+    }
   }
 
   const fetchExampleYaml = (event: any) => {
@@ -210,6 +213,10 @@ const Unpax = () => {
       if(res.details?.mergedYaml != undefined){
         dispatch(setYaml(res.details.mergedYaml));
         window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
+      }
+      if(res.details?.yamlSchema != undefined) {
+        dispatch(setSchema(res.details.yamlSchema));
+        window.electron.ipcRenderer.setSchema(res.details.yamlSchema);
       }
       updateProgress(res.status);
       clearInterval(timer);
