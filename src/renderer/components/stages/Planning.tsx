@@ -9,26 +9,20 @@
  */
 
 import React, {useEffect, useState} from "react";
-import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import FormControl from '@mui/material/FormControl';
-import Button from '@mui/material/Button';
 import ContainerCard from '../common/ContainerCard';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import { Checkbox, FormControlLabel } from "@mui/material";
+import { Box, Button, Checkbox, FormControl, FormControlLabel, Link, TextField, Typography } from "@mui/material";
 import { setYaml, setNextStepEnabled, setLoading, selectYaml } from '../configuration-wizard/wizardSlice';
-import { selectConnectionArgs, selectInitJobStatement, setJobStatementVal } from './connection/connectionSlice'; // looks like job statement does not belong to the connection store, or it is, it used for running commands on mf
+import { selectConnectionArgs, selectInitJobStatement, setJobStatementVal } from './connection/connectionSlice';
 import { setPlanningStatus } from './progress/progressSlice';
-import { setInstallationArgs, selectInstallationArgs } from './installation/installationSlice'; // locations go there
-import { setJobStatementValid, setIsLocationValid } from "./PlanningSlice"; // and here, locations and job statement, checks should go th the progress store
+import { setZoweVersion, setInstallationArgs, selectInstallationArgs } from './installation/installationSlice';
+import { setJobStatementValid, setIsLocationValid, selectJobStatementValid } from "./PlanningSlice";
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { IResponse } from '../../../types/interfaces';
 import { alertEmitter } from "../Header";
-import { setActiveStep } from './progress/activeStepSlice'; // This part can be handled in wizardSlice
+import { setActiveStep } from './progress/activeStepSlice'; // REVIEW: This part can be handled in wizardSlice, while connectionSlice/installationSlice/PlanningSlice could be unified in one storage entity
 import { getStageDetails } from "../../../services/StageDetails";
-import { getProgress, getPlanningStageStatus, setPlanningValidationDetailsState, getPlanningValidationDetailsState, getInstallationTypeStatus } from "./progress/StageProgressStatus"; // localStorage
+import { getPlanningStageStatus, setPlanningValidationDetailsState, getPlanningValidationDetailsState, getInstallationTypeStatus } from "./progress/StageProgressStatus";
 import { FALLBACK_YAML, isValidUSSPath } from "../common/Utils";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
@@ -49,43 +43,33 @@ const Planning = () => {
   const localYaml = useAppSelector(selectYaml);
   const [step, setStep] = useState(0);
 
-  // REVIEW: Instead of redux + electron-store we use here state + local storage + ?
-  const [jobHeaderSaved, setJobHeaderSaved] = useState(getPlanningStageStatus()?.isJobStatementValid);
+  const installationArgs = useAppSelector(selectInstallationArgs);
   const jobStatementValue = useAppSelector(selectInitJobStatement);
-
+  
+  // REVIEW: Instead of original redux + electron-store we use here component state (useState) + localStorage (getPlanningStageStatus) + redux (PlanningSlice) just as an intermediate storage + electron-store in some cases.
   const [locationsValidated, setLocationsValidated] = useState(getPlanningStageStatus()?.isLocationValid);
   const [validationDetails, setValidationDetails] = useState(getPlanningValidationDetailsState());
+  const jobHeaderSaved = useAppSelector(selectJobStatementValid);
   
   const [showZosmfAttributes, setShowZosmfAttributes] = useState(true);
-
-  const installationArgs = useAppSelector(selectInstallationArgs);
   const requiredSpace = 1300; //in megabytes
 
   useEffect(() => {
-    // const nextPosition = document.getElementById('container-box-id');   // REVIEW: Can't recall why we have this
-    // nextPosition.scrollIntoView({behavior: 'smooth', block: 'start'});
-    // setPlanningState(getProgress('planningStatus'));
-    // FIXME: Add a popup warning in case failed to get config files
-    // FIXME: Save yaml and schema on disk to not to pull it each time?
-    // REVIEW: Replace JobStatement text area with set of text fields?
-
-    if (jobHeaderSaved) {
-      locationsValidated ? setStep(2) : setStep(1);
-    }
-
-    // dispatch(setJobStatementVal(jobStatementValue)); // REVIEW: Storage duplication
-
-    if (!installationArgs.dryRunMode) { // REVIEW: Does dry run even makes sense in this step? What do we want to get as a result? If it is a dry run mode we do nothing? 
-      window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
-        if (res != undefined) {
-          dispatch(setInstallationArgs(res));
-        }
-      })
-
+    if (!installationArgs.dryRunMode) { // REVIEW: Does dry run even makes sense in this step? What do we want to get as a result?
+      // FIXME: getZoweVersion should be moved to InstallTypeSelection, makes no sense here anymore
+      window.electron.ipcRenderer.getZoweVersion().then((res: IResponse) => dispatch(setZoweVersion(res.status ? res.details : '' )));
+      // REVIEW: Installation args are split into multiple storage locations, we can remove parts that are in yaml now and then it can be merged with connection data, to have single session/instance/instalaltion storage.  
+      dispatch(setInstallationArgs({...installationArgs, installationType: getInstallationTypeStatus()?.installationType, userUploadedPaxPath: getInstallationTypeStatus()?.userUploadedPaxPath}));
+      dispatch(setJobStatementValid(getPlanningStageStatus()?.isJobStatementValid));
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
-          dispatch(setYaml(res.details));
-          dispatch(setInstallationArgs({...installationArgs, installationType: getInstallationTypeStatus()?.installationType, userUploadedPaxPath: getInstallationTypeStatus()?.userUploadedPaxPath}));
+          let yaml = res.details;
+          // Pre-fill z/OSMF host with the host name we are connected to
+          if (!yaml?.zOSMF?.host || yaml?.zOSMF?.host === FALLBACK_YAML.zOSMF.host) {
+            yaml = updateAndReturnYaml('zOSMF.host', connectionArgs.host, yaml);
+            window.electron.ipcRenderer.setConfigByKeyNoValidate('zOSMF.host', connectionArgs.host);
+          } 
+          dispatch(setYaml(yaml));
         }
       })
     }
@@ -97,6 +81,7 @@ const Planning = () => {
   useEffect(() => {
     dispatch(setNextStepEnabled(jobHeaderSaved && locationsValidated));
     dispatch(setPlanningStatus(jobHeaderSaved && locationsValidated));
+    !jobHeaderSaved ? setStep(0) : setStep(1);
   }, [jobHeaderSaved, locationsValidated]);
 
   useEffect(() => {
@@ -105,19 +90,32 @@ const Planning = () => {
   }, [step]);
 
   const setLocValidations = (status: boolean): void => {
-    setLocationsValidated(status); // REVIEW: Storage duplication
-    dispatch(setIsLocationValid(status));
+    setLocationsValidated(status);        // This sets component state and uses it for rendering.
+    dispatch(setIsLocationValid(status)); // This is an odd usage of redux. It sets variable to the redux state but never uses it, doesn't even have a selector, instead, it obscurely sets it to the localStorage via setPlanningStageStatus for persistance;
+  }
+
+  const setValDetails = (details: any): void => { // Created a similar function for duplicated setting
+    setValidationDetails(details);
+    setPlanningValidationDetailsState(details);
   }
 
   const getENVVars = () => {
     return window.electron.ipcRenderer.getENVVars(connectionArgs).then((res: IResponse) => {
       if (res.status) {
         try {
+          let updatedYaml = {...localYaml};
           const lines = res.details.split('\n').map((l: string) => l.trim()).filter((l: string) => !l.includes("echo"));
           lines.map((line: string) => {
-            if (line.includes('node') && !localYaml?.node?.home) dispatch(setYaml(updateAndReturnYaml('node.home', line)));
-            if (line.includes('java') && !localYaml?.java?.home) dispatch(setYaml(updateAndReturnYaml('java.home', line)));
+            if (line.includes('java') && !localYaml?.java?.home) { 
+              updatedYaml = updateAndReturnYaml('java.home', line, updatedYaml);
+              window.electron.ipcRenderer.setConfigByKeyNoValidate('java.home',line)
+            }
+            if (line.includes('node') && !localYaml?.node?.home) {
+              updatedYaml = updateAndReturnYaml('node.home', line, updatedYaml);
+              window.electron.ipcRenderer.setConfigByKeyNoValidate('node.home',line)
+            }
           });
+          dispatch(setYaml(updatedYaml));
         } catch (error) {
           return {status: false, details: error.message}
         }
@@ -132,58 +130,64 @@ const Planning = () => {
     dispatch(setLoading(true));
 
     if (!installationArgs.dryRunMode) {
-      window.electron.ipcRenderer.saveJobHeader(jobStatementValue)  // Saves to the connection store, ok
+      window.electron.ipcRenderer.saveJobHeader(jobStatementValue)
       .then(() => getENVVars())
       .then((res: IResponse) => {
+        dispatch(setJobStatementValid(res.status));
         if (!res.status) { // Failure case
-          dispatch(setJobStatementValid(false));
           console.warn('Failed to verify job statement', res.details);
           // TODO: This more detailed reason, for why Job submission failed, may be large and should be opened in an Editor
-          // dispatch(setJobStatementValidMsg(res.details)); 
           alertEmitter.emit('showAlert', 'Failed to verify job statement ' + res.details, 'error');
-        } else { // Success JCL case
-          dispatch(setJobStatementValid(true));
-          if(locationsValidated) {
-            // setPlanningState(true);
-            setStep(2);
-          } else if (step < 1) {
-            setStep(1);
-          }
         }
-        setJobHeaderSaved(res.status);
-        dispatch(setLoading(false));
       })
       .catch((err: Error) => {
         console.warn(err);
         dispatch(setJobStatementValid(false));
         alertEmitter.emit('showAlert', err.message, 'error');
+      })
+      .finally(() => {
         dispatch(setLoading(false));
       });    
     } else {
-      if (locationsValidated) {
-        // setPlanningState(true);
-        setStep(2);
-      } else if (step < 1) {
-        setStep(1);
-      }
-      setJobHeaderSaved(true);
       dispatch(setJobStatementValid(true));
       dispatch(setLoading(false));
     }
   }
     
   const validateLocations = (e: any) => {
+    // REVIEW: Four storages are used for these values, i've removed a pile of setters from here, but it still should be done better.
+    // On every form change we run formChangeHandler and setYaml to store config in the redux (1) for the UI - ok
+    // Also we set electron-storage (2) (window.electron.ipcRenderer.setConfigByKeyNoValidate) for persistance, which may be a bit heavy, persistance data can be saved after successful validation here in validateLocations. 
+    // And as the same time here we have some metadata storage like setValDetails, which use the component state (3) setValidationDetails and the localStorage (4) setPlanningValidationDetailsState(details) 
+
     e.preventDefault();
     alertEmitter.emit('hideAlert');
-    // setPlanningState(false);
     setLocValidations(false);
-    setValidationDetails({...validationDetails, error: ''});
+    setValDetails({...validationDetails, error: ''});
 
     if (!localYaml?.java?.home || !localYaml?.node?.home || !localYaml?.zowe?.runtimeDirectory) {
       console.warn('Please fill in all values');
       alertEmitter.emit('showAlert', 'Please fill in all values', 'error');
       return;
     }
+    let invalidUSSPath = '';
+    if (localYaml?.zowe?.logDirectory && !isValidUSSPath(localYaml.zowe.logDirectory)) {
+      invalidUSSPath = localYaml.zowe.logDirectory + " is not a valid z/OS Unix path"
+    }
+    if (localYaml?.zowe?.extensionDirectory && !isValidUSSPath(localYaml.zowe.extensionDirectory)) {
+      invalidUSSPath = localYaml.zowe.extensionDirectory + " is not a valid z/OS Unix path"
+    }
+    if (localYaml?.zowe?.workspaceDirectory && !isValidUSSPath(localYaml.zowe.workspaceDirectory)) {
+      invalidUSSPath = localYaml.zowe.workspaceDirectory + " is not a valid z/OS Unix path"
+    }
+    if (localYaml?.zowe?.runtimeDirectory && !isValidUSSPath(localYaml.zowe.runtimeDirectory)) {
+      invalidUSSPath = localYaml.zowe.runtimeDirectory + " is not a valid z/OS Unix path"
+    }
+    if (invalidUSSPath) {
+      alertEmitter.emit('showAlert', invalidUSSPath, 'error');
+      return;
+    }
+
     dispatch(setLoading(true));
 
     // TODO: Possible feature for future: add to checkDir to see if existing Zowe install exists.
@@ -194,58 +198,51 @@ const Planning = () => {
         window.electron.ipcRenderer.checkJava(connectionArgs, localYaml?.java?.home),
         window.electron.ipcRenderer.checkNode(connectionArgs, localYaml?.node?.home),
         window.electron.ipcRenderer.checkDirOrCreate(connectionArgs, localYaml?.zowe?.runtimeDirectory),
+        window.electron.ipcRenderer.checkSpaceAndCreateDir(connectionArgs, localYaml?.zowe?.runtimeDirectory),
       ]).then((res: Array<IResponse>) => {
-      const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
-
-      if (localYaml?.zowe?.logDirectory && !isValidUSSPath(localYaml.zowe.logDirectory)) {
-        details.error = localYaml.zowe.logDirectory + " is not a valid z/OS Unix path"
-      }
-      if (localYaml?.zowe?.extensionDirectory && !isValidUSSPath(localYaml.zowe.extensionDirectory)) {
-        details.error = localYaml.zowe.extensionDirectory + " is not a valid z/OS Unix path"
-      }
-      if (localYaml?.zowe?.workspaceDirectory && !isValidUSSPath(localYaml.zowe.workspaceDirectory)) {
-        details.error = localYaml.zowe.logDirectory + " is not a valid z/OS Unix path"
-      }
-      // If res[?] doesn't exist, ?-th window.electronc.ipcRender call failed...
-      try {
-        details.javaVersion = res[0].details.split('\n').filter((i: string) => i.trim().startsWith('java version'))[0].trim().slice(14, -1);
-      } catch (error) {
-        details.error = details.error + `Can't get Java version `;
-        console.warn(res[0].details);
-      }
-      try {
-        details.nodeVersion = res[1].details.split('\n').filter((i: string) => i.trim().startsWith('v'))[0].slice(1);
-      } catch (error) {
-        details.error = details.error + `Can't get Node.js version `;
-        console.warn(res[1].details);
-      }
-      if (res[2] && res[2].status == false) { // Checking run-time directory existence or creating it failed?
-        details.error = details.error + res[2].details;
-        console.warn(res[2].details);
-      }
-      //Do not check space because space on ZFS is dynamic. you can have more space than USS thinks. // REVIEW: Still can check and show notification instead of error
-      // try {
-        //   const dfOut: string = res[2].details.split('\n').filter((i: string) => i.trim().startsWith(installationArgs.installationDir.slice(0, 3)))[0];
-        //   details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
-        //   // FIXME: Space requirement is made up, Zowe 2.9.0 convenience build is 515Mb and growing per version. Make it double for extracted files.
-      //   if (parseInt(details.spaceAvailableMb, 10) < requiredSpace) { 
-        //     details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
-        //   }
-        // } catch (error) {
-          //   details.error = details.error + `Can't check space available; `;
-          //   console.warn(res[2].details);
-          // }
-      setValidationDetails(details); // REVIEW: Three times?
-      setPlanningValidationDetailsState(details);
-      // dispatch(setLocationValidationDetails(details)); 
-      dispatch(setLoading(false));
-      if (!details.error) {
-        setLocValidations(true);
-        setStep(2);
-      } else {
+        const details = {javaVersion: '', nodeVersion: '', spaceAvailableMb: '', error: ''};
+        // If res[?] doesn't exist, ?-th window.electronc.ipcRender call failed...
+        try {
+          details.javaVersion = res[0].details.split('\n').filter((i: string) => i.trim().startsWith('java version'))[0].trim().slice(14, -1);
+        } catch (error) {
+          details.error = details.error + `Can't get Java version `;
+          console.warn(res[0].details);
+        }
+        try {
+          details.nodeVersion = res[1].details.split('\n').filter((i: string) => i.trim().startsWith('v'))[0].slice(1);
+        } catch (error) {
+          details.error = details.error + `Can't get Node.js version `;
+          console.warn(res[1].details);
+        }
+        if (res[2] && res[2].status == false) { // Checking run-time directory existence or creating it failed?
+          details.error = details.error + res[2].details;
+          console.warn(res[2].details);
+        }
+        // Do not check space because space on ZFS is dynamic. you can have more space than USS thinks. 
+        // REVIEW: We still can check it and show notification but allow to continue with the installation. However the requirement is different for conv / SMPE / PSWI so this logic should be moved to the next step.
+        try {
+          const dfOut: string = res[3].details.split('\n').filter((i: string) => i.trim().startsWith(localYaml?.zowe?.runtimeDirectory.slice(0, 3)))[0];
+          details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
+          if (parseInt(details.spaceAvailableMb, 10) < requiredSpace) { 
+            alertEmitter.emit('showAlert', `Can't validate available space, please make sure you have enough free space in ${localYaml?.zowe?.runtimeDirectory}`, 'info');
+            // details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
+          }
+        } catch (error) {
+          // details.error = details.error + `Can't check space available; `;
+          alertEmitter.emit('showAlert', `Can't check space available: ${error}`, 'warning');
+          console.warn(res[3].details);
+        }
+        setValDetails(details);
         dispatch(setLoading(false));
-        alertEmitter.emit('showAlert', details.error, 'error');
-      }
+        if (!details.error) {
+          setLocValidations(true);
+          // FIXME: Back port values from localYaml to installationArgs, remove later together with dependencies in actions, use single source of data for each value.
+          dispatch(setInstallationArgs({...installationArgs, installationDir: localYaml?.zowe?.runtimeDirectory, zosmfApplId: localYaml?.zOSMF?.applId, zosmfPort: localYaml?.zOSMF?.port, zosmfHost: localYaml?.zOSMF?.host,
+            nodeHome: localYaml?.node?.home, javaHome: localYaml?.java?.home, extensionDir: localYaml?.zowe?.extensionDirectory, logDir: localYaml?.zowe?.logDirectory, workspaceDir: localYaml?.zowe?.workspaceDirectory 
+          }));
+        } else {
+          alertEmitter.emit('showAlert', details.error, 'error');
+        }
       })
     }
     else {
@@ -255,42 +252,27 @@ const Planning = () => {
   }
         
   const onJobStatementChange = (newJobStatement: string) => {
-    setJobHeaderSaved(false);
-    dispatch(setJobStatementVal(newJobStatement));
-    // setJobStatementValidation(false);
+    alertEmitter.emit('hideAlert');
     dispatch(setJobStatementValid(false));
-    // setPlanningState(false);
-    setStep(0);
+    dispatch(setJobStatementVal(newJobStatement));
   }
         
-  const formChangeHandler = (key?: string, value?: (string | number), installationArg?: string) => {
-    setLocationsValidated(false);
-    // setIsLocationsUpdated(true);
-    // setPlanningStatus(false);  // There even a typo in function name because it is a duplicate,  setPlanningStatus should be dispatched, while setPlanningState is a local function
-    // dispatch(setPlanningStatus(false));
-    // dispatch(setNextStepEnabled(false)); // This is controlled by setPlanningState together with setPlanningStatus and it is duplicated by separate fuction probably because three lines above we have a typo
-                                         // So all of this should be controlled by setPlanningState, but it is controlled by two validations itself
-    setStep(1);
+  const formChangeHandler = (key?: string, value?: (string | number)) => {
+    alertEmitter.emit('hideAlert');
+    setLocValidations(false);
+    setValDetails({...validationDetails, javaVersion: '', nodeVersion: '', spaceAvailableMb: ''});
 
     if (!key || !value) {
-      return;
+      return; // REVIEW: This just does not allow to remove the last symbol in the input field which is odd, UI should handle that with red frame around the input or something similar.
     }
-
-    // REVIEW should not be handled anymore, just use vars from yaml
-    // if(installationArg) {
-    //   const newInstallationArgs = { ...installationArgs, [installationArg]: value };
-    //   dispatch(setInstallationArgs(newInstallationArgs));
-    //   window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", newInstallationArgs);
-    // }
-
-    const updatedYaml: any = updateAndReturnYaml(key, value)
-
-    dispatch(setYaml(updatedYaml));
+    dispatch(setYaml(updateAndReturnYaml(key, value)));
   }
 
-  const updateAndReturnYaml = (key: string, value: string | number) => {
+  const updateAndReturnYaml = (key: string, value: string | number, yaml?: any) => {
+    // REVIEW: Works for single element, but if you want to update several values in one function then the new yaml will not be dispatched yet and so the next value will overwrite the previous one.
+    // This either should be able to handle a set of values as input, or be able to work with modified yaml instead of localYaml. BTW so many names for yaml are confusing.
     const keys = key.split('.');
-    const updatedYaml: any = { ...localYaml };
+    let updatedYaml = !!yaml ? {...yaml} : { ...localYaml };
 
     let nestedObject = updatedYaml;
 
@@ -333,7 +315,7 @@ Please customize the job statement below to match your system requirements.
             multiline
             maxRows={6}
             value={jobStatementValue}
-            onChange={(e) => {dispatch(setJobStatementVal(e.target.value)); onJobStatementChange(e.target.value)}}
+            onChange={(e) => onJobStatementChange(e.target.value)}
             variant="standard"
           />
         </FormControl>
@@ -346,12 +328,15 @@ Please customize the job statement below to match your system requirements.
       {step > 0 
         ?
           <Box sx={{height: step === 1 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}} >
-          <Typography id="position-1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
+          <Typography id="position-1" sx={{ mb: 3, whiteSpace: 'pre-wrap' }} color="text.secondary">       
             {`Now let's define some properties like z/OS Unix locations, identifiers, and (optionally) z/OSMF details.`}
           </Typography>
-          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '36px' }}>
           <div style={{ flex: 1 }}>
           <FormControl>
+            { !!validationDetails.spaceAvailableMb && <div style={{marginLeft: '-40px'}} title={`Detected available space: ${validationDetails.spaceAvailableMb} MB`}>
+              <CheckCircle sx={{ color: `${parseInt(validationDetails.spaceAvailableMb, 10) > requiredSpace ? 'green' : '#eab240'}`, fontSize: '1rem', margin: '0 12px' }} />
+            </div> }
             <div>
               <TextField
                 id="installation-input"
@@ -442,6 +427,9 @@ Please customize the job statement below to match your system requirements.
             </div>
           </FormControl>
           <FormControl>
+          { !!validationDetails.javaVersion && <div style={{marginLeft: '-40px'}} title={`Java version: ${validationDetails.javaVersion}`}>
+              <CheckCircle sx={{ color: 'green', fontSize: '1rem', margin: '0 12px' }} />
+            </div> }
             <div>
               <TextField
                 id="java-home-input"
@@ -463,6 +451,9 @@ Please customize the job statement below to match your system requirements.
             </div>
           </FormControl>
           <FormControl>
+            { !!validationDetails.nodeVersion && <div style={{marginLeft: '-40px'}} title={`Node version: ${validationDetails.nodeVersion}`}>
+              <CheckCircle sx={{ color: 'green', fontSize: '1rem', margin: '0 12px' }} />
+            </div> }
             <div>
               <TextField
                 id="node-home-input"
@@ -576,17 +567,7 @@ Please customize the job statement below to match your system requirements.
           </FormControl>
         </Box>
         : <div/> }
-      {/* <Add a checklist of components / settings user want to use, filter further steps accordingly */}
-      {step > 1 
-        ? <Box sx={{height: step === 2 ? 'calc(100vh - 272px)' : 'auto', p: '36px 0'}}>
-          <Typography id="position-2" sx={{ mb: 2, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-          {`Found Java version: ${validationDetails.javaVersion}, Node version: ${validationDetails.nodeVersion}
-
-All set, ready to proceed.`
-}
-          </Typography>
-        </Box>
-        : <div/> }
+      {/* TODO: Add a checklist of components / settings user want to use, filter further steps accordingly */}
     </ContainerCard>
     </React.Fragment>
     </div>
