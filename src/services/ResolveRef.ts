@@ -1,38 +1,59 @@
-export const updateSchemaReferences = (schema: any, serverCommon: any): void => {
+import { IResponse } from "../types/interfaces";
 
-  const traverseAndUpdate = (node: any) => {
-    if (node !== null && typeof node === "object") {
-      for (const key in node) {
-        if (key === "$ref" && typeof node[key] === "string") {
-          try {
-            const refValue = resolveRef(node[key]);
-            Object.assign(node, refValue); 
-            delete node['$ref'];
-          } catch(error){
-            console.error("Error resolving reference:", error.message);
-          }
-        } else if (key === "pattern" && typeof node[key] === "string") {
-          // Sanitize pattern for use in RegExp
-          try {
-            new RegExp(node[key]);
-            console.log("trying----------------------------------------------------");
-          } catch (error) {
-            console.error("Invalid regular expression pattern:", node[key]);
-            continue;
-          }
-        } else {
-          traverseAndUpdate(node[key]);
+export const updateSchemaReferences = (readPaxYamlAndSchema: IResponse): void => {
+
+  const schemaArray = Object.keys(readPaxYamlAndSchema.details);
+  const schemaMap: {[key: string]: any} = {};
+
+  schemaArray.forEach(key => {
+    const value = readPaxYamlAndSchema.details[key];
+    try {
+      const schemaObject = JSON.parse(value);
+      const id = schemaObject?.$id;
+      if(id) {
+        schemaMap[id] = schemaObject;
+      }
+    } catch(error: any) {
+      console.error(`Error parsing schema for key ${key}:`, error.message);
+    }
+  });
+
+  const schema = JSON.parse(readPaxYamlAndSchema.details.yamlSchema);
+  traverseAndUpdate(schema.properties.zowe.properties.setup.properties, schemaMap);
+}
+
+const traverseAndUpdate = (node: any, schemaMap: any) => {
+  if (node !== null && typeof node === "object") {
+    for (const key in node) {
+      if (key === "$ref" && typeof node[key] === "string") {
+        try {
+          const refValue = resolveRef(node[key], schemaMap);
+          Object.assign(node, refValue);
+          delete node['$ref'];
+        } catch(error){
+          console.error("Error resolving reference:", error.message);
         }
+      } else {
+        traverseAndUpdate(node[key], schemaMap);
       }
     }
   }
+}
 
-  const resolveRef = (ref: string) => {
-    const refPath = ref.split('#')[1];
-    let result = serverCommon.$defs;
-    const refObject = Object.values(result).find((obj:any) => obj.$anchor === refPath);
-    return refObject;
+const resolveRef = (ref: string, schemaMap: any) => {
+  const [refPath, anchor] = ref.split('#');
+  const refSchemaKey = Object.keys(schemaMap).find((id: string) => id.endsWith(refPath));
+
+  if(!refSchemaKey) {
+    throw new Error(`Schema for reference path ${refPath} not found`);
   }
 
-  traverseAndUpdate(schema.properties.zowe.properties.setup.properties);
+  const refSchema = schemaMap[refSchemaKey];
+  const refObject = Object.values(refSchema.$defs).find((obj:any) => obj.$anchor === anchor);
+
+  if (!refObject) {
+    throw new Error(`Reference ${ref} not found in schema ${refSchema.$id}`);
+  }
+
+  return refObject;
 }
