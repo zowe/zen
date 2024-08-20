@@ -91,7 +91,7 @@ const Planning = () => {
 
   const setLocValidations = (status: boolean): void => {
     setLocationsValidated(status);        // This sets component state and uses it for rendering.
-    dispatch(setIsLocationValid(status)); // This is an odd usage of redux. It sets variable to the redux state but never uses it, doesn't even have a selector, instead, it obscurely sets it to the localStorage via setPlanningStageStatus for persistance;
+    dispatch(setIsLocationValid(status)); // This is an odd usage of redux. It sets variable to the redux state but never uses it, doesn't even have a selector, instead, it obscurely sets it to the localStorage via setPlanningStageStatus for persistence;
   }
 
   const setValDetails = (details: any): void => { // Created a similar function for duplicated setting
@@ -157,7 +157,7 @@ const Planning = () => {
   const validateLocations = (e: any) => {
     // REVIEW: Four storages are used for these values, i've removed a pile of setters from here, but it still should be done better.
     // On every form change we run formChangeHandler and setYaml to store config in the redux (1) for the UI - ok
-    // Also we set electron-storage (2) (window.electron.ipcRenderer.setConfigByKeyNoValidate) for persistance, which may be a bit heavy, persistance data can be saved after successful validation here in validateLocations. 
+    // Also we set electron-storage (2) (window.electron.ipcRenderer.setConfigByKeyNoValidate) for persistence, which may be a bit heavy, persistence data can be saved after successful validation here in validateLocations. 
     // And as the same time here we have some metadata storage like setValDetails, which use the component state (3) setValidationDetails and the localStorage (4) setPlanningValidationDetailsState(details) 
 
     e.preventDefault();
@@ -480,9 +480,11 @@ Please customize the job statement below to match your system requirements.
             control={
               <Checkbox // TODO: Add z/OSMF off support
                 checked={true}
+                disabled={true}
+                title="Disabling the z/OSMF support is not implemented"
                 onChange={(e) => {
-                  setShowZosmfAttributes(true);
-                  formChangeHandler();
+                  // setShowZosmfAttributes(true);
+                  // formChangeHandler();
                 }}
               />
             }
