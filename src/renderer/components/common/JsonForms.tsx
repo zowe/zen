@@ -177,7 +177,7 @@ export default function JsonForm(props: any) {
   const isFormDataEmpty = formData === null || formData === undefined || Object.keys(formData).length < 1;
   formData = isFormDataEmpty ? getDefaultFormData(schema, {}) : formData;
 
-  const [selectedSchemaIndex, setSelectedSchemaIndex] = useState(0);
+  const [selectedSchemaIndex, setSelectedSchemaIndex] = schema.oneOf ? useState(findMatchingSchemaIndex(formData, schema.oneOf)) : useState(0);
   const [requiredSchema, setRequiredSchema] = useState(schema);
 
 
@@ -194,6 +194,7 @@ export default function JsonForm(props: any) {
     setSelectedSchemaIndex(schemaIndex);
     setRequiredSchema(schema.oneOf[schemaIndex]);
     formData = filterFormData(formData, schema.oneOf[schemaIndex]);
+    onChange(formData);
   }
 
   return (
