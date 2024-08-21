@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import { Box, Button, FormControl, Typography, debounce } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { selectYaml, setYaml, selectSchema, setNextStepEnabled, setLoading} from '../../configuration-wizard/wizardSlice';
@@ -26,9 +26,11 @@ import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
 import { TYPE_YAML, TYPE_OUTPUT, JCL_UNIX_SCRIPT_OK, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, INSTALL_STAGE_LABEL} from '../../common/Utils';
 import { getStageDetails, getSubStageDetails } from "../../../../services/StageDetails"; 
-import { getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, mapAndSetSkipStatus, getInstallationArguments, datasetInstallationStatus, isInitComplete } from "../progress/StageProgressStatus";
+import { getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, updateSubStepSkipStatus, getInstallationArguments, datasetInstallationStatus, isInitializationStageComplete } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
 import eventDispatcher from '../../../../services/eventDispatcher';
+import { validateDatasetIterator } from '../../../../services/DatasetValidation';
+import ErrorIcon from '@mui/icons-material/Error';
 
 const Installation = () => {
 
@@ -54,23 +56,29 @@ const Installation = () => {
   const [showProgress, setShowProgress] = useState(getProgress('datasetInstallationStatus'));
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [formError, setFormError] = useState('');
   const [contentType, setContentType] = useState('');
   const [mvsDatasetInitProgress, setMvsDatasetInitProgress] = useState(getDatasetInstallationState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
-
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   const [version] = useState(useAppSelector(selectZoweVersion));
+  const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+  const stageStatusRef = useRef(stageStatus);
+
   let timer: any;
   const [installationType] = useState(getInstallationTypeStatus().installationType);
 
   const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema));
 
-  
   useEffect(() => {
-    dispatch(setInitializationStatus(isInitComplete()));
+    stageStatusRef.current = stageStatus;
+  }, [stageStatus]);
+  
+  const datasetPropertiesCount = setupSchema ? Object.keys(setupSchema.properties).length : 0;
+
+  useEffect(() => {
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+
     if(getProgress("datasetInstallationStatus")) {
       const nextPosition = document.getElementById('save-installation-progress');
       if(nextPosition) nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -167,7 +175,9 @@ const Installation = () => {
     }
 
     return () => {
+      updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
+      alertEmitter.emit('hideAlert');
     }
   }, []);
 
@@ -177,6 +187,7 @@ const Installation = () => {
     if(initClicked) {
       const nextPosition = document.getElementById('installation-progress');
       if(nextPosition) nextPosition.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      installProceedActions(false);
       setStateUpdated(!stateUpdated);
     }
   }, [initClicked]);
@@ -184,8 +195,8 @@ const Installation = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-      dispatch(setDatasetInstallationStatus(true));
+      installProceedActions(true);
+      setStageSkipStatus(false);
     }
   }, [mvsDatasetInitProgress]);
 
@@ -195,8 +206,9 @@ const Installation = () => {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInstallationProgress().then((res: any) => {
           setMvsDatasetInitializationProgress(res);
-          dispatch(setDatasetInstallationStatus(stageComplete))
-          eventDispatcher.emit('initMvsComplete', true);
+          if(res.success){
+            clearInterval(timer);
+          }
         })
       }, 3000);
     }
@@ -210,20 +222,18 @@ const Installation = () => {
     setDatasetInstallationState(datasetInitState);
     const allAttributesTrue = Object.values(datasetInitState).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-      dispatch(setDatasetInstallationStatus(true));
-      eventDispatcher.emit('initMvsComplete', true)
+      installProceedActions(true);
     }
   }
 
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
-    stages[STAGE_ID].isSkipped = status;
-    mapAndSetSkipStatus(SUB_STAGE_ID, status);
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
+    setStageStatus(status);
   }
+
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setStageSkipStatus(!status);
     if(!status) {
       for (let key in mvsDatasetInitProgress) {
         mvsDatasetInitProgress[key as keyof(DatasetInstallationState)] = false;
@@ -232,8 +242,16 @@ const Installation = () => {
     }
     const allAttributesTrue = Object.values(mvsDatasetInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
+    setMvsDatasetInitializationProgress(getDatasetInstallationState());
     installProceedActions(status);
-    // setMvsDatasetInitializationProgress(getDatasetInstallationState());
+  }
+
+  // True - a proceed, False - blocked
+  const installProceedActions = (status: boolean) => {
+    dispatch(setDatasetInstallationStatus(status));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    dispatch(setNextStepEnabled(status));
+    setStageSkipStatus(!status);
   }
 
   const toggleEditorVisibility = (type: any) => {
@@ -243,12 +261,17 @@ const Installation = () => {
 
   const process = async (event: any) => {
 
+    const areDatasetsValid = validateDatasets();
+    if (!areDatasetsValid){
+      event.preventDefault();
+      return;
+    }
+
+    alertEmitter.emit('hideAlert');
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
     dispatch(setLoading(true));
-    setMvsDatasetInitProgress(datasetInstallationStatus)
-    dispatch(setDatasetInstallationStatus(false));
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
     if(!installationArgs.dryRunMode){
     Promise.all([
@@ -269,21 +292,14 @@ const Installation = () => {
             toggleEditorVisibility("output");
           })
           updateProgress(false);
-          installProceedActions(false);
-          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
           clearInterval(timer);
         } else {
           updateProgress(res.status);
-          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
-          setNextStepEnabled(true);
           clearInterval(timer);
         }
       }).catch((err: any) => {
         clearInterval(timer);
         updateProgress(false);
-        installProceedActions(false);
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-        stages[STAGE_ID].isSkipped = true;
         window.electron.ipcRenderer.setStandardOutput(`zwe init mvs failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
           toggleEditorVisibility("output");
         })
@@ -298,15 +314,27 @@ const Installation = () => {
       initMVS: true
     })
     updateProgress(true);
+    }
   }
-  }
-  
-  // True - a proceed, False - blocked
-  const installProceedActions = (status: boolean) => {
-    dispatch(setNextStepEnabled(status));
-    dispatch(setDatasetInstallationStatus(status));
-    dispatch(setInitializationStatus(isInitComplete()));
-  }
+
+  const validateDatasets = () => {
+
+    if(Object.keys(setupYaml).length < datasetPropertiesCount) {
+      const errorMessage = `One or more required dataset values are missing. Please ensure all fields are filled in.`;
+      alertEmitter.emit('showAlert', errorMessage, 'error');
+      return false;
+    }
+
+    const {isValid, key} = validateDatasetIterator(setupYaml);
+
+    if (!isValid) {
+      const errorMessage = `The dataset '${key.toUpperCase()}' is invalid. Please verify the dataset name and try again.`;
+      alertEmitter.emit('showAlert', errorMessage, 'error');
+      return false;
+    }
+
+    return true;
+  };
 
   const debouncedChange = useCallback(
     debounce((state: any)=>{handleFormChange(state)}, 1000),
@@ -334,8 +362,9 @@ const Installation = () => {
   }
 
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
-    setIsFormValid(isValid);
-    setFormError(errorMsg);
+    if(!isValid) {
+      alertEmitter.emit('showAlert', errorMsg, 'error');
+    }
     setSetupYaml(data);
   }
 
@@ -357,7 +386,6 @@ const Installation = () => {
         </Typography>
 
         <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
-          {!isFormValid && formError && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
         </Box>
         {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>

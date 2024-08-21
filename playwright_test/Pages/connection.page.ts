@@ -33,6 +33,7 @@ class ConnectionPage {
   commonPage = new CommonPage();
 
   async fillConnectionDetails(host: string, port: string, username: string, password: string) {
+    console.log("Filling connection details...");
     await this.commonPage.waitForElement(this.host)
     await this.host.clear({ timeout: 2000 })
     await this.host.fill(host)
@@ -49,6 +50,7 @@ class ConnectionPage {
     await this.password.clear({ timeout: 2000 })
     await this.password.fill(password)
     await this.commonPage.validateElementValue(this.password, password)
+    console.log("Connection details filled.");
     return true
   }
 
@@ -93,8 +95,10 @@ class ConnectionPage {
   }
 
   async SubmitValidateCredential() {
+    console.log("Submitting credentials...");
     await this.commonPage.waitForElement(this.validateCredential)
     await this.validateCredential.click()
+    console.log("Credentials submitted.");
   }
 
   async clickContinueButton() {

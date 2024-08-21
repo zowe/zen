@@ -1,27 +1,12 @@
 import { test, ElectronApplication, expect, _electron as electron } from '@playwright/test';
-import TitlePage from '../Pages/title.page.ts';
-import ConnectionPage from '../Pages/connection.page.ts';
-import PlanningPage from '../Pages/planning.page.ts';
-import InstallationTypePage from '../Pages/installationType.page.ts';
+import TitlePage from '../Pages/title.page';
+import ConnectionPage from '../Pages/connection.page';
+import PlanningPage from '../Pages/planning.page';
+import InstallationTypePage from '../Pages/installationType.page';
+import config from '../utils/config'
 
 let electronApp: ElectronApplication
 const PLANNING_TITLE = 'Before you start';
-const RUNTIME_DIR = process.env.ZOWE_ROOT_DIR;
-const SSH_HOST = process.env.SSH_HOST;
-const SSH_PASSWD = process.env.SSH_PASSWD;
-const SSH_PORT = process.env.SSH_PORT;
-const SSH_USER = process.env.SSH_USER;
-const ZOWE_EXTENSION_DIR = process.env.ZOWE_EXTENSION_DIR;
-const ZOWE_LOG_DIR = process.env.ZOWE_LOG_DIR;
-const ZOWE_WORKSPACE_DIR = process.env.ZOWE_WORKSPACE_DIR;
-const JOB_NAME = process.env.JOB_NAME;
-const JOB_PREFIX = process.env.JOB_PREFIX;
-const JAVA_HOME = process.env.JAVA_HOME;
-const NODE_HOME = process.env.NODE_HOME;
-const ZOSMF_HOST = process.env.ZOSMF_HOST;
-const ZOSMF_PORT = process.env.ZOSMF_PORT;
-const ZOSMF_APP_ID = process.env.ZOSMF_APP_ID;
-const UPLOAD_PAX_PATH = process.env.ZOWE_ROOT_DIR
 
 test.describe('InstallationTypeTab', () => {
   let connectionPage: ConnectionPage;
@@ -38,12 +23,14 @@ test.describe('InstallationTypeTab', () => {
     planningPage = new PlanningPage(page);
     installationTypePage = new InstallationTypePage(page);
     titlePage.navigateToConnectionTab()
-    connectionPage.performLogin(SSH_HOST, SSH_PORT, SSH_USER, SSH_PASSWD)
+    connectionPage.performLogin(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD)
     await page.waitForTimeout(5000);
     connectionPage.clickContinueButton()
     planningPage.insertValidateJobStatement()
     await page.waitForTimeout(20000);
-    planningPage.validatePlanningStageLocations(RUNTIME_DIR, ZOWE_WORKSPACE_DIR, ZOWE_EXTENSION_DIR, ZOWE_LOG_DIR, '1', JOB_NAME, JOB_PREFIX, JAVA_HOME, NODE_HOME, ZOSMF_HOST, ZOSMF_PORT, ZOSMF_APP_ID)
+    planningPage.validatePlanningStageLocations(config.ZOWE_ROOT_DIR, config.ZOWE_WORKSPACE_DIR,
+      config.ZOWE_EXTENSION_DIR, config.ZOWE_LOG_DIR, '1', config.JOB_NAME, config.JOB_PREFIX,
+      config.JAVA_HOME, config.NODE_HOME, config.ZOSMF_HOST, config.ZOSMF_PORT, config.ZOSMF_APP_ID)
     await page.waitForTimeout(20000);
     planningPage.clickContinueToInstallation()
     await page.waitForTimeout(5000);
@@ -79,7 +66,7 @@ test.describe('InstallationTypeTab', () => {
 
   test('Test Select Upload Zowe Pax', async ({ page }) => {
     await page.waitForTimeout(5000)
-    installationTypePage.uploadZowePaxAndNavigateToInstallationPage(UPLOAD_PAX_PATH)
+    installationTypePage.uploadZowePaxAndNavigateToInstallationPage(config.ZOWE_ROOT_DIR)
     const Is_Continue_Button_Enable = await installationTypePage.isContinueToUnpaxEnabled();
     expect(Is_Continue_Button_Enable).toBe(true);
   })
@@ -109,7 +96,7 @@ test.describe('InstallationTypeTab', () => {
     installationTypePage.clickSaveAndClose();
     await page.waitForTimeout(3000);
     titlePage.clickOnResumeProgress();
-    connectionPage.fillpassword(SSH_PASSWD)
+    connectionPage.fillpassword(config.SSH_PASSWD)
     await page.waitForTimeout(5000);
     connectionPage.SubmitValidateCredential()
     await page.waitForTimeout(5000);

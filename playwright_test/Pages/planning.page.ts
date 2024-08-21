@@ -102,9 +102,15 @@ class PlanningPage {
     }
   }
 
-  async isSaveAndValidateGreenCheckVisible() {
+  async isSaveAndValidateGreenCheckVisible(): Promise<boolean> {
     await this.commonPage.waitForElement(this.saveAndValidateGreenCheck)
-    return await this.saveAndValidateGreenCheck.isVisible({ timeout: 5000 });
+    try {
+      await this.saveAndValidateGreenCheck.waitFor({ state: 'visible', timeout: 10000 });
+      return true;
+    } catch (error) {
+      console.error('Error checking visibility:', error);
+      return false;
+    }
   }
 
   async getErrorMessage() {
@@ -216,12 +222,18 @@ class PlanningPage {
 
   async isValidateLocationsGreenCheckVisible() {
     await this.commonPage.waitForElement(this.ValidateLocationsGreenCheck)
-    return await this.ValidateLocationsGreenCheck.isVisible();
+    try {
+      await this.ValidateLocationsGreenCheck.waitFor({ state: 'visible', timeout: 15000 });
+      return true;
+    } catch (error) {
+      console.error('Error checking visibility:', error);
+      return false;
+    }
   }
 
   async clickSaveAndClose() {
     await this.commonPage.waitForElement(this.saveAndClose)
-    await this.saveAndClose.click({ timeout: 2000 });
+    await this.saveAndClose.click({ timeout: 15000 });
   }
 
   async clickPreviousStep() {
@@ -231,8 +243,19 @@ class PlanningPage {
 
   async clickContinueToInstallation() {
     await this.commonPage.waitForElement(this.continueInstallationOptions)
+    const timeout = 30000;
+    const interval = 100;
+    const startTime = Date.now();
+	  const isButtonEnabled = async (): Promise<boolean> => {
+      return await this.isContinueToInstallationEnabled();
+    };
+	while (!(await isButtonEnabled())) {
+      if (Date.now() - startTime > timeout) {
+        throw new Error('Timed out waiting for the button to be enabled.');
+      }
+      await new Promise(resolve => setTimeout(resolve, interval));
+    }
     await this.continueInstallationOptions.click();
-    await this.page.waitForTimeout(5000);
   }
 
   async isContinueToInstallationDisabled() {
@@ -246,7 +269,7 @@ class PlanningPage {
   }
 
   async insertValidateJobStatement() {
-    const jobStatement = "//HELLOJOB JOB 'HELLO, WORLD!',CLASS=A,MSGCLASS=A\n//STEP01   EXEC PGM=IEFBR14\n//SYSPRINT DD  SYSOUT=A\n//SYSIN    DD  DUMMY"
+    const jobStatement = "//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,\n//         MSGLEVEL=(1,1),MSGCLASS=A"
     const jobStatementFilled = await this.enterJobStatement(jobStatement);
     if (jobStatementFilled) {
       this.clickSaveAndValidate();

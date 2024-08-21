@@ -51,90 +51,91 @@ class InstallationPage {
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
-  async enterPrefix(prefix: any) {
+  async enterPrefix(prefix: string): Promise<void> {
     await this.commonPage.waitForElement(this.prefix)
     await this.prefix.clear({ timeout: 2000 })
     await this.prefix.fill(prefix);
     await this.commonPage.validateElementValue(this.prefix, prefix)
   }
 
-  async getPrefixValue() {
+  async getPrefixValue(): Promise<string> {
     await this.commonPage.waitForElement(this.prefix)
-    return await this.prefix.textContent();
+    return await this.prefix.inputValue();
   }
 
-  async enterProcLib(proclib: any) {
+  async enterProcLib(proclib: string): Promise<void> {
     await this.commonPage.waitForElement(this.procLib)
     await this.procLib.clear({ timeout: 2000 })
     await this.procLib.fill(proclib);
     await this.commonPage.validateElementValue(this.procLib, proclib)
   }
 
-  async getProclibValue() {
+  async getProclibValue(): Promise<string> {
     await this.commonPage.waitForElement(this.procLib)
-    return await this.procLib.textContent();
+    return await this.procLib.inputValue();
   }
 
-  async enterParmLib(parmlib: any) {
+  async enterParmLib(parmlib: string): Promise<void> {
     await this.commonPage.waitForElement(this.parmLib)
     await this.parmLib.clear({ timeout: 2000 })
     await this.parmLib.fill(parmlib);
     await this.commonPage.validateElementValue(this.parmLib, parmlib)
   }
 
-  async getParmlibValue() {
+  async getParmlibValue(): Promise<string> {
     await this.commonPage.waitForElement(this.parmLib)
-    return await this.parmLib.textContent();
+    return await this.parmLib.inputValue();
   }
 
-  async enterZis(zis: any) {
+  async enterZis(zis: string): Promise<void> {
     await this.commonPage.waitForElement(this.zis)
     await this.zis.clear({ timeout: 2000 })
     await this.zis.fill(zis);
     await this.commonPage.validateElementValue(this.zis, zis)
   }
 
-  async enterJclLib(Jcllib: any) {
+  async enterJclLib(Jcllib: string): Promise<void> {
     await this.commonPage.waitForElement(this.jclLib)
     await this.jclLib.clear({ timeout: 2000 })
     await this.jclLib.fill(Jcllib);
     await this.commonPage.validateElementValue(this.jclLib, Jcllib)
   }
 
-  async enterLoadLib(loadlib: any) {
+  async enterLoadLib(loadlib: string): Promise<void> {
     await this.commonPage.waitForElement(this.loadLib)
     await this.loadLib.clear({ timeout: 2000 })
     await this.loadLib.fill(loadlib);
     await this.commonPage.validateElementValue(this.loadLib, loadlib)
   }
 
-  async enterAuthLoadLib(authloadlib: any) {
+  async enterAuthLoadLib(authloadlib: string): Promise<void> {
     await this.commonPage.waitForElement(this.authLoadLib)
     await this.authLoadLib.clear({ timeout: 2000 })
     await this.authLoadLib.fill(authloadlib);
     await this.commonPage.validateElementValue(this.authLoadLib, authloadlib)
   }
 
-  async getAuthLoadLibValue() {
+  async getAuthLoadLibValue(): Promise<string> {
     await this.commonPage.waitForElement(this.authLoadLib)
-    return await this.authLoadLib.textContent();
+    return await this.authLoadLib.inputValue();
   }
 
-  async enterAuthPluginLib(authpluginlib: any) {
+  async enterAuthPluginLib(authpluginlib: string): Promise<void> {
     await this.commonPage.waitForElement(this.authPluginLib)
     await this.authPluginLib.clear({ timeout: 2000 })
     await this.authPluginLib.fill(authpluginlib);
     await this.commonPage.validateElementValue(this.authPluginLib, authpluginlib)
   }
 
-  async getAuthPluginLibValue() {
+  async getAuthPluginLibValue(): Promise<string> {
     await this.commonPage.waitForElement(this.authPluginLib)
-    return await this.authPluginLib.textContent();
+    return await this.authPluginLib.inputValue();
   }
 
   async clickInstallMvsDatasets() {
     await this.commonPage.waitForElement(this.installMVSDatasets)
     await this.installMVSDatasets.click();
+    await this.waitForContinueButtonToBeEnabled();
   }
 
   async clickViewEditYaml() {
@@ -179,9 +180,31 @@ class InstallationPage {
     return await this.continueToNetworkSetup.isEnabled()
   }
 
+  async isSkipToNetworkSetupEnabled() {
+    return await this.skipInstallation.isEnabled()
+  }
+
+  private async waitForContinueButtonToBeEnabled(): Promise<void> {
+    const timeout = 100000;
+    const interval = 500;
+    const endTime = Date.now() + timeout;
+    while (Date.now() < endTime) {
+      if (await this.isContinueToNetworkSetupEnabled()) {
+        return;
+      }
+      await this.page.waitForTimeout(interval);
+    }
+
+    throw new Error('Continue button was not enabled within the timeout period');
+  }
+
   async clickCloseEditor() {
     await this.commonPage.waitForElement(this.closeEditorButton)
     await this.closeEditorButton.click();
+  }
+
+  async clickInstallMvsDatasetsInvalid() {
+    await this.installMVSDatasets.click();
   }
 
   async fillInstallationPageDetails(DATASET_PREFIX: string, PROC_LIB: string, PARM_LIB: string, ZIS: string, JCL_LIB: string, LOAD_LIB: string, AUTH_LOAD_LIB: string, AUTH_PLUGIN_LIB: string) {

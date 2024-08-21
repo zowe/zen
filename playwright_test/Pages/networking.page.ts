@@ -36,6 +36,9 @@ class NetworkingPage {
   appServer: Locator;
   cachingService: Locator;
   discovery: Locator;
+  explorerUSS_debug_checkbox: Locator;
+  app_server_debug: Locator;
+  metricService_debug_checkbox: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -71,6 +74,9 @@ class NetworkingPage {
     this.skip_button = page.locator('//button[contains(text(),"Skip")]');
     this.close_button = page.locator('//button[contains(text(), "Close")]');
     this.continueToApfAuthSetup = page.locator('//button[contains(text(), "Continue to APF Auth Setup")]');
+    this.explorerUSS_debug_checkbox = page.locator('//*[@id="container-box-id"]/form/div/div[2]/div[4]/div/div[4]/div[1]/label/span[1]/input');
+    this.app_server_debug = page.locator('//*[@id="container-box-id"]/form/div/div[2]/div[4]/div/div[11]/div[1]/label/span[1]/input');
+    this.metricService_debug_checkbox = page.locator('//*[@id="container-box-id"]/form/div/div[2]/div[4]/div/div[1]/div[1]/label/span[1]/input');
   }
 
   commonPage = new CommonPage();
@@ -80,27 +86,21 @@ class NetworkingPage {
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
-  async fillExternalDomainPort(port: string, p0: { timeout: number; }) {
+  async fillExternalDomainPort(port: string,  p0: { timeout: number; }) {
     await this.commonPage.waitForElement(this.externalPort)
     await this.externalPort.clear({ timeout: 2000 })
     await this.externalPort.fill(port, { timeout: 10000 })
   }
 
   async fillMetricServicePort(port: string) {
-    // Scroll down a bit
-    await this.page.evaluate(() => {
-      window.scrollBy(0, 200);
-    });
-    // Add a wait after scrolling
-    await this.commonPage.waitForElement(this.metricServicePort)
-    // await this.metricServicePort.clear({ timeout: 2000 })
-    await this.metricServicePort.fill(port, { timeout: 10000 })
+    await this.metricServicePort.waitFor({ state: 'visible', timeout: 10000 });
+    await this.metricServicePort.fill(port, { timeout: 10000 });
+
   }
 
-  async get_metricServiceport_value() {
+  async get_metricServiceport_value(): Promise<string> {
     await this.commonPage.waitForElement(this.metricServicePort)
-    const value = await this.metricServicePort.inputValue();
-    return value;
+    return await this.metricServicePort.inputValue();
   }
 
   async fillExternalDomainName(externalDomainName: string, p0: { timeout: number; }) {
@@ -126,40 +126,57 @@ class NetworkingPage {
     return value;
   }
 
-  async click_checkBox(n: string) {
-    const xpathLocator = `//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/label[${n}]/span[1]/input`;
-
-    const checkbox = await this.page.waitForSelector(xpathLocator, { state: 'visible' });
-
-    if (checkbox) {
+  async click_checkBox(xpath: string): Promise<void> {
+    try {
+      const checkbox = await this.page.waitForSelector(xpath, { state: 'visible' });
       const isChecked = await checkbox.evaluate((input) => input.checked);
-      console.log('Is checkbox checked:', isChecked);
-
       if (!isChecked) {
         await checkbox.click();
-        console.log('Checkbox clicked');
-      } else {
-        console.log('Checkbox is already checked');
       }
-    } else {
-      console.log('Checkbox not found');
+    }
+    catch (error) {
+      console.error(`Error checking checkbox with XPath "${xpath}":`, error);
     }
   }
 
-  async isCheckboxCheckedAndBlue(nthChild: string) {
-    const xpathLocator = `//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/label[${nthChild}]/span[1]/input`;
-
-    const checkbox = await this.page.waitForSelector(xpathLocator);
-
-    if (checkbox) {
-      // Check if the checkbox is clicked
-      const isChecked = await checkbox.evaluate((input) => input.checked);
-      console.log('Is checkbox clicked:', isChecked);
-      return isChecked;
-    } else {
+  async isCheckboxCheckedAndBlue(xpath: string): Promise<boolean> {
+    try {
+      const checkbox = await this.page.waitForSelector(xpath);
+      if (checkbox) {
+        const isChecked = await checkbox.evaluate((input) => input.checked);
+        return isChecked;
+      } else {
+        return false;
+      }
+    }
+    catch (error) {
       console.log('Checkbox not found');
       return false;
     }
+  }
+
+  async isMetricsServiceDebugChecked(): Promise<boolean> {
+    return await this.isCheckboxCheckedAndBlue(this.metricService_debug_checkbox);
+  }
+
+  async clickMetricsServiceDebug(): Promise<void> {
+    await this.click_checkBox(this.metricService_debug_checkbox);
+  }
+
+  async isExplorerUssDebugChecked(): Promise<boolean> {
+    return await this.isCheckboxCheckedAndBlue(this.explorerUSS_debug_checkbox);
+  }
+
+  async isAppServerDebugChecked(): Promise<boolean> {
+    return await this.isCheckboxCheckedAndBlue(this.app_server_debug);
+  }
+
+  async clickExplorerUssDebug(): Promise<void> {
+    await this.click_checkBox(this.explorerUSS_debug_checkbox);
+  }
+
+  async clickAppServerDebug(): Promise<void> {
+    await this.click_checkBox(this.app_server_debug);
   }
 
   async delete_DomainNameField() {
@@ -194,7 +211,12 @@ class NetworkingPage {
 
   async click_skipNetworking() {
     await this.commonPage.waitForElement(this.skip_button)
-    await this.skip_button.click({ timeout: 2000 });
+    const isEnabled = await this.is_skipNetworkingButtonEnable();
+    if (isEnabled) {
+        await this.skip_button.click({ timeout: 2000 });
+    } else {
+        throw new Error('Skip button is not enabled and cannot be clicked.');
+    }
   }
 
   async isPreviousButtonEnable() {
@@ -235,7 +257,6 @@ class NetworkingPage {
     let allText = '';
 
     while (true) {
-      // Extract text from all div.view-line elements
       const newText = await this.page.evaluate(() => {
         const viewLines = document.querySelectorAll('.view-lines .view-line');
         let text = '';
@@ -245,35 +266,25 @@ class NetworkingPage {
         return text;
       });
 
-      // Append the new text to the existing text
       allText += newText;
       console.log(allText)
 
-      // Scroll a little to load more content
       await this.page.evaluate(() => {
         const editor = document.querySelector('.monaco-scrollable-element.editor-scrollable.vs');
-        editor.scrollTop += 100; // Adjust the scroll amount as needed
+        editor.scrollTop += 100;
       });
-
-      // Wait for a brief moment for new content to load
-      await this.page.waitForTimeout(1000); // Adjust timeout as needed
-
-      // Get the current scroll height
+      await this.page.waitForTimeout(1000);
       const currentScrollHeight = await this.page.evaluate(() => {
         const editor = document.querySelector('.monaco-scrollable-element.editor-scrollable.vs');
         return editor.scrollHeight;
       });
 
-      // If the scroll height hasn't changed since the last iteration, we've reached the end
       if (currentScrollHeight === previousScrollHeight) {
         break;
       }
-
-      // Update the previous scroll height for the next iteration
       previousScrollHeight = currentScrollHeight;
     }
 
-    console.log('All text:', allText);
     return allText;
   }
 

@@ -3,38 +3,16 @@ import ApfAuthPage from '../Pages/apfAuth.page';
 import TitlePage from '../Pages/title.page';
 import ConnectionPage from '../Pages/connection.page';
 import PlanningPage from '../Pages/planning.page';
-import InstallationTypePage from '../Pages/installationType.page.js';
+import InstallationTypePage from '../Pages/installationType.page';
 import UnpaxPage from '../Pages/unpax.page';
-import InstallationPage from '../Pages/installation.page.js';
-import NetworkingPage from '../Pages/networking.page.js';
+import InstallationPage from '../Pages/installation.page';
+import NetworkingPage from '../Pages/networking.page';
+import config from '../utils/config'
 
 let electronApp: ElectronApplication
 const APF_AUTH_TITLE = 'APF Authorize Load Libraries'
 const NETWORKING_TITLE = 'Networking'
 const SECURITY_TITLE = 'Security'
-const SSH_HOST = process.env.SSH_HOST;
-const SSH_PASSWD = process.env.SSH_PASSWD;
-const SSH_PORT = process.env.SSH_PORT;
-const SSH_USER = process.env.SSH_USER;
-const ZOWE_EXTENSION_DIR = process.env.ZOWE_EXTENSION_DIR;
-const ZOWE_LOG_DIR = process.env.ZOWE_LOG_DIR;
-const ZOWE_ROOT_DIR = process.env.ZOWE_ROOT_DIR;
-const ZOWE_WORKSPACE_DIR = process.env.ZOWE_WORKSPACE_DIR;
-const JOB_NAME = process.env.JOB_NAME;
-const JOB_PREFIX = process.env.JOB_PREFIX;
-const JAVA_HOME = process.env.JAVA_HOME;
-const NODE_HOME = process.env.NODE_HOME;
-const ZOSMF_HOST = process.env.ZOSMF_HOST;
-const ZOSMF_PORT = process.env.ZOSMF_PORT;
-const ZOSMF_APP_ID = process.env.ZOSMF_APP_ID;
-const DATASET_PREFIX = process.env.DATASET_PREFIX;
-const PROC_LIB = process.env.PROC_LIB;
-const PARM_LIB = process.env.PARM_LIB;
-const ZIS = process.env.SECURITY_STC_ZIS;
-const JCL_LIB = process.env.JCL_LIB;
-const LOAD_LIB = process.env.LOAD_LIB;
-const AUTH_LOAD_LIB = process.env.AUTH_LOAD_LIB;
-const AUTH_PLUGIN_LIB = process.env.AUTH_PLUGIN_LIB;
 
 test.describe('ApfAuthTab', () => {
   let connectionPage: ConnectionPage;
@@ -59,13 +37,14 @@ test.describe('ApfAuthTab', () => {
     networkingPage = new NetworkingPage(page);
     apfAuthPage = new ApfAuthPage(page);
     titlePage.navigateToConnectionTab()
-    connectionPage.performLogin(SSH_HOST, SSH_PORT, SSH_USER, SSH_PASSWD)
+    connectionPage.performLogin(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD)
     await page.waitForTimeout(5000);
     connectionPage.clickContinueButton()
     planningPage.insertValidateJobStatement()
     await page.waitForTimeout(20000);
-    planningPage.validatePlanningStageLocations(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR, ZOWE_EXTENSION_DIR, ZOWE_LOG_DIR, '1',
-      JOB_NAME, JOB_PREFIX, JAVA_HOME, NODE_HOME, ZOSMF_HOST, ZOSMF_PORT, ZOSMF_APP_ID)
+    planningPage.validatePlanningStageLocations(config.ZOWE_ROOT_DIR, config.ZOWE_WORKSPACE_DIR,
+      config.ZOWE_EXTENSION_DIR, config.ZOWE_LOG_DIR, '1', config.JOB_NAME, config.JOB_PREFIX,
+      config.JAVA_HOME, config.NODE_HOME, config.ZOSMF_HOST, config.ZOSMF_PORT, config.ZOSMF_APP_ID)
     await page.waitForTimeout(20000);
     planningPage.clickContinueToInstallation()
     installationTypePage.selectSmpe()
@@ -73,8 +52,8 @@ test.describe('ApfAuthTab', () => {
     await page.waitForTimeout(2000);
     unpaxPage.clickSkipUnpax()
     await page.waitForTimeout(5000);
-    installationPage.fillInstallationPageDetails(DATASET_PREFIX, PROC_LIB, PARM_LIB, ZIS, JCL_LIB,
-      LOAD_LIB, AUTH_LOAD_LIB, AUTH_PLUGIN_LIB)
+    installationPage.fillInstallationPageDetails(config.DATASET_PREFIX, config.PROC_LIB, config.PARM_LIB,
+      config.ZIS, config.JCL_LIB, config.LOAD_LIB, config.AUTH_LOAD_LIB, config.AUTH_PLUGIN_LIB)
     await page.waitForTimeout(10000)
     installationPage.clickInstallMvsDatasets()
     await page.waitForTimeout(50000);
@@ -111,20 +90,12 @@ test.describe('ApfAuthTab', () => {
   })
 
   test('test Previous step', async ({ page }) => {
+    const is_prevButtonEnable = await apfAuthPage.isPreviousButtonEnable();
+    expect(is_prevButtonEnable).toBe(true);
     apfAuthPage.clickPreviousStep()
     await page.waitForTimeout(5000);
     const title = await apfAuthPage.getPageTitle();
     expect(title).toBe(NETWORKING_TITLE);
-  })
-
-  test('test skip apfAuth button is enable', async ({ page }) => {
-    const isSkipApfAuthEnable = await apfAuthPage.is_skipApfAuthButtonEnable();
-    expect(isSkipApfAuthEnable).toBe(true);
-  })
-
-  test('test previous button is enabled', async ({ page }) => {
-    const is_prevButtonEnable = await apfAuthPage.isPreviousButtonEnable();
-    expect(is_prevButtonEnable).toBe(true);
   })
 
   test('test continue button is disable', async ({ page }) => {
@@ -141,6 +112,8 @@ test.describe('ApfAuthTab', () => {
   })
 
   test('test click skip APFAuth button', async ({ page }) => {
+    const isSkipApfAuthEnable = await apfAuthPage.is_skipApfAuthButtonEnable();
+    expect(isSkipApfAuthEnable).toBe(true);
     apfAuthPage.click_skipApfAuth()
     await page.waitForTimeout(5000);
     const title = await apfAuthPage.getPageTitle();
@@ -159,7 +132,7 @@ test.describe('ApfAuthTab', () => {
     apfAuthPage.click_saveAndClose()
     await page.waitForTimeout(3000);
     titlePage.clickOnResumeProgress();
-    connectionPage.fillpassword(SSH_PASSWD)
+    connectionPage.fillpassword(config.SSH_PASSWD)
     await page.waitForTimeout(5000);
     connectionPage.SubmitValidateCredential()
     await page.waitForTimeout(8000);
@@ -168,8 +141,8 @@ test.describe('ApfAuthTab', () => {
     const datatsetPrefixValue = await apfAuthPage.get_datasetPrefix_value();
     const AuthLoadLib_Value = await apfAuthPage.get_authLoadLib_value();
     const AuthPluginLib_Value = await apfAuthPage.get_authPluginLib_value();
-    expect(datatsetPrefixValue).toBe(DATASET_PREFIX);
-    expect(AuthLoadLib_Value).toBe(AUTH_LOAD_LIB);
-    expect(AuthPluginLib_Value).toBe(AUTH_PLUGIN_LIB);
+    expect(datatsetPrefixValue).toBe(config.DATASET_PREFIX);
+    expect(AuthLoadLib_Value).toBe(config.AUTH_LOAD_LIB);
+    expect(AuthPluginLib_Value).toBe(config.AUTH_PLUGIN_LIB);
   })
 })

@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Box, Button, FormControl, TextField } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
@@ -24,7 +24,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setVsamInitState, mapAndSetSkipStatus, getInstallationArguments, getVsamInitState, isInitComplete } from "./progress/StageProgressStatus";
+import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
 import { INIT_STAGE_LABEL, ajv } from "../common/Utils";
@@ -56,9 +56,11 @@ const Vsam = () => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
   const [isDsNameValid, setIsDsNameValid] = useState(true);
-
   const [installationArgs] = useState(getInstallationArguments());
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
+  const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+  const stageStatusRef = useRef(stageStatus);
+
   let timer: any;
 
   const [defaultErrorMessage] = useState("Please ensure that the volume, storage class & dataset values are accurate.");
@@ -66,16 +68,22 @@ const Vsam = () => {
   const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema))
 
   useEffect(() => {
-    dispatch(setInitializationStatus(isInitComplete()));
-    setShowProgress(initClicked || getProgress('vsamStatus'));
+    stageStatusRef.current = stageStatus;
+  }, [stageStatus]);
+
+  useEffect(() => {
     let nextPosition;
+    const stepProgress = getProgress('vsamStatus');
+
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    setShowProgress(initClicked || stepProgress);
 
     const vsamDatasetName = yaml?.components[`caching-service`]?.storage?.vsam?.name|| '';
     if(vsamDatasetName) {
       datasetValidation(vsamDatasetName);
     }
 
-    if(getProgress('vsamStatus')) {
+    if(stepProgress) {
       nextPosition = document.getElementById('vsam-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     } else {
@@ -83,11 +91,12 @@ const Vsam = () => {
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
-    updateProgress(getProgress('vsamStatus'));
     setInit(true);
+    dispatch(setNextStepEnabled(stepProgress));
 
     return () => {
       alertEmitter.emit('hideAlert');
+      updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
@@ -99,7 +108,7 @@ const Vsam = () => {
       let nextPosition = document.getElementById('start-vsam-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setStateUpdated(!stateUpdated);
-      dispatch(setVsamStatus(false));
+      dispatchActions(false);
     }
   }, [initClicked]);
 
@@ -108,6 +117,9 @@ const Vsam = () => {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInitVsamProgress().then((res: any) => {
           setVsamInitializationProgress(res);
+          if(res.success){
+            clearInterval(timer);
+          }
         })
       }, 3000);
 
@@ -124,8 +136,7 @@ const Vsam = () => {
   useEffect(() => {
     const allAttributesTrue = Object.values(vsamInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setVsamStatus(true));
-      dispatch(setNextStepEnabled(true));
+      dispatchActions(true);
       setShowProgress(initClicked || getProgress('vsamStatus'));
     }
   }, [vsamInitProgress]);
@@ -135,20 +146,18 @@ const Vsam = () => {
     setVsamInitState(vsamInitState);
     const allAttributesTrue = Object.values(vsamInitState).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setVsamStatus(true));
-      dispatch(setNextStepEnabled(true));
+      dispatchActions(true);
     }
   }
 
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
-    stages[STAGE_ID].isSkipped = status;
-    mapAndSetSkipStatus(SUB_STAGE_ID, status);
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
+    setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setStageSkipStatus(!status);
     if(!status) {
       for (let key in vsamInitProgress) {
         vsamInitProgress[key as keyof(InitSubStepsState)] = false;
@@ -157,10 +166,15 @@ const Vsam = () => {
     }
     const allAttributesTrue = Object.values(vsamInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setInitializationStatus(isInitComplete()));
-    dispatch(setVsamStatus(status));
-    dispatch(setNextStepEnabled(status));
     setVsamInitializationProgress(getVsamInitState());
+    dispatchActions(status);
+  }
+
+  const dispatchActions = (status: boolean) => {
+    dispatch(setVsamStatus(status));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    dispatch(setNextStepEnabled(status));
+    setStageSkipStatus(!status);
   }
 
   const toggleEditorVisibility = (type: any) => {

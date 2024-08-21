@@ -7,46 +7,16 @@ import PlanningPage from '../Pages/planning.page';
 import StcsPage from '../Pages/stcs.page';
 import LaunchConfigPage from '../Pages/launchConfig.page';
 import CertificatesPage from '../Pages/certificates.page';
-import InstallationTypePage from '../Pages/installationType.page.js';
+import InstallationTypePage from '../Pages/installationType.page';
 import UnpaxPage from '../Pages/unpax.page';
-import InstallationPage from '../Pages/installation.page.js';
-import NetworkingPage from '../Pages/networking.page.js';
+import InstallationPage from '../Pages/installation.page';
+import NetworkingPage from '../Pages/networking.page';
+import config from '../utils/config'
 
 let electronApp: ElectronApplication
 const STCS_TITLE = 'Stcs'
 const SECURITY_TITLE = 'Security'
 const APF_AUTH_TITLE = 'APF Authorize Load Libraries'
-const ZOWE_ROOT_DIR = process.env.ZOWE_ROOT_DIR;
-const SSH_HOST = process.env.SSH_HOST;
-const SSH_PASSWD = process.env.SSH_PASSWD;
-const SSH_PORT = process.env.SSH_PORT;
-const SSH_USER = process.env.SSH_USER;
-const ZOWE_EXTENSION_DIR = process.env.ZOWE_EXTENSION_DIR;
-const ZOWE_LOG_DIR = process.env.ZOWE_LOG_DIR;
-const ZOWE_WORKSPACE_DIR = process.env.ZOWE_WORKSPACE_DIR;
-const JOB_NAME = process.env.JOB_NAME;
-const JOB_PREFIX = process.env.JOB_PREFIX;
-const JAVA_HOME = process.env.JAVA_HOME;
-const NODE_HOME = process.env.NODE_HOME;
-const ZOSMF_HOST = process.env.ZOSMF_HOST;
-const ZOSMF_PORT = process.env.ZOSMF_PORT;
-const ZOSMF_APP_ID = process.env.ZOSMF_APP_ID;
-const SECURITY_ADMIN = process.env.SECURITY_ADMIN;
-const SECURITY_STC = process.env.SECURITY_STC;
-const SECURITY_SYSPROG = process.env.SECURITY_SYSPROG;
-const SECURITY_USER_ZIS = process.env.SECURITY_USER_ZIS;
-const SECURITY_USER_ZOWE = process.env.SECURITY_USER_ZOWE;
-const SECURITY_AUX = process.env.SECURITY_AUX;
-const SECURITY_STC_ZOWE = process.env.SECURITY_STC_ZOWE;
-const SECURITY_STC_ZIS = process.env.SECURITY_STC_ZIS;
-const DATASET_PREFIX = process.env.DATASET_PREFIX;
-const PROC_LIB = process.env.PROC_LIB;
-const PARM_LIB = process.env.PARM_LIB;
-const ZIS = process.env.SECURITY_STC_ZIS;
-const JCL_LIB = process.env.JCL_LIB;
-const LOAD_LIB = process.env.LOAD_LIB;
-const AUTH_LOAD_LIB = process.env.AUTH_LOAD_LIB;
-const AUTH_PLUGIN_LIB = process.env.AUTH_PLUGIN_LIB;
 
 test.describe('securityTab', () => {
   let connectionPage: ConnectionPage;
@@ -64,7 +34,7 @@ test.describe('securityTab', () => {
 
   test.beforeEach(async ({ page }) => {
     test.setTimeout(900000);
-    electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
+    electronApp = await electron.launch({ args: ['.webpack/main/index'] })
     page = await electronApp.firstWindow()
     connectionPage = new ConnectionPage(page);
     titlePage = new TitlePage(page);
@@ -78,13 +48,14 @@ test.describe('securityTab', () => {
     securityPage = new SecurityPage(page);
     certificatesPage = new CertificatesPage(page);
     launchConfigPage = new LaunchConfigPage(page); titlePage.navigateToConnectionTab()
-    connectionPage.performLogin(SSH_HOST, SSH_PORT, SSH_USER, SSH_PASSWD)
+    connectionPage.performLogin(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD)
     await page.waitForTimeout(5000);
     connectionPage.clickContinueButton()
     planningPage.insertValidateJobStatement()
     await page.waitForTimeout(20000);
-    planningPage.validatePlanningStageLocations(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR, ZOWE_EXTENSION_DIR, ZOWE_LOG_DIR, '1',
-      JOB_NAME, JOB_PREFIX, JAVA_HOME, NODE_HOME, ZOSMF_HOST, ZOSMF_PORT, ZOSMF_APP_ID)
+    planningPage.validatePlanningStageLocations(config.ZOWE_ROOT_DIR, config.ZOWE_WORKSPACE_DIR,
+      config.ZOWE_EXTENSION_DIR, config.ZOWE_LOG_DIR, '1', config.JOB_NAME, config.JOB_PREFIX,
+      config.JAVA_HOME, config.NODE_HOME, config.ZOSMF_HOST, config.ZOSMF_PORT, config.ZOSMF_APP_ID)
     await page.waitForTimeout(20000);
     planningPage.clickContinueToInstallation()
     installationTypePage.selectSmpe()
@@ -92,8 +63,8 @@ test.describe('securityTab', () => {
     await page.waitForTimeout(2000);
     unpaxPage.clickSkipUnpax()
     await page.waitForTimeout(5000);
-    installationPage.fillInstallationPageDetails(DATASET_PREFIX, PROC_LIB, PARM_LIB, ZIS, JCL_LIB, LOAD_LIB,
-      AUTH_LOAD_LIB, AUTH_PLUGIN_LIB)
+    installationPage.fillInstallationPageDetails(config.DATASET_PREFIX, config.PROC_LIB, config.PARM_LIB,
+      config.ZIS, config.JCL_LIB, config.LOAD_LIB, config.AUTH_LOAD_LIB, config.AUTH_PLUGIN_LIB)
     await page.waitForTimeout(10000)
     installationPage.clickInstallMvsDatasets()
     await page.waitForTimeout(50000);
@@ -142,8 +113,9 @@ test.describe('securityTab', () => {
 
   test('test security with valid data', async ({ page }) => {
     await page.waitForTimeout(5000);
-    securityPage.fillSecurityDetails('RACF', SECURITY_ADMIN, SECURITY_STC, SECURITY_SYSPROG,
-      SECURITY_USER_ZIS, SECURITY_USER_ZOWE, SECURITY_AUX, SECURITY_STC_ZOWE, SECURITY_STC_ZIS)
+    securityPage.fillSecurityDetails('RACF', config.SECURITY_ADMIN, config.SECURITY_STC,
+      config.SECURITY_SYSPROG, config.SECURITY_USER_ZIS, config.SECURITY_USER_ZOWE,
+      config.SECURITY_AUX, config.SECURITY_STC_ZOWE, config.SECURITY_STC_ZIS)
     await page.waitForTimeout(5000);
     securityPage.initializeSecurity()
     await page.waitForTimeout(5000);
@@ -210,13 +182,14 @@ test.describe('securityTab', () => {
 
   test('Test save and close and Resume Progress', async ({ page }) => {
     await page.waitForTimeout(5000);
-    securityPage.fillSecurityDetails('RACF', SECURITY_ADMIN, SECURITY_STC, SECURITY_SYSPROG, SECURITY_USER_ZIS,
-      SECURITY_USER_ZOWE, SECURITY_AUX, SECURITY_STC_ZOWE, SECURITY_STC_ZIS)
+    securityPage.fillSecurityDetails('RACF', config.SECURITY_ADMIN, config.SECURITY_STC,
+      config.SECURITY_SYSPROG, config.SECURITY_USER_ZIS, config.SECURITY_USER_ZOWE,
+      config.SECURITY_AUX, config.SECURITY_STC_ZOWE, config.SECURITY_STC_ZIS)
     await page.waitForTimeout(5000);
     securityPage.click_saveAndClose()
     await page.waitForTimeout(3000);
     titlePage.clickOnResumeProgress();
-    connectionPage.fillpassword(SSH_PASSWD)
+    connectionPage.fillpassword(config.SSH_PASSWD)
     await page.waitForTimeout(5000);
     connectionPage.SubmitValidateCredential()
     await page.waitForTimeout(5000);

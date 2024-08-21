@@ -1,35 +1,21 @@
 import { test, ElectronApplication, expect, _electron as electron, Page } from '@playwright/test';
 import ConnectionPage from '../Pages/connection.page';
 import TitlePage from '../Pages/title.page';
-import PlanningPage from '../Pages/planning.page.ts';
-import InstallationTypePage from '../Pages/installationType.page.ts';
+import PlanningPage from '../Pages/planning.page';
+import InstallationTypePage from '../Pages/installationType.page';
+import config from '../utils/config'
 let page: Page;
 
 let electronApp: ElectronApplication
 const CONNECTION_PAGE_TITLE = 'Connection';
-const SSH_HOST = process.env.SSH_HOST;
-const SSH_PASSWD = process.env.SSH_PASSWD;
-const SSH_PORT = process.env.SSH_PORT;
-const SSH_USER = process.env.SSH_USER;
 const PLANNING_TITLE = 'Before you start';
 const INSTALLATION_TYPE_TITLE = 'Installation Type';
 const JOB_STATEMENT = "//HELLOJOB JOB 'HELLO, WORLD!',CLASS=A,MSGCLASS=A\n//STEP01   EXEC PGM=IEFBR14\n//SYSPRINT DD  SYSOUT=A\n//SYSIN    DD  DUMMY";
 const INVALID_JOB_STATEMENT = "//HELLOJOB JOB 'HELLO, WORLD!',CLASS=A,MSGCLASS";
 const ERROR_MESSAGE = "Failed to verify job statement";
 const ERROR_MESSAGE1 = "Error invoking remote method 'get-env-vars': Error: Failed to submit jcl, job id not found"
-const RUNTIME_DIR = process.env.ZOWE_ROOT_DIR;
-const WORKSPACE_DIR = process.env.ZOWE_WORKSPACE_DIR;
-const LOG_DIR = process.env.ZOWE_LOG_DIR;
-const EXTENSIONS_DIR = process.env.ZOWE_EXTENSION_DIR;
 const RBAC_IDENTIFIER = '1';
-const JOB_NAME = process.env.JOB_NAME;
-const JOB_PREFIX = process.env.JOB_PREFIX;
 const COOKIE_IDENTIFIER = '1';
-const JAVA_LOCATION = process.env.JAVA_HOME;
-const NODEJS_LOCATION = process.env.NODE_HOME;
-const ZOSMF_HOST = process.env.ZOSMF_HOST;
-const ZOSMF_PORT = process.env.ZOSMF_PORT;
-const ZOSMF_APP_ID = process.env.ZOSMF_APP_ID;
 
 test.describe('PlanningTab', () => {
   let connectionPage: ConnectionPage;
@@ -46,7 +32,7 @@ test.describe('PlanningTab', () => {
     planningPage = new PlanningPage(page);
     installationTypePage = new InstallationTypePage(page);
     titlePage.navigateToConnectionTab()
-    connectionPage.performLogin(SSH_HOST, SSH_PORT, SSH_USER, SSH_PASSWD)
+    connectionPage.performLogin(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD)
     await page.waitForTimeout(5000);
     connectionPage.clickContinueButton();
     await page.waitForTimeout(3000);
@@ -114,8 +100,9 @@ test.describe('PlanningTab', () => {
   test('Test Validate Locations with Valid Data', async () => {
     planningPage.validateJobStatement(JOB_STATEMENT);
     await page.waitForTimeout(20000);
-    planningPage.validatePlanningStageLocations(RUNTIME_DIR, WORKSPACE_DIR, EXTENSIONS_DIR, LOG_DIR, '1',
-      JOB_NAME, JOB_PREFIX, JAVA_LOCATION, NODEJS_LOCATION, ZOSMF_HOST, ZOSMF_PORT, ZOSMF_APP_ID)
+    planningPage.validatePlanningStageLocations(config.ZOWE_ROOT_DIR, config.ZOWE_WORKSPACE_DIR,
+      config.ZOWE_EXTENSION_DIR, config.ZOWE_LOG_DIR, '1', config.JOB_NAME, config.JOB_PREFIX,
+      config.JAVA_HOME, config.NODE_HOME, config.ZOSMF_HOST, config.ZOSMF_PORT, config.ZOSMF_APP_ID)
     await page.waitForTimeout(20000);
     const is_GreenCheck_Visible = await planningPage.isValidateLocationsGreenCheckVisible();
     expect(is_GreenCheck_Visible).toBe(true);
@@ -150,11 +137,12 @@ test.describe('PlanningTab', () => {
   test('Test Save and Close and Resume Progress', async () => {
     planningPage.validateJobStatement(JOB_STATEMENT);
     await page.waitForTimeout(20000);
-    planningPage.validatePlanningStageLocations(RUNTIME_DIR, WORKSPACE_DIR, EXTENSIONS_DIR, LOG_DIR, '1',
-      JOB_NAME, JOB_PREFIX, JAVA_LOCATION, NODEJS_LOCATION, ZOSMF_HOST, ZOSMF_PORT, ZOSMF_APP_ID)
+    planningPage.validatePlanningStageLocations(config.ZOWE_ROOT_DIR, config.ZOWE_WORKSPACE_DIR,
+      config.ZOWE_EXTENSION_DIR, config.ZOWE_LOG_DIR, '1', config.JOB_NAME, config.JOB_PREFIX,
+      config.JAVA_HOME, config.NODE_HOME, config.ZOSMF_HOST, config.ZOSMF_PORT, config.ZOSMF_APP_ID)
     await page.waitForTimeout(3000);
     titlePage.clickOnResumeProgress();
-    connectionPage.fillpassword(SSH_PASSWD)
+    connectionPage.fillpassword(config.SSH_PASSWD)
     await page.waitForTimeout(5000);
     connectionPage.SubmitValidateCredential()
     await page.waitForTimeout(5000);
