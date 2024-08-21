@@ -1,9 +1,10 @@
 let mainSchema: any;
+let schemaMap: { [key: string]: any } = {};
 
 export const updateSchemaReferences = (yamlAndSchema: any, schemaObject: any): void => {
   mainSchema = schemaObject;
   const schemaArray = Object.keys(yamlAndSchema);
-  const schemaMap: {[key: string]: any} = {};
+  schemaMap = {};
 
   schemaArray.forEach(key => {
     const value = yamlAndSchema[key];
@@ -18,28 +19,28 @@ export const updateSchemaReferences = (yamlAndSchema: any, schemaObject: any): v
     }
   });
 
-  traverseAndResolveReferences(schemaObject, schemaMap);
+  traverseAndResolveReferences(schemaObject);
 }
 
-const traverseAndResolveReferences = (node: any, schemaMap: {[key: string]: any}) => {
-  if (node && typeof node === "object") {
-    Object.keys(node).forEach((key) => {
-      if (key === "$ref" && typeof node[key] === "string") {
+const traverseAndResolveReferences = (schemaObj: any) => {
+  if (schemaObj && typeof schemaObj === "object") {
+    Object.keys(schemaObj).forEach((key) => {
+      if (key === "$ref" && typeof schemaObj[key] === "string") {
         try {
-          const refValue = resolveRef(node[key], schemaMap);
-          Object.assign(node, refValue);
-          delete node['$ref'];
+          const refValue = resolveRef(schemaObj[key]);
+          Object.assign(schemaObj, refValue);
+          delete schemaObj['$ref'];
         } catch(error){
           console.error("Error resolving reference:", error.message);
         }
       } else {
-        traverseAndResolveReferences(node[key], schemaMap);
+        traverseAndResolveReferences(schemaObj[key]);
       }
     })
   }
 }
 
-const resolveRef = (ref: string, schemaMap: any) => {
+const resolveRef = (ref: string) => {
   let [refPath, anchorPart] = ref.split('#');
   const isRefPathEmpty = !refPath;
 
