@@ -24,19 +24,17 @@ class ConnectionPage{
     this.resumeProgress =  page.locator('//button[contains(text(),"Resume Progress")]')
     this.continueButton = page.locator('.MuiButton-containedPrimary.MuiButton-sizeMedium')
     this.greenCheckIconSelector = page.locator('.MuiContainer-root svg[data-testid="CheckCircleIcon"]')
-
-
-
   }
   async fillConnectionDetails(host: string, port: string, username: string, password: string){
-    await this.page.waitForTimeout(1000);
-    await this.host.fill(host)
+    console.log("Filling connection details...");
+    await this.host.fill(host);
     await this.page.waitForTimeout(1000);
     await this.port.fill(port)
     await this.page.waitForTimeout(1000);
     await this.userName.fill(username)
     await this.page.waitForTimeout(1000);
-    await this.password.fill(password)
+    await this.password.fill(password);
+	console.log("Connection details filled.");
   }
 
   async getHostValue(){
@@ -60,8 +58,10 @@ class ConnectionPage{
   }
 
   async SubmitValidateCredential(){
+    console.log("Submitting credentials...");
     await this.page.waitForTimeout(1000);
-    await this.validateCredential.click()
+    await this.validateCredential.click();
+    console.log("Credentials submitted.");
   }
 
   async clickContinueButton() {
@@ -75,12 +75,9 @@ class ConnectionPage{
   async isContinueButtonVisible() {
     return await this.continueButton.isDisabled();
   }
-  async clickContinueButton() {
-    return await this.continueButton.click();
-  }
   async isGreenCheckIconVisible() {
     return await this.greenCheckIconSelector.isHidden();
   }
 }
 
-  export default ConnectionPage;
+export default ConnectionPage;
