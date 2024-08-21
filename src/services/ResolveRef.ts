@@ -43,7 +43,7 @@ const resolveRef = (ref: string, schemaMap: any) => {
   let [refPath, anchorPart] = ref.split('#');
   const isRefPathEmpty = !refPath;
 
-  let refSchema = isRefPathEmpty ? mainSchema : schemaMap[Object.keys(schemaMap).find((id) => id.endsWith(refPath)) || ""];
+  let refSchema = isRefPathEmpty ? mainSchema : schemaMap[Object.keys(schemaMap).find((id) => id.endsWith(refPath))];
 
   if (!refSchema) {
     throw new Error(`Schema for reference path ${refPath} not found`);
