@@ -156,8 +156,8 @@ class Installation {
           try {
             let yamlSchema = JSON.parse(readPaxYamlAndSchema.details.yamlSchema);
             const serverCommon = JSON.parse(readPaxYamlAndSchema.details.serverCommon);
+            updateSchemaReferences(readPaxYamlAndSchema.details, yamlSchema);
             if(yamlSchema && serverCommon){
-              updateSchemaReferences(yamlSchema, serverCommon);
               ConfigurationStore.setSchema(yamlSchema);
               parsedSchema = true;
               ProgressStore.set('downloadUnpax.getSchemas', true);
