@@ -1,12 +1,12 @@
-let SCHEMA: any;
+let mainSchema: any;
 
-export const updateSchemaReferences = (readPaxYamlAndSchema: any, schema: any): void => {
-  SCHEMA = schema;
-  const schemaArray = Object.keys(readPaxYamlAndSchema);
+export const updateSchemaReferences = (yamlAndSchema: any, schemaObject: any): void => {
+  mainSchema = schemaObject;
+  const schemaArray = Object.keys(yamlAndSchema);
   const schemaMap: {[key: string]: any} = {};
 
   schemaArray.forEach(key => {
-    const value = readPaxYamlAndSchema[key];
+    const value = yamlAndSchema[key];
     try {
       const schemaObject = JSON.parse(value);
       const id = schemaObject?.$id;
@@ -18,12 +18,12 @@ export const updateSchemaReferences = (readPaxYamlAndSchema: any, schema: any): 
     }
   });
 
-  traverseAndUpdate(schema, schemaMap);
+  traverseAndResolveReferences(schemaObject, schemaMap);
 }
 
-const traverseAndUpdate = (node: any, schemaMap: any) => {
-  if (node !== null && typeof node === "object") {
-    for (const key in node) {
+const traverseAndResolveReferences = (node: any, schemaMap: {[key: string]: any}) => {
+  if (node && typeof node === "object") {
+    Object.keys(node).forEach((key) => {
       if (key === "$ref" && typeof node[key] === "string") {
         try {
           const refValue = resolveRef(node[key], schemaMap);
@@ -33,42 +33,27 @@ const traverseAndUpdate = (node: any, schemaMap: any) => {
           console.error("Error resolving reference:", error.message);
         }
       } else {
-        traverseAndUpdate(node[key], schemaMap);
+        traverseAndResolveReferences(node[key], schemaMap);
       }
-    }
+    })
   }
 }
 
 const resolveRef = (ref: string, schemaMap: any) => {
-  let [refPath, anchor] = ref.split('#');
-  let refSchema;
-  let isRefPathEmpty = false;
-  let refObject: any;
+  let [refPath, anchorPart] = ref.split('#');
+  const isRefPathEmpty = !refPath;
 
-  if(!refPath) {
-    isRefPathEmpty = true;
-    refSchema = SCHEMA;
-  } else {
-    const refSchemaKey = Object.keys(schemaMap).find((id: string) => id.endsWith(refPath));
-    if(!refSchemaKey) {
-      throw new Error(`Schema for reference path ${refPath} not found`);
-    }
-    refSchema = schemaMap[refSchemaKey];
+  let refSchema = isRefPathEmpty ? mainSchema : schemaMap[Object.keys(schemaMap).find((id) => id.endsWith(refPath)) || ""];
+
+  if (!refSchema) {
+    throw new Error(`Schema for reference path ${refPath} not found`);
   }
 
-  if(anchor.includes("/")) {
-    const parts = anchor.split("/");
-    anchor = parts[parts.length - 1];
-  }
-
-  if(isRefPathEmpty) {
-    refObject = refSchema.$defs[anchor];
-  } else {
-    refObject = Object.values(refSchema.$defs).find((obj:any) => obj.$anchor === anchor);
-  }
+  const anchor = anchorPart?.split("/").pop();
+  const refObject = isRefPathEmpty ? refSchema.$defs[anchor] :  Object.values(refSchema.$defs).find((obj:any) => obj.$anchor === anchor);
 
   if (!refObject) {
-    throw new Error(`Reference ${ref} not found in schema ${refSchema.$id}`);
+    throw new Error(`Reference ${ref} not found in schemaObject ${refSchema.$id}`);
   }
 
   return refObject;
