@@ -1,7 +1,7 @@
-import { IResponse } from "../types/interfaces";
+let SCHEMA: any;
 
 export const updateSchemaReferences = (readPaxYamlAndSchema: any, schema: any): void => {
-
+  SCHEMA = schema;
   const schemaArray = Object.keys(readPaxYamlAndSchema);
   const schemaMap: {[key: string]: any} = {};
 
@@ -40,15 +40,32 @@ const traverseAndUpdate = (node: any, schemaMap: any) => {
 }
 
 const resolveRef = (ref: string, schemaMap: any) => {
-  const [refPath, anchor] = ref.split('#');
-  const refSchemaKey = Object.keys(schemaMap).find((id: string) => id.endsWith(refPath));
+  let [refPath, anchor] = ref.split('#');
+  let refSchema;
+  let isRefPathEmpty = false;
+  let refObject: any;
 
-  if(!refSchemaKey) {
-    throw new Error(`Schema for reference path ${refPath} not found`);
+  if(!refPath) {
+    isRefPathEmpty = true;
+    refSchema = SCHEMA;
+  } else {
+    const refSchemaKey = Object.keys(schemaMap).find((id: string) => id.endsWith(refPath));
+    if(!refSchemaKey) {
+      throw new Error(`Schema for reference path ${refPath} not found`);
+    }
+    refSchema = schemaMap[refSchemaKey];
   }
 
-  const refSchema = schemaMap[refSchemaKey];
-  const refObject = Object.values(refSchema.$defs).find((obj:any) => obj.$anchor === anchor);
+  if(anchor.includes("/")) {
+    const parts = anchor.split("/");
+    anchor = parts[parts.length - 1];
+  }
+
+  if(isRefPathEmpty) {
+    refObject = refSchema.$defs[anchor];
+  } else {
+    refObject = Object.values(refSchema.$defs).find((obj:any) => obj.$anchor === anchor);
+  }
 
   if (!refObject) {
     throw new Error(`Reference ${ref} not found in schema ${refSchema.$id}`);
