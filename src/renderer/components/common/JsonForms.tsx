@@ -17,7 +17,6 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
-import FormLabel from '@mui/material/FormLabel';
 
 // Creates a basic input element in the UI schema
 const createControl = (scope: string) => ({
@@ -114,18 +113,13 @@ const findMatchingSchemaIndex = (formData: any, oneOfSchemas: any) => {
   return 0; // Default to the first schema if no match is found
 };
 
-const handleOneOfSchema = (schema: any, formData: any): any => {
-  const requiredSchemaIndex = findMatchingSchemaIndex(formData, schema.oneOf);
-  return requiredSchemaIndex;
-}
-
 const makeUISchema = (schema: any, base: string, formData: any): any => {
   if (!schema || !formData) {
     return "";
   }
 
   if(schema.oneOf) {
-   const schemaIndex = handleOneOfSchema(schema, formData);
+   const schemaIndex = findMatchingSchemaIndex(formData, schema.oneOf)
    schema = schema.oneOf[schemaIndex];
   }
 
@@ -180,12 +174,10 @@ export default function JsonForm(props: any) {
   const [selectedSchemaIndex, setSelectedSchemaIndex] = schema.oneOf ? useState(findMatchingSchemaIndex(formData, schema.oneOf)) : useState(0);
   const [requiredSchema, setRequiredSchema] = useState(schema);
 
-
   useEffect(() => {
     if (schema?.oneOf) {
-      const initialSchemaIndex = handleOneOfSchema(schema, formData);
-      setRequiredSchema(schema.oneOf[initialSchemaIndex]);
-      formData = filterFormData(formData, schema.oneOf[initialSchemaIndex]);
+      setRequiredSchema(schema.oneOf[selectedSchemaIndex]);
+      formData = filterFormData(formData, schema.oneOf[selectedSchemaIndex]);
     }
   }, []);
 
