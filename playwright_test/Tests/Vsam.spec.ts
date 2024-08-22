@@ -86,7 +86,6 @@ test.describe('VsamPage', () => {
 
 
   test('test title of page', async ({ page }) => {
-    await page.waitForTimeout(5000);
     const title = await vsamPage.returnTitleOfVsamPage();
     expect(title).toBe(VSAM_TITLE);
   })
@@ -126,7 +125,6 @@ test.describe('VsamPage', () => {
   test('Test previous button is enabled', async ({ page }) => {
     const is_prevButtonEnable = await vsamPage.isPreviousButtonEnable();
     expect(is_prevButtonEnable).toBe(true);
-    await page.waitForTimeout(2000);
   })
 
   test('Test Skip Vsam button is enable', async ({ page }) => {
@@ -142,7 +140,6 @@ test.describe('VsamPage', () => {
   test('Test continue to lauch button is disable', async ({ page }) => {
    const is_ContinueButtonDisable = await vsamPage.isContinueButtonDisable();
    expect(is_ContinueButtonDisable).toBe(true);
-   await page.waitForTimeout(2000);
   })
 
   test('Test fill vsam details NONRLS mode', async ({ page }) => {
@@ -177,7 +174,6 @@ test.describe('VsamPage', () => {
     const command = `cat ${process.env.ZOWE_ROOT_DIR}/zowe.yaml`;
     try {
         const yaml = await runSSHCommand(command);
-        console.log('Command Output:', yaml);
         expect(yaml).toContain(config.mode);
         expect(yaml).toContain(config.volume);
         expect(yaml).toContain(config.vsamDatasetName);
@@ -193,7 +189,6 @@ test.describe('VsamPage', () => {
 
     try {
         const yaml = await runSSHCommand(command);
-        console.log('Command Output:', yaml);
         expect(yaml).toContain(config.vsamDatasetName);
     } catch (error) {
         console.error('Error executing command:', error.message);

@@ -114,8 +114,6 @@ test.describe('StcsTab', () => {
 
     try {
         const yaml = await runSSHCommand(command);
-        console.log('Command Output:', yaml);
-        console.log('Command Output:', yaml);
         expect(yaml).toContain(SECURITY_AUX);
         expect(yaml).toContain(SECURITY_STC_ZOWE);
         expect(yaml).toContain(SECURITY_STC_ZIS);
@@ -193,7 +191,6 @@ test.describe('StcsTab', () => {
 
       try {
           const yaml = await runSSHCommand(command);
-          console.log('Command Output:', yaml);
           expect(yaml).toContain(SECURITY_AUX);
           expect(yaml).toContain(SECURITY_STC_ZOWE);
           expect(yaml).toContain(SECURITY_STC_ZIS);
