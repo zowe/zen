@@ -201,7 +201,7 @@ export default function JsonForm(props: any) {
               onChange={handleSchemaChange}
             >
               { schema.oneOf.map((_: any, index: number) => (
-                <FormControlLabel key={index} value={index} control={<Radio />} label={`Certificate ${index}`} />
+                <FormControlLabel key={index} value={index} control={<Radio />} label={`Option ${index+1}`} />
               ))}
             </RadioGroup>
           </FormControl>

@@ -22,6 +22,7 @@ export const updateSchemaReferences = (yamlAndSchema: any, schemaObject: any): v
   traverseAndResolveReferences(schemaObject);
 }
 
+// Recursively traverse and resolve $ref references in the schema object
 const traverseAndResolveReferences = (schemaObj: any) => {
   if (schemaObj && typeof schemaObj === "object") {
     Object.keys(schemaObj).forEach((key) => {
@@ -40,11 +41,14 @@ const traverseAndResolveReferences = (schemaObj: any) => {
   }
 }
 
+// Resolve a $ref string to its referenced schema object
 const resolveRef = (ref: string) => {
   let [refPath, anchorPart] = ref.split('#');
   const isRefPathEmpty = !refPath;
 
-  let refSchema = isRefPathEmpty ? mainSchema : schemaMap[Object.keys(schemaMap).find((id) => id.endsWith(refPath))];
+  let refSchema = isRefPathEmpty
+    ? mainSchema
+    : schemaMap[Object.keys(schemaMap).find((id) => id.endsWith(refPath))];
 
   if (!refSchema) {
     throw new Error(`Schema for reference path ${refPath} not found`);
@@ -55,6 +59,16 @@ const resolveRef = (ref: string) => {
 
   if (!refObject) {
     throw new Error(`Reference ${ref} not found in schemaObject ${refSchema.$id}`);
+  }
+
+  if (refObject.pattern) {
+    // Convert refObject.pattern to a string if it is not already a string
+    const pattern = typeof refObject.pattern === 'string' ? refObject.pattern : String(refObject.pattern);
+
+    // Remove backslashes if pattern contains any to make it work with ajv which is internally used by jsonforms library
+    if (refObject.pattern.includes("\\")) {
+      refObject.pattern = refObject.pattern.replace(/\\/g, '');
+    }
   }
 
   return refObject;
