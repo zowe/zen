@@ -31,7 +31,6 @@ import { TYPE_YAML, TYPE_OUTPUT, INIT_STAGE_LABEL, CERTIFICATES_STAGE_LABEL, ajv
 const Certificates = () => {
 
   const [theme] = useState(createTheme());
-  const updtYaml = useAppSelector(selectYaml);
 
   const [STAGE_ID] = useState(getStageDetails(INIT_STAGE_LABEL).id);
   const [SUB_STAGES] = useState(!!getStageDetails(INIT_STAGE_LABEL).subStages);
@@ -39,12 +38,10 @@ const Certificates = () => {
 
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  // const [yaml, setLocalYaml] = useState(updtYaml);
   const yaml = useAppSelector(selectYaml);
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [installationArgs] = useState(getInstallationArguments());
   const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.certificate);
-  // const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
   const setupYaml = yaml?.zowe?.setup?.certificate;
   const [verifyCerts, setVerifyCerts] = useState(yaml?.zowe?.verifyCertificates ?? "STRICT");
   const [isFormInit, setIsFormInit] = useState(false);
@@ -191,7 +188,6 @@ const Certificates = () => {
       if(res.details.updatedYaml != undefined){
         const updatedCerts = res.details.updatedYaml.zowe?.certificate;
         const updatedYaml = {...yaml, zowe: {...yaml.zowe, certificate: updatedCerts}};
-        // setSetupYaml(res.details.updatedYaml.zowe?.setup.certificate);
         window.electron.ipcRenderer.setConfig(updatedYaml);
         dispatch(setYaml(updatedYaml));
       }
@@ -240,7 +236,6 @@ const Certificates = () => {
         }
         const updatedYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}};
         window.electron.ipcRenderer.setConfig(updatedYaml);
-        // setLocalYaml(updatedYaml);
         dispatch(setYaml(updatedYaml));
       }
     }
@@ -249,7 +244,6 @@ const Certificates = () => {
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
-    // setSetupYaml(data);
   } 
 
   return (
@@ -281,7 +275,6 @@ const Certificates = () => {
                 dispatchActions(false);
                 const newConfig = {...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value, setup: {...yaml.zowe.setup}}};
                 window.electron.ipcRenderer.setConfig(newConfig);
-                // setLocalYaml(newConfig);
                 dispatch(setYaml(newConfig));
                 setVerifyCerts(e.target.value);
               }}
