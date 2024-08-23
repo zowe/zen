@@ -1,26 +1,38 @@
 let mainSchema: any;
 let schemaMap: { [key: string]: any } = {};
 
-export const updateSchemaReferences = (yamlAndSchema: any, schemaObject: any): void => {
-  mainSchema = schemaObject;
-  const schemaArray = Object.keys(yamlAndSchema);
-  schemaMap = {};
+export const updateSchemaReferences = (yamlAndSchema: { [key: string]: string }, schemaObject: any): void => {
+  schemaMap = parseSchemas(yamlAndSchema);
 
-  schemaArray.forEach(key => {
-    const value = yamlAndSchema[key];
+  // Traverse and resolve references in schemas other than zowe-yaml schema
+  Object.values(schemaMap).forEach((schema: any) => {
+    if(schema !== schemaObject) {
+      mainSchema = schema;
+      traverseAndResolveReferences(schema);
+    }
+  })
+
+  // Traverse and resolve references for the zowe-yaml schema
+  mainSchema = schemaObject;
+  traverseAndResolveReferences(schemaObject);
+}
+
+// Parses all schemas and populates the schemaMap
+const parseSchemas = (yamlAndSchema: { [key: string]: string }): { [key: string]: any } => {
+  const schemaMap: { [key: string]: any } = {};
+  Object.entries(yamlAndSchema).forEach(([key, value]) => {
     try {
       const schemaObject = JSON.parse(value);
       const id = schemaObject?.$id;
-      if(id) {
+      if (id) {
         schemaMap[id] = schemaObject;
       }
-    } catch(error: any) {
+    } catch (error: any) {
       console.error(`Error parsing schema for key ${key}:`, error.message);
     }
   });
-
-  traverseAndResolveReferences(schemaObject);
-}
+  return schemaMap;
+};
 
 // Recursively traverse and resolve $ref references in the schema object
 const traverseAndResolveReferences = (schemaObj: any) => {
@@ -54,20 +66,25 @@ const resolveRef = (ref: string) => {
     throw new Error(`Schema for reference path ${refPath} not found`);
   }
 
+  if (!refSchema.$defs) {
+    throw new Error(`No $defs found in schema ${refSchema.$id}`);
+  }
+
   const anchor = anchorPart?.split("/").pop();
-  const refObject = isRefPathEmpty ? refSchema.$defs[anchor] :  Object.values(refSchema.$defs).find((obj:any) => obj.$anchor === anchor);
+  const refObject = isRefPathEmpty
+    ? refSchema.$defs[anchor]
+    : Object.values(refSchema.$defs).find((obj:any) => obj.$anchor === anchor);
 
   if (!refObject) {
     throw new Error(`Reference ${ref} not found in schemaObject ${refSchema.$id}`);
   }
 
+  // Ensure pattern is a string and remove backslashes for ajv compatibility
   if (refObject.pattern) {
-    // Convert refObject.pattern to a string if it is not already a string
     const pattern = typeof refObject.pattern === 'string' ? refObject.pattern : String(refObject.pattern);
 
-    // Remove backslashes if pattern contains any to make it work with ajv which is internally used by jsonforms library
-    if (refObject.pattern.includes("\\")) {
-      refObject.pattern = refObject.pattern.replace(/\\/g, '');
+    if (pattern.includes("\\")) {
+      refObject.pattern = pattern.replace(/\\/g, '');
     }
   }
 
