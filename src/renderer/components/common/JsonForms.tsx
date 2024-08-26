@@ -19,8 +19,9 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 
 // Creates a basic input element in the UI schema
-const createControl = (scope: string) => ({
+const createControl = (scope: string, label?: string) => ({
   type: 'Control',
+  label: label,
   scope, // Scope specifies the JSON path
 });
 
@@ -89,6 +90,9 @@ const getDefaultFormData = (schema: any, formData: any) => {
 
 // Function to return form data based on the attributes present in the schema
 const filterFormData = (data: { [key: string]: any }, schema: any) => {
+  if (!data) {
+    return null;
+  }
   const filteredData: { [key: string]: any } = {};
   const schemaProperties = schema?.properties || {};
 
@@ -106,7 +110,7 @@ const findMatchingSchemaIndex = (formData: any, oneOfSchemas: any) => {
   for (let i = 0; i < oneOfSchemas.length; i++) {
     const subSchema = oneOfSchemas[i];
     const filteredData = filterFormData(formData, subSchema);
-    if (JSON.stringify(filteredData) === JSON.stringify(formData)) {
+    if (filteredData && JSON.stringify(filteredData) === JSON.stringify(formData)) {
       return i;
     }
   }
@@ -127,7 +131,23 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
 
   // Map each property in the JSON schema to an appropriate UI element based on its type and structure.
   const elements = properties.map((prop: any) => {
-    if (schema.properties[prop].type === 'object') {
+
+    const propertySchema = schema.properties[prop];
+
+    if (propertySchema.anyOf && propertySchema.anyOf.length > 0) {
+      let matchingPropertyIndex = findMatchingSchemaIndex(formData[prop], propertySchema.anyOf);
+      let selectedProperty = propertySchema.anyOf[matchingPropertyIndex];
+
+      if (selectedProperty.type === 'null') {
+        matchingPropertyIndex = matchingPropertyIndex > 0 ? matchingPropertyIndex-1 : propertySchema.anyOf.length-1;
+      }
+
+      if (propertySchema.type !== 'object') {
+        return createControl(`#/properties${base}${prop}/anyOf[${matchingPropertyIndex}]`, prop);
+      }
+    }
+
+    if (propertySchema.type === 'object') {
       // Create a group with a hide rule if patternProperties are present or conditional hiding is required.
       if (schema.properties[prop].patternProperties || (schema.if && conditionalSchema(schema, formData, prop))) {
         return createGroup(prop, [], {
