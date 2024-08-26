@@ -21,7 +21,7 @@ import FormControl from '@mui/material/FormControl';
 // Creates a basic input element in the UI schema
 const createControl = (scope: string, label?: string) => ({
   type: 'Control',
-  label: label,
+  label: label ? label.charAt(0).toUpperCase() + label.slice(1).toLowerCase() : undefined,
   scope, // Scope specifies the JSON path
 });
 
