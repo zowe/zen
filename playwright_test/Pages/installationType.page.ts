@@ -3,14 +3,11 @@ import CommonPage from './common.page';
 
 class InstallationTypePage {
   page: Page;
-  pageTitle: Locator;
   downloadPax: Locator;
   uploadPax: Locator;
   smpe: Locator;
   zoweLink: Locator;
   licenseAgreement: Locator;
-  saveAndClose: Locator;
-  previousStep: Locator;
   continueToUnpax: Locator;
   agreeLicense: Locator;
   uploadPaxButton: Locator;
@@ -18,13 +15,10 @@ class InstallationTypePage {
 
   constructor(page: Page) {
     this.page = page;
-    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.downloadPax = page.locator("//span[text()='Download Zowe convenience build PAX from internet']/preceding-sibling::span/input")
     this.uploadPax = page.locator("//span[text()='Upload Zowe PAX for offline install']/preceding-sibling::span/input")
     this.smpe = page.locator("//span[text()='SMP/E']/preceding-sibling::span/input")
     this.licenseAgreement = page.locator("//button[text()='License Agreement']")
-    this.saveAndClose = page.locator("//button[contains(text(),'Save & close')]")
-    this.previousStep = page.locator("//button[contains(text(),'Previous step')]")
     this.continueToUnpax = page.locator("//button[text()='Continue to Unpax']")
     this.zoweLink = page.locator("//a[@href='zowe.org']")
     this.agreeLicense = page.locator("//button[text()='Agree']")
@@ -33,11 +27,6 @@ class InstallationTypePage {
   }
 
   commonPage = new CommonPage();
-
-  async getPageTitle() {
-    await this.commonPage.waitForElement(this.pageTitle)
-    return await this.pageTitle.textContent({ timeout: 2000 });
-  }
 
   async selectDownloadZowePax() {
     await this.commonPage.waitForElement(this.downloadPax)
@@ -64,22 +53,9 @@ class InstallationTypePage {
     await this.licenseAgreement.click({ timeout: 5000 });
   }
 
-  async clickSaveAndClose() {
-    await this.commonPage.waitForElement(this.saveAndClose)
-    await this.saveAndClose.click({ timeout: 5000 });
-    await this.page.waitForTimeout(2000)
-  }
-
-  async clickPreviousStep() {
-    await this.commonPage.waitForElement(this.previousStep)
-    await this.previousStep.click();
-    await this.page.waitForTimeout(2000)
-  }
-
   async clickContinueToUnpax() {
     await this.commonPage.waitForElement(this.continueToUnpax)
     await this.continueToUnpax.click();
-    await this.page.waitForTimeout(5000);
   }
 
   async isContinueToUnpaxDisabled() {
@@ -106,8 +82,6 @@ class InstallationTypePage {
     this.selectUploadZowePax()
     await this.commonPage.waitForElement(this.uploadPaxButton)
     await this.uploadPaxButton.setInputFiles(uploadPaxPath)
-    await this.page.waitForTimeout(2000)
   }
-
 }
 export default InstallationTypePage;

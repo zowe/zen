@@ -1,4 +1,5 @@
 import { test, ElectronApplication, expect, _electron as electron } from '@playwright/test';
+import CommonPage from '../Pages/common.page';
 import ConnectionPage from '../Pages/connection.page';
 import TitlePage from '../Pages/title.page';
 import { prepareEnvironment } from '../prepare';
@@ -21,6 +22,7 @@ test.beforeAll(async () => {
 test.describe('ConnectionTab', () => {
   let connectionPage: ConnectionPage;
   let titlePage: TitlePage;
+  let commonPage: CommonPage
 
   test.beforeEach(async ({ page }) => {
     test.setTimeout(900000);
@@ -28,6 +30,7 @@ test.describe('ConnectionTab', () => {
     page = await electronApp.firstWindow()
     connectionPage = new ConnectionPage(page);
     titlePage = new TitlePage(page);
+    commonPage = new CommonPage(page)
     await titlePage.navigateToConnectionTab()
   });
 
@@ -37,12 +40,9 @@ test.describe('ConnectionTab', () => {
 
   test('Test Save and close and Resume Progress', async ({ page }) => {
     connectionPage.performLogin(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD)
-    await page.waitForTimeout(5000);
-    connectionPage.click_saveAndClose()
-    await page.waitForTimeout(3000);
+    commonPage.clickSaveAndClose()
     titlePage.clickOnResumeProgress();
-    await page.waitForTimeout(5000);
-    const title = await connectionPage.getConnectionPageTitle();
+    const title = await commonPage.getPageTitle();
     expect(title).toBe(CONNECTION_PAGE_TITLE);
     const hostValue = await connectionPage.getHostValue();
     expect(hostValue).toBe(config.SSH_HOST);
@@ -54,7 +54,6 @@ test.describe('ConnectionTab', () => {
 
   test('test invalid credentials', async ({ page }) => {
     connectionPage.performLogin(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, SSH_INVALID_PASSWD)
-    await page.waitForTimeout(5000);
     const error_Message = await connectionPage.getErrorMessage()
     expect(error_Message).toBe(ERROR_MESSAGE_PASSWORD);
     const isGreenIconHidden = await connectionPage.isGreenCheckIconVisible();
@@ -65,7 +64,6 @@ test.describe('ConnectionTab', () => {
 
   test('test valid credentials', async ({ page }) => {
     connectionPage.performLogin(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD)
-    await page.waitForTimeout(5000);
     const isGreenIconHidden = await connectionPage.isGreenCheckIconVisible();
     expect(isGreenIconHidden).toBe(false);
     const isContinueDisable = await connectionPage.isContinueButtonVisible();
@@ -77,12 +75,10 @@ test.describe('ConnectionTab', () => {
     expect(connectionPage.password).toBeTruthy()
     expect(connectionPage.port).toBeTruthy()
     expect(connectionPage.host).toBeTruthy()
-    await page.waitForTimeout(2000);
   })
 
   test('test continue disable', async ({ page }) => {
     const isContinueButtonDisable = await connectionPage.isContinueButtonVisible();
     expect(isContinueButtonDisable).toBe(true);
-    await page.waitForTimeout(2000);
   })
 })

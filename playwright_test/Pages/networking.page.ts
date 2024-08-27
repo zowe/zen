@@ -3,16 +3,12 @@ import CommonPage from './common.page';
 
 class NetworkingPage {
   page: Page;
-  pageTitle: Locator;
   logLevel: Locator;
   fillLogLevel: Locator;
-  previous_step_button: Locator;
   continueToApfAuthSetup: Locator;
   editor_title_element: Locator;
-  skip_button: Locator;
   view_yaml: Locator;
   view_job_output: Locator;
-  save_and_close: Locator;
   close_button: Locator;
   addDomainField: Locator;
   domainName: Locator;
@@ -36,13 +32,12 @@ class NetworkingPage {
   appServer: Locator;
   cachingService: Locator;
   discovery: Locator;
-  explorerUSS_debug_checkbox: Locator;
-  app_server_debug: Locator;
-  metricService_debug_checkbox: Locator;
+  explorerUSS_debug_checkbox: string;
+  app_server_debug: string;
+  metricService_debug_checkbox: string;
 
   constructor(page: Page) {
     this.page = page;
-    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.addDomainField = page.locator('//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/p[1]/button');
     this.domainName = page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[2]/div/div/input');
     this.deleteDomainName = page.locator('//*[@id="zen-root-container"]/div[2]/div/div[4]/div/form/div/div[2]/div[2]/button');
@@ -65,26 +60,17 @@ class NetworkingPage {
     this.appServer = page.locator('//strong[text()="app-server"]');
     this.cachingService = page.locator('//strong[text()="caching-service"]');
     this.discovery = page.locator('//strong[text()="discovery"]');
-    this.previous_step_button = page.locator('//button[contains(text(),"Previous step")]');
-    this.skip_button = page.locator('//button[contains(text(),"Skip")]');
     this.editor_title_element = page.locator('//h2[text()="Editor"]');
     this.view_yaml = page.locator('//button[contains(text(),"View/Edit Yaml")]');
     this.view_job_output = page.locator('//button[contains(text(),"View Job Output")]');
-    this.save_and_close = page.locator('//button[contains(text(),"Save & close")]');
-    this.skip_button = page.locator('//button[contains(text(),"Skip")]');
     this.close_button = page.locator('//button[contains(text(), "Close")]');
     this.continueToApfAuthSetup = page.locator('//button[contains(text(), "Continue to APF Auth Setup")]');
-    this.explorerUSS_debug_checkbox = page.locator('//*[@id="container-box-id"]/form/div/div[2]/div[4]/div/div[4]/div[1]/label/span[1]/input');
-    this.app_server_debug = page.locator('//*[@id="container-box-id"]/form/div/div[2]/div[4]/div/div[11]/div[1]/label/span[1]/input');
-    this.metricService_debug_checkbox = page.locator('//*[@id="container-box-id"]/form/div/div[2]/div[4]/div/div[1]/div[1]/label/span[1]/input');
+    this.explorerUSS_debug_checkbox = '//*[@id="container-box-id"]/form/div/div[2]/div[4]/div/div[4]/div[1]/label/span[1]/input';
+    this.app_server_debug = '//*[@id="container-box-id"]/form/div/div[2]/div[4]/div/div[11]/div[1]/label/span[1]/input';
+    this.metricService_debug_checkbox = '//*[@id="container-box-id"]/form/div/div[2]/div[4]/div/div[1]/div[1]/label/span[1]/input';
   }
 
   commonPage = new CommonPage();
-
-  async getPageTitle() {
-    await this.commonPage.waitForElement(this.pageTitle)
-    return await this.pageTitle.textContent({ timeout: 2000 });
-  }
 
   async fillExternalDomainPort(port: string,  p0: { timeout: number; }) {
     await this.commonPage.waitForElement(this.externalPort)
@@ -204,31 +190,6 @@ class NetworkingPage {
     this.view_job_output.click({ timeout: 2000 })
   }
 
-  async is_skipNetworkingButtonEnable() {
-    await this.commonPage.waitForElement(this.skip_button)
-    return await this.skip_button.isEnabled({ timeout: 5000 });
-  }
-
-  async click_skipNetworking() {
-    await this.commonPage.waitForElement(this.skip_button)
-    const isEnabled = await this.is_skipNetworkingButtonEnable();
-    if (isEnabled) {
-        await this.skip_button.click({ timeout: 2000 });
-    } else {
-        throw new Error('Skip button is not enabled and cannot be clicked.');
-    }
-  }
-
-  async isPreviousButtonEnable() {
-    await this.commonPage.waitForElement(this.previous_step_button)
-    return await this.previous_step_button.isEnabled({ timeout: 50000 });
-  }
-
-  async click_PreviousStep() {
-    await this.commonPage.waitForElement(this.previous_step_button)
-    await this.previous_step_button.click({ timeout: 2000 });
-  }
-
   async open_monacoEditor() {
     await this.commonPage.waitForElement(this.view_yaml)
     this.view_yaml.click({ timeout: 5000 })
@@ -245,11 +206,6 @@ class NetworkingPage {
   async isContinueButtonDisable() {
     await this.commonPage.waitForElement(this.continueToApfAuthSetup)
     return await this.continueToApfAuthSetup.isDisabled({ timeout: 5000 });
-  }
-
-  async click_saveAndClose() {
-    await this.commonPage.waitForElement(this.save_and_close)
-    this.save_and_close.click({ timeout: 2000 })
   }
 
   async read_yaml() {

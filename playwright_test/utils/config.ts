@@ -24,7 +24,7 @@ interface Config {
   LOAD_LIB: string | undefined;
   DOMAIN_NAME: string | undefined;
   SECURITY_ADMIN: string | undefined;
-  EXTERNAL_PORT: string | undefined;
+  EXTERNAL_PORT: number | undefined;
   SECURITY_STC: string | undefined;
   SECURITY_SYSPROG: string | undefined;
   SECURITY_USER_ZIS: string | undefined;
@@ -32,7 +32,6 @@ interface Config {
   SECURITY_AUX: string | undefined;
   SECURITY_STC_ZOWE: string | undefined;
   SECURITY_STC_ZIS: string | undefined;
-
 }
 
 const config: Config = {
@@ -70,5 +69,4 @@ const config: Config = {
   SECURITY_STC_ZIS: process.env.SECURITY_STC_ZIS,
   DOMAIN_NAME: process.env.DOMAIN_NAME
 };
-
 export default config;

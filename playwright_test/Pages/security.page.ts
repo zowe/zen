@@ -3,17 +3,13 @@ import CommonPage from './common.page';
 
 class SecurityPage {
   page: Page;
-  pageTitle: Locator;
   writeConfig_greenCheckXpath: Locator;
   uploadYaml_greenCheckXpath: Locator;
   init_security_greenCheckXpath: Locator;
   continue_STC_Setup: Locator;
   editor_title_element: Locator;
-  skip_button: Locator;
   view_yaml: Locator;
   view_job_output: Locator;
-  save_and_close: Locator;
-  previous_step: Locator;
   initSecurity: Locator;
   close_button: Locator;
   admin: Locator;
@@ -28,17 +24,13 @@ class SecurityPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.writeConfig_greenCheckXpath = page.locator('#card-init-security-progress-card svg.MuiSvgIcon-colorSuccess')
     this.uploadYaml_greenCheckXpath = page.locator('#card-download-progress-card svg.MuiSvgIcon-colorSuccess')
     this.init_security_greenCheckXpath = page.locator("#card-success-progress-card svg.MuiSvgIcon-colorSuccess")
-    this.skip_button = page.locator('//button[contains(text(),"Skip")]')
     this.editor_title_element = page.locator('//h2[text()="Editor"]')
     this.product = page.locator('input[role="combobox"]')
     this.view_yaml = page.locator('//button[contains(text(),"View/Edit Yaml")]')
     this.view_job_output = page.locator('//button[contains(text(), "View Job Output")]')
-    this.save_and_close = page.locator('//button[contains(text(),"Save & close")]')
-    this.previous_step = page.locator('//button[contains(text(),"Previous step")]')
     this.initSecurity = page.locator("//button[contains(text(), 'Initialize Security Config')]")
     this.close_button = page.locator('//button[contains(text(), "Close")]')
     this.continue_STC_Setup = page.locator('//button[contains(text(), "Continue to STC Setup")]')
@@ -53,11 +45,6 @@ class SecurityPage {
   }
 
   commonPage = new CommonPage();
-
-  async getPageTitle() {
-    await this.commonPage.waitForElement(this.pageTitle)
-    return await this.pageTitle.textContent({ timeout: 2000 });
-  }
 
   async fillSecurityDetails(product: string, admin: string, stc: string, sys_prog: string, user_zis: string,
     user_zowe: string, aux: string, stc_zowe: string, stc_zis: string) {
@@ -110,16 +97,6 @@ class SecurityPage {
     return await this.init_security_greenCheckXpath.isVisible({ timeout: 50000 });
   }
 
-  async isPreviousButtonEnable() {
-    await this.commonPage.waitForElement(this.previous_step)
-    return await this.previous_step.isEnabled({ timeout: 5000 });
-  }
-
-  async clickPreviousStep() {
-    await this.commonPage.waitForElement(this.previous_step)
-    await this.previous_step.click({ timeout: 5000 });
-  }
-
   async viewYaml() {
     await this.commonPage.waitForElement(this.view_yaml)
     await this.view_yaml.click({ timeout: 2000 })
@@ -135,24 +112,9 @@ class SecurityPage {
     this.view_job_output.click({ timeout: 2000 })
   }
 
-  async is_skipSecurityButtonEnable() {
-    await this.commonPage.waitForElement(this.skip_button)
-    return await this.skip_button.isEnabled({ timeout: 5000 });
-  }
-
-  async click_skipSecurity() {
-    await this.commonPage.waitForElement(this.skip_button)
-    await this.skip_button.click({ timeout: 2000 });
-  }
-
   async isContinueButtonDisable() {
     await this.commonPage.waitForElement(this.continue_STC_Setup)
     return await this.continue_STC_Setup.isDisabled({ timeout: 5000 });
-  }
-
-  async click_saveAndClose() {
-    await this.commonPage.waitForElement(this.save_and_close)
-    this.save_and_close.click({ timeout: 2000 })
   }
 
   async get_admin_value() {

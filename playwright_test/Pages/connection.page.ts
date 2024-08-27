@@ -8,11 +8,8 @@ class ConnectionPage {
   userName: Locator;
   password: Locator;
   validateCredential: Locator;
-  connectionPageTitle: Locator;
   continueButton: Locator;
   greenCheckIconSelector: Locator
-  save_and_close: Locator;
-  resumeProgress: Locator;
   errorMessage: Locator;
 
   constructor(page: Page) {
@@ -22,10 +19,7 @@ class ConnectionPage {
     this.userName = page.locator('label:has-text("User Name") + div input#standard-required')
     this.password = page.locator('#standard-password-input')
     this.validateCredential = page.locator("//button[contains(text(), 'Validate credentials')]")
-    this.connectionPageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.continueButton = page.locator('.MuiButton-containedPrimary.MuiButton-sizeMedium')
-    this.save_and_close = page.locator('//button[contains(text(),"Save & close")]')
-    this.resumeProgress = page.locator('//button[contains(text(),"Resume Progress")]')
     this.greenCheckIconSelector = page.locator('.MuiContainer-root svg[data-testid="CheckCircleIcon"]')
     this.errorMessage = page.locator("//div[contains(@class,'MuiAlert-message')]")
   }
@@ -89,11 +83,6 @@ class ConnectionPage {
     return value;
   }
 
-  async getConnectionPageTitle() {
-    await this.commonPage.waitForElement(this.connectionPageTitle)
-    return await this.connectionPageTitle.textContent();
-  }
-
   async SubmitValidateCredential() {
     console.log("Submitting credentials...");
     await this.commonPage.waitForElement(this.validateCredential)
@@ -104,11 +93,6 @@ class ConnectionPage {
   async clickContinueButton() {
     await this.commonPage.waitForElement(this.continueButton)
     return await this.continueButton.click();
-  }
-
-  async click_saveAndClose() {
-    await this.commonPage.waitForElement(this.save_and_close)
-    this.save_and_close.click({ timeout: 5000 })
   }
 
   async isContinueButtonVisible() {

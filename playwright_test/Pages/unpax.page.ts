@@ -3,35 +3,22 @@ import CommonPage from './common.page';
 
 class UnpaxPage {
   page: Page;
-  pageTitle: Locator;
   beginDownload: Locator;
   zoweLink: Locator;
   beginUpload: Locator;
   retrieveZoweYaml: Locator;
-  saveAndClose: Locator;
-  previousStep: Locator;
-  skipUnpax: Locator;
   continueToComponentInstallation: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.beginDownload = page.locator("//button[text()='Begin Download']")
     this.zoweLink = page.locator("//a[@href='https://www.zowe.org/download']")
     this.beginUpload = page.locator("//button[text()='Begin Upload']")
     this.retrieveZoweYaml = page.locator("//button[text()='Retrieve example-zowe.yaml']")
-    this.saveAndClose = page.locator("//button[text()='Save & close']")
-    this.previousStep = page.locator("//button[text()='Previous step']")
-    this.skipUnpax = page.locator("//button[contains(text(),'Skip')]")
     this.continueToComponentInstallation = page.locator("//button[text()='Continue to Components Installation']")
   }
 
   commonPage = new CommonPage();
-
-  async getUnpaxPageTitle() {
-    await this.commonPage.waitForElement(this.pageTitle)
-    return await this.pageTitle.textContent({ timeout: 2000 });
-  }
 
   async clickBeginDownload() {
     await this.commonPage.waitForElement(this.beginDownload)
@@ -51,30 +38,19 @@ class UnpaxPage {
   async clickRetrieveZoweYaml() {
     await this.commonPage.waitForElement(this.retrieveZoweYaml)
     await this.retrieveZoweYaml.click({ timeout: 5000 })
-    await this.page.waitForTimeout(10000);
-  }
-
-  async clickSaveAndClose() {
-    await this.commonPage.waitForElement(this.saveAndClose)
-    await this.saveAndClose.click({ timeout: 5000 });
-    await this.page.waitForTimeout(2000)
-  }
-
-  async clickPreviousStep() {
-    await this.commonPage.waitForElement(this.previousStep)
-    await this.previousStep.click();
-    await this.page.waitForTimeout(2000)
-  }
-
-  async clickSkipUnpax() {
-    await this.commonPage.waitForElement(this.skipUnpax)
-    await this.skipUnpax.click();
   }
 
   async clickContinueToInstallation() {
-    await this.commonPage.waitForElement(this.continueToComponentInstallation)
-    await this.continueToComponentInstallation.click();
-    await this.page.waitForTimeout(5000);
+    const timeout = 5000;
+    const interval = 500;
+    while (true) {
+      if (await this.continueToComponentInstallation.isEnabled()) {
+        await this.continueToComponentInstallation.click();
+        return;
+      }
+      await this.page.waitForTimeout(interval);
+      await this.continueToComponentInstallation.click({ timeout: timeout });
+    }
   }
 
   async isContinueToComponentInstallationDisabled() {

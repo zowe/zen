@@ -3,7 +3,6 @@ import CommonPage from './common.page';
 
 class InstallationPage {
   page: Page;
-  pageTitle: Locator;
   prefix: Locator;
   procLib: Locator;
   parmLib: Locator;
@@ -15,16 +14,12 @@ class InstallationPage {
   installMVSDatasets: Locator;
   viewEditYaml: Locator;
   viewJobOutput: Locator;
-  saveAndClose: Locator;
-  previousStep: Locator;
-  skipInstallation: Locator;
   continueToNetworkSetup: Locator;
   editorTitleElement: Locator;
   closeEditorButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.prefix = page.locator("//label[text()='Prefix']//following-sibling::div/input")
     this.procLib = page.locator("//label[text()='Proclib']//following-sibling::div/input")
     this.parmLib = page.locator("//label[text()='Parmlib']//following-sibling::div/input")
@@ -36,20 +31,12 @@ class InstallationPage {
     this.installMVSDatasets = page.locator("//button[text()='Install MVS datasets']")
     this.viewEditYaml = page.locator("//button[text()='View/Edit Yaml']")
     this.viewJobOutput = page.locator("//button[text()='View Job Output']")
-    this.saveAndClose = page.locator("//button[text()='Save & close']")
-    this.previousStep = page.locator("//button[text()='Previous step']")
-    this.skipInstallation = page.locator("//button[contains(text(),'Skip')]")
     this.continueToNetworkSetup = page.locator("//button[text()='Continue to Network Setup']")
     this.editorTitleElement = page.locator("//h2[text()='Editor']")
     this.closeEditorButton = page.locator("//button[text()='Close']")
   }
 
   commonPage = new CommonPage();
-
-  async getPageTitle() {
-    await this.commonPage.waitForElement(this.pageTitle)
-    return await this.pageTitle.textContent({ timeout: 2000 });
-  }
 
   async enterPrefix(prefix: string): Promise<void> {
     await this.commonPage.waitForElement(this.prefix)
@@ -146,28 +133,11 @@ class InstallationPage {
   async clickViewJobOutput() {
     await this.commonPage.waitForElement(this.viewJobOutput)
     await this.viewJobOutput.click();
-    await this.page.waitForTimeout(2000);
-  }
-
-  async clickSaveAndClose() {
-    await this.commonPage.waitForElement(this.saveAndClose)
-    await this.saveAndClose.click({ timeout: 2000 });
-  }
-
-  async clickPreviousStep() {
-    await this.commonPage.waitForElement(this.previousStep)
-    await this.previousStep.click();
-  }
-
-  async isSkipInstallationButtonDisabled() {
-    await this.commonPage.waitForElement(this.skipInstallation)
-    return await this.skipInstallation.isDisabled()
   }
 
   async clickContinueToNetworkSetup() {
     await this.commonPage.waitForElement(this.continueToNetworkSetup)
     await this.continueToNetworkSetup.click();
-    await this.page.waitForTimeout(5000);
   }
 
   async isContinueToNetworkSetupDisabled() {
@@ -180,10 +150,6 @@ class InstallationPage {
     return await this.continueToNetworkSetup.isEnabled()
   }
 
-  async isSkipToNetworkSetupEnabled() {
-    return await this.skipInstallation.isEnabled()
-  }
-
   private async waitForContinueButtonToBeEnabled(): Promise<void> {
     const timeout = 100000;
     const interval = 500;
@@ -194,7 +160,6 @@ class InstallationPage {
       }
       await this.page.waitForTimeout(interval);
     }
-
     throw new Error('Continue button was not enabled within the timeout period');
   }
 
@@ -208,7 +173,6 @@ class InstallationPage {
   }
 
   async fillInstallationPageDetails(DATASET_PREFIX: string, PROC_LIB: string, PARM_LIB: string, ZIS: string, JCL_LIB: string, LOAD_LIB: string, AUTH_LOAD_LIB: string, AUTH_PLUGIN_LIB: string) {
-    await this.page.waitForTimeout(2000);
     await this.enterPrefix(DATASET_PREFIX)
     await this.enterProcLib(PROC_LIB)
     await this.enterParmLib(PARM_LIB)

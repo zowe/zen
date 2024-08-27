@@ -10,10 +10,9 @@ class TitlePage {
   constructor(page: Page) {
     this.page = page;
     this.zoweInstallButton = page.locator('#card-install')
-    this.zoweDryrunButton = page.locator("div[id='card-dry run']")
+    this.zoweDryrunButton = page.locator('#card-configure')
     this.resumeProgressButton = page.locator("//button[text()='Resume Progress']")
   }
-
   commonPage = new CommonPage();
 
   async navigateToConnectionTab() {
@@ -26,5 +25,4 @@ class TitlePage {
     await this.resumeProgressButton.click({ timeout: 3000 })
   }
 }
-
 export default TitlePage;

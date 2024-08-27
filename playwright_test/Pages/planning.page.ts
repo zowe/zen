@@ -3,7 +3,6 @@ import CommonPage from './common.page';
 
 class PlanningPage {
   page: Page;
-  pageTitle: Locator;
   zoweInstallationLink: Locator;
   jobStatement: Locator;
   saveAndValidate: Locator;
@@ -24,16 +23,12 @@ class PlanningPage {
   zosmfApplicationId: Locator;
   validateLocations: Locator;
   ValidateLocationsGreenCheck: Locator;
-  saveAndClose: Locator;
-  previousStep: Locator;
   continueInstallationOptions: Locator;
   readyToProceedMessage: Locator;
   errorMessage: Locator;
-  save_and_close: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.zoweInstallationLink = page.locator("//a[contains(text(), 'installation overview for Zowe')]")
     this.jobStatement = page.locator("//label[text()='Job statement']//following-sibling::div/textarea[1]")
     this.saveAndValidate = page.locator("//button[text()='Save and validate']")
@@ -54,12 +49,9 @@ class PlanningPage {
     this.zosmfApplicationId = page.locator("//label[contains(text(),'z/OSMF Application Id')]//following-sibling::div/input")
     this.validateLocations = page.locator("//button[contains(text(), 'Validate locations')]")
     this.ValidateLocationsGreenCheck = page.locator("//button[text()='Validate locations']//following-sibling::*[@data-testid='CheckCircleIcon']")
-    this.saveAndClose = page.locator("//button[contains(text(),'Save & close')]")
-    this.previousStep = page.locator("//button[contains(text(),'Previous step')]")
     this.continueInstallationOptions = page.locator("//button[contains(text(), 'Continue to Installation Options')]")
     this.readyToProceedMessage = page.locator("//div[contains(@class,'MuiBox-root css-hieomr')]/p")
     this.errorMessage = page.locator("//div[contains(@class,'MuiAlert-message')]")
-    this.save_and_close = page.locator('//button[contains(text(),"Save & close")]')
   }
 
   commonPage = new CommonPage();
@@ -67,16 +59,6 @@ class PlanningPage {
   async clickZoweInstallationLink() {
     await this.commonPage.waitForElement(this.zoweInstallationLink)
     await this.zoweInstallationLink.click();
-  }
-
-  async getPlanningPageTitle() {
-    await this.commonPage.waitForElement(this.pageTitle)
-    return await this.pageTitle.textContent();
-  }
-
-  async click_saveAndClose() {
-    await this.commonPage.waitForElement(this.save_and_close)
-    this.save_and_close.click({ timeout: 2000 })
   }
 
   async enterJobStatement(jobStatement: string) {
@@ -231,16 +213,6 @@ class PlanningPage {
     }
   }
 
-  async clickSaveAndClose() {
-    await this.commonPage.waitForElement(this.saveAndClose)
-    await this.saveAndClose.click({ timeout: 15000 });
-  }
-
-  async clickPreviousStep() {
-    await this.commonPage.waitForElement(this.previousStep)
-    await this.previousStep.click();
-  }
-
   async clickContinueToInstallation() {
     await this.commonPage.waitForElement(this.continueInstallationOptions)
     const timeout = 30000;
@@ -295,7 +267,6 @@ class PlanningPage {
     await this.enterZosmfHost(zOSMFHost);
     await this.enterZosmfPort(zOSMFPort);
     await this.enterZosmfApplicationId(zOSMFAppID);
-    await this.page.waitForTimeout(2000);
     return true
   }
 
