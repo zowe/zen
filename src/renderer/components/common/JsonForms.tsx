@@ -206,7 +206,7 @@ export default function JsonForm(props: any) {
     setSelectedSchemaIndex(schemaIndex);
     setRequiredSchema(schema.oneOf[schemaIndex]);
     formData = filterFormData(formData, schema.oneOf[schemaIndex]);
-    onChange(formData);
+    onChange(formData, schemaIndex);
   }
 
   return (
@@ -240,7 +240,7 @@ export default function JsonForm(props: any) {
         renderers={materialRenderers}
         cells={materialCells}
         config={{showUnfocusedDescription: true}}
-        onChange={({ data, errors }) => { onChange(data) }}
+        onChange={({ data, errors }) => { schema.oneOf ? onChange(data, selectedSchemaIndex) : onChange(data) }}
       />
     </ThemeProvider>
   );

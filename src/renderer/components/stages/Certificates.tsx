@@ -217,7 +217,7 @@ const Certificates = () => {
     setEditorVisible(!editorVisible);
   };
   
-  const handleFormChange = (data: any) => {
+  const handleFormChange = (data: any, schemaOption?: any) => {
     if(data?.zowe?.verifyCertificates){
       setVerifyCerts(data.zowe.verifyCertificates);
     }
@@ -227,13 +227,24 @@ const Certificates = () => {
     if (newData) {
       if(validate) {
         validate(newData);
+
         if(validate.errors) {
-          const errPath = validate.errors[0].schemaPath;
-          const errMsg = validate.errors[0].message;
-          setStageConfig(false, errPath+' '+errMsg, newData);
+          const { schemaPath, message } = validate.errors[0];
+          let errorText = `${schemaPath} ${message}`;
+
+          if(schemaOption !== undefined && schemaOption !== null) {
+            validate.errors.forEach(err => {
+              if (err.schemaPath.includes(schemaOption)) {
+                errorText = err.message;
+              }
+            })
+          }
+
+          setStageConfig(false, errorText, newData);
         } else {
           setStageConfig(true, '', newData);
         }
+
         const updatedYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}};
         window.electron.ipcRenderer.setConfig(updatedYaml);
         dispatch(setYaml(updatedYaml));
