@@ -28,7 +28,7 @@ const parseSchemas = (yamlAndSchema: { [key: string]: string }): { [key: string]
         schemaMap[id] = schemaObject;
       }
     } catch (error: any) {
-      console.error(`Error parsing schema for key ${key}:`, error.message);
+      console.error(`Unable to parse schema for key ${key}:`, error.message);
     }
   });
   return schemaMap;
