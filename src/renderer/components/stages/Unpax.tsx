@@ -175,10 +175,11 @@ const Unpax = () => {
           dispatch(setYaml(res.details.mergedYaml));
           window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
         }
-        if(res.details?.yamlSchema != undefined) {
-          dispatch(setSchema(res.details.yamlSchema));
-          window.electron.ipcRenderer.setSchema(res.details.yamlSchema);
-        }
+        window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+          if(res && res.details) {
+            dispatch(setSchema(res.details));
+          }
+        })
         clearInterval(timer);
         updateProgress(res.status);
       }).catch(() => {
@@ -214,10 +215,11 @@ const Unpax = () => {
         dispatch(setYaml(res.details.mergedYaml));
         window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
       }
-      if(res.details?.yamlSchema != undefined) {
-        dispatch(setSchema(res.details.yamlSchema));
-        window.electron.ipcRenderer.setSchema(res.details.yamlSchema);
-      }
+      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+        if(res && res.details) {
+          dispatch(setSchema(res.details));
+        }
+      })
       updateProgress(res.status);
       clearInterval(timer);
     }).catch((err: any) => {

@@ -121,7 +121,6 @@ class Installation {
       let parsedSchema = false, parsedYaml = false;
       if(readPaxYamlAndSchema.details.yaml){
         const yamlFromPax = readPaxYamlAndSchema.details.yaml;
-        let yamlSchema;
         if(yamlFromPax){
           try {
             yamlObj = parse(yamlFromPax);
@@ -146,7 +145,7 @@ class Installation {
         //No reason not to always set schema to latest if user is re-running installation
         if(readPaxYamlAndSchema.details.schemas.yamlSchema){
           try {
-            yamlSchema = JSON.parse(readPaxYamlAndSchema.details.schemas.yamlSchema);
+            let yamlSchema = JSON.parse(readPaxYamlAndSchema.details.schemas.yamlSchema);
             updateSchemaReferences(readPaxYamlAndSchema.details.schemas, yamlSchema);
             if(yamlSchema){
               ConfigurationStore.setSchema(yamlSchema);
@@ -165,7 +164,7 @@ class Installation {
           ConfigurationStore.setSchema(FALLBACK_SCHEMA);
           return {status: false, details: {message: 'no schemas found from pax'}}
         }
-        return {status: parsedSchema && parsedYaml, details: {message: "Successfully retrieved example-zowe.yaml and schemas", mergedYaml: yamlObj, yamlSchema: yamlSchema}}
+        return {status: parsedSchema && parsedYaml, details: {message: "Successfully retrieved example-zowe.yaml and schemas", mergedYaml: yamlObj}}
       }
     } catch (e) {
       ConfigurationStore.setSchema(FALLBACK_SCHEMA);
@@ -247,16 +246,14 @@ class Installation {
         }
       }
       let yamlObj = {};
-      let yamlSchema = {};
       await this.getExampleYamlAndSchemas(connectionArgs, installationArgs).then((res: IResponse) => {
         if(res.status){
           if(res.details.mergedYaml != undefined){
             yamlObj = res.details.mergedYaml;
-            yamlSchema = res.details.yamlSchema;
           }
         }
       })
-      return {status: download.status && uploadYaml.status && upload.status && unpax.status, details: {message: 'Zowe unpax successful.', mergedYaml: yamlObj, yamlSchema: yamlSchema}};
+      return {status: download.status && uploadYaml.status && upload.status && unpax.status, details: {message: 'Zowe unpax successful.', mergedYaml: yamlObj}};
     } catch (error) {
       return {status: false, details: error.message};
     }
