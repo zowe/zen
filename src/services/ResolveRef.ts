@@ -1,12 +1,12 @@
 let mainSchema: any;
 let schemaMap: { [key: string]: any } = {};
 
-export const updateSchemaReferences = (yamlAndSchema: { [key: string]: string }, schemaObject: any): void => {
-  schemaMap = parseSchemas(yamlAndSchema);
+export const updateSchemaReferences = (schemas: { [key: string]: string }, schemaObject: any): void => {
+  schemaMap = parseSchemas(schemas);
 
   // Traverse and resolve references in schemas other than zowe-yaml schema
   Object.values(schemaMap).forEach((schema: any) => {
-    if(schema !== schemaObject) {
+    if(schema?.$id !== schemaObject?.$id) {
       mainSchema = schema;
       traverseAndResolveReferences(schema);
     }
@@ -18,9 +18,9 @@ export const updateSchemaReferences = (yamlAndSchema: { [key: string]: string },
 }
 
 // Parses all schemas and populates the schemaMap
-const parseSchemas = (yamlAndSchema: { [key: string]: string }): { [key: string]: any } => {
+const parseSchemas = (schemas: { [key: string]: string }): { [key: string]: any } => {
   const schemaMap: { [key: string]: any } = {};
-  Object.entries(yamlAndSchema).forEach(([key, value]) => {
+  Object.entries(schemas).forEach(([key, value]) => {
     try {
       const schemaObject = JSON.parse(value);
       const id = schemaObject?.$id;

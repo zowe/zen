@@ -21,15 +21,6 @@ import { InstallationArgs } from '../types/stateInterfaces';
 import { FALLBACK_SCHEMA, deepMerge } from '../renderer/components/common/Utils';
 import { updateSchemaReferences } from '../services/ResolveRef';
 
-//AJV did not like the regex in our current schema
-const zoweDatasetMemberRegexFixed = {
-  "description": "PARMLIB member used by ZIS",
-  "type": "string",
-  "pattern": "^([A-Z$#@]){1}([A-Z0-9$#@]){0,7}$",
-  "minLength": 1,
-  "maxLength": 8
-}
-
 class Installation {
 
   public async uploadLatestYaml (
@@ -153,12 +144,11 @@ class Installation {
         }
 
         //No reason not to always set schema to latest if user is re-running installation
-        if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
+        if(readPaxYamlAndSchema.details.schemas.yamlSchema){
           try {
-            yamlSchema = JSON.parse(readPaxYamlAndSchema.details.yamlSchema);
-            const serverCommon = JSON.parse(readPaxYamlAndSchema.details.serverCommon);
-            updateSchemaReferences(readPaxYamlAndSchema.details, yamlSchema);
-            if(yamlSchema && serverCommon){
+            yamlSchema = JSON.parse(readPaxYamlAndSchema.details.schemas.yamlSchema);
+            updateSchemaReferences(readPaxYamlAndSchema.details.schemas, yamlSchema);
+            if(yamlSchema){
               ConfigurationStore.setSchema(yamlSchema);
               parsedSchema = true;
               ProgressStore.set('downloadUnpax.getSchemas', true);
@@ -625,10 +615,10 @@ export class FTPInstallation extends Installation {
       const yamlSchema = await new FileTransfer().download(connectionArgs, yamlSchemaPath, DataType.ASCII);
       const serverCommonPath = `${installDir}/schemas/server-common.json`;
       const serverCommon = await new FileTransfer().download(connectionArgs, serverCommonPath, DataType.ASCII);
-      return {status: true, details: {yaml, yamlSchema, serverCommon}};
+      return {status: true, details: {yaml, schemas: {yamlSchema, serverCommon}}};
     } catch (e) {
       console.log("Error downloading example-zowe.yaml and schemas:", e.message);
-      return {status: false, details: {yaml: '', yamlSchema: '', serverCommon: ''}}  
+      return {status: true, details: {yaml: '', schemas: {yamlSchema: '', serverCommon: ''}}};
     }
   }
 
