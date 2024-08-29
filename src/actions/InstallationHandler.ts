@@ -618,7 +618,7 @@ export class FTPInstallation extends Installation {
       return {status: true, details: {yaml, schemas: {yamlSchema, serverCommon}}};
     } catch (e) {
       console.log("Error downloading example-zowe.yaml and schemas:", e.message);
-      return {status: true, details: {yaml: '', schemas: {yamlSchema: '', serverCommon: ''}}};
+      return {status: false, details: {yaml: '', schemas: {yamlSchema: '', serverCommon: ''}}};
     }
   }
 
