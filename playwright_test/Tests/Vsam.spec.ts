@@ -85,9 +85,13 @@ test.describe('VsamPage', () => {
  })
 
 
-  test('test title of page', async ({ page }) => {
+  test('test title  and required fields of page', async ({ page }) => {
     const title = await vsamPage.returnTitleOfVsamPage();
     expect(title).toBe(VSAM_TITLE);
+    await expect(vsamPage.mode).toBeTruthy()
+    await expect(vsamPage.volume).toBeTruthy()
+    await expect(vsamPage.StorageClass).toBeTruthy()
+    await expect(vsamPage.VsamDatasetName).toBeTruthy()
   })
 
 
@@ -98,12 +102,6 @@ test.describe('VsamPage', () => {
 
   })
 
-  test('test all required fields', async ({ page }) => {
-   await expect(vsamPage.mode).toBeTruthy()
-   await expect(vsamPage.volume).toBeTruthy()
-   await expect(vsamPage.StorageClass).toBeTruthy()
-   await expect(vsamPage.VsamDatasetName).toBeTruthy()
-   })
 
   test('Test view yaml button', async ({ page }) => {
     await vsamPage.viewYaml()
@@ -117,45 +115,29 @@ test.describe('VsamPage', () => {
    await vsamPage.closeButton()
   })
 
-  test('click Previous step button', async ({ page }) => {
+  test('click and verify Previous step button is enabled', async ({ page }) => {
+   const is_prevButtonEnable = await vsamPage.isPreviousButtonEnable();
+   expect(is_prevButtonEnable).toBe(true);
    const title = await vsamPage.returnTitleOfPrevPage();
    expect(title).toBe(CERTIFICATE_TITLE);
   })
 
-  test('Test previous button is enabled', async ({ page }) => {
-    const is_prevButtonEnable = await vsamPage.isPreviousButtonEnable();
-    expect(is_prevButtonEnable).toBe(true);
-  })
-
-  test('Test Skip Vsam button is enable', async ({ page }) => {
+  test('Click and verify Skip Vsam button is enabled', async ({ page }) => {
    const isSkipStcsEnable = await vsamPage.is_skipVsamButtonEnable();
    expect(isSkipStcsEnable).toBe(true);
- })
-
-  test('Test click skip VSAM button', async ({ page }) => {
    const reviewPage_title = await vsamPage.click_skipVsamButton();
    expect(reviewPage_title).toBe(LAUNCHCONFIG_TITLE);
  })
+
 
   test('Test continue to lauch button is disable', async ({ page }) => {
    const is_ContinueButtonDisable = await vsamPage.isContinueButtonDisable();
    expect(is_ContinueButtonDisable).toBe(true);
   })
 
-  test('Test fill vsam details NONRLS mode', async ({ page }) => {
-   await vsamPage.fillVsamDetails(config.mode,config.volume,'', config.vsamDatasetName)
-   await vsamPage.initializeVSAM();
-   const isWriteConfig_check_visible = await vsamPage.isWriteConfigGreenCheckVisible();
-   expect(isWriteConfig_check_visible).toBe(true);
-   const isUploadConfig_check_visible = await vsamPage.isUploadConfigGreenCheckVisible();
-   expect(isUploadConfig_check_visible).toBe(true);
-   const isInitStcs_check_visible = await vsamPage.isInitVSAMGreenCheckVisible();
-   expect(isInitStcs_check_visible).toBe(true);
-
-  })
 
   test('Test fill vsam details RLS mode and verify all green checks', async ({ page }) => {
-   await vsamPage.fillVsamDetails(config.mode,config.volume,config.StorageClass, config.vsamDatasetName)
+   await vsamPage.fillVsamDetails('RLS',config.VOLUME,config.STORAGECLASS, config.VSAM_DATASET_NAME)
    await vsamPage.initializeVSAM();
    const isWriteConfig_check_visible = await vsamPage.isWriteConfigGreenCheckVisible();
    expect(isWriteConfig_check_visible).toBe(true);
@@ -168,35 +150,41 @@ test.describe('VsamPage', () => {
 
   })
 
-  test('verify yaml updated successfully on zos', async ({ page }) => {
-    await vsamPage.fillVsamDetails(config.mode,config.volume,'', config.vsamDatasetName)
+  test('Test NONRLS YAML Update on z/OS After Init', async ({ page }) => {
+    await vsamPage.fillVsamDetails('NONRLS',config.VOLUME,'', config.VSAM_DATASET_NAME)
     await vsamPage.initializeVSAM();
     const command = `cat ${process.env.ZOWE_ROOT_DIR}/zowe.yaml`;
     try {
         const yaml = await runSSHCommand(command);
-        expect(yaml).toContain(config.mode);
-        expect(yaml).toContain(config.volume);
-        expect(yaml).toContain(config.vsamDatasetName);
+        expect(yaml).toContain('NONRLS');
+        expect(yaml).toContain(config.VOLUME);
+        expect(yaml).toContain(config.VSAM_DATASET_NAME);
     } catch (error) {
         console.error('Error executing command:', error.message);
     }
+    const isWriteConfig_check_visible = await vsamPage.isWriteConfigGreenCheckVisible();
+    expect(isWriteConfig_check_visible).toBe(true);
+    const isUploadConfig_check_visible = await vsamPage.isUploadConfigGreenCheckVisible();
+    expect(isUploadConfig_check_visible).toBe(true);
+    const isInitStcs_check_visible = await vsamPage.isInitVSAMGreenCheckVisible();
+    expect(isInitStcs_check_visible).toBe(true);
     });
 
-  test('verify stcs applied successfully on zos', async ({ page }) => {
-    await vsamPage.fillVsamDetails(config.mode,config.volume,'', config.vsamDatasetName)
+  test('Verify VSAM dataset was successfully created on z/OS.', async ({ page }) => {
+    await vsamPage.fillVsamDetails('RLS',config.VOLUME,'', config.VSAM_DATASET_NAME)
     await vsamPage.initializeVSAM();
     const command = `tso "LISTCAT"`;
 
     try {
         const yaml = await runSSHCommand(command);
-        expect(yaml).toContain(config.vsamDatasetName);
+        expect(yaml).toContain(config.VSAM_DATASET_NAME);
     } catch (error) {
         console.error('Error executing command:', error.message);
     }
     });
 
   test('Test save and close and Resume Progress', async ({ page }) => {
-     await vsamPage.fillVsamDetails(config.mode,config.volume,'', config.vsamDatasetName)
+     await vsamPage.fillVsamDetails('NONRLS',config.VOLUME,'', config.VSAM_DATASET_NAME)
      await vsamPage.click_saveAndClose();
      await titlePage.clickOnResumeProgress();
      await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
@@ -207,9 +195,9 @@ test.describe('VsamPage', () => {
      const vsamVolume = await vsamPage.get_VsamVolume_value();
      const storageClass = await vsamPage.get_StorageClass_value();
      const vsamDatasetName = await vsamPage.get_VsamDatasetName_value();
-     expect(vsamMode).toBe(config.mode);
-     expect(vsamVolume).toBe(config.volume);
+     expect(vsamMode).toBe('NONRLS');
+     expect(vsamVolume).toBe(config.VOLUME);
      expect(storageClass).toBe('');
-     expect(vsamDatasetName).toBe(config.vsamDatasetName);
+     expect(vsamDatasetName).toBe(config.VSAM_DATASET_NAME);
     })
 })

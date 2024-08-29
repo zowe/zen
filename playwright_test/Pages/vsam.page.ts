@@ -81,6 +81,7 @@ class VsamPage{
    await this.page.waitForTimeout(2000);
   }
   async get_VsamMode_value(): Promise<string> {
+    await this.page.waitForTimeout(2000);
 	  return await this.mode.inputValue();
   }
 
@@ -105,13 +106,13 @@ class VsamPage{
     await this.view_yaml.click({ timeout: 5000 })
   }
   async closeButton(){
-   this.close_button.click({ timeout: 2000 })
+   await this.close_button.click({ timeout: 2000 })
   }
   async click_viewAndSubmitJob(){
-   this.viewAndSubmitJob.click({ timeout: 2000 })
+   await this.viewAndSubmitJob.click({ timeout: 2000 })
   }
   async click_previewJob(){
-   this.view_job_output.click({ timeout: 2000 })
+   await this.view_job_output.click({ timeout: 2000 })
   }
   async click_skipVsamButton(){
    await this.skip_button.click({ timeout: 2000 });
@@ -134,7 +135,7 @@ class VsamPage{
   }
 
   async open_monacoEditor(){
-   this.view_yaml.click({ timeout: 5000 })
+   await this.view_yaml.click({ timeout: 5000 })
    const editor_title = await this.editor_title_element.textContent();
    return editor_title;
   }
@@ -150,7 +151,7 @@ class VsamPage{
   }
 
   async click_saveAndClose(){
-   this.save_and_close.click({ timeout: 5000 })
+   await this.save_and_close.click({ timeout: 5000 })
   }
 
   async isContinueButtonDisable(){

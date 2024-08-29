@@ -73,6 +73,7 @@ class StcsPage{
   }
 
   async movetoStcsPage(){
+   await this.page.waitForTimeout(2000);
    await this.click_stcs.click({timeout: 5000})
   }
   async returnTitleOfStcsPage(){
@@ -91,6 +92,7 @@ class StcsPage{
 
   async get_zis_value(){
   const value = await this.get_zisValue.evaluate(el => el.value);
+  console.log("zis value is", value)
   return value;
   }
 

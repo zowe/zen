@@ -96,6 +96,8 @@ class SecurityPage{
    await this.stc_zowe.fill(stc_zowe)
    await this.page.waitForTimeout(1000);
    await this.stc_zis.fill(stc_zis)
+   await this.page.waitForTimeout(1000);
+
   }
 
   async fillAdmin(admin:string){
@@ -174,16 +176,17 @@ class SecurityPage{
    return userZis_value;
   }
   async get_aux_value(){
-   const aux_value = await this.aux.textContent();
-   return aux_value;
+   return await this.aux.inputValue();
   }
   async get_stc_zis_value(){
-   const stcZis_value = await this.stc_zis.textContent();
-   return stcZis_value;
+   return await this.stc_zis.inputValue();
+//    const stcZis_value = await this.stc_zis.textContent();
+//    return stcZis_value;
   }
   async get_stc_zowe_value(){
-   const stcZowe_value = await this.stc_zowe.textContent();
-   return stcZowe_value;
+   return await this.stc_zowe.inputValue();
+//    const stcZowe_value = await this.stc_zowe.textContent();
+//    return stcZowe_value;
   }
 
   async get_sysProg_value(){
