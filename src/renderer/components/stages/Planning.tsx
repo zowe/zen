@@ -224,7 +224,7 @@ const Planning = () => {
           const dfOut: string = res[3].details.split('\n').filter((i: string) => i.trim().startsWith(localYaml?.zowe?.runtimeDirectory.slice(0, 3)))[0];
           details.spaceAvailableMb = dfOut.match(/\d+\/\d+/g)[0].split('/')[0];
           if (parseInt(details.spaceAvailableMb, 10) < requiredSpace) { 
-            alertEmitter.emit('showAlert', `Can't validate available space, please make sure you have enough free space in ${localYaml?.zowe?.runtimeDirectory}`, 'info');
+            alertEmitter.emit('showAlert', `Can't validate available space, please make sure you have enough free space in ${localYaml?.zowe?.runtimeDirectory}`, 'info', 10000);
             // details.error = details.error + `Not enough space, you need at least ${requiredSpace}MB; `;
           }
         } catch (error) {
@@ -242,6 +242,13 @@ const Planning = () => {
           }));
         } else {
           alertEmitter.emit('showAlert', details.error, 'error');
+        }
+      }).finally(() => {
+        // TODO: Make it more smart, add these checks to the planning validation details and verify the input fields one by one with a status icon.
+        if (localYaml?.zowe?.logDirectory.startsWith(localYaml?.zowe?.runtimeDirectoryy) ||
+            localYaml?.zowe?.workspaceDirectory.startsWith(localYaml?.zowe?.runtimeDirectory) ||
+            localYaml?.zowe?.extensionDirectory.startsWith(localYaml?.zowe?.runtimeDirectory)) {
+            alertEmitter.emit('showAlert', `Some instance locations (workspace, logs or extensions) are defined inside the runtime directory ${localYaml?.zowe?.runtimeDirectory}. It is not recommended as the runtime directory ment to be read-only.`, 'warning', 20000);
         }
       })
     }
@@ -476,7 +483,7 @@ Please customize the job statement below to match your system requirements.
           </FormControl>
           </div>
           </div>
-          <FormControlLabel
+          {/* <FormControlLabel
             control={
               <Checkbox // TODO: Add z/OSMF off support
                 checked={true}
@@ -489,8 +496,7 @@ Please customize the job statement below to match your system requirements.
               />
             }
             label="Set z/OSMF Attributes (Recommended)"
-          />
-
+          /> */}
           {showZosmfAttributes && (
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div style={{ flex: 1 }}>
