@@ -250,7 +250,7 @@ const Vsam = () => {
     dispatch(setYaml(updatedYaml));
   }
 
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
+  const setStageConfig = (isValid: boolean, errorMsg: string) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
   }
