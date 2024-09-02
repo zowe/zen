@@ -233,9 +233,9 @@ const Vsam = () => {
         if(validate.errors) {
           const { schemaPath, message } = validate.errors[0];
           let errorText = `${schemaPath} ${message}`;
-          setStageConfig(false, errorText, newData);
+          setStageConfig(false, errorText);
         } else {
-          setStageConfig(true, '', newData);
+          setStageConfig(true, '');
         }
 
         const yamlData = handleUpdateVsamName(newData?.name);
