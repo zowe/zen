@@ -60,6 +60,7 @@ const Vsam = () => {
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
   const stageStatusRef = useRef(stageStatus);
+  const [showVsameDatsetName, setShowVsamDatasetName] = useState(false);
 
   let timer: any;
 
@@ -77,6 +78,11 @@ const Vsam = () => {
 
     dispatch(setInitializationStatus(isInitializationStageComplete()));
     setShowProgress(initClicked || stepProgress);
+
+    const nameExists = setupSchema?.properties?.name;
+    if(!nameExists) {
+      setShowVsamDatasetName(true);
+    }
 
     const vsamDatasetName = yaml?.components[`caching-service`]?.storage?.vsam?.name|| '';
     if(vsamDatasetName) {
@@ -228,9 +234,16 @@ const Vsam = () => {
           const errMsg = validate.errors[0].message;
           setStageConfig(false, errPath+' '+errMsg, newData, data);
         } else {
-          const updatedYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, vsam: newData}}};
-          window.electron.ipcRenderer.setConfig(updatedYaml);
-          setStageConfig(true, '', newData, updatedYaml);
+          setStageConfig(true, '', newData, '');
+        }
+
+        const yamlData = cachingServiceChangeHandler(newData?.name);
+        const updatedYaml = {...yamlData, zowe: {...yamlData.zowe, setup: {...yamlData.zowe.setup, vsam: newData}}};
+        window.electron.ipcRenderer.setConfig(updatedYaml);
+        setSetupYaml(data);
+        if(updatedYaml?.zowe) {
+          setLocalYaml(updatedYaml);
+          dispatch(setYaml(updatedYaml));
         }
       }
     }
@@ -239,13 +252,9 @@ const Vsam = () => {
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any, updatedYaml?: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
-    setSetupYaml(data);
-    if(updatedYaml?.zowe) {
-      setLocalYaml(updatedYaml);
-    }
   }
 
-  const handleUpdateVsamName = (newName: string) => {
+  const handleUpdateVsamName = (newName: string): any => {
     const updatedYaml = {
       ...yaml,
       components: {
@@ -265,6 +274,7 @@ const Vsam = () => {
     window.electron.ipcRenderer.setConfig(updatedYaml);
     setLocalYaml(updatedYaml);
     dispatch(setYaml(updatedYaml));
+    return updatedYaml;
   };
 
   const datasetValidation = (dsName: string) => {
@@ -274,10 +284,10 @@ const Vsam = () => {
   }
 
 
-  const cachingServiceChangeHandler = (newValue: string) => {
+  const cachingServiceChangeHandler = (newValue: string): any => {
     alertEmitter.emit('hideAlert');
     datasetValidation(newValue);
-    handleUpdateVsamName(newValue);
+    return handleUpdateVsamName(newValue);
   }
 
   return (
@@ -299,23 +309,25 @@ const Vsam = () => {
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
           
-          <FormControl>
-            <div>
-              <TextField
-                id="vsam-dataset-name"
-                required
-                style={{marginLeft: 0}}
-                label="Vsam Dataset Name"
-                variant="standard"
-                value={yaml?.components[`caching-service`]?.storage?.vsam?.name || ""}
-                onChange={(e) => {
-                  cachingServiceChangeHandler(e.target.value);
-                }}
-              />
-              {isDsNameValid && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Zowe Caching Service VSAM data set.</p>}
-              {!isDsNameValid && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'red' }}>Invalid input. Please enter a valid VSAM dataset name.</p>}
-            </div>
-          </FormControl>
+          { showVsameDatsetName &&
+            <FormControl>
+              <div>
+                <TextField
+                  id="vsam-dataset-name"
+                  required
+                  style={{marginLeft: 0}}
+                  label="Vsam Dataset Name"
+                  variant="standard"
+                  value={yaml?.components[`caching-service`]?.storage?.vsam?.name || ""}
+                  onChange={(e) => {
+                    cachingServiceChangeHandler(e.target.value);
+                  }}
+                />
+                {isDsNameValid && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Zowe Caching Service VSAM data set.</p>}
+                {!isDsNameValid && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'red' }}>Invalid input. Please enter a valid VSAM dataset name.</p>}
+              </div>
+            </FormControl>
+          }
 
           {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
           <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!isDsNameValid} onClick={e => process(e)}>Initialize Vsam Config</Button>
