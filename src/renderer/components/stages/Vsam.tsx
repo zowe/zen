@@ -55,7 +55,7 @@ const Vsam = () => {
   const [vsamInitProgress, setVsamInitProgress] = useState(getVsamInitState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
-  const [isDsNameValid, setIsDsNameValid] = useState(true);
+  const [allowInitialization, setAllowInitialization] = useState(true);
   const [installationArgs] = useState(getInstallationArguments());
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
@@ -231,14 +231,21 @@ const Vsam = () => {
         validate(newData);
 
         if(validate.errors) {
+          setAllowInitialization(false);
           const { schemaPath, message } = validate.errors[0];
           let errorText = `${schemaPath} ${message}`;
           setStageConfig(false, errorText);
         } else {
           setStageConfig(true, '');
         }
-
-        const yamlData = handleUpdateVsamName(newData?.name);
+        let yamlData = {...yaml};
+        if(setupSchema?.properties?.name) {
+          if(!newData.name) {
+            setAllowInitialization(false);
+          } else {
+            yamlData = handleUpdateVsamName(newData.name);
+          }
+        }
         const updatedYaml = {...yamlData, zowe: {...yamlData.zowe, setup: {...yamlData.zowe.setup, vsam: newData}}};
         setYamlConfig(updatedYaml);
       }
@@ -278,7 +285,7 @@ const Vsam = () => {
   const datasetValidation = (dsName: string) => {
     const DsNamePattern = "^[a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}([.][a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}){0,21}$";
     const regEx = new RegExp(DsNamePattern);
-    setIsDsNameValid(regEx.test(dsName));
+    setAllowInitialization(regEx.test(dsName));
   }
 
 
@@ -325,14 +332,14 @@ const Vsam = () => {
                     cachingServiceChangeHandler(e.target.value);
                   }}
                 />
-                {isDsNameValid && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Zowe Caching Service VSAM data set.</p>}
-                {!isDsNameValid && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'red' }}>Invalid input. Please enter a valid VSAM dataset name.</p>}
+                {allowInitialization && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Zowe Caching Service VSAM data set.</p>}
+                {!allowInitialization && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'red' }}>Invalid input. Please enter a valid VSAM dataset name.</p>}
               </div>
             </FormControl>
           }
 
           {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!isDsNameValid} onClick={e => process(e)}>Initialize Vsam Config</Button>
+          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!allowInitialization} onClick={e => process(e)}>Initialize Vsam Config</Button>
           </FormControl> : null}
 
 
@@ -342,7 +349,7 @@ const Vsam = () => {
               <ProgressCard label={`Write configuration file locally to temp directory`} id="init-vsam-progress-card" status={vsamInitProgress?.writeYaml}/>
               <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={vsamInitProgress?.uploadYaml}/>
               <ProgressCard label={`Run zwe init vsam`} id="success-progress-card" status={vsamInitProgress?.success}/>
-              <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!isDsNameValid} onClick={e => process(e)}>Reinitialize Vsam Config</Button>
+              <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!allowInitialization} onClick={e => process(e)}>Reinitialize Vsam Config</Button>
             </React.Fragment>
             }
           </Box>
