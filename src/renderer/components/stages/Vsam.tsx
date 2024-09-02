@@ -236,8 +236,10 @@ const Vsam = () => {
           let errorText = `${schemaPath} ${message}`;
           setStageConfig(false, errorText);
         } else {
+          setAllowInitialization(true);
           setStageConfig(true, '');
         }
+
         let yamlData = {...yaml};
         if(setupSchema?.properties?.name) {
           if(!newData.name) {
@@ -246,6 +248,7 @@ const Vsam = () => {
             yamlData = handleUpdateVsamName(newData.name);
           }
         }
+
         const updatedYaml = {...yamlData, zowe: {...yamlData.zowe, setup: {...yamlData.zowe.setup, vsam: newData}}};
         setYamlConfig(updatedYaml);
       }
