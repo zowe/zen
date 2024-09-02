@@ -245,7 +245,7 @@ const Planning = () => {
         }
       }).finally(() => {
         // TODO: Make it more smart, add these checks to the planning validation details and verify the input fields one by one with a status icon.
-        if (localYaml?.zowe?.logDirectory.startsWith(localYaml?.zowe?.runtimeDirectoryy) ||
+        if (localYaml?.zowe?.logDirectory.startsWith(localYaml?.zowe?.runtimeDirectory) ||
             localYaml?.zowe?.workspaceDirectory.startsWith(localYaml?.zowe?.runtimeDirectory) ||
             localYaml?.zowe?.extensionDirectory.startsWith(localYaml?.zowe?.runtimeDirectory)) {
             alertEmitter.emit('showAlert', `Some instance locations (workspace, logs or extensions) are defined inside the runtime directory ${localYaml?.zowe?.runtimeDirectory}. It is not recommended as the runtime directory ment to be read-only.`, 'warning', 20000);
