@@ -43,9 +43,9 @@ const Vsam = () => {
 
   const dispatch = useAppDispatch();
   const [schema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
+  const yaml = useAppSelector(selectYaml);
   const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.vsam);
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.vsam);
+  const setupYaml = yaml?.zowe?.setup?.vsam;
   const [showProgress, setShowProgress] = useState(getProgress('vsamStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -229,27 +229,28 @@ const Vsam = () => {
     if (newData) {
       if(validate) {
         validate(newData);
+
         if(validate.errors) {
-          const errPath = validate.errors[0].schemaPath;
-          const errMsg = validate.errors[0].message;
-          setStageConfig(false, errPath+' '+errMsg, newData, data);
+          const { schemaPath, message } = validate.errors[0];
+          let errorText = `${schemaPath} ${message}`;
+          setStageConfig(false, errorText, newData);
         } else {
-          setStageConfig(true, '', newData, '');
+          setStageConfig(true, '', newData);
         }
 
-        const yamlData = cachingServiceChangeHandler(newData?.name);
+        const yamlData = handleUpdateVsamName(newData?.name);
         const updatedYaml = {...yamlData, zowe: {...yamlData.zowe, setup: {...yamlData.zowe.setup, vsam: newData}}};
-        window.electron.ipcRenderer.setConfig(updatedYaml);
-        setSetupYaml(data);
-        if(updatedYaml?.zowe) {
-          setLocalYaml(updatedYaml);
-          dispatch(setYaml(updatedYaml));
-        }
+        setYamlConfig(updatedYaml);
       }
     }
   };
 
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any, updatedYaml?: any) => {
+  const setYamlConfig = (updatedYaml: any) => {
+    window.electron.ipcRenderer.setConfig(updatedYaml);
+    dispatch(setYaml(updatedYaml));
+  }
+
+  const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
   }
@@ -271,9 +272,6 @@ const Vsam = () => {
         }
       }
     };
-    window.electron.ipcRenderer.setConfig(updatedYaml);
-    setLocalYaml(updatedYaml);
-    dispatch(setYaml(updatedYaml));
     return updatedYaml;
   };
 
@@ -284,10 +282,11 @@ const Vsam = () => {
   }
 
 
-  const cachingServiceChangeHandler = (newValue: string): any => {
+  const cachingServiceChangeHandler = (newValue: string) => {
     alertEmitter.emit('hideAlert');
     datasetValidation(newValue);
-    return handleUpdateVsamName(newValue);
+    const updatedYaml = handleUpdateVsamName(newValue);
+    setYamlConfig(updatedYaml);
   }
 
   return (
@@ -305,7 +304,7 @@ const Vsam = () => {
         }
         }/> }
 
-        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
+        <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
           
