@@ -313,7 +313,6 @@ const Vsam = () => {
             contentType={contentType}
             isEditorVisible={editorVisible}
             toggleEditorVisibility={toggleEditorVisibility}
-            onChange={handleFormChange}
           />
         }
 
