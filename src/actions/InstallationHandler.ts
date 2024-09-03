@@ -249,11 +249,10 @@ class Installation {
       await this.getExampleYamlAndSchemas(connectionArgs, installationArgs).then((res: IResponse) => {
         if(res.status){
           if(res.details.mergedYaml != undefined){
-            yamlObj = res.details.mergedYaml
+            yamlObj = res.details.mergedYaml;
           }
         }
       })
-
       return {status: download.status && uploadYaml.status && upload.status && unpax.status, details: {message: 'Zowe unpax successful.', mergedYaml: yamlObj}};
     } catch (error) {
       return {status: false, details: error.message};
