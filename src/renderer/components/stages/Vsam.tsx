@@ -286,7 +286,7 @@ const Vsam = () => {
   };
 
   const datasetValidation = (dsName: string) => {
-    const DsNamePattern = "^[a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}([.][a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}){0,21}$";
+    const DsNamePattern = "^(?=.{1,38}$)[a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}([.][a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}){0,21}$";
     const regEx = new RegExp(DsNamePattern);
     setAllowInitialization(regEx.test(dsName));
   }
