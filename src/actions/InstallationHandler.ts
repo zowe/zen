@@ -19,16 +19,7 @@ import * as fs from 'fs';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { InstallationArgs } from '../types/stateInterfaces';
 import { FALLBACK_SCHEMA, deepMerge } from '../renderer/components/common/Utils';
-
-
-//AJV did not like the regex in our current schema
-const zoweDatasetMemberRegexFixed = {
-  "description": "PARMLIB member used by ZIS",
-  "type": "string",
-  "pattern": "^([A-Z$#@]){1}([A-Z0-9$#@]){0,7}$",
-  "minLength": 1,
-  "maxLength": 8
-}
+import { updateSchemaReferences } from '../services/ResolveRef';
 
 class Installation {
 
@@ -152,19 +143,11 @@ class Installation {
         }
 
         //No reason not to always set schema to latest if user is re-running installation
-        if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
+        if(readPaxYamlAndSchema.details.schemas.yamlSchema){
           try {
-            let yamlSchema = JSON.parse(readPaxYamlAndSchema.details.yamlSchema);
-            const serverCommon = JSON.parse(readPaxYamlAndSchema.details.serverCommon);
-            if(yamlSchema && serverCommon){
-              yamlSchema.additionalProperties = true;
-              yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = zoweDatasetMemberRegexFixed;
-              yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
-              if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
-                delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
-                yamlSchema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverCommon.$defs.ipv4
-              }
-              // console.log('Setting schema from runtime dir:', JSON.stringify(yamlSchema));
+            let yamlSchema = JSON.parse(readPaxYamlAndSchema.details.schemas.yamlSchema);
+            updateSchemaReferences(readPaxYamlAndSchema.details.schemas, yamlSchema);
+            if(yamlSchema){
               ConfigurationStore.setSchema(yamlSchema);
               parsedSchema = true;
               ProgressStore.set('downloadUnpax.getSchemas', true);
@@ -266,11 +249,10 @@ class Installation {
       await this.getExampleYamlAndSchemas(connectionArgs, installationArgs).then((res: IResponse) => {
         if(res.status){
           if(res.details.mergedYaml != undefined){
-            yamlObj = res.details.mergedYaml
+            yamlObj = res.details.mergedYaml;
           }
         }
       })
-
       return {status: download.status && uploadYaml.status && upload.status && unpax.status, details: {message: 'Zowe unpax successful.', mergedYaml: yamlObj}};
     } catch (error) {
       return {status: false, details: error.message};
@@ -630,10 +612,10 @@ export class FTPInstallation extends Installation {
       const yamlSchema = await new FileTransfer().download(connectionArgs, yamlSchemaPath, DataType.ASCII);
       const serverCommonPath = `${installDir}/schemas/server-common.json`;
       const serverCommon = await new FileTransfer().download(connectionArgs, serverCommonPath, DataType.ASCII);
-      return {status: true, details: {yaml, yamlSchema, serverCommon}};
+      return {status: true, details: {yaml, schemas: {yamlSchema, serverCommon}}};
     } catch (e) {
       console.log("Error downloading example-zowe.yaml and schemas:", e.message);
-      return {status: false, details: {yaml: '', yamlSchema: '', serverCommon: ''}}  
+      return {status: false, details: {yaml: '', schemas: {yamlSchema: '', serverCommon: ''}}};
     }
   }
 

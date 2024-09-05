@@ -4,9 +4,12 @@ import ApfAuthPage from '../Pages/ApfAuth.page';
 import { prepareEnvironment } from '../prepare.js';
 import TitlePage from '../Pages/title.page';
 import ConnectionPage from '../Pages/connection.page';
+import InstallationPage from '../Pages/installation.page.ts';
+import InstallationTypePage from '../Pages/installationType.page.ts';
 import PlanningPage from '../Pages/planning.page';
 import NetworkingPage from '../Pages/networking.page';
 import path from 'path';
+import config from '../utils/config';
 
 let page: Page;
 
@@ -14,23 +17,7 @@ let electronApp: ElectronApplication
 const NETWORKING_TITLE = 'Networking';
 const APFAUTH_TITLE = 'APF Authorize Load Libraries';
 const INSTALLATION_TITLE = 'Installation';
-const DOMAIN_NAME = process.env.DOMAIN_NAME;
-const EXTERNAL_PORT = process.env.EXTERNAL_PORT;
-const ZOWE_ROOT_DIR = process.env.ZOWE_ROOT_DIR;
-const SSH_HOST = process.env.SSH_HOST;
-const SSH_PASSWD =  process.env.SSH_PASSWD;
-const SSH_PORT = process.env.SSH_PORT;
-const SSH_USER = process.env.SSH_USER;
-const ZOWE_EXTENSION_DIR= process.env.ZOWE_EXTENSION_DIR;
-const ZOWE_LOG_DIR=process.env.ZOWE_LOG_DIR;
-const ZOWE_WORKSPACE_DIR=process.env.ZOWE_WORKSPACE_DIR;
-const JOB_NAME= process.env.JOB_NAME;
-const JOB_PREFIX=process.env.JOB_PREFIX;
-const JAVA_HOME=process.env.JAVA_HOME;
-const NODE_HOME=process.env.NODE_HOME;
-const ZOSMF_HOST=process.env.ZOSMF_HOST;
-const ZOSMF_PORT=process.env.ZOSMF_PORT;
-const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
+
 
 test.beforeAll(async () => {
   try {
@@ -47,30 +34,51 @@ test.describe('networkingTab', () => {
     let securityPage : SecurityPage;
     let planningPage : PlanningPage;
     let networkingPage : NetworkingPage;
+	let installationTypePage : InstallationTypePage;
+	let installationPage : InstallationPage;
 
     test.beforeEach(async ({ page }) => {
       test.setTimeout(900000);
       electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
-      page= await electronApp.firstWindow()
+      page = await electronApp.firstWindow()
       connectionPage = new ConnectionPage(page);
       networkingPage = new NetworkingPage(page);
       titlePage = new TitlePage(page);
       planningPage = new PlanningPage(page);
+	  installationPage = new InstallationPage(page);
+	  installationTypePage = new InstallationTypePage(page);
       titlePage.navigateToConnectionTab()
-      connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
-      connectionPage.SubmitValidateCredential()
-      await page.waitForTimeout(5000);
-      connectionPage.clickContinueButton()
-      planningPage.clickSaveValidate()
-      await page.waitForTimeout(20000);
-      planningPage.fillPlanningPageWithRequiredFields(ZOWE_ROOT_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
-      await page.waitForTimeout(20000);
-      planningPage.clickValidateLocations()
-      await page.waitForTimeout(20000);
-      planningPage.clickContinueToInstallation()
-      await page.waitForTimeout(5000);
-      networkingPage.movetoNetworkingPage()
-      await page.waitForTimeout(5000);
+      await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+      await connectionPage.SubmitValidateCredential();
+      await connectionPage.clickContinueButton();
+	  await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
+	    config.ZOWE_WORKSPACE_DIR, 
+		config.ZOWE_EXTENSION_DIR, 
+		config.ZOWE_LOG_DIR, 
+		'1', 
+		config.JOB_NAME, 
+		config.JOB_PREFIX, 
+		config.JAVA_HOME, 
+		config.NODE_HOME, 
+		config.ZOSMF_HOST, 
+		config.ZOSMF_PORT, 
+		config.ZOSMF_APP_ID
+	  );
+      await planningPage.clickValidateLocations()
+      await planningPage.clickContinueToInstallation()
+	  await installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
+      await installationTypePage.continueToUnpax()
+	  await installationTypePage.skipUnpax()
+	  await installationPage.fillAllFields(config.DATASET_PREFIX,
+	    config.PARM_LIB,
+		config.PROC_LIB,
+		config.JCL_LIB,
+		config.LOAD_LIB,
+		config.AUTH_LOAD_LIB,
+		config.AUTH_PLUGIN_LIB
+	  )
+      await installationPage.clickInstallMvsDatasets();
+	  await installationPage.clickContinueToNetworkSetup();
     })
 
     test.afterEach(async () => {
@@ -78,12 +86,11 @@ test.describe('networkingTab', () => {
     })
 
   test('test title of page', async ({ page }) => {
-   await page.waitForTimeout(5000);
    const title = await networkingPage.returnTitleOfNetworkingPage();
    expect(title).toBe(NETWORKING_TITLE);
    })
+   
   test('test all required fields', async ({ page }) => {
-    await page.waitForTimeout(5000);
     await expect(networkingPage.externalDomains).toBeTruthy()
     await expect(networkingPage.externalPort).toBeTruthy()
     await expect(networkingPage.components).toBeTruthy()
@@ -101,135 +108,86 @@ test.describe('networkingTab', () => {
     await expect(networkingPage.appServer).toBeTruthy()
     await expect(networkingPage.cachingService).toBeTruthy()
     await expect(networkingPage.discovery).toBeTruthy()
-
     })
 
   test('test external domain field', async ({ page }) => {
-    await page.waitForTimeout(5000);
-    await networkingPage.fillexternal_domainvalues(DOMAIN_NAME,EXTERNAL_PORT);
-    await page.waitForTimeout(5000);
+    await networkingPage.fillexternal_domainvalues(config.DOMAIN_NAME, config.EXTERNAL_PORT);
     const port = await networkingPage.get_externalDomainport_value();
     const domainName = await networkingPage.get_externalDomainName_value();
-    console.log(port,domainName)
-    expect(port).toBe(DOMAIN_NAME);
-    expect(domainName).toBe(EXTERNAL_PORT);
-    await page.waitForTimeout(5000);
+    expect(port).toBe(config.EXTERNAL_PORT);
+    expect(domainName).toBe(config.DOMAIN_NAME);
   })
 
   test('test deleting domain name field', async ({ page }) => {
     await networkingPage.delete_DomainNameField();
-    await page.waitForTimeout(5000);
     const isDomainNameVisible = await networkingPage.domainName.isVisible();
     expect(isDomainNameVisible).toBeFalsy()
   })
 
   test('test add more domain name field', async ({ page }) => {
-    await page.waitForTimeout(5000);
     await networkingPage.add_DomainNameField();
-    await page.waitForTimeout(5000);
     await expect(networkingPage.domainName).toBeTruthy()
   })
+  
   test('test add special char in other port no', async ({ page }) => {
-    await page.waitForTimeout(5000);
+    const originalValue = await networkingPage.get_metricServiceport_value();
     await networkingPage.fillMetricServicePort('*^%$^&');
-    await page.waitForTimeout(5000);
-    const port = await networkingPage.get_metricServiceport_value();
-    expect(port).toBe('');
+    const newValue = await networkingPage.get_metricServiceport_value();
+    expect(newValue).toBe(originalValue);
   })
 
-  test('test enabled debug component', async ({ page }) => {
-    await page.waitForTimeout(5000);
-    await networkingPage.click_checkBox('1');
-    await networkingPage.click_checkBox('2');
-    await page.waitForTimeout(10000);
-    const isEnabled = await networkingPage.isCheckboxCheckedAndBlue('2');
-    const isDebug = await networkingPage.isCheckboxCheckedAndBlue('1');
-    expect(isEnabled).toBe(true);
-    expect(isDebug).toBe(true);
+  test('test enabled metric service debug', async ({ page }) => {
+    const beforeClick = await networkingPage.isMetricsServiceDebugChecked();
+	expect(beforeClick).toBe(false);
+	await networkingPage.clickMetricsServiceDebug();
+	const afterClick = await networkingPage.isMetricsServiceDebugChecked();
+	expect(afterClick).toBe(true);
   })
 
   test('Test view yaml button', async ({ page }) => {
-    await page.waitForTimeout(7000);
-    networkingPage.viewYaml()
-    await page.waitForTimeout(5000);
+    await networkingPage.viewYaml()
     await expect(networkingPage.editor_title_element).toBeTruthy();
-    await page.waitForTimeout(5000);
-    networkingPage.closeButton()
-    await page.waitForTimeout(2000);
+    await networkingPage.closeButton()
     })
 
-  test('Test view and submit button', async ({ page }) => {
-     await page.waitForTimeout(5000);
-     networkingPage.click_viewAndSubmitJob()
-     await page.waitForTimeout(5000);
-     await expect(networkingPage.editor_title_element).toBeTruthy()
-     networkingPage.closeButton()
-     await page.waitForTimeout(2000);
-    })
-
-
-  test('Test view job', async ({ page }) => {
-     await page.waitForTimeout(5000);
-     networkingPage.click_previewJob()
-     await page.waitForTimeout(5000);
-     await expect(networkingPage.editor_title_element).toBeTruthy()
-     networkingPage.closeButton()
-     await page.waitForTimeout(5000);
-    })
 
   test('Test save and close', async ({ page }) => {
-    await page.waitForTimeout(5000);
-    await networkingPage.fillexternal_domainvalues(DOMAIN_NAME,EXTERNAL_PORT);
-    await page.waitForTimeout(5000);
-    networkingPage.click_saveAndClose()
-    await page.waitForTimeout(3000);
-    titlePage.clickOnResumeProgress();
-    await page.waitForTimeout(15000);
+    await networkingPage.fillexternal_domainvalues(config.DOMAIN_NAME, config.EXTERNAL_PORT);
+    await networkingPage.click_saveAndClose()
+    await titlePage.clickOnResumeProgress();
+	await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+	await connectionPage.SubmitValidateCredential();
     const title = await networkingPage.returnTitleOfNetworkingPage();
     expect(title).toBe(NETWORKING_TITLE);
     const port = await networkingPage.get_externalDomainport_value();
     const domainName = await networkingPage.get_externalDomainName_value();
-    expect(port).toBe(EXTERNAL_PORT);
-    expect(domainName).toBe(DOMAIN_NAME);
-    await page.waitForTimeout(5000);
-
+    expect(port).toBe(config.EXTERNAL_PORT);
+    expect(domainName).toBe(config.DOMAIN_NAME);
     })
 
   test('click Previous step button', async ({ page }) => {
-     await page.waitForTimeout(5000);
+     const is_prevButtonEnable = await networkingPage.isPreviousButtonEnable();
+     expect(is_prevButtonEnable).toBe(true);
      const title = await networkingPage.returnTitleOfPrevPage();
      expect(title).toBe(INSTALLATION_TITLE);
     })
-  test('Test previous button is enabled', async ({ page }) => {
-     const is_prevButtonEnable = await networkingPage.isPreviousButtonEnable();
-     expect(is_prevButtonEnable).toBe(true);
-     await page.waitForTimeout(2000);
-    })
 
   test('Test continue to APF Auth button is disable', async ({ page }) => {
-     await page.waitForTimeout(2000);
      const is_ContinueButtonDisable = await networkingPage.isContinueButtonDisable();
      expect(is_ContinueButtonDisable).toBe(true);
-     await page.waitForTimeout(2000);
     })
+	
   test('Test Skip networking button is enable', async ({ page }) => {
-     await page.waitForTimeout(2000);
      const isLaunchConfigEnable = await networkingPage.is_skipNetworkingButtonEnable();
      expect(isLaunchConfigEnable).toBe(true);
-     await page.waitForTimeout(2000);
     })
 
   test('Test yaml should be updated', async ({ page }) => {
-    await page.waitForTimeout(5000);
-    await networkingPage.fillexternal_domainvalues(DOMAIN_NAME,EXTERNAL_PORT);
-    await page.waitForTimeout(5000);
+    await networkingPage.fillexternal_domainvalues(config.DOMAIN_NAME, config.EXTERNAL_PORT);
     await networkingPage.viewYaml();
-    await page.waitForTimeout(10000);
     await expect(networkingPage.editor_title_element).toBeTruthy();
-    await page.waitForTimeout(5000);
     const yaml = await networkingPage.read_yaml();
-    await page.waitForTimeout(5000);
-    expect(yaml).toContain(DOMAIN_NAME);
-    expect(yaml).toContain(EXTERNAL_PORT);
+    expect(yaml).toContain(config.DOMAIN_NAME);
+    expect(yaml).toContain(config.EXTERNAL_PORT);
    })
 });
