@@ -248,7 +248,7 @@ const Planning = () => {
         if (localYaml?.zowe?.logDirectory.startsWith(localYaml?.zowe?.runtimeDirectory) ||
             localYaml?.zowe?.workspaceDirectory.startsWith(localYaml?.zowe?.runtimeDirectory) ||
             localYaml?.zowe?.extensionDirectory.startsWith(localYaml?.zowe?.runtimeDirectory)) {
-            alertEmitter.emit('showAlert', `Some instance locations (workspace, logs or extensions) are defined inside the runtime directory ${localYaml?.zowe?.runtimeDirectory}. It is not recommended as the runtime directory ment to be read-only.`, 'warning', 20000);
+            alertEmitter.emit('showAlert', `Some instance locations (workspace, logs or extensions) are defined inside the runtime directory ${localYaml?.zowe?.runtimeDirectory}. It is not recommended as the runtime directory is meant to be read-only.`, 'warning', 20000);
         }
       })
     }

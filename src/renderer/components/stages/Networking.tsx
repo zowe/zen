@@ -545,7 +545,7 @@ const Networking = () => {
   const SUB_STAGE_ID = SUB_STAGES ? getSubStageDetails(STAGE_ID, subStageLabel).id : 0;
 
   const dispatch = useAppDispatch();
-  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
+  const yaml = useAppSelector(selectYaml);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formError, setFormError] = useState('');
@@ -566,9 +566,11 @@ const Networking = () => {
   }, [stageStatus]);
 
   useEffect(() => {
-    const nextPosition = document.getElementById('container-box-id');
-    if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
-
+    // const nextPosition = document.getElementById('container-box-id');
+    // if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
+    if (yaml.zowe.externalDomains?.length === 1 && yaml.zowe.externalDomains[0] === 'sample-domain.com') {
+      dispatch(setYaml({...yaml, zowe: {...yaml.zowe, externalDomains: [connectionArgs.host]}}));
+    }
     dispatch(setNextStepEnabled(getProgress('networkingStatus')));
     dispatch(setInitializationStatus(isInitializationStageComplete()));
 
@@ -620,7 +622,7 @@ const Networking = () => {
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
-    setLocalYaml(data);
+    dispatch(setYaml(data));
   }
 
   const onSaveYaml = (e: any) => {
@@ -664,15 +666,16 @@ const Networking = () => {
           }
           setStageConfig(true, '', newYaml);
         }}/>}
-        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
+        <Box sx={{ width: '60vw' }} 
+            //  onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))} // REVIEW: Why?
+        >
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <p key="external-domains" style={{fontSize: "24px"}}>External Domains <IconButton onClick={(e) => {
             let domains = [...yaml.zowe?.externalDomains || [], ""];
             const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
             window.electron.ipcRenderer.setConfig(newYaml )
-            dispatch(setYaml(newYaml))
+            dispatch(setYaml(newYaml));
             dispatch(setNetworkingStatus(false));
-            setLocalYaml(newYaml);
           }}><AddIcon /></IconButton></p>
           {yaml.zowe.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box key={`box-${index}`} sx={{display: "flex", flexDirection: "row"}}><TextField
             variant="standard"
@@ -683,9 +686,8 @@ const Networking = () => {
               const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
               // console.log(domains);
               window.electron.ipcRenderer.setConfig(newYaml )
-              dispatch(setYaml(newYaml))
+              dispatch(setYaml(newYaml));
               dispatch(setNetworkingStatus(false));
-              setLocalYaml(newYaml);
             }}
           /><IconButton onClick={(e) => {
             let domains = [...yaml.zowe?.externalDomains];
@@ -694,7 +696,6 @@ const Networking = () => {
             window.electron.ipcRenderer.setConfig(newYaml )
             dispatch(setYaml(newYaml))
             dispatch(setNetworkingStatus(false));
-            setLocalYaml(newYaml);
           }}><DeleteIcon /></IconButton></Box>)}
           <br />
           <TextField
@@ -706,8 +707,7 @@ const Networking = () => {
             onChange={async (e) => {
               const newYaml = {...yaml, zowe: {...yaml.zowe, externalPort: Number(e.target.value)}};
               window.electron.ipcRenderer.setConfig(newYaml)
-              dispatch(setYaml(newYaml))
-              setLocalYaml(newYaml);
+              dispatch(setYaml(newYaml));
               // // props.setYaml(newYaml);
               // await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
               // // dispatch(setYaml(newYaml));
@@ -742,7 +742,6 @@ const Networking = () => {
                                         control={<Checkbox checked={yaml[schemaKey][matchedPattern][schemaProperty]} onChange={async (e) => {
                                           // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
                                           const newYaml = {...yaml, [schemaKey]: {...yaml[schemaKey], [matchedPattern]: {...yaml[schemaKey][matchedPattern], [schemaProperty]: !yaml[schemaKey][matchedPattern][schemaProperty]}}};
-                                          setLocalYaml(newYaml);
                                           await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${schemaKey}.${matchedPattern}.${schemaProperty}`, !yaml[schemaKey][matchedPattern][schemaProperty])
                                           dispatch(setYaml(newYaml));
                                           dispatch(setNetworkingStatus(false));
@@ -757,7 +756,6 @@ const Networking = () => {
                                       onChange={async (e) => {
                                         if(!Number.isNaN(Number(e.target.value))){
                                           const newYaml = {...yaml, [schemaKey]: {...yaml[schemaKey], [matchedPattern]: {...yaml[schemaKey][matchedPattern], [schemaProperty]: Number(e.target.value)}}};
-                                          setLocalYaml(newYaml);
                                           await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${schemaKey}.${matchedPattern}.${schemaProperty}`, Number(e.target.value))
                                           dispatch(setYaml(newYaml));
                                           dispatch(setNetworkingStatus(false));
