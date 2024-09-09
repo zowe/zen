@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Box, Button } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml,setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
@@ -22,7 +22,7 @@ import { selectInitializationStatus, setInitializationStatus, setLaunchConfigSta
 import { setActiveStep } from "./progress/activeStepSlice";
 import { TYPE_YAML, TYPE_OUTPUT, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, LAUNCH_CONFIG_STAGE_LABEL } from "../common/Utils";
 import { IResponse } from "../../../types/interfaces";
-import { getInstallationArguments, getProgress, isInitComplete } from "./progress/StageProgressStatus";
+import { getInstallationArguments, getProgress, isInitializationStageComplete, updateSubStepSkipStatus } from "./progress/StageProgressStatus";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { alertEmitter } from "../Header";
 
@@ -427,9 +427,9 @@ const LaunchConfig = () => {
       }
     }
   }
-  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
+  const yaml = useAppSelector(selectYaml);
   const [setupSchema] = useState(schema.properties.zowe);
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe);
+  const setupYaml = yaml?.zowe;
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -442,16 +442,22 @@ const LaunchConfig = () => {
 
   const [isInitializationSkipped] = useState(!useAppSelector(selectInitializationStatus));
 
+  const [stateUpdated, setStateUpdated] = useState(false);
+  const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+  const stageStatusRef = useRef(stageStatus);
+
+  useEffect(() => {
+    stageStatusRef.current = stageStatus;
+  }, [stageStatus]);
+
   useEffect(() => {
 
     if(!yaml){
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           dispatch(setYaml(res.details));
-          setLocalYaml(res.details);
         } else {
           dispatch(setYaml(FALLBACK_YAML));
-          setLocalYaml(FALLBACK_YAML);
         }
       })
     }
@@ -459,14 +465,28 @@ const LaunchConfig = () => {
     nextPosition.scrollIntoView({behavior: 'smooth'});
 
     dispatch(setNextStepEnabled(getProgress('launchConfigStatus')));
-    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = false;
-    stages[STAGE_ID].isSkipped = isInitializationSkipped;
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+
     setIsFormInit(true);
 
     return () => {
+      updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
+
+  const setStageSkipStatus = (status: boolean) => {
+    stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
+    setStageStatus(status);
+  }
+
+  const updateProgress = (status: boolean) => {
+    setStateUpdated(!setStateUpdated);
+    dispatch(setLaunchConfigStatus(status));
+    dispatch(setNextStepEnabled(status));
+    setStageSkipStatus(!status);
+  }
 
   const toggleEditorVisibility = (type: any) => {
     setContentType(type);
@@ -487,46 +507,44 @@ const LaunchConfig = () => {
         if(validate.errors) {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
-          setStageConfig(false, errPath+' '+errMsg, newData);
+          setStageConfig(false, errPath+' '+errMsg);
         } else {
           const newYaml = {...yaml, zowe: {...yaml.zowe, configmgr: newData.configmgr, launchScript: newData.launchScript}};
           await window.electron.ipcRenderer.setConfigByKeyAndValidate("zowe.configmgr", newData.configmgr);
           await window.electron.ipcRenderer.setConfigByKeyAndValidate("zowe.launchScript", newData.launchScript);
           dispatch(setYaml(newYaml));
-          setStageConfig(true, '', newData);
+          setStageConfig(true, '');
         }
       }
     }
   };
 
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
+  const setStageConfig = (isValid: boolean, errorMsg: string) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
-    setSetupYaml(data);
   }
 
   const onSaveYaml = (e: any) => {
     e.preventDefault();
+    updateProgress(false);
     dispatch(setLaunchConfigStatus(false));
     alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
     if(!installationArgs.dryRunMode){
       window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
         if(res && res.status) {
-          dispatch(setNextStepEnabled(true));
-        dispatch(setLaunchConfigStatus(true));
-        alertEmitter.emit('showAlert', res.details, 'success');
-      } else {
-        dispatch(setLaunchConfigStatus(false));
-        alertEmitter.emit('showAlert', res.details, 'error');
-      }
-      dispatch(setInitializationStatus(isInitComplete()));
+          updateProgress(true);
+          alertEmitter.emit('showAlert', res.details, 'success');
+        } else {
+          updateProgress(false);
+          alertEmitter.emit('showAlert', res.details, 'error');
+        }
+        dispatch(setInitializationStatus(isInitializationStageComplete()));
       });
     }
     else{
       alertEmitter.emit('showAlert', 'Successfully uploaded yaml config');
-      dispatch(setNextStepEnabled(true));
-      dispatch(setLaunchConfigStatus(true));
-      dispatch(setInitializationStatus(isInitComplete()));
+      updateProgress(true);
+      dispatch(setInitializationStatus(isInitializationStageComplete()));
     }
   }
 
@@ -538,12 +556,15 @@ const LaunchConfig = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Configuration" description="Basic zowe.yaml configurations."> 
-        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={(data: any) => {
-          const newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe) : (data.zowe ? data.zowe : data);
-          setIsFormInit(false);
-          setStageConfig(true, '', newData);
+
+        { editorVisible &&
+          <EditorDialog
+            contentType={contentType}
+            isEditorVisible={editorVisible}
+            toggleEditorVisibility={toggleEditorVisibility}
+          />
         }
-        }/>}
+
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>

@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled } from '../configuration-wizard/wizardSlice';
@@ -23,7 +23,7 @@ import { alertEmitter } from "../Header";
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import {  getProgress, setApfAuthState, getApfAuthState, mapAndSetSkipStatus, getInstallationArguments, isInitComplete } from "./progress/StageProgressStatus";
+import { getProgress, setApfAuthState, getApfAuthState, updateSubStepSkipStatus, getInstallationArguments, isInitializationStageComplete } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { JCL_UNIX_SCRIPT_OK, FALLBACK_YAML, INIT_STAGE_LABEL, APF_AUTH_STAGE_LABEL, ajv, SERVER_COMMON } from "../common/Utils";
 
@@ -51,15 +51,23 @@ const InitApfAuth = () => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
   const [reinit, setReinit] = useState(false);
+  const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
+  const stageStatusRef = useRef(stageStatus);
 
   const [installationArgs] = useState(getInstallationArguments());
   let timer: any;
-  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema?.properties?.zowe?.properties?.setup?.properties?.dataset));
   
   useEffect(() => {
-    dispatch(setInitializationStatus(isInitComplete()));
+    stageStatusRef.current = stageStatus;
+  }, [stageStatus]);
+
+  useEffect(() => {
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+
     let nextPosition;
-    if(getProgress('apfAuthStatus')) {
+    const stepProgress = getProgress('apfAuthStatus')
+
+    if(stepProgress) {
       nextPosition = document.getElementById('start-apf-progress');
       nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
@@ -67,10 +75,12 @@ const InitApfAuth = () => {
       nextPosition?.scrollIntoView({behavior: 'smooth'});
     }
 
-    updateProgress(getProgress('apfAuthStatus'));
+    dispatch(setNextStepEnabled(stepProgress));
+
     setInit(true);
 
     return () => {
+      updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
     }
   }, []);
@@ -86,17 +96,16 @@ const InitApfAuth = () => {
         nextPosition = document.getElementById('start-apf-progress');
         nextPosition.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+      dispatchActions(false);
       setStateUpdated(!stateUpdated);
-      dispatch(setApfAuthStatus(false));
     }
   }, [initClicked]);
 
   useEffect(() => {
     const allAttributesTrue = Object.values(apfAuthInitProgress).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-      dispatch(setApfAuthStatus(true));
       setShowProgress(initClicked || getProgress('apfAuthStatus'));
+      dispatchActions(true);
     }
   }, [apfAuthInitProgress]);
 
@@ -106,7 +115,6 @@ const InitApfAuth = () => {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getApfAuthProgress().then((res: any) => {
           setApfAuthorizationInitProgress(res);
-          dispatch(setApfAuthStatus(stageComplete))
           if(res.success){
             clearInterval(timer);
           }
@@ -124,21 +132,18 @@ const InitApfAuth = () => {
     setApfAuthInitProgress(aftAuthorizationState);
     const allAttributesTrue = Object.values(aftAuthorizationState).every(value => value === true);
     if(allAttributesTrue) {
-      dispatch(setNextStepEnabled(true));
-      dispatch(setApfAuthStatus(true));
+      dispatchActions(true);
     }
   }
 
   const setStageSkipStatus = (status: boolean) => {
     stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = status;
-    stages[STAGE_ID].isSkipped = status;
-    mapAndSetSkipStatus(SUB_STAGE_ID, status);
+    stages[STAGE_ID].isSkipped = !isInitializationStageComplete();
+    setStageStatus(status);
   }
 
   const updateProgress = (status: boolean) => {
     setStateUpdated(!stateUpdated);
-    setStageSkipStatus(!status);
-
     if(!status) {
       for (let key in apfAuthInitProgress) {
         apfAuthInitProgress[key as keyof(InitSubStepsState)] = false;
@@ -147,10 +152,15 @@ const InitApfAuth = () => {
     }
     const allAttributesTrue = Object.values(apfAuthInitProgress).every(value => value === true);
     status = allAttributesTrue ? true : false;
-    dispatch(setNextStepEnabled(status));
-    dispatch(setInitializationStatus(isInitComplete()));
-    dispatch(setApfAuthStatus(status));
     setApfAuthorizationInitProgress(getApfAuthState());
+    dispatchActions(status);
+  }
+
+  const dispatchActions = (status: boolean) => {
+    dispatch(setApfAuthStatus(status));
+    dispatch(setInitializationStatus(isInitializationStageComplete()));
+    dispatch(setNextStepEnabled(status));
+    setStageSkipStatus(!status);
   }
   
   const toggleEditorVisibility = (type: any) => {
@@ -167,7 +177,6 @@ const InitApfAuth = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    dispatch(setApfAuthStatus(false));
     if(!installationArgs.dryRunMode){
       window.electron.ipcRenderer.apfAuthButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
         // Some parts of Wizard pass the response as a string directly into the object
@@ -180,23 +189,16 @@ const InitApfAuth = () => {
             toggleEditorVisibility("output");
           })
           updateProgress(false); //res.status may not necessarily be false, even if things go wrong
-          apfAuthProceedActions(false);
-          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
           clearInterval(timer);
         } else {
           updateProgress(res.status);
-          apfAuthProceedActions(res.status);
-          stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = !res.status;
           clearInterval(timer);
         }
       }).catch((err: any) => {
         clearInterval(timer);
-        apfAuthProceedActions(false);
         updateProgress(false);
         // TODO: Test this
         //alertEmitter.emit('showAlert', err.toString(), 'error');
-        stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped = true;
-        stages[STAGE_ID].isSkipped = true;
         window.electron.ipcRenderer.setStandardOutput(`zwe init apfauth failed:  ${typeof err === "string" ? err : err.toString()}`).then((res: any) => {
           toggleEditorVisibility("output");
         })
@@ -210,12 +212,6 @@ const InitApfAuth = () => {
       });
       updateProgress(true);
     }
-  }
-
-  // True - a proceed, False - blocked
-  const apfAuthProceedActions = (status: boolean) => {
-    dispatch(setNextStepEnabled(status));
-    dispatch(setApfAuthStatus(status));
   }
 
   const formChangeHandler = (data: any, isYamlUpdated?: boolean) => {
@@ -234,22 +230,7 @@ const InitApfAuth = () => {
       }, {});
     }
 
-    if(validate) {
-      validate(updatedData);
-      if(validate.errors) {
-        const errPath = validate.errors[0].schemaPath;
-        const errMsg = validate.errors[0].message;
-        setStageConfig(false, errPath+' '+errMsg, updatedData, false);
-      } else {
-        // setConfiguration(section, updatedData, true);
-        setStageConfig(true, '', updatedData, true);
-      }
-    }
-  }
-
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any, proceed: boolean) => {
-    setSetupYaml(data);
-    updateProgress(proceed);
+    setSetupYaml(updatedData);
   }
 
   return (

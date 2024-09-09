@@ -8,23 +8,24 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import { Box, Button, Link, Typography } from '@mui/material';
 import ContainerCard from '../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectYaml, setNextStepEnabled, setSchema, setYaml } from '../configuration-wizard/wizardSlice';
 import { selectZoweVersion} from './installation/installationSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { setActiveStep } from "./progress/activeStepSlice"; 
 import { getStageDetails } from "../../../services/StageDetails";
 import { setDownloadUnpaxStatus } from './progress/progressSlice';
-import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationArguments, getInstallationTypeStatus, getProgress, setDownloadUnpaxState } from "./progress/StageProgressStatus";
+import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationArguments, getInstallationTypeStatus, getProgress, setDownloadUnpaxState, updateStepSkipStatus } from "./progress/StageProgressStatus";
 import React from "react";
 import ProgressCard from "../common/ProgressCard";
 import { alertEmitter } from "../Header";
 import { IResponse } from "../../../types/interfaces";
 import { UNPAX_STAGE_LABEL } from "../common/Utils";
-
+import { stages } from "../configuration-wizard/Wizard";
+import { DownloadUnpaxState } from "../../../../src/types/stateInterfaces";
 const Unpax = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
@@ -43,19 +44,56 @@ const Unpax = () => {
   const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
   const version = useAppSelector(selectZoweVersion);
 
+  const [stateUpdated, setStateUpdated] = useState(false);
+  const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].isSkipped);
+  const stageStatusRef = useRef(stageStatus);
+  const [isYamlFetched, setIsYamlFetched] = useState(false);
+
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   let timer: any;
+
+  useEffect(() => {
+    stageStatusRef.current = stageStatus;
+  }, [stageStatus]);
+
+  useEffect(() => {
+    window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
+      if(res != undefined){
+        setInstArgs((res as any));
+      }
+    })
+
+    let nextPosition;
+    const stepProgress = getProgress('downloadUnpaxStatus')
+
+    if(stepProgress) {
+      nextPosition = document.getElementById('download-progress-card');
+      nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    dispatch(setNextStepEnabled(stepProgress));
+
+    return () => {
+      updateStepSkipStatus(STAGE_ID, stageStatusRef.current);
+      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
+    }
+  }, []);
 
   useEffect(() => {
     const stageComplete = downloadUnpaxProgress.uploadYaml && downloadUnpaxProgress.download && downloadUnpaxProgress.upload && downloadUnpaxProgress.unpax;
     if(!stageComplete && showProgress && !(downloadUnpaxProgress.getExampleYaml && downloadUnpaxProgress.getSchemas)) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getDownloadUnpaxProgress().then((res: any) => {
-          setDownloadUnpaxProgress(res);
-          setDownloadUnpaxState(res);
-          if(stageComplete){
-            dispatch(setNextStepEnabled(true));
-            dispatch(setDownloadUnpaxStatus(true));
+          let success;
+          setDownloadAndUnpaxProgress(res);
+
+          if(isYamlFetched) {
+            success = res.getExampleYaml && res.getSchemas;
+          } else {
+            success = res.download && res.getExampleYaml && res.getSchemas && res.unpax && res.upload && res.uploadYaml;
+          }
+
+          if(success){
             clearInterval(timer);
           }
         })
@@ -64,7 +102,54 @@ const Unpax = () => {
     return () => {
       clearInterval(timer);
     };
-  }, [showProgress, downloadUnpaxProgress]);
+  }, [showProgress, stateUpdated]);
+
+  useEffect(() => {
+    const allAttributesTrue = Object.values(downloadUnpaxProgress).every(value => value === true);
+    if(allAttributesTrue) {
+      dispatchActions(true);
+      setShowProgress(getProgress('downloadUnpaxStatus'));
+    }
+  }, [downloadUnpaxProgress]);
+
+  const setDownloadAndUnpaxProgress = (downloadUnpaxState: DownloadUnpaxState) => {
+    setDownloadUnpaxProgress(downloadUnpaxState);
+    setDownloadUnpaxState(downloadUnpaxState);
+    let allAttributesTrue = Object.values(downloadUnpaxState).every(value => value === true);
+    if(isYamlFetched) {
+      allAttributesTrue = downloadUnpaxState.getSchemas && downloadUnpaxState.getExampleYaml;
+      setIsYamlFetched(false);
+    }
+    if(allAttributesTrue) {
+      dispatchActions(true);
+    }
+  }
+
+  const setStageSkipStatus = (status: boolean) => {
+    stages[STAGE_ID].isSkipped = status;
+    setStageStatus(status);
+  }
+
+  const updateProgress = (status: boolean) => {
+    setStateUpdated(!stateUpdated);
+    setStageSkipStatus(!status);
+    if(!status) {
+      for (let key in downloadUnpaxProgress) {
+        downloadUnpaxProgress[key as keyof DownloadUnpaxState] = false;
+        setDownloadUnpaxState(downloadUnpaxProgress);
+      }
+    }
+    const allAttributesTrue = Object.values(downloadUnpaxProgress).every(value => value === true);
+    status = allAttributesTrue ? true : false;
+    setDownloadAndUnpaxProgress(getDownloadUnpaxState());
+    dispatchActions(status);
+  }
+
+  const dispatchActions = (status: boolean) => {
+    dispatch(setDownloadUnpaxStatus(status));
+    dispatch(setNextStepEnabled(status));
+    setStageSkipStatus(!status);
+  }
 
   const downloadUnpaxProgressAndStateTrue = {
     uploadYaml: true,
@@ -77,40 +162,44 @@ const Unpax = () => {
 
   const process = (event: any) => {
     event.preventDefault();
+    updateProgress(false);
     setShowProgress(true);
-    dispatch(setDownloadUnpaxStatus(false));
-    dispatch(setNextStepEnabled(false));
 
     if(!installationArgs.dryRunMode){
       window.electron.ipcRenderer.downloadButtonOnClick(connectionArgs, {...installationArgs, userUploadedPaxPath: paxPath}, version).then((res: IResponse) => {
         if(!res.status){ //errors during runInstallation()
           alertEmitter.emit('showAlert', res.details, 'error');
+          updateProgress(false);
         }
         if(res.details?.mergedYaml != undefined){
           dispatch(setYaml(res.details.mergedYaml));
           window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
         }
-        dispatch(setNextStepEnabled(res.status));
-        dispatch(setDownloadUnpaxStatus(res.status));
-      clearInterval(timer);
-    }).catch(() => {
-      clearInterval(timer);
-      dispatch(setNextStepEnabled(false));
-    });
-  }
-  else{
-    setDownloadUnpaxProgress(downloadUnpaxProgressAndStateTrue);
-    setDownloadUnpaxState(downloadUnpaxProgressAndStateTrue);
-    dispatch(setNextStepEnabled(true));
-    dispatch(setDownloadUnpaxStatus(true));
-  }
+        window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+          if(res && res.details) {
+            dispatch(setSchema(res.details));
+          }
+        })
+        clearInterval(timer);
+        updateProgress(res.status);
+      }).catch(() => {
+        clearInterval(timer);
+        updateProgress(false);
+      });
+    } else{
+      setDownloadUnpaxProgress(downloadUnpaxProgressAndStateTrue);
+      setDownloadUnpaxState(downloadUnpaxProgressAndStateTrue);
+      dispatch(setNextStepEnabled(true));
+      dispatch(setDownloadUnpaxStatus(true));
+    }
   }
 
   const fetchExampleYaml = (event: any) => {
+    setIsYamlFetched(true);
     event.preventDefault();
     setShowProgress(true);
-    dispatch(setDownloadUnpaxStatus(false));
-    dispatch(setNextStepEnabled(false));
+    updateProgress(false);
+
     if(!installationArgs.dryRunMode){
     window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
       setDownloadUnpaxProgress({
@@ -120,18 +209,23 @@ const Unpax = () => {
       });
       if(!res.status){ //errors during runInstallation()
         alertEmitter.emit('showAlert', res.details.message ? res.details.message : res.details, 'error');
+        updateProgress(false);
       }
       if(res.details?.mergedYaml != undefined){
         dispatch(setYaml(res.details.mergedYaml));
         window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
       }
-      dispatch(setNextStepEnabled(res.status));
-      dispatch(setDownloadUnpaxStatus(res.status));
+      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+        if(res && res.details) {
+          dispatch(setSchema(res.details));
+        }
+      })
+      updateProgress(res.status);
       clearInterval(timer);
     }).catch((err: any) => {
       clearInterval(timer);
       alertEmitter.emit('showAlert', typeof err === "string" ? err : err.toString(), 'error');
-      dispatch(setNextStepEnabled(false));
+      updateProgress(false);
     });
   }
   else{
@@ -141,24 +235,6 @@ const Unpax = () => {
     dispatch(setDownloadUnpaxStatus(true));
   }
   }
-
-  useEffect(() => {
-      window.electron.ipcRenderer.getConfigByKey("installationArgs").then((res: IResponse) => {
-        if(res != undefined){
-          setInstArgs((res as any));
-        }
-      })
-      let nextPosition;
-      if(getProgress('downloadUnpaxStatus')) {
-        nextPosition = document.getElementById('download-progress-card');
-        nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      dispatch(setNextStepEnabled(getProgress('downloadUnpaxStatus')));
-      dispatch(setDownloadUnpaxStatus(getProgress('downloadUnpaxStatus')));
-    return () => {
-      dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
-    }
-  }, []);
 
   return (<>
       {installValue === "smpe" && <ContainerCard title="Continue to Initialization" description="">

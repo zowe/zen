@@ -12,13 +12,15 @@ import React, {useEffect} from "react";
 import { useAppDispatch } from '../../hooks';
 import ContainerCard from '../common/ContainerCard';
 import { setActiveStep } from "./progress/activeStepSlice";
+import { getStageDetails } from "../../../../src/services/StageDetails";
 
 const Initialization = () => {
 
-  const STAGE_ID = 3;
-  const SUB_STAGES = true;
-
   const dispatch = useAppDispatch();
+
+  const stageLabel = 'Initialization';
+  const STAGE_ID = getStageDetails(stageLabel).id;
+  const SUB_STAGES = true;
 
   useEffect(() => {
     return () => {
