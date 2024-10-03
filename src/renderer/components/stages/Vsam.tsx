@@ -61,7 +61,7 @@ const Vsam = () => {
   const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
   const stageStatusRef = useRef(stageStatus);
   const [showVsameDatsetName, setShowVsamDatasetName] = useState(false);
-  const [storageMode, setStorageMode] = useState('');
+  const [storageMode, setStorageMode] = useState(yaml?.components[`caching-service`]?.storage?.mode);
   const storageModeOptions = ['VSAM', 'INFINISPAN'];
 
   let timer: any;
@@ -80,8 +80,6 @@ const Vsam = () => {
 
     dispatch(setInitializationStatus(isInitializationStageComplete()));
     setShowProgress(initClicked || stepProgress);
-
-    setStorageMode(yaml?.components[`caching-service`]?.storage?.mode);
 
     const nameExists = setupSchema?.properties?.name;
     if(!nameExists) {
@@ -305,6 +303,20 @@ const Vsam = () => {
 
   const updateStorageMode = (event: any) => {
     setStorageMode(event.target.value);
+    const updatedYaml = {
+      ...yaml,
+      components: {
+        ...yaml.components,
+        'caching-service': {
+          ...yaml.components['caching-service'],
+          storage: {
+            ...yaml.components['caching-service']?.storage,
+            mode: event.target.value
+          }
+        }
+      }
+    };
+    setYamlConfig(updatedYaml);
   }
 
   return (
@@ -344,43 +356,53 @@ const Vsam = () => {
             </Select>
           </FormControl>
 
-          <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
-          
-          { showVsameDatsetName &&
-            <FormControl>
-              <div>
-                <TextField
-                  id="vsam-dataset-name"
-                  required
-                  style={{marginLeft: 0}}
-                  label="Vsam Dataset Name"
-                  variant="standard"
-                  value={yaml?.components[`caching-service`]?.storage?.vsam?.name || ""}
-                  onChange={(e) => {
-                    cachingServiceChangeHandler(e.target.value);
-                  }}
-                />
-                {allowInitialization && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Zowe Caching Service VSAM data set.</p>}
-                {!allowInitialization && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'red' }}>Invalid input. Please enter a valid VSAM dataset name.</p>}
-              </div>
-            </FormControl>
-          }
+          { storageMode.toUpperCase() !== 'VSAM' ?
+            <></> :  (
+            <>
+              <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
 
-          {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!allowInitialization} onClick={e => process(e)}>Initialize Vsam Config</Button>
-          </FormControl> : null}
+              { showVsameDatsetName &&
+                <FormControl>
+                  <div>
+                    <TextField
+                      id="vsam-dataset-name"
+                      required
+                      style={{marginLeft: 0}}
+                      label="Vsam Dataset Name"
+                      variant="standard"
+                      value={yaml?.components[`caching-service`]?.storage?.vsam?.name || ""}
+                      onChange={(e) => {
+                        cachingServiceChangeHandler(e.target.value);
+                      }}
+                    />
+                    {allowInitialization && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Zowe Caching Service VSAM data set.</p>}
+                    {!allowInitialization && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'red' }}>Invalid input. Please enter a valid VSAM dataset name.</p>}
+                  </div>
+                </FormControl>
+              }
 
+              { !showProgress ?
+                <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
+                  <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!allowInitialization} onClick={e => process(e)}>
+                    Initialize Vsam Config
+                  </Button>
+                </FormControl> :
+                null
+              }
 
-          <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-vsam-progress">
-            {!showProgress ? null :
-            <React.Fragment> 
-              <ProgressCard label={`Write configuration file locally to temp directory`} id="init-vsam-progress-card" status={vsamInitProgress?.writeYaml}/>
-              <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={vsamInitProgress?.uploadYaml}/>
-              <ProgressCard label={`Run zwe init vsam`} id="success-progress-card" status={vsamInitProgress?.success}/>
-              <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!allowInitialization} onClick={e => process(e)}>Reinitialize Vsam Config</Button>
-            </React.Fragment>
-            }
-          </Box>
+              <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-vsam-progress">
+                {!showProgress ? null :
+                  <React.Fragment>
+                    <ProgressCard label={`Write configuration file locally to temp directory`} id="init-vsam-progress-card" status={vsamInitProgress?.writeYaml}/>
+                    <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={vsamInitProgress?.uploadYaml}/>
+                    <ProgressCard label={`Run zwe init vsam`} id="success-progress-card" status={vsamInitProgress?.success}/>
+                    <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!allowInitialization} onClick={e => process(e)}>Reinitialize Vsam Config</Button>
+                  </React.Fragment>
+                }
+              </Box>
+
+            </>)}
+
         </Box>
         <Box sx={{ height: showProgress ? '35vh' : 'auto', minHeight: showProgress ? '35vh' : '10vh' }} id="vsam-progress"></Box>
 
