@@ -317,6 +317,18 @@ const Vsam = () => {
       }
     };
     setYamlConfig(updatedYaml);
+    if(event.target.value.toUpperCase() !== 'VSAM') {
+      setVsamStageStatus(true);
+    } else {
+      setVsamStageStatus(false);
+      setShowProgress(false);
+    }
+  }
+
+  const setVsamStageStatus = (status: boolean) => {
+    dispatch(setVsamStatus(status));
+    dispatch(setNextStepEnabled(status));
+    setStageSkipStatus(!status);
   }
 
   return (
