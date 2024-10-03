@@ -106,6 +106,10 @@ const Vsam = () => {
       alertEmitter.emit('hideAlert');
       updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
+
+      if(storageMode.toUpperCase() != 'VSAM') {
+        dispatch(setVsamStatus(false));
+      }
     }
   }, []);
 
@@ -317,15 +321,11 @@ const Vsam = () => {
       }
     };
     setYamlConfig(updatedYaml);
-    if(event.target.value.toUpperCase() !== 'VSAM') {
-      setVsamStageStatus(true);
-    } else {
-      setVsamStageStatus(false);
-      setShowProgress(false);
-    }
+    setStageOnStorageModeChange(false);
   }
 
-  const setVsamStageStatus = (status: boolean) => {
+  const setStageOnStorageModeChange = (status: boolean) => {
+    setShowProgress(status);
     dispatch(setVsamStatus(status));
     dispatch(setNextStepEnabled(status));
     setStageSkipStatus(!status);
