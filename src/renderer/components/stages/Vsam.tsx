@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { Box, Button, FormControl, TextField } from '@mui/material';
+import { Box, Button, FormControl, InputLabel, Select, TextField, MenuItem } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import { setInitializationStatus, setVsamStatus } from './progress/progressSlice';
@@ -61,6 +61,8 @@ const Vsam = () => {
   const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
   const stageStatusRef = useRef(stageStatus);
   const [showVsameDatsetName, setShowVsamDatasetName] = useState(false);
+  const [storageMode, setStorageMode] = useState('');
+  const storageModeOptions = ['VSAM', 'INFINISPAN'];
 
   let timer: any;
 
@@ -78,6 +80,8 @@ const Vsam = () => {
 
     dispatch(setInitializationStatus(isInitializationStageComplete()));
     setShowProgress(initClicked || stepProgress);
+
+    setStorageMode(yaml?.components[`caching-service`]?.storage?.mode);
 
     const nameExists = setupSchema?.properties?.name;
     if(!nameExists) {
@@ -273,9 +277,9 @@ const Vsam = () => {
         'caching-service': {
           ...yaml.components['caching-service'],
           storage: {
-            ...yaml.components['caching-service'].storage,
+            ...yaml.components['caching-service']?.storage,
             vsam: {
-              ...yaml.components['caching-service'].storage.vsam,
+              ...yaml.components['caching-service']?.storage?.vsam,
               name: newName
             }
           }
@@ -299,6 +303,10 @@ const Vsam = () => {
     setYamlConfig(updatedYaml);
   }
 
+  const updateStorageMode = (event: any) => {
+    setStorageMode(event.target.value);
+  }
+
   return (
     <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
@@ -318,6 +326,24 @@ const Vsam = () => {
 
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
+
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel id="storage-mode-label">Storage Mode</InputLabel>
+            <Select
+              labelId="storage-mode-label"
+              id="storage-mode"
+              value={storageMode}
+              onChange={updateStorageMode}
+              label="Storage Mode"
+            >
+              {storageModeOptions.map((option, index) => (
+                <MenuItem key={index} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
           
           { showVsameDatsetName &&
