@@ -327,14 +327,8 @@ const Vsam = () => {
       });
       setVsamInitializationProgress(vsamInitProgress);
     }
-    setStageOnStorageModeChange(false);
-  }
-
-  const setStageOnStorageModeChange = (status: boolean) => {
-    setShowProgress(status);
-    dispatch(setVsamStatus(status));
-    dispatch(setNextStepEnabled(status));
-    setStageSkipStatus(!status);
+    setShowProgress(false);
+    dispatchActions(false);
   }
 
   return (
