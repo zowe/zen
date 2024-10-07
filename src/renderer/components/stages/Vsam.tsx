@@ -321,6 +321,12 @@ const Vsam = () => {
       }
     };
     setYamlConfig(updatedYaml);
+    if(event.target.value.toUpperCase() !== 'VSAM') {
+      Object.keys(vsamInitProgress).forEach(key => {
+        vsamInitProgress[key as keyof InitSubStepsState] = false;
+      });
+      setVsamInitializationProgress(vsamInitProgress);
+    }
     setStageOnStorageModeChange(false);
   }
 
