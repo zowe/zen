@@ -155,6 +155,7 @@ let prevInstallationKey = `prev_installation`;
 let skipSubStateKey = `skip_sub_state`;
 let skipStateKey = `skip_state`;
 let installationArgsKey = `intallation_args`;
+let paxVersionKey = `pax_version`;
 
 let subStepSkipKeysArray: (keyof subStepState)[] = Object.keys(subStepSkipStatus) as (keyof subStepState)[];
 let stepSkipKeysArray: (keyof stepSkipState)[] = Object.keys(stepSkipStatus) as (keyof stepSkipState)[];
@@ -175,6 +176,7 @@ const setKeys = (id: string) => {
   skipSubStateKey = `${skipSubStateKey}_${id}`;
   skipStateKey = `${skipStateKey}_${id}`;
   installationArgsKey = `${installationArgsKey}_${id}`;
+  paxVersionKey = `${paxVersionKey}_${id}`;
 }
 
 export const initializeProgress = (host: string, user: string, isResume: boolean) => {
@@ -587,6 +589,15 @@ export const getPreviousInstallation = () : ActiveState => {
   } else {
     return activeStatus;
   }
+}
+
+export const setZoweVersion = (version: number): void => {
+  localStorage.setItem(paxVersionKey, version.toString());
+}
+
+export const getZoweVersion = () : number => {
+  const version = localStorage.getItem(paxVersionKey);
+  return version ? Number(version) : NaN;
 }
 
 
