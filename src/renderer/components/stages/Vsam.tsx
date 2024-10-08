@@ -24,7 +24,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete } from "./progress/StageProgressStatus";
+import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete, getZoweVersion } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
 import { INIT_STAGE_LABEL, ajv } from "../common/Utils";
@@ -63,6 +63,8 @@ const Vsam = () => {
   const [showVsameDatsetName, setShowVsamDatasetName] = useState(false);
   const [storageMode, setStorageMode] = useState(yaml?.components[`caching-service`]?.storage?.mode);
   const storageModeOptions = ['VSAM', 'INFINISPAN'];
+  const zowePaxVersion: number = getZoweVersion();
+  const [showStorageModeOptions, setShowStorageModeOptions] = useState(false);
 
   let timer: any;
 
@@ -75,6 +77,9 @@ const Vsam = () => {
   }, [stageStatus]);
 
   useEffect(() => {
+
+    (zowePaxVersion < 3) ? setStorageMode('VSAM') : setShowStorageModeOptions(true);
+
     let nextPosition;
     const stepProgress = getProgress('vsamStatus');
 
@@ -351,22 +356,24 @@ const Vsam = () => {
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
 
-          <FormControl variant="outlined" fullWidth>
-            <InputLabel id="storage-mode-label">Storage Mode</InputLabel>
-            <Select
-              labelId="storage-mode-label"
-              id="storage-mode"
-              value={storageMode}
-              onChange={updateStorageMode}
-              label="Storage Mode"
-            >
-              {storageModeOptions.map((option, index) => (
-                <MenuItem key={index} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          { showStorageModeOptions &&
+            <FormControl variant="filled" fullWidth>
+              <InputLabel id="storage-mode-label">Storage Mode</InputLabel>
+              <Select
+                labelId="storage-mode-label"
+                id="storage-mode"
+                value={storageMode}
+                onChange={updateStorageMode}
+                label="Storage Mode"
+              >
+                {storageModeOptions.map((option, index) => (
+                  <MenuItem key={index} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          }
 
           { storageMode.toUpperCase() !== 'VSAM' ?
             <></> :  (
