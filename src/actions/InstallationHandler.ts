@@ -119,6 +119,15 @@ class Installation {
       const zoweRuntimePath = installationArgs.installationDir;
       let readPaxYamlAndSchema = await this.readExampleYamlAndSchema(connectionArgs, zoweRuntimePath);
       let parsedSchema = false, parsedYaml = false;
+      let manifestFile;
+      if(readPaxYamlAndSchema.details.schemas.manifestFile) {
+        const manifestFileFromPax = readPaxYamlAndSchema.details.schemas.manifestFile;
+        if(manifestFileFromPax) {
+          let manifestFileObj = JSON.parse(manifestFileFromPax);
+          console.log(manifestFileObj);
+          manifestFile = manifestFileObj;
+        }
+      }
       if(readPaxYamlAndSchema.details.yaml){
         const yamlFromPax = readPaxYamlAndSchema.details.yaml;
         if(yamlFromPax){
@@ -164,7 +173,7 @@ class Installation {
           ConfigurationStore.setSchema(FALLBACK_SCHEMA);
           return {status: false, details: {message: 'no schemas found from pax'}}
         }
-        return {status: parsedSchema && parsedYaml, details: {message: "Successfully retrieved example-zowe.yaml and schemas", mergedYaml: yamlObj}}
+        return {status: parsedSchema && parsedYaml, details: {message: "Successfully retrieved example-zowe.yaml and schemas", mergedYaml: yamlObj, manifestFile}}
       }
     } catch (e) {
       ConfigurationStore.setSchema(FALLBACK_SCHEMA);
@@ -246,14 +255,16 @@ class Installation {
         }
       }
       let yamlObj = {};
+      let manifestFile = {};
       await this.getExampleYamlAndSchemas(connectionArgs, installationArgs).then((res: IResponse) => {
         if(res.status){
+          manifestFile = res.details.manifestFile;
           if(res.details.mergedYaml != undefined){
             yamlObj = res.details.mergedYaml;
           }
         }
       })
-      return {status: download.status && uploadYaml.status && upload.status && unpax.status, details: {message: 'Zowe unpax successful.', mergedYaml: yamlObj}};
+      return {status: download.status && uploadYaml.status && upload.status && unpax.status, details: {message: 'Zowe unpax successful.', mergedYaml: yamlObj, manifestFile}};
     } catch (error) {
       return {status: false, details: error.message};
     }
@@ -612,10 +623,12 @@ export class FTPInstallation extends Installation {
       const yamlSchema = await new FileTransfer().download(connectionArgs, yamlSchemaPath, DataType.ASCII);
       const serverCommonPath = `${installDir}/schemas/server-common.json`;
       const serverCommon = await new FileTransfer().download(connectionArgs, serverCommonPath, DataType.ASCII);
-      return {status: true, details: {yaml, schemas: {yamlSchema, serverCommon}}};
+      const manifestFilePath = `${installDir}/manifest.json`;
+      const manifestFile = await new FileTransfer().download(connectionArgs, manifestFilePath, DataType.ASCII);
+      return {status: true, details: {yaml, schemas: {yamlSchema, serverCommon, manifestFile}}};
     } catch (e) {
       console.log("Error downloading example-zowe.yaml and schemas:", e.message);
-      return {status: false, details: {yaml: '', schemas: {yamlSchema: '', serverCommon: ''}}};
+      return {status: false, details: {yaml: '', schemas: {yamlSchema: '', serverCommon: '', manifestFile: ''}}};
     }
   }
 
