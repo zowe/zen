@@ -200,6 +200,9 @@ const Unpax = () => {
   }
 
   const setZowePaxVersion = (version: string): void => {
+    if(!version) {
+      return;
+    }
     const versionString = version;
     const majorVersion = parseInt(versionString.split('.')[0], 10);
     setZoweVersion(majorVersion);

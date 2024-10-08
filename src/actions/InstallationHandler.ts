@@ -120,11 +120,10 @@ class Installation {
       let readPaxYamlAndSchema = await this.readExampleYamlAndSchema(connectionArgs, zoweRuntimePath);
       let parsedSchema = false, parsedYaml = false;
       let manifestFile;
-      if(readPaxYamlAndSchema.details.schemas.manifestFile) {
+      if(readPaxYamlAndSchema?.details?.schemas?.manifestFile) {
         const manifestFileFromPax = readPaxYamlAndSchema.details.schemas.manifestFile;
         if(manifestFileFromPax) {
           let manifestFileObj = JSON.parse(manifestFileFromPax);
-          console.log(manifestFileObj);
           manifestFile = manifestFileObj;
         }
       }
@@ -257,9 +256,9 @@ class Installation {
       let yamlObj = {};
       let manifestFile = {};
       await this.getExampleYamlAndSchemas(connectionArgs, installationArgs).then((res: IResponse) => {
-        if(res.status){
-          manifestFile = res.details.manifestFile;
-          if(res.details.mergedYaml != undefined){
+        if(res?.status){
+          manifestFile = res.details?.manifestFile;
+          if(res.details?.mergedYaml != undefined){
             yamlObj = res.details.mergedYaml;
           }
         }
