@@ -25,7 +25,7 @@ import { setActiveStep } from './progress/activeStepSlice';
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
 import { getStageDetails } from "../../../services/StageDetails";
 import { TYPE_YAML, TYPE_OUTPUT } from '../common/Utils';
-import { getCompleteProgress, getZoweVersion, updateStepSkipStatus } from "./progress/StageProgressStatus";
+import { getCompleteProgress, updateStepSkipStatus } from "./progress/StageProgressStatus";
 
 import '../../styles/ReviewInstallation.css';
 
@@ -42,8 +42,6 @@ const ReviewInstallation = () => {
   const [editorVisible, setEditorVisible] = useState(false);
 
   const connectionArgs = useAppSelector(selectConnectionArgs);
-
-  const zowePaxVersion: number = getZoweVersion();
 
   const theme = createTheme();
 
@@ -72,13 +70,8 @@ const ReviewInstallation = () => {
 
     const stageProgress = stageProgressStatus.every(status => status === true);
     const subStageProgress = subStageProgressStatus.every(status => status === true);
-    const vsamIndex = subStageProgressStatus.findIndex(status => status === completeProgress.vsamStatus);
-    const allExceptVsamTrue = subStageProgressStatus.filter((_, index) => index !== vsamIndex).every(status => status === true); 
 
-    // For Zowe versions 3 and above, initializing VSAM is optional
-    if (zowePaxVersion < 3 && stageProgress && subStageProgress) {
-      updateProgress(true);
-    } else if(zowePaxVersion >= 3 && allExceptVsamTrue) {
+    if (stageProgress && subStageProgress) {
       updateProgress(true);
     } else {
       updateProgress(false);
