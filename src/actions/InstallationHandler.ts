@@ -114,17 +114,21 @@ class Installation {
     try{
       ProgressStore.set('downloadUnpax.getSchemas', false);
       ProgressStore.set('downloadUnpax.getExampleYaml', false);
+
       const currentConfig: any = ConfigurationStore.getConfig();
       let yamlObj
       const zoweRuntimePath = installationArgs.installationDir;
       let readPaxYamlAndSchema = await this.readExampleYamlAndSchema(connectionArgs, zoweRuntimePath);
       let parsedSchema = false, parsedYaml = false;
+
+      const manifestFileFromPax = readPaxYamlAndSchema?.details?.schemas?.manifestFile;
       let manifestFile;
-      if(readPaxYamlAndSchema?.details?.schemas?.manifestFile) {
-        const manifestFileFromPax = readPaxYamlAndSchema.details.schemas.manifestFile;
-        if(manifestFileFromPax) {
-          let manifestFileObj = JSON.parse(manifestFileFromPax);
-          manifestFile = manifestFileObj;
+
+      if(manifestFileFromPax) {
+        try {
+          manifestFile = JSON.parse(manifestFileFromPax);
+        } catch (error) {
+          console.error('Error parsing manifest file:', error);
         }
       }
       if(readPaxYamlAndSchema.details.yaml){
@@ -253,15 +257,22 @@ class Installation {
           return {status: false, details: `Error unpaxing Zowe archive: ${unpax.details}`};
         }
       }
+
       let yamlObj = {};
       let manifestFile = {};
+
       await this.getExampleYamlAndSchemas(connectionArgs, installationArgs).then((res: IResponse) => {
-        if(res?.status){
-          manifestFile = res.details?.manifestFile;
-          if(res.details?.mergedYaml != undefined){
-            yamlObj = res.details.mergedYaml;
-          }
+
+        if(!res?.status) {
+          return { status: false, details: { message: 'Failed to get YAML and schemas.' } };
         }
+
+        manifestFile = res.details?.manifestFile;
+
+        if(res.details?.mergedYaml != undefined){
+          yamlObj = res.details.mergedYaml;
+        }
+
       })
       return {status: download.status && uploadYaml.status && upload.status && unpax.status, details: {message: 'Zowe unpax successful.', mergedYaml: yamlObj, manifestFile}};
     } catch (error) {
