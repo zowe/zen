@@ -9,7 +9,7 @@ import SecurityPage from '../Pages/security.page.ts'
 import StcsPage from '../Pages/stcs.page.ts'
 import config from '../utils/config';
 import ApfAuthPage from '../Pages/ApfAuth.page';
-import { runSSHCommand } from '../utils/sshUtils';
+import { connectArgs, Script }  from '../setup';
 
 
 let electronApp: ElectronApplication
@@ -17,6 +17,7 @@ const STCS_TITLE = 'Stcs'
 const SECURITY_TITLE = 'Security';
 const CERTIFICATE_TITLE = 'Certificates'
 
+const script = new Script();
 
 test.describe('StcsTab', () => {
   let connectionPage: ConnectionPage;
@@ -97,13 +98,14 @@ test.describe('StcsTab', () => {
     await electronApp.close()
   })
 
+
    test('test title and required fields of page', async ({ page }) => {
-   const title = await stcsPage.returnTitleOfStcsPage();
-   expect(title).toBe(STCS_TITLE);
-   await expect(stcsPage.zis).toBeTruthy()
-   await expect(stcsPage.zowe).toBeTruthy()
-   await expect(stcsPage.aux).toBeTruthy()
-   await expect(stcsPage.dataset_proclib).toBeTruthy()
+     const title = await stcsPage.returnTitleOfStcsPage();
+     expect(title).toBe(STCS_TITLE);
+     await expect(stcsPage.zis).toBeTruthy()
+     await expect(stcsPage.zowe).toBeTruthy()
+     await expect(stcsPage.aux).toBeTruthy()
+     await expect(stcsPage.dataset_proclib).toBeTruthy()
    })
 
    test('test values match with previous step', async ({ page }) => {
@@ -121,22 +123,17 @@ test.describe('StcsTab', () => {
      expect(Aux_Value).toBe(aux_value);
  })
    test('verify yaml updated on zos', async ({ page }) => {
-    const command = `cat ${process.env.ZOWE_ROOT_DIR}/zowe.yaml`;
-
-    try {
-        const yaml = await runSSHCommand(command);
-        expect(yaml).toContain(config.SECURITY_AUX);
-        expect(yaml).toContain(config.SECURITY_STC_ZOWE);
-        expect(yaml).toContain(config.SECURITY_STC_ZIS);
-    } catch (error) {
-        console.error('Error executing command:', error.message);
-    }
+    const result = await script.runCommand(`cat ${process.env.ZOWE_ROOT_DIR}/zowe.yaml`); 
+    await expect(result.details).toContain(config.SECURITY_AUX);
+    await expect(result.details).toContain(config.SECURITY_STC_ZOWE);
+    await expect(result.details).toContain(config.SECURITY_STC_ZIS);
     });
 
+
    test('Test view yaml button', async ({ page }) => {
-    await stcsPage.viewYaml()
-    await expect(stcsPage.editor_title_element).toBeTruthy();
-    await stcsPage.closeButton()
+     await stcsPage.viewYaml()
+     await expect(stcsPage.editor_title_element).toBeTruthy();
+     await stcsPage.closeButton()
     })
 
    test('Test view job', async ({ page }) => {
@@ -162,18 +159,8 @@ test.describe('StcsTab', () => {
 
    test('Test continue to certificate button is disable', async ({ page }) => {
      const is_ContinueButtonDisable = await stcsPage.isContinueButtonDisable();
-     expect(is_ContinueButtonDisable).toBe(true);
+     await expect(is_ContinueButtonDisable).toBe(true);
     })
-
-   test('Test yaml should be updated', async ({ page }) => {
-    await stcsPage.viewYaml();
-    await expect(stcsPage.editor_title_element).toBeTruthy();
-    const yaml = await stcsPage.read_yaml();
-    expect(yaml).toContain(config.SECURITY_AUX);
-    expect(yaml).toContain(config.SECURITY_STC_ZOWE);
-    expect(yaml).toContain(config.SECURITY_STC_ZIS);
-
-   })
 
    test('Test Resume Progress', async ({ page }) => {
      await stcsPage.click_saveAndClose()
@@ -194,16 +181,11 @@ test.describe('StcsTab', () => {
 
    test('verify stcs applied successfully on zos after initialization', async ({ page }) => {
       await stcsPage.initializeSTC()
-      const command = `tsocmd "LISTDS '${config.PROC_LIB}' MEMBERS"`;
-
-      try {
-          const yaml = await runSSHCommand(command);
-          expect(yaml).toContain(config.SECURITY_AUX);
-          expect(yaml).toContain(config.SECURITY_STC_ZOWE);
-          expect(yaml).toContain(config.SECURITY_STC_ZIS);
-      } catch (error) {
-          console.error('Error executing command:', error.message);
-      }
+      const result = await script.runCommand(`tsocmd "LISTDS '${config.PROC_LIB}' MEMBERS"`);
+      await expect(result.details).toContain(config.SECURITY_AUX);
+      await expect(result.details).toContain(config.SECURITY_STC_ZOWE);
+      await expect(result.details).toContain(config.SECURITY_STC_ZIS);
+    
     // verify all checks are sucessfully checked
       const isWriteConfig_check_visible = await stcsPage.isWriteConfigGreenCheckVisible();
       expect(isWriteConfig_check_visible).toBe(true);

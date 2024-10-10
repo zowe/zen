@@ -10,7 +10,7 @@ import StcsPage from '../Pages/stcs.page.ts'
 import config from '../utils/config';
 import ApfAuthPage from '../Pages/ApfAuth.page';
 import VsamPage from '../Pages/Vsam.page';
-import { runSSHCommand } from '../utils/sshUtils';
+import { connectArgs, Script }  from '../setup';
 
 
 let electronApp: ElectronApplication
@@ -18,6 +18,7 @@ const VSAM_TITLE = 'Vsam'
 const CERTIFICATE_TITLE = 'Certificates';
 const LAUNCHCONFIG_TITLE = 'Configuration'
 const INVALID_ERRORMSG = 'Invalid input. Please enter a valid VSAM dataset name.'
+const script = new Script()
 
 test.describe('VsamPage', () => {
   let connectionPage: ConnectionPage;
@@ -153,15 +154,11 @@ test.describe('VsamPage', () => {
   test('Test NONRLS YAML Update on z/OS After Init', async ({ page }) => {
     await vsamPage.fillVsamDetails('NONRLS',config.VOLUME,'', config.VSAM_DATASET_NAME)
     await vsamPage.initializeVSAM();
-    const command = `cat ${process.env.ZOWE_ROOT_DIR}/zowe.yaml`;
-    try {
-        const yaml = await runSSHCommand(command);
-        expect(yaml).toContain('NONRLS');
-        expect(yaml).toContain(config.VOLUME);
-        expect(yaml).toContain(config.VSAM_DATASET_NAME);
-    } catch (error) {
-        console.error('Error executing command:', error.message);
-    }
+    const result = await script.runCommand(`cat ${process.env.ZOWE_ROOT_DIR}/zowe.yaml`);
+    await expect(result.details).toContain('NONRLS');
+    await expect(result.details).toContain(config.VOLUME);
+    await expect(result.details).toContain(config.VSAM_DATASET_NAME);
+    
     const isWriteConfig_check_visible = await vsamPage.isWriteConfigGreenCheckVisible();
     expect(isWriteConfig_check_visible).toBe(true);
     const isUploadConfig_check_visible = await vsamPage.isUploadConfigGreenCheckVisible();
@@ -173,14 +170,10 @@ test.describe('VsamPage', () => {
   test('Verify VSAM dataset was successfully created on z/OS.', async ({ page }) => {
     await vsamPage.fillVsamDetails('RLS',config.VOLUME,'', config.VSAM_DATASET_NAME)
     await vsamPage.initializeVSAM();
-    const command = `tso "LISTCAT"`;
+    const result = await script.runCommand(`tso "LISTCAT"`);
 
-    try {
-        const yaml = await runSSHCommand(command);
-        expect(yaml).toContain(config.VSAM_DATASET_NAME);
-    } catch (error) {
-        console.error('Error executing command:', error.message);
-    }
+    await expect(result.details).toContain(config.VSAM_DATASET_NAME);
+   
     });
 
   test('Test save and close and Resume Progress', async ({ page }) => {
