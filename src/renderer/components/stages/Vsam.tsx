@@ -80,6 +80,12 @@ const Vsam = () => {
 
     (zowePaxVersion < 3) ? setStorageMode('VSAM') : setShowStorageModeOptions(true);
 
+    if(storageMode.toUpperCase() !== 'VSAM' && zowePaxVersion >= 3) {
+      dispatchActions(true);
+      setShowProgress(false);
+      return;
+    }
+
     let nextPosition;
     const stepProgress = getProgress('vsamStatus');
 
@@ -98,7 +104,7 @@ const Vsam = () => {
 
     if(stepProgress) {
       nextPosition = document.getElementById('vsam-progress');
-      nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
       nextPosition = document.getElementById('container-box-id');
       nextPosition?.scrollIntoView({behavior: 'smooth'});
@@ -111,10 +117,6 @@ const Vsam = () => {
       alertEmitter.emit('hideAlert');
       updateSubStepSkipStatus(SUB_STAGE_ID, stageStatusRef.current);
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: SUB_STAGE_ID }));
-
-      if(storageMode.toUpperCase() != 'VSAM') {
-        dispatch(setVsamStatus(false));
-      }
     }
   }, []);
 
@@ -151,19 +153,23 @@ const Vsam = () => {
   }, [showProgress, stateUpdated]);
 
   useEffect(() => {
-    const allAttributesTrue = Object.values(vsamInitProgress).every(value => value === true);
-    if(allAttributesTrue) {
-      dispatchActions(true);
-      setShowProgress(initClicked || getProgress('vsamStatus'));
-    }
+    verifyAndSetVsamInitCompletion(vsamInitProgress);
   }, [vsamInitProgress]);
 
   const setVsamInitializationProgress = (vsamInitState: InitSubStepsState) => {
     setVsamInitProgress(vsamInitState);
     setVsamInitState(vsamInitState);
+    verifyAndSetVsamInitCompletion(vsamInitState);
+  }
+
+  const verifyAndSetVsamInitCompletion = (vsamInitState: InitSubStepsState, selectedStorageMode?: string) => {
     const allAttributesTrue = Object.values(vsamInitState).every(value => value === true);
     if(allAttributesTrue) {
       dispatchActions(true);
+      setShowProgress(initClicked || getProgress('vsamStatus'));
+    } else if (selectedStorageMode && selectedStorageMode.toUpperCase() == 'VSAM') {
+      dispatchActions(false);
+      setShowProgress(false);
     }
   }
 
@@ -302,7 +308,6 @@ const Vsam = () => {
     setAllowInitialization(regEx.test(dsName));
   }
 
-
   const cachingServiceChangeHandler = (newValue: string) => {
     alertEmitter.emit('hideAlert');
     datasetValidation(newValue);
@@ -326,14 +331,13 @@ const Vsam = () => {
       }
     };
     setYamlConfig(updatedYaml);
+
     if(event.target.value.toUpperCase() !== 'VSAM') {
-      Object.keys(vsamInitProgress).forEach(key => {
-        vsamInitProgress[key as keyof InitSubStepsState] = false;
-      });
-      setVsamInitializationProgress(vsamInitProgress);
+      dispatchActions(true);
+      setShowProgress(false);
+    } else {
+      verifyAndSetVsamInitCompletion(vsamInitProgress, event.target.value);
     }
-    setShowProgress(false);
-    dispatchActions(false);
   }
 
   return (
@@ -409,7 +413,7 @@ const Vsam = () => {
                 null
               }
 
-              <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-vsam-progress">
+              <Box sx={{height: showProgress ? 'calc(100vh - 70vh)' : 'auto'}} id="start-vsam-progress">
                 {!showProgress ? null :
                   <React.Fragment>
                     <ProgressCard label={`Write configuration file locally to temp directory`} id="init-vsam-progress-card" status={vsamInitProgress?.writeYaml}/>

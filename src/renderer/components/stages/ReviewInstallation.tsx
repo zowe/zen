@@ -71,7 +71,7 @@ const ReviewInstallation = () => {
     const stageProgress = stageProgressStatus.every(status => status === true);
     const subStageProgress = subStageProgressStatus.every(status => status === true);
 
-    if (stageProgress && subStageProgress) {
+    if(stageProgress && subStageProgress) {
       updateProgress(true);
     } else {
       updateProgress(false);
