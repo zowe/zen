@@ -30,6 +30,7 @@ const Unpax = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
+  // Rename to Retrieve Schema and Yaml
   const [stageLabel] = useState(UNPAX_STAGE_LABEL);
 
   const [STAGE_ID] = useState(getStageDetails(stageLabel).id);
