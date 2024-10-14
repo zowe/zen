@@ -106,7 +106,7 @@ const subStepSkipStatus: subStepState = {
   security: false,
   stcs: false,
   certificate: false,
-  vsam: false,
+  cachingService: false,
   launchConfig: false
 }
 
