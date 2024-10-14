@@ -12,7 +12,7 @@ import { useState, useEffect, useRef } from "react";
 import { Box, Button, FormControl, InputLabel, Select, TextField, MenuItem } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
-import { setInitializationStatus, setVsamStatus } from './progress/progressSlice';
+import { setInitializationStatus, setCachingServiceStatus } from './progress/progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -29,11 +29,11 @@ import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
 import { INIT_STAGE_LABEL, ajv } from "../common/Utils";
 
-const Vsam = () => {
+const CachingService = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
-  const subStageLabel = 'Vsam';
+  const subStageLabel = 'Caching Service';
 
   const [STAGE_ID] = useState(getStageDetails(INIT_STAGE_LABEL).id);
   const [SUB_STAGES] = useState(!!getStageDetails(INIT_STAGE_LABEL).subStages);
@@ -46,7 +46,7 @@ const Vsam = () => {
   const yaml = useAppSelector(selectYaml);
   const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.vsam);
   const setupYaml = yaml?.zowe?.setup?.vsam;
-  const [showProgress, setShowProgress] = useState(getProgress('vsamStatus'));
+  const [showProgress, setShowProgress] = useState(getProgress('cachingServiceStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -87,7 +87,7 @@ const Vsam = () => {
     }
 
     let nextPosition;
-    const stepProgress = getProgress('vsamStatus');
+    const stepProgress = getProgress('cachingServiceStatus');
 
     dispatch(setInitializationStatus(isInitializationStageComplete()));
     setShowProgress(initClicked || stepProgress);
@@ -121,7 +121,7 @@ const Vsam = () => {
   }, []);
 
   useEffect(() => {
-    setShowProgress(initClicked || getProgress('vsamStatus'));
+    setShowProgress(initClicked || getProgress('cachingServiceStatus'));
 
     if(initClicked) {
       let nextPosition = document.getElementById('start-vsam-progress');
@@ -132,7 +132,7 @@ const Vsam = () => {
   }, [initClicked]);
 
   useEffect(() => {
-    if(!getProgress('vsamStatus') && initClicked) {
+    if(!getProgress('cachingServiceStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInitVsamProgress().then((res: any) => {
           setVsamInitializationProgress(res);
@@ -166,7 +166,7 @@ const Vsam = () => {
     const allAttributesTrue = Object.values(vsamInitState).every(value => value === true);
     if(allAttributesTrue) {
       dispatchActions(true);
-      setShowProgress(initClicked || getProgress('vsamStatus'));
+      setShowProgress(initClicked || getProgress('cachingServiceStatus'));
     } else if (selectedStorageMode && selectedStorageMode.toUpperCase() == 'VSAM') {
       dispatchActions(false);
       setShowProgress(false);
@@ -194,7 +194,7 @@ const Vsam = () => {
   }
 
   const dispatchActions = (status: boolean) => {
-    dispatch(setVsamStatus(status));
+    dispatch(setCachingServiceStatus(status));
     dispatch(setInitializationStatus(isInitializationStageComplete()));
     dispatch(setNextStepEnabled(status));
     setStageSkipStatus(!status);
@@ -347,7 +347,7 @@ const Vsam = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
 
-      <ContainerCard title="Vsam" description="Configure Zowe Vsam.">
+      <ContainerCard title="CachingService" description="Configure Zowe CachingService.">
 
         { editorVisible &&
           <EditorDialog
@@ -434,4 +434,4 @@ const Vsam = () => {
   );
 };
 
-export default Vsam;
+export default CachingService;

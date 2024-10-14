@@ -20,7 +20,7 @@ export interface ProgressState {
   securityStatus: boolean;
   stcsStatus: boolean;
   certificateStatus: boolean;
-  vsamStatus: boolean;
+  cachingServiceStatus: boolean;
   launchConfigStatus: boolean;
   reviewStatus: boolean;
 }
@@ -95,7 +95,7 @@ export interface subStepState {
   security: boolean,
   stcs: boolean,
   certificate: boolean,
-  vsam: boolean,
+  cachingService: boolean,
   launchConfig: boolean
 }
 

@@ -39,7 +39,7 @@ const progressStatus: ProgressState = {
   securityStatus: false,
   stcsStatus: false,
   certificateStatus: false,
-  vsamStatus: false,
+  cachingServiceStatus: false,
   launchConfigStatus: false,
   reviewStatus: false,
 }
@@ -549,7 +549,7 @@ export const isInitializationStageComplete = (): boolean => {
   const progress = localStorage.getItem(progressStateKey);
   if(progress) {
     const data:any = unflatten(JSON.parse(progress));
-    return data.datasetInstallationStatus && data.networkingStatus && data.apfAuthStatus && data.securityStatus && data.stcsStatus && data.certificateStatus && data.vsamStatus && data.launchConfigStatus;
+    return data.datasetInstallationStatus && data.networkingStatus && data.apfAuthStatus && data.securityStatus && data.stcsStatus && data.certificateStatus && data.cachingServiceStatus && data.launchConfigStatus;
   } else {
     return false;
   }
