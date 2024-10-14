@@ -18,7 +18,7 @@ import { selectConnectionArgs } from './connection/connectionSlice';
 import { setActiveStep } from "./progress/activeStepSlice"; 
 import { getStageDetails } from "../../../services/StageDetails";
 import { setDownloadUnpaxStatus } from './progress/progressSlice';
-import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationArguments, getInstallationTypeStatus, getProgress, setDownloadUnpaxState, setZoweVersion, updateStepSkipStatus } from "./progress/StageProgressStatus";
+import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationArguments, getInstallationTypeStatus, getProgress, setDownloadUnpaxState, setAndStoreZoweVersion, updateStepSkipStatus } from "./progress/StageProgressStatus";
 import React from "react";
 import ProgressCard from "../common/ProgressCard";
 import { alertEmitter } from "../Header";
@@ -173,7 +173,7 @@ const Unpax = () => {
         }
 
         if(res.details?.manifestFile?.version) {
-          setZowePaxVersion(res.details?.manifestFile?.version);
+          setZoweVersion(res.details?.manifestFile?.version);
         }
 
         if(res.details?.mergedYaml != undefined){
@@ -199,13 +199,13 @@ const Unpax = () => {
     }
   }
 
-  const setZowePaxVersion = (version: string): void => {
+  const setZoweVersion = (version: string): void => {
     if(!version) {
       return;
     }
     const versionString = version;
     const majorVersion = parseInt(versionString.split('.')[0], 10);
-    setZoweVersion(majorVersion);
+    setAndStoreZoweVersion(majorVersion);
   }
 
   const fetchExampleYaml = (event: any) => {
@@ -226,7 +226,7 @@ const Unpax = () => {
         updateProgress(false);
       }
       if(res.details?.manifestFile?.version) {
-        setZowePaxVersion(res.details?.manifestFile?.version);
+        setZoweVersion(res.details?.manifestFile?.version);
       }
       if(res.details?.mergedYaml != undefined){
         dispatch(setYaml(res.details.mergedYaml));

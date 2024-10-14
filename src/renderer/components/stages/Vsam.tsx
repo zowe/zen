@@ -24,7 +24,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete, getZoweVersion } from "./progress/StageProgressStatus";
+import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete, getCachedZoweVersion } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
 import { INIT_STAGE_LABEL, ajv } from "../common/Utils";
@@ -63,7 +63,7 @@ const Vsam = () => {
   const [showVsameDatsetName, setShowVsamDatasetName] = useState(false);
   const [storageMode, setStorageMode] = useState(yaml?.components[`caching-service`]?.storage?.mode);
   const storageModeOptions = ['VSAM', 'INFINISPAN'];
-  const zowePaxVersion: number = getZoweVersion();
+  const zoweVersion: number = getCachedZoweVersion();
   const [showStorageModeOptions, setShowStorageModeOptions] = useState(false);
 
   let timer: any;
@@ -78,9 +78,9 @@ const Vsam = () => {
 
   useEffect(() => {
 
-    (zowePaxVersion < 3) ? setStorageMode('VSAM') : setShowStorageModeOptions(true);
+    (zoweVersion < 3) ? setStorageMode('VSAM') : setShowStorageModeOptions(true);
 
-    if(storageMode.toUpperCase() !== 'VSAM' && zowePaxVersion >= 3) {
+    if(storageMode.toUpperCase() !== 'VSAM' && zoweVersion >= 3) {
       dispatchActions(true);
       setShowProgress(false);
       return;

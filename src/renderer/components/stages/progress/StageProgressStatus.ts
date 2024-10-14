@@ -591,11 +591,11 @@ export const getPreviousInstallation = () : ActiveState => {
   }
 }
 
-export const setZoweVersion = (version: number): void => {
+export const setAndStoreZoweVersion = (version: number): void => {
   localStorage.setItem(paxVersionKey, version.toString());
 }
 
-export const getZoweVersion = () : number => {
+export const getCachedZoweVersion = () : number => {
   const version = localStorage.getItem(paxVersionKey);
   return version ? Number(version) : NaN;
 }
