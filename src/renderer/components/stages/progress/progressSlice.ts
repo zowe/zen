@@ -26,7 +26,7 @@ const initialState: ProgressState = {
   securityStatus: getProgress('securityStatus') || false,
   stcsStatus: getProgress('stcsStatus') || false,
   certificateStatus: getProgress('certificateStatus') || false,
-  vsamStatus: getProgress('vsamStatus') || false,
+  cachingServiceStatus: getProgress('cachingServiceStatus') || false,
   launchConfigStatus: getProgress('launchConfigStatus') || false,
   reviewStatus: getProgress('reviewStatus') || false
 }
@@ -78,9 +78,9 @@ export const progressSlice = createSlice({
       state.certificateStatus = action.payload;
       setProgress('certificateStatus', action.payload);
     },
-    setVsamStatus: (state, action: PayloadAction<boolean>) => {
-      state.vsamStatus = action.payload;
-      setProgress('vsamStatus', action.payload);
+    setCachingServiceStatus: (state, action: PayloadAction<boolean>) => {
+      state.cachingServiceStatus = action.payload;
+      setProgress('cachingServiceStatus', action.payload);
     },
     setLaunchConfigStatus: (state, action: PayloadAction<boolean>) => {
       state.launchConfigStatus = action.payload;
@@ -93,7 +93,7 @@ export const progressSlice = createSlice({
   }
 });
 
-export const { setConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setInitializationStatus, setDatasetInstallationStatus, setDownloadUnpaxStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setStcsStatus, setCertificateStatus, setVsamStatus, setLaunchConfigStatus, setReviewStatus } = progressSlice.actions;
+export const { setConnectionStatus, setPlanningStatus, setInstallationTypeStatus, setInitializationStatus, setDatasetInstallationStatus, setDownloadUnpaxStatus, setNetworkingStatus, setApfAuthStatus, setSecurityStatus, setStcsStatus, setCertificateStatus, setCachingServiceStatus, setLaunchConfigStatus, setReviewStatus } = progressSlice.actions;
 
 export const selectConnectionStatus = (state: RootState) => state.progress.connectionStatus;
 export const selectPlanningStatus = (state: RootState) => state.progress.planningStatus;
@@ -106,7 +106,7 @@ export const selectApfAuthStatus = (state: RootState) => state.progress.apfAuthS
 export const selectSecurityStatus = (state: RootState) => state.progress.securityStatus;
 export const selectStcsStatus = (state: RootState) => state.progress.stcsStatus;
 export const selectCertificateStatus = (state: RootState) => state.progress.certificateStatus;
-export const selectVsamStatus = (state: RootState) => state.progress.vsamStatus;
+export const selectCachingServiceStatus = (state: RootState) => state.progress.cachingServiceStatus;
 export const selectLaunchConfigStatus = (state: RootState) => state.progress.launchConfigStatus;
 export const selectReviewStatus = (state: RootState) => state.progress.reviewStatus;
 
