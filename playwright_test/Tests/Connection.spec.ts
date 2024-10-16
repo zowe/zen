@@ -1,15 +1,14 @@
 import { test, ElectronApplication, expect, _electron as electron } from '@playwright/test';
+import CommonPage from '../Pages/common.page';
 import ConnectionPage from '../Pages/connection.page';
 import TitlePage from '../Pages/title.page';
-import path from 'path';
-import { spawn } from 'child_process';
-import { prepareEnvironment } from '../prepare.js';
-import config from '../utils/config';
-let page: Page;
+import { prepareEnvironment } from '../prepare';
+import config from '../utils/config'
 
 let electronApp: ElectronApplication
+const SSH_INVALID_PASSWD = 'InvalidPass';
 const CONNECTION_PAGE_TITLE = 'Connection'
-const INSTALLATION_TITLE = 'Installation'
+const ERROR_MESSAGE_PASSWORD = "PASS command failed";
 
 test.beforeAll(async () => {
   try {
@@ -23,14 +22,16 @@ test.beforeAll(async () => {
 test.describe('ConnectionTab', () => {
   let connectionPage: ConnectionPage;
   let titlePage: TitlePage;
+  let commonPage: CommonPage
 
   test.beforeEach(async ({ page }) => {
     test.setTimeout(900000);
     electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
-    page= await electronApp.firstWindow()
+    page = await electronApp.firstWindow()
     connectionPage = new ConnectionPage(page);
     titlePage = new TitlePage(page);
-	await titlePage.navigateToConnectionTab()
+    commonPage = new CommonPage(page)
+    await titlePage.navigateToConnectionTab()
   });
 
   test.afterEach(async () => {
@@ -38,11 +39,10 @@ test.describe('ConnectionTab', () => {
   });
 
   test('Test Save and close and Resume Progress', async ({ page }) => {
-	await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
-    await connectionPage.SubmitValidateCredential()
-    await connectionPage.click_saveAndClose()
-    await titlePage.clickOnResumeProgress();
-    const title = await connectionPage.getConnectionPageTitle();
+    connectionPage.performLogin(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD)
+    commonPage.clickSaveAndClose()
+    titlePage.clickOnResumeProgress();
+    const title = await commonPage.getPageTitle();
     expect(title).toBe(CONNECTION_PAGE_TITLE);
     const hostValue = await connectionPage.getHostValue();
     expect(hostValue).toBe(config.SSH_HOST);
@@ -53,8 +53,9 @@ test.describe('ConnectionTab', () => {
   })
 
   test('test invalid credentials', async ({ page }) => {
-    await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
-    await connectionPage.SubmitValidateCredential()
+    connectionPage.performLogin(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, SSH_INVALID_PASSWD)
+    const error_Message = await connectionPage.getErrorMessage()
+    expect(error_Message).toBe(ERROR_MESSAGE_PASSWORD);
     const isGreenIconHidden = await connectionPage.isGreenCheckIconVisible();
     expect(isGreenIconHidden).toBe(true);
     const isContinueDisable = await connectionPage.isContinueButtonVisible();
@@ -62,19 +63,18 @@ test.describe('ConnectionTab', () => {
   })
 
   test('test valid credentials', async ({ page }) => {
-    await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
-    await connectionPage.SubmitValidateCredential()
+    connectionPage.performLogin(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD)
     const isGreenIconHidden = await connectionPage.isGreenCheckIconVisible();
     expect(isGreenIconHidden).toBe(false);
     const isContinueDisable = await connectionPage.isContinueButtonVisible();
     expect(isContinueDisable).toBe(false);
-   })
+  })
 
   test('test required fields', async ({ page }) => {
-    await expect(connectionPage.userName).toBeTruthy()
-    await expect(connectionPage.password).toBeTruthy()
-    await expect(connectionPage.port).toBeTruthy()
-    await expect(connectionPage.host).toBeTruthy()
+    expect(connectionPage.userName).toBeTruthy()
+    expect(connectionPage.password).toBeTruthy()
+    expect(connectionPage.port).toBeTruthy()
+    expect(connectionPage.host).toBeTruthy()
   })
 
   test('test continue disable', async ({ page }) => {

@@ -1,8 +1,8 @@
-import { Page,Locator } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
+import CommonPage from './common.page';
 
-class InstallationPage{
+class InstallationPage {
   page: Page;
-  pageTitle: Locator;
   prefix: Locator;
   procLib: Locator;
   parmLib: Locator;
@@ -13,195 +13,174 @@ class InstallationPage{
   authPluginLib: Locator;
   installMVSDatasets: Locator;
   viewEditYaml: Locator;
-  viewSubmitJob: Locator;
   viewJobOutput: Locator;
-  saveAndClose: Locator;
-  previousStep: Locator;
-  skipInstallation: Locator;
   continueToNetworkSetup: Locator;
   editorTitleElement: Locator;
   closeEditorButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.prefix = page.locator("//label[text()='Prefix']//following-sibling::div/input")
     this.procLib = page.locator("//label[text()='Proclib']//following-sibling::div/input")
     this.parmLib = page.locator("//label[text()='Parmlib']//following-sibling::div/input")
     this.zis = page.locator("//label[text()='Zis']//following-sibling::div/input")
-    this.jclLib = page.locator("//label[text()='Jcllib']//following-sibling::div/input")    
-    this.loadLib = page.locator("//label[text()='Loadlib']//following-sibling::div/input")    
-    this.authLoadLib = page.locator("//label[text()='Auth Loadlib']//following-sibling::div/input")    
-    this.authPluginLib = page.locator("//label[text()='Auth Plugin Lib']//following-sibling::div/input")    
-    this.installMVSDatasets = page.locator("//button[text()='Install MVS datasets']")    
-    this.viewEditYaml = page.locator("//button[text()='View/Edit Yaml']")    
-    this.viewSubmitJob = page.locator("//button[text()='View/Submit Job']")    
-    this.viewJobOutput = page.locator("//button[text()='View Job Output']")    
-	this.saveAndClose = page.locator("//button[text()='Save & close']")
-    this.previousStep = page.locator("//button[text()='Previous step']")
-    this.skipInstallation = page.locator("//button[contains(text(),'Skip')]")    
+    this.jclLib = page.locator("//label[text()='Jcllib']//following-sibling::div/input")
+    this.loadLib = page.locator("//label[text()='Loadlib']//following-sibling::div/input")
+    this.authLoadLib = page.locator("//label[text()='Auth Loadlib']//following-sibling::div/input")
+    this.authPluginLib = page.locator("//label[text()='Auth Plugin Lib']//following-sibling::div/input")
+    this.installMVSDatasets = page.locator("//button[text()='Install MVS datasets']")
+    this.viewEditYaml = page.locator("//button[text()='View/Edit Yaml']")
+    this.viewJobOutput = page.locator("//button[text()='View Job Output']")
     this.continueToNetworkSetup = page.locator("//button[text()='Continue to Network Setup']")
     this.editorTitleElement = page.locator("//h2[text()='Editor']")
     this.closeEditorButton = page.locator("//button[text()='Close']")
   }
 
-  async getInstallationPageTitle(){
-    await this.page.waitForTimeout(1000)
-    return await this.pageTitle.textContent({ timeout: 2000 });
-  }
+  commonPage = new CommonPage();
 
-  async enterPrefix(prefix: string): Promise<void>{
-    await this.page.waitForTimeout(500)
+  async enterPrefix(prefix: string): Promise<void> {
+    await this.commonPage.waitForElement(this.prefix)
+    await this.prefix.clear({ timeout: 2000 })
     await this.prefix.fill(prefix);
+    await this.commonPage.validateElementValue(this.prefix, prefix)
   }
 
   async getPrefixValue(): Promise<string> {
+    await this.commonPage.waitForElement(this.prefix)
     return await this.prefix.inputValue();
   }
- 
+
   async enterProcLib(proclib: string): Promise<void> {
-    await this.page.waitForTimeout(500)
+    await this.commonPage.waitForElement(this.procLib)
+    await this.procLib.clear({ timeout: 2000 })
     await this.procLib.fill(proclib);
+    await this.commonPage.validateElementValue(this.procLib, proclib)
   }
 
-  
   async getProclibValue(): Promise<string> {
+    await this.commonPage.waitForElement(this.procLib)
     return await this.procLib.inputValue();
   }
- 
-  async enterParmLib(parmlib: string): Promise<void>{
-    await this.page.waitForTimeout(500)
+
+  async enterParmLib(parmlib: string): Promise<void> {
+    await this.commonPage.waitForElement(this.parmLib)
+    await this.parmLib.clear({ timeout: 2000 })
     await this.parmLib.fill(parmlib);
+    await this.commonPage.validateElementValue(this.parmLib, parmlib)
   }
 
   async getParmlibValue(): Promise<string> {
+    await this.commonPage.waitForElement(this.parmLib)
     return await this.parmLib.inputValue();
   }
 
   async enterZis(zis: string): Promise<void> {
-    await this.page.waitForTimeout(500)
+    await this.commonPage.waitForElement(this.zis)
+    await this.zis.clear({ timeout: 2000 })
     await this.zis.fill(zis);
+    await this.commonPage.validateElementValue(this.zis, zis)
   }
 
   async enterJclLib(Jcllib: string): Promise<void> {
-    await this.page.waitForTimeout(500)
+    await this.commonPage.waitForElement(this.jclLib)
+    await this.jclLib.clear({ timeout: 2000 })
     await this.jclLib.fill(Jcllib);
+    await this.commonPage.validateElementValue(this.jclLib, Jcllib)
   }
 
-  async enterLoadLib(loadlib: string): Promise<void>{
-    await this.page.waitForTimeout(500)
+  async enterLoadLib(loadlib: string): Promise<void> {
+    await this.commonPage.waitForElement(this.loadLib)
+    await this.loadLib.clear({ timeout: 2000 })
     await this.loadLib.fill(loadlib);
+    await this.commonPage.validateElementValue(this.loadLib, loadlib)
   }
 
   async enterAuthLoadLib(authloadlib: string): Promise<void> {
+    await this.commonPage.waitForElement(this.authLoadLib)
+    await this.authLoadLib.clear({ timeout: 2000 })
     await this.authLoadLib.fill(authloadlib);
-	await this.page.waitForTimeout(5000)
+    await this.commonPage.validateElementValue(this.authLoadLib, authloadlib)
   }
 
   async getAuthLoadLibValue(): Promise<string> {
-	return await this.authLoadLib.inputValue();
+    await this.commonPage.waitForElement(this.authLoadLib)
+    return await this.authLoadLib.inputValue();
   }
 
   async enterAuthPluginLib(authpluginlib: string): Promise<void> {
+    await this.commonPage.waitForElement(this.authPluginLib)
+    await this.authPluginLib.clear({ timeout: 2000 })
     await this.authPluginLib.fill(authpluginlib);
-	await this.page.waitForTimeout(5000)
+    await this.commonPage.validateElementValue(this.authPluginLib, authpluginlib)
   }
 
   async getAuthPluginLibValue(): Promise<string> {
+    await this.commonPage.waitForElement(this.authPluginLib)
     return await this.authPluginLib.inputValue();
   }
 
-  async clickInstallMvsDatasets(){
-	await this.installMVSDatasets.click();
-	await this.waitForContinueButtonToBeEnabled();
+  async clickInstallMvsDatasets() {
+    await this.commonPage.waitForElement(this.installMVSDatasets)
+    await this.installMVSDatasets.click();
+    await this.waitForContinueButtonToBeEnabled();
   }
 
-  async clickViewEditYaml(){
+  async clickViewEditYaml() {
+    await this.commonPage.waitForElement(this.viewEditYaml)
     await this.viewEditYaml.click();
   }
 
-  async clickViewSubmitJob(){
-    await this.viewSubmitJob.click();
-  }
-
-  async clickViewJobOutput(){
+  async clickViewJobOutput() {
+    await this.commonPage.waitForElement(this.viewJobOutput)
     await this.viewJobOutput.click();
-    await this.page.waitForTimeout(2000);
   }
 
-  async clickSaveAndClose(){
-    await this.saveAndClose.click({timeout: 2000});
-  }
-
-  async clickPreviousStep(){
-    await this.page.waitForTimeout(500)
-    await this.previousStep.click();
-  }
-
-  async clickSkipInstallation(){
-    await this.page.waitForTimeout(500)
-    await this.skipInstallation.click();
-  }
-
-  async clickContinueToNetworkSetup(){
-    await this.page.waitForTimeout(500)
+  async clickContinueToNetworkSetup() {
+    await this.commonPage.waitForElement(this.continueToNetworkSetup)
     await this.continueToNetworkSetup.click();
   }
 
-  async isContinueToNetworkSetupDisabled(){
+  async isContinueToNetworkSetupDisabled() {
+    await this.commonPage.waitForElement(this.continueToNetworkSetup)
     return await this.continueToNetworkSetup.isDisabled()
   }
 
-  async isContinueToNetworkSetupEnabled(){
+  async isContinueToNetworkSetupEnabled() {
+    await this.commonPage.waitForElement(this.continueToNetworkSetup)
     return await this.continueToNetworkSetup.isEnabled()
   }
-  
-  async isSkipToNetworkSetupEnabled(){
-    return await this.skipInstallation.isEnabled()
-  }
-  
+
   private async waitForContinueButtonToBeEnabled(): Promise<void> {
-    const timeout = 100000; 
-    const interval = 500; 
+    const timeout = 100000;
+    const interval = 500;
     const endTime = Date.now() + timeout;
     while (Date.now() < endTime) {
       if (await this.isContinueToNetworkSetupEnabled()) {
-        return; 
+        return;
       }
       await this.page.waitForTimeout(interval);
     }
-
     throw new Error('Continue button was not enabled within the timeout period');
   }
 
-  async open_monacoEditor(){
-    await this.page.waitForTimeout(1000)
-    this.viewEditYaml.click({ timeout: 2000 })
-    const editor_title = await this.editorTitleElement.textContent();
-    return editor_title;
-  }
-
-  async clickCloseEditor(){
-    await this.page.waitForTimeout(500)
+  async clickCloseEditor() {
+    await this.commonPage.waitForElement(this.closeEditorButton)
     await this.closeEditorButton.click();
   }
-  
-  async clickInstallMvsDatasetsInvalid(){
-	await this.installMVSDatasets.click();
+
+  async clickInstallMvsDatasetsInvalid() {
+    await this.installMVSDatasets.click();
   }
-  
-  async fillAllFields(datasetPrefix: string, parmLib: string, procLib: string, jclLib: string, loadLib: string, authLoadLib: string, authPluginLib: string){
-    await this.enterPrefix(datasetPrefix);
-	await this.enterParmLib(parmLib);
-	await this.enterProcLib(procLib);
-	await this.enterJclLib(jclLib);
-	await this.enterLoadLib(loadLib);
-	await this.enterAuthLoadLib(authLoadLib);
-	await this.enterAuthPluginLib(authPluginLib);
-	await this.enterAuthLoadLib(authLoadLib);
-	await this.enterAuthPluginLib(authPluginLib);
-	await this.enterAuthLoadLib(authLoadLib);
-	await this.enterAuthPluginLib(authPluginLib);
+
+  async fillInstallationPageDetails(DATASET_PREFIX: string, PROC_LIB: string, PARM_LIB: string, ZIS: string, JCL_LIB: string, LOAD_LIB: string, AUTH_LOAD_LIB: string, AUTH_PLUGIN_LIB: string) {
+    await this.enterPrefix(DATASET_PREFIX)
+    await this.enterProcLib(PROC_LIB)
+    await this.enterParmLib(PARM_LIB)
+    await this.enterZis(ZIS)
+    await this.enterJclLib(JCL_LIB)
+    await this.enterLoadLib(LOAD_LIB)
+    await this.enterAuthLoadLib(AUTH_LOAD_LIB)
+    await this.enterAuthPluginLib(AUTH_PLUGIN_LIB)
   }
 }
-  export default InstallationPage;
+export default InstallationPage;
