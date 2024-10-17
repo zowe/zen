@@ -1,4 +1,4 @@
-const Script = require('./setup.js');
+import { connectArgs, Script }  from './setup';
 
 async function prepareEnvironment(options = {}) {
   const { install = false, remove = false } = options;
