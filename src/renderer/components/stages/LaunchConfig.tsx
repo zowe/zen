@@ -427,9 +427,9 @@ const LaunchConfig = () => {
       }
     }
   }
-  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
+  const yaml = useAppSelector(selectYaml);
   const [setupSchema] = useState(schema.properties.zowe);
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe);
+  const setupYaml = yaml?.zowe;
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -456,10 +456,8 @@ const LaunchConfig = () => {
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           dispatch(setYaml(res.details));
-          setLocalYaml(res.details);
         } else {
           dispatch(setYaml(FALLBACK_YAML));
-          setLocalYaml(FALLBACK_YAML);
         }
       })
     }
@@ -509,22 +507,21 @@ const LaunchConfig = () => {
         if(validate.errors) {
           const errPath = validate.errors[0].schemaPath;
           const errMsg = validate.errors[0].message;
-          setStageConfig(false, errPath+' '+errMsg, newData);
+          setStageConfig(false, errPath+' '+errMsg);
         } else {
           const newYaml = {...yaml, zowe: {...yaml.zowe, configmgr: newData.configmgr, launchScript: newData.launchScript}};
           await window.electron.ipcRenderer.setConfigByKeyAndValidate("zowe.configmgr", newData.configmgr);
           await window.electron.ipcRenderer.setConfigByKeyAndValidate("zowe.launchScript", newData.launchScript);
           dispatch(setYaml(newYaml));
-          setStageConfig(true, '', newData);
+          setStageConfig(true, '');
         }
       }
     }
   };
 
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
+  const setStageConfig = (isValid: boolean, errorMsg: string) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
-    setSetupYaml(data);
   }
 
   const onSaveYaml = (e: any) => {
@@ -559,12 +556,15 @@ const LaunchConfig = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
       <ContainerCard title="Configuration" description="Basic zowe.yaml configurations."> 
-        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={(data: any) => {
-          const newData = isFormInit ? (Object.keys(setupYaml).length > 0 ? setupYaml : data.zowe) : (data.zowe ? data.zowe : data);
-          setIsFormInit(false);
-          setStageConfig(true, '', newData);
+
+        { editorVisible &&
+          <EditorDialog
+            contentType={contentType}
+            isEditorVisible={editorVisible}
+            toggleEditorVisibility={toggleEditorVisibility}
+          />
         }
-        }/>}
+
         <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
           <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>

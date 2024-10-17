@@ -62,7 +62,7 @@ const ReviewInstallation = () => {
     completeProgress.securityStatus,
     completeProgress.stcsStatus,
     completeProgress.certificateStatus,
-    completeProgress.vsamStatus,
+    completeProgress.cachingServiceStatus,
     completeProgress.launchConfigStatus
   ];
 

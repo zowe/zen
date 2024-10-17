@@ -12,13 +12,13 @@ import {useEffect, useRef, useState} from "react";
 import { Box, Button, Link, Typography } from '@mui/material';
 import ContainerCard from '../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { selectYaml, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
+import { selectYaml, setNextStepEnabled, setSchema, setYaml } from '../configuration-wizard/wizardSlice';
 import { selectZoweVersion} from './installation/installationSlice';
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { setActiveStep } from "./progress/activeStepSlice"; 
 import { getStageDetails } from "../../../services/StageDetails";
 import { setDownloadUnpaxStatus } from './progress/progressSlice';
-import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationArguments, getInstallationTypeStatus, getProgress, setDownloadUnpaxState, updateStepSkipStatus } from "./progress/StageProgressStatus";
+import { downloadUnpaxStatus, getDownloadUnpaxState, getInstallationArguments, getInstallationTypeStatus, getProgress, setDownloadUnpaxState, setAndStoreZoweVersion, updateStepSkipStatus } from "./progress/StageProgressStatus";
 import React from "react";
 import ProgressCard from "../common/ProgressCard";
 import { alertEmitter } from "../Header";
@@ -171,23 +171,41 @@ const Unpax = () => {
           alertEmitter.emit('showAlert', res.details, 'error');
           updateProgress(false);
         }
+
+        if(res.details?.manifestFile?.version) {
+          setZoweVersion(res.details?.manifestFile?.version);
+        }
+
         if(res.details?.mergedYaml != undefined){
           dispatch(setYaml(res.details.mergedYaml));
           window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
         }
-      clearInterval(timer);
-      updateProgress(res.status);
-    }).catch(() => {
-      clearInterval(timer);
-      updateProgress(false);
-    });
+        window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+          if(res && res.details) {
+            dispatch(setSchema(res.details));
+          }
+        })
+        clearInterval(timer);
+        updateProgress(res.status);
+      }).catch(() => {
+        clearInterval(timer);
+        updateProgress(false);
+      });
+    } else{
+      setDownloadUnpaxProgress(downloadUnpaxProgressAndStateTrue);
+      setDownloadUnpaxState(downloadUnpaxProgressAndStateTrue);
+      dispatch(setNextStepEnabled(true));
+      dispatch(setDownloadUnpaxStatus(true));
+    }
   }
-  else{
-    setDownloadUnpaxProgress(downloadUnpaxProgressAndStateTrue);
-    setDownloadUnpaxState(downloadUnpaxProgressAndStateTrue);
-    dispatch(setNextStepEnabled(true));
-    dispatch(setDownloadUnpaxStatus(true));
-  }
+
+  const setZoweVersion = (version: string): void => {
+    if(!version) {
+      return;
+    }
+    const versionString = version;
+    const majorVersion = parseInt(versionString.split('.')[0], 10);
+    setAndStoreZoweVersion(majorVersion);
   }
 
   const fetchExampleYaml = (event: any) => {
@@ -207,10 +225,18 @@ const Unpax = () => {
         alertEmitter.emit('showAlert', res.details.message ? res.details.message : res.details, 'error');
         updateProgress(false);
       }
+      if(res.details?.manifestFile?.version) {
+        setZoweVersion(res.details?.manifestFile?.version);
+      }
       if(res.details?.mergedYaml != undefined){
         dispatch(setYaml(res.details.mergedYaml));
         window.electron.ipcRenderer.setConfig(res.details.mergedYaml);
       }
+      window.electron.ipcRenderer.getSchema().then((res: IResponse) => {
+        if(res && res.details) {
+          dispatch(setSchema(res.details));
+        }
+      })
       updateProgress(res.status);
       clearInterval(timer);
     }).catch((err: any) => {

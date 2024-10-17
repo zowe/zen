@@ -19,16 +19,7 @@ import * as fs from 'fs';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { InstallationArgs } from '../types/stateInterfaces';
 import { FALLBACK_SCHEMA, deepMerge } from '../renderer/components/common/Utils';
-
-
-//AJV did not like the regex in our current schema
-const zoweDatasetMemberRegexFixed = {
-  "description": "PARMLIB member used by ZIS",
-  "type": "string",
-  "pattern": "^([A-Z$#@]){1}([A-Z0-9$#@]){0,7}$",
-  "minLength": 1,
-  "maxLength": 8
-}
+import { updateSchemaReferences } from '../services/ResolveRef';
 
 class Installation {
 
@@ -123,11 +114,23 @@ class Installation {
     try{
       ProgressStore.set('downloadUnpax.getSchemas', false);
       ProgressStore.set('downloadUnpax.getExampleYaml', false);
+
       const currentConfig: any = ConfigurationStore.getConfig();
       let yamlObj
       const zoweRuntimePath = installationArgs.installationDir;
       let readPaxYamlAndSchema = await this.readExampleYamlAndSchema(connectionArgs, zoweRuntimePath);
       let parsedSchema = false, parsedYaml = false;
+
+      const manifestFileFromPax = readPaxYamlAndSchema?.details?.schemas?.manifestFile;
+      let manifestFile;
+
+      if(manifestFileFromPax) {
+        try {
+          manifestFile = JSON.parse(manifestFileFromPax);
+        } catch (error) {
+          console.error('Error parsing manifest file:', error);
+        }
+      }
       if(readPaxYamlAndSchema.details.yaml){
         const yamlFromPax = readPaxYamlAndSchema.details.yaml;
         if(yamlFromPax){
@@ -152,19 +155,11 @@ class Installation {
         }
 
         //No reason not to always set schema to latest if user is re-running installation
-        if(readPaxYamlAndSchema.details.yamlSchema && readPaxYamlAndSchema.details.serverCommon){
+        if(readPaxYamlAndSchema.details.schemas.yamlSchema){
           try {
-            let yamlSchema = JSON.parse(readPaxYamlAndSchema.details.yamlSchema);
-            const serverCommon = JSON.parse(readPaxYamlAndSchema.details.serverCommon);
-            if(yamlSchema && serverCommon){
-              yamlSchema.additionalProperties = true;
-              yamlSchema.properties.zowe.properties.setup.properties.dataset.properties.parmlibMembers.properties.zis = zoweDatasetMemberRegexFixed;
-              yamlSchema.properties.zowe.properties.setup.properties.certificate.properties.pkcs12.properties.directory = serverCommon.$defs.path;
-              if(yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items){
-                delete yamlSchema.$defs?.networkSettings?.properties?.server?.properties?.listenAddresses?.items?.ref;
-                yamlSchema.$defs.networkSettings.properties.server.properties.listenAddresses.items = serverCommon.$defs.ipv4
-              }
-              // console.log('Setting schema from runtime dir:', JSON.stringify(yamlSchema));
+            let yamlSchema = JSON.parse(readPaxYamlAndSchema.details.schemas.yamlSchema);
+            updateSchemaReferences(readPaxYamlAndSchema.details.schemas, yamlSchema);
+            if(yamlSchema){
               ConfigurationStore.setSchema(yamlSchema);
               parsedSchema = true;
               ProgressStore.set('downloadUnpax.getSchemas', true);
@@ -181,7 +176,7 @@ class Installation {
           ConfigurationStore.setSchema(FALLBACK_SCHEMA);
           return {status: false, details: {message: 'no schemas found from pax'}}
         }
-        return {status: parsedSchema && parsedYaml, details: {message: "Successfully retrieved example-zowe.yaml and schemas", mergedYaml: yamlObj}}
+        return {status: parsedSchema && parsedYaml, details: {message: "Successfully retrieved example-zowe.yaml and schemas", mergedYaml: yamlObj, manifestFile}}
       }
     } catch (e) {
       ConfigurationStore.setSchema(FALLBACK_SCHEMA);
@@ -262,16 +257,24 @@ class Installation {
           return {status: false, details: `Error unpaxing Zowe archive: ${unpax.details}`};
         }
       }
-      let yamlObj = {};
-      await this.getExampleYamlAndSchemas(connectionArgs, installationArgs).then((res: IResponse) => {
-        if(res.status){
-          if(res.details.mergedYaml != undefined){
-            yamlObj = res.details.mergedYaml
-          }
-        }
-      })
 
-      return {status: download.status && uploadYaml.status && upload.status && unpax.status, details: {message: 'Zowe unpax successful.', mergedYaml: yamlObj}};
+      let yamlObj = {};
+      let manifestFile = {};
+
+      await this.getExampleYamlAndSchemas(connectionArgs, installationArgs).then((res: IResponse) => {
+
+        if(!res?.status) {
+          return { status: false, details: { message: 'Failed to get YAML and schemas.' } };
+        }
+
+        manifestFile = res.details?.manifestFile;
+
+        if(res.details?.mergedYaml != undefined){
+          yamlObj = res.details.mergedYaml;
+        }
+
+      })
+      return {status: download.status && uploadYaml.status && upload.status && unpax.status, details: {message: 'Zowe unpax successful.', mergedYaml: yamlObj, manifestFile}};
     } catch (error) {
       return {status: false, details: error.message};
     }
@@ -630,10 +633,12 @@ export class FTPInstallation extends Installation {
       const yamlSchema = await new FileTransfer().download(connectionArgs, yamlSchemaPath, DataType.ASCII);
       const serverCommonPath = `${installDir}/schemas/server-common.json`;
       const serverCommon = await new FileTransfer().download(connectionArgs, serverCommonPath, DataType.ASCII);
-      return {status: true, details: {yaml, yamlSchema, serverCommon}};
+      const manifestFilePath = `${installDir}/manifest.json`;
+      const manifestFile = await new FileTransfer().download(connectionArgs, manifestFilePath, DataType.ASCII);
+      return {status: true, details: {yaml, schemas: {yamlSchema, serverCommon, manifestFile}}};
     } catch (e) {
       console.log("Error downloading example-zowe.yaml and schemas:", e.message);
-      return {status: false, details: {yaml: '', yamlSchema: '', serverCommon: ''}}  
+      return {status: false, details: {yaml: '', schemas: {yamlSchema: '', serverCommon: '', manifestFile: ''}}};
     }
   }
 

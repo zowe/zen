@@ -9,10 +9,10 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { Box, Button, FormControl, TextField } from '@mui/material';
+import { Box, Button, FormControl, InputLabel, Select, TextField, MenuItem } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
-import { setInitializationStatus, setVsamStatus } from './progress/progressSlice';
+import { setInitializationStatus, setCachingServiceStatus } from './progress/progressSlice';
 import ContainerCard from '../common/ContainerCard';
 import JsonForm from '../common/JsonForms';
 import EditorDialog from "../common/EditorDialog";
@@ -24,16 +24,16 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete } from "./progress/StageProgressStatus";
+import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete, getCachedZoweVersion } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
 import { INIT_STAGE_LABEL, ajv } from "../common/Utils";
 
-const Vsam = () => {
+const CachingService = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
-  const subStageLabel = 'Vsam';
+  const subStageLabel = 'Caching Service';
 
   const [STAGE_ID] = useState(getStageDetails(INIT_STAGE_LABEL).id);
   const [SUB_STAGES] = useState(!!getStageDetails(INIT_STAGE_LABEL).subStages);
@@ -43,10 +43,10 @@ const Vsam = () => {
 
   const dispatch = useAppDispatch();
   const [schema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
+  const yaml = useAppSelector(selectYaml);
   const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.vsam);
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.vsam);
-  const [showProgress, setShowProgress] = useState(getProgress('vsamStatus'));
+  const setupYaml = yaml?.zowe?.setup?.vsam;
+  const [showProgress, setShowProgress] = useState(getProgress('cachingServiceStatus'));
   const [init, setInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -55,11 +55,16 @@ const Vsam = () => {
   const [vsamInitProgress, setVsamInitProgress] = useState(getVsamInitState());
   const [stateUpdated, setStateUpdated] = useState(false);
   const [initClicked, setInitClicked] = useState(false);
-  const [isDsNameValid, setIsDsNameValid] = useState(true);
+  const [allowInitialization, setAllowInitialization] = useState(true);
   const [installationArgs] = useState(getInstallationArguments());
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
   const stageStatusRef = useRef(stageStatus);
+  const [showVsameDatsetName, setShowVsamDatasetName] = useState(false);
+  const [storageMode, setStorageMode] = useState(yaml?.components[`caching-service`]?.storage?.mode);
+  const storageModeOptions = ['VSAM', 'INFINISPAN'];
+  const zoweVersion: number = getCachedZoweVersion();
+  const [showStorageModeOptions, setShowStorageModeOptions] = useState(false);
 
   let timer: any;
 
@@ -72,11 +77,25 @@ const Vsam = () => {
   }, [stageStatus]);
 
   useEffect(() => {
+
+    (zoweVersion < 3) ? setStorageMode('VSAM') : setShowStorageModeOptions(true);
+
+    if(storageMode.toUpperCase() !== 'VSAM' && zoweVersion >= 3) {
+      dispatchActions(true);
+      setShowProgress(false);
+      return;
+    }
+
     let nextPosition;
-    const stepProgress = getProgress('vsamStatus');
+    const stepProgress = getProgress('cachingServiceStatus');
 
     dispatch(setInitializationStatus(isInitializationStageComplete()));
     setShowProgress(initClicked || stepProgress);
+
+    const nameExists = setupSchema?.properties?.name;
+    if(!nameExists) {
+      setShowVsamDatasetName(true);
+    }
 
     const vsamDatasetName = yaml?.components[`caching-service`]?.storage?.vsam?.name|| '';
     if(vsamDatasetName) {
@@ -85,7 +104,7 @@ const Vsam = () => {
 
     if(stepProgress) {
       nextPosition = document.getElementById('vsam-progress');
-      nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      nextPosition?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
       nextPosition = document.getElementById('container-box-id');
       nextPosition?.scrollIntoView({behavior: 'smooth'});
@@ -102,7 +121,7 @@ const Vsam = () => {
   }, []);
 
   useEffect(() => {
-    setShowProgress(initClicked || getProgress('vsamStatus'));
+    setShowProgress(initClicked || getProgress('cachingServiceStatus'));
 
     if(initClicked) {
       let nextPosition = document.getElementById('start-vsam-progress');
@@ -113,7 +132,7 @@ const Vsam = () => {
   }, [initClicked]);
 
   useEffect(() => {
-    if(!getProgress('vsamStatus') && initClicked) {
+    if(!getProgress('cachingServiceStatus') && initClicked) {
       timer = setInterval(() => {
         window.electron.ipcRenderer.getInitVsamProgress().then((res: any) => {
           setVsamInitializationProgress(res);
@@ -134,19 +153,23 @@ const Vsam = () => {
   }, [showProgress, stateUpdated]);
 
   useEffect(() => {
-    const allAttributesTrue = Object.values(vsamInitProgress).every(value => value === true);
-    if(allAttributesTrue) {
-      dispatchActions(true);
-      setShowProgress(initClicked || getProgress('vsamStatus'));
-    }
+    verifyAndSetVsamInitCompletion(vsamInitProgress);
   }, [vsamInitProgress]);
 
   const setVsamInitializationProgress = (vsamInitState: InitSubStepsState) => {
     setVsamInitProgress(vsamInitState);
     setVsamInitState(vsamInitState);
+    verifyAndSetVsamInitCompletion(vsamInitState);
+  }
+
+  const verifyAndSetVsamInitCompletion = (vsamInitState: InitSubStepsState, selectedStorageMode?: string) => {
     const allAttributesTrue = Object.values(vsamInitState).every(value => value === true);
     if(allAttributesTrue) {
       dispatchActions(true);
+      setShowProgress(initClicked || getProgress('cachingServiceStatus'));
+    } else if (selectedStorageMode && selectedStorageMode.toUpperCase() == 'VSAM') {
+      dispatchActions(false);
+      setShowProgress(false);
     }
   }
 
@@ -171,7 +194,7 @@ const Vsam = () => {
   }
 
   const dispatchActions = (status: boolean) => {
-    dispatch(setVsamStatus(status));
+    dispatch(setCachingServiceStatus(status));
     dispatch(setInitializationStatus(isInitializationStageComplete()));
     dispatch(setNextStepEnabled(status));
     setStageSkipStatus(!status);
@@ -223,29 +246,43 @@ const Vsam = () => {
     if (newData) {
       if(validate) {
         validate(newData);
+
         if(validate.errors) {
-          const errPath = validate.errors[0].schemaPath;
-          const errMsg = validate.errors[0].message;
-          setStageConfig(false, errPath+' '+errMsg, newData, data);
+          setAllowInitialization(false);
+          const { schemaPath, message } = validate.errors[0];
+          let errorText = `${schemaPath} ${message}`;
+          setStageConfig(false, errorText);
         } else {
-          const updatedYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, vsam: newData}}};
-          window.electron.ipcRenderer.setConfig(updatedYaml);
-          setStageConfig(true, '', newData, updatedYaml);
+          setAllowInitialization(true);
+          setStageConfig(true, '');
         }
+
+        let yamlData = {...yaml};
+        if(setupSchema?.properties?.name) {
+          if(!newData.name) {
+            setAllowInitialization(false);
+          } else {
+            yamlData = handleUpdateVsamName(newData.name);
+          }
+        }
+
+        const updatedYaml = {...yamlData, zowe: {...yamlData.zowe, setup: {...yamlData.zowe.setup, vsam: newData}}};
+        setYamlConfig(updatedYaml);
       }
     }
   };
 
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any, updatedYaml?: any) => {
-    setIsFormValid(isValid);
-    setFormError(errorMsg);
-    setSetupYaml(data);
-    if(updatedYaml?.zowe) {
-      setLocalYaml(updatedYaml);
-    }
+  const setYamlConfig = (updatedYaml: any) => {
+    window.electron.ipcRenderer.setConfig(updatedYaml);
+    dispatch(setYaml(updatedYaml));
   }
 
-  const handleUpdateVsamName = (newName: string) => {
+  const setStageConfig = (isValid: boolean, errorMsg: string) => {
+    setIsFormValid(isValid);
+    setFormError(errorMsg);
+  }
+
+  const handleUpdateVsamName = (newName: string): any => {
     const updatedYaml = {
       ...yaml,
       components: {
@@ -253,85 +290,142 @@ const Vsam = () => {
         'caching-service': {
           ...yaml.components['caching-service'],
           storage: {
-            ...yaml.components['caching-service'].storage,
+            ...yaml.components['caching-service']?.storage,
             vsam: {
-              ...yaml.components['caching-service'].storage.vsam,
+              ...yaml.components['caching-service']?.storage?.vsam,
               name: newName
             }
           }
         }
       }
     };
-    window.electron.ipcRenderer.setConfig(updatedYaml);
-    setLocalYaml(updatedYaml);
-    dispatch(setYaml(updatedYaml));
+    return updatedYaml;
   };
 
   const datasetValidation = (dsName: string) => {
-    const DsNamePattern = "^[a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}([.][a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}){0,21}$";
+    const DsNamePattern = "^(?=.{1,38}$)[a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}([.][a-zA-Z#$@][a-zA-Z0-9#$@-]{0,7}){0,21}$";
     const regEx = new RegExp(DsNamePattern);
-    setIsDsNameValid(regEx.test(dsName));
+    setAllowInitialization(regEx.test(dsName));
   }
-
 
   const cachingServiceChangeHandler = (newValue: string) => {
     alertEmitter.emit('hideAlert');
     datasetValidation(newValue);
-    handleUpdateVsamName(newValue);
+    const updatedYaml = handleUpdateVsamName(newValue);
+    setYamlConfig(updatedYaml);
+  }
+
+  const updateStorageMode = (event: any) => {
+    setStorageMode(event.target.value);
+    const updatedYaml = {
+      ...yaml,
+      components: {
+        ...yaml.components,
+        'caching-service': {
+          ...yaml.components['caching-service'],
+          storage: {
+            ...yaml.components['caching-service']?.storage,
+            mode: event.target.value
+          }
+        }
+      }
+    };
+    setYamlConfig(updatedYaml);
+
+    if(event.target.value.toUpperCase() !== 'VSAM') {
+      dispatchActions(true);
+      setShowProgress(false);
+    } else {
+      verifyAndSetVsamInitCompletion(vsamInitProgress, event.target.value);
+    }
   }
 
   return (
     <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("yaml")}>View/Edit Yaml</Button>
-        {/* <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("jcl")}>View/Submit Job</Button> */}
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
-      <ContainerCard title="Vsam" description="Configure Zowe Vsam.">
-        {editorVisible && <EditorDialog contentType={contentType} isEditorVisible={editorVisible} toggleEditorVisibility={toggleEditorVisibility} onChange={(data: any) => {
-          const newData = init ? (Object.keys(setupYaml).length > 0 ? setupYaml : data?.zowe?.setup?.vsam) : (data?.zowe?.setup?.vsam ? data?.zowe?.setup?.vsam : data);
-          setInit(false);
-          setStageConfig(true, '', newData);
+
+      <ContainerCard title="CachingService" description="Configure Zowe CachingService.">
+
+        { editorVisible &&
+          <EditorDialog
+            contentType={contentType}
+            isEditorVisible={editorVisible}
+            toggleEditorVisibility={toggleEditorVisibility}
+          />
         }
-        }/> }
 
-        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
+        <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
-          
-          <FormControl>
-            <div>
-              <TextField
-                id="vsam-dataset-name"
-                required
-                style={{marginLeft: 0}}
-                label="Vsam Dataset Name"
-                variant="standard"
-                value={yaml?.components[`caching-service`]?.storage?.vsam?.name || ""}
-                onChange={(e) => {
-                  cachingServiceChangeHandler(e.target.value);
-                }}
-              />
-              {isDsNameValid && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Zowe Caching Service VSAM data set.</p>}
-              {!isDsNameValid && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'red' }}>Invalid input. Please enter a valid VSAM dataset name.</p>}
-            </div>
-          </FormControl>
 
-          {!showProgress ? <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
-          <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!isDsNameValid} onClick={e => process(e)}>Initialize Vsam Config</Button>
-          </FormControl> : null}
+          { showStorageModeOptions &&
+            <FormControl variant="filled" fullWidth>
+              <InputLabel id="storage-mode-label">Storage Mode</InputLabel>
+              <Select
+                labelId="storage-mode-label"
+                id="storage-mode"
+                value={storageMode}
+                onChange={updateStorageMode}
+                label="Storage Mode"
+              >
+                {storageModeOptions.map((option, index) => (
+                  <MenuItem key={index} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          }
 
+          { storageMode.toUpperCase() !== 'VSAM' ?
+            <></> :  (
+            <>
+              <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
 
-          <Box sx={{height: showProgress ? 'calc(100vh - 220px)' : 'auto'}} id="start-vsam-progress">
-            {!showProgress ? null :
-            <React.Fragment> 
-              <ProgressCard label={`Write configuration file locally to temp directory`} id="init-vsam-progress-card" status={vsamInitProgress?.writeYaml}/>
-              <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={vsamInitProgress?.uploadYaml}/>
-              <ProgressCard label={`Run zwe init vsam`} id="success-progress-card" status={vsamInitProgress?.success}/>
-              <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!isDsNameValid} onClick={e => process(e)}>Reinitialize Vsam Config</Button>
-            </React.Fragment>
-            }
-          </Box>
+              { showVsameDatsetName &&
+                <FormControl>
+                  <div>
+                    <TextField
+                      id="vsam-dataset-name"
+                      required
+                      style={{marginLeft: 0}}
+                      label="Vsam Dataset Name"
+                      variant="standard"
+                      value={yaml?.components[`caching-service`]?.storage?.vsam?.name || ""}
+                      onChange={(e) => {
+                        cachingServiceChangeHandler(e.target.value);
+                      }}
+                    />
+                    {allowInitialization && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'grey' }}>Zowe Caching Service VSAM data set.</p>}
+                    {!allowInitialization && <p style={{ marginTop: '5px', marginBottom: '0', fontSize: 'smaller', color: 'red' }}>Invalid input. Please enter a valid VSAM dataset name.</p>}
+                  </div>
+                </FormControl>
+              }
+
+              { !showProgress ?
+                <FormControl sx={{display: 'flex', alignItems: 'center', maxWidth: '72ch', justifyContent: 'center'}}>
+                  <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!allowInitialization} onClick={e => process(e)}>
+                    Initialize Vsam Config
+                  </Button>
+                </FormControl> :
+                null
+              }
+
+              <Box sx={{height: showProgress ? 'calc(100vh - 70vh)' : 'auto'}} id="start-vsam-progress">
+                {!showProgress ? null :
+                  <React.Fragment>
+                    <ProgressCard label={`Write configuration file locally to temp directory`} id="init-vsam-progress-card" status={vsamInitProgress?.writeYaml}/>
+                    <ProgressCard label={`Upload configuration file to ${installationArgs.installationDir}`} id="download-progress-card" status={vsamInitProgress?.uploadYaml}/>
+                    <ProgressCard label={`Run zwe init vsam`} id="success-progress-card" status={vsamInitProgress?.success}/>
+                    <Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" disabled={!allowInitialization} onClick={e => process(e)}>Reinitialize Vsam Config</Button>
+                  </React.Fragment>
+                }
+              </Box>
+
+            </>)}
+
         </Box>
         <Box sx={{ height: showProgress ? '35vh' : 'auto', minHeight: showProgress ? '35vh' : '10vh' }} id="vsam-progress"></Box>
 
@@ -340,4 +434,4 @@ const Vsam = () => {
   );
 };
 
-export default Vsam;
+export default CachingService;
