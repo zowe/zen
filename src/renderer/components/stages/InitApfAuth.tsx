@@ -56,7 +56,6 @@ const InitApfAuth = () => {
 
   const [installationArgs] = useState(getInstallationArguments());
   let timer: any;
-  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema?.properties?.zowe?.properties?.setup?.properties?.dataset));
   
   useEffect(() => {
     stageStatusRef.current = stageStatus;
@@ -231,21 +230,7 @@ const InitApfAuth = () => {
       }, {});
     }
 
-    if(validate) {
-      validate(updatedData);
-      if(validate.errors) {
-        const errPath = validate.errors[0].schemaPath;
-        const errMsg = validate.errors[0].message;
-        setStageConfig(false, errPath+' '+errMsg, updatedData, false);
-      } else {
-        // setConfiguration(section, updatedData, true);
-        setStageConfig(true, '', updatedData, true);
-      }
-    }
-  }
-
-  const setStageConfig = (isValid: boolean, errorMsg: string, data: any, proceed: boolean) => {
-    setSetupYaml(data);
+    setSetupYaml(updatedData);
   }
 
   return (

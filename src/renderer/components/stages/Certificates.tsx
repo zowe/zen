@@ -38,11 +38,11 @@ const Certificates = () => {
 
   const dispatch = useAppDispatch();
   const [schema, setLocalSchema] = useState(useAppSelector(selectSchema));
-  const [yaml, setLocalYaml] = useState(useAppSelector(selectYaml));
+  const yaml = useAppSelector(selectYaml);
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
   const [installationArgs] = useState(getInstallationArguments());
   const [setupSchema] = useState(schema?.properties?.zowe?.properties?.setup?.properties?.certificate);
-  const [setupYaml, setSetupYaml] = useState(yaml?.zowe?.setup?.certificate);
+  const setupYaml = yaml?.zowe?.setup?.certificate;
   const [verifyCerts, setVerifyCerts] = useState(yaml?.zowe?.verifyCertificates ?? "STRICT");
   const [isFormInit, setIsFormInit] = useState(false);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -188,7 +188,6 @@ const Certificates = () => {
       if(res.details.updatedYaml != undefined){
         const updatedCerts = res.details.updatedYaml.zowe?.certificate;
         const updatedYaml = {...yaml, zowe: {...yaml.zowe, certificate: updatedCerts}};
-        setSetupYaml(res.details.updatedYaml.zowe?.setup.certificate);
         window.electron.ipcRenderer.setConfig(updatedYaml);
         dispatch(setYaml(updatedYaml));
       }
@@ -218,7 +217,7 @@ const Certificates = () => {
     setEditorVisible(!editorVisible);
   };
   
-  const handleFormChange = (data: any) => {
+  const handleFormChange = (data: any, schemaOption?: any) => {
     if(data?.zowe?.verifyCertificates){
       setVerifyCerts(data.zowe.verifyCertificates);
     }
@@ -228,24 +227,34 @@ const Certificates = () => {
     if (newData) {
       if(validate) {
         validate(newData);
+
         if(validate.errors) {
-          const errPath = validate.errors[0].schemaPath;
-          const errMsg = validate.errors[0].message;
-          setStageConfig(false, errPath+' '+errMsg, newData);
+          const { schemaPath, message } = validate.errors[0];
+          let errorText = `${schemaPath} ${message}`;
+
+          if(schemaOption !== undefined && schemaOption !== null) {
+            validate.errors.forEach(err => {
+              if (err.schemaPath.includes(schemaOption)) {
+                errorText = err.message;
+              }
+            })
+          }
+
+          setStageConfig(false, errorText, newData);
         } else {
-          window.electron.ipcRenderer.setConfig({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
-          setLocalYaml({...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}});
           setStageConfig(true, '', newData);
         }
+
+        const updatedYaml = {...yaml, zowe: {...yaml.zowe, setup: {...yaml.zowe.setup, certificate: newData}}};
+        window.electron.ipcRenderer.setConfig(updatedYaml);
+        dispatch(setYaml(updatedYaml));
       }
     }
   };
 
-
   const setStageConfig = (isValid: boolean, errorMsg: string, data: any) => {
     setIsFormValid(isValid);
     setFormError(errorMsg);
-    setSetupYaml(data);
   } 
 
   return (
@@ -264,10 +273,9 @@ const Certificates = () => {
           setStageConfig(true, '', newData);
         }
         }/> }
-        <Box sx={{ width: '60vw' }} onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))}>
+        <Box sx={{ width: '60vw' }}>
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <JsonForm schema={setupSchema} onChange={handleFormChange} formData={setupYaml}/>
-          {/* <JsonForm schema={verifyCertsSchema} onChange={handleVerifyCertsChange} formData={verifyCertsYaml}/> */}
+          <JsonForm schema={{type: "object", ...setupSchema}} onChange={handleFormChange} formData={setupYaml}/>
           <p style={{fontSize: "24px"}}>Verify Certificates</p>
           <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
             <Select
@@ -278,7 +286,7 @@ const Certificates = () => {
                 dispatchActions(false);
                 const newConfig = {...yaml, zowe: {...yaml?.zowe, verifyCertificates: e.target.value, setup: {...yaml.zowe.setup}}};
                 window.electron.ipcRenderer.setConfig(newConfig);
-                setLocalYaml(newConfig)
+                dispatch(setYaml(newConfig));
                 setVerifyCerts(e.target.value);
               }}
             >

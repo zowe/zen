@@ -54,7 +54,7 @@ export const initSubStageSkipStatus = (): void => {
     skipStatus.security,
     skipStatus.stcs,
     skipStatus.certificate,
-    skipStatus.vsam,
+    skipStatus.cachingService,
     skipStatus.launchConfig
   ];
 

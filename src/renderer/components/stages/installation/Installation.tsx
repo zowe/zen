@@ -28,9 +28,7 @@ import { TYPE_YAML, TYPE_OUTPUT, JCL_UNIX_SCRIPT_OK, FALLBACK_YAML, ajv, INIT_ST
 import { getStageDetails, getSubStageDetails } from "../../../../services/StageDetails"; 
 import { getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, updateSubStepSkipStatus, getInstallationArguments, datasetInstallationStatus, isInitializationStageComplete } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
-import eventDispatcher from '../../../../services/eventDispatcher';
 import { validateDatasetIterator } from '../../../../services/DatasetValidation';
-import ErrorIcon from '@mui/icons-material/Error';
 
 const Installation = () => {
 
