@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Checkbox, FormControlLabel, IconButton, SvgIcon, SvgIconProps, TextField } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Checkbox, FormControlLabel, IconButton, SvgIcon, SvgIconProps, TextField, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, setNextStepEnabled, setYaml, selectSchema } from '../configuration-wizard/wizardSlice';
@@ -25,504 +25,12 @@ import { IResponse } from "../../../types/interfaces";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { getInstallationArguments, getProgress, isInitializationStageComplete, updateSubStepSkipStatus } from "./progress/StageProgressStatus";
 import { alertEmitter } from "../Header";
+import JsonForm from '../common/JsonForms';
 
-// TODO: Fix the schema usage
+// TODO: Fix the schema usage, remove schema validation as useless
 //        Add helper text describing ports usage, and important details
 //        Hide components under collapsible customize panel
 //        Validate that ports are unique between components
-
-
-//   const customSchema = useAppSelector(selectSchema);
-// const customSchema: any = {
-//   "$id": "https://zowe.org/schemas/v2/server-base",
-//   "title": "Zowe configuration file",
-//   "description": "Configuration file for Zowe (zowe.org) version 2.",
-//   "type": "object",
-//   "additionalProperties": true,
-//   "properties": {
-//     "zowe": {
-//       "type": "object",
-//       "additionalProperties": true,
-//       "properties": {
-//         "externalDomains": {
-//           "type": "array",
-//           "description": "List of domain names of how you access Zowe from your local computer.",
-//           "minItems": 1,
-//           "uniqueItems": true,
-//           "items": {
-//             "type": ["string"]
-//           }
-//         },
-//         "externalPort": {
-//           "type": "integer",
-//           "minimum": 0,
-//           "maximum": 65535,
-//           "description": "Port number of how you access Zowe APIML Gateway from your local computer."
-//         }
-//       }
-//     },
-//     "components": {
-//       "type": "object",
-//       "patternProperties": {
-//         "^.*$": {
-//           "type": "object",
-//           "properties": {
-//             "enabled": {
-//               "type": "boolean",
-//               "description": "Whether to enable or disable this component",
-//               "default": false
-//             },
-//             "port": {
-//               "type": "integer",
-//               "description": "Optional, port number for component if applicable.",
-//             },
-//             "debug": {
-//               "type": "boolean",
-//               "description": "Whether to enable or disable debug tracing for this component",
-//               "default": false
-//             },
-//             "certificate": {
-//               "$ref": "#/$defs/certificate",
-//               "description": "Certificate for current component."
-//             },
-//             "launcher": {
-//               "type": "object",
-//               "description": "Set behavior of how the Zowe launcher will handle this particular component",
-//               "additionalProperties": true,
-//               "properties": {
-//                 "restartIntervals": {
-//                   "type": "array",
-//                   "description": "Intervals of seconds to wait before restarting a component if it fails before the minUptime value.",
-//                   "items": {
-//                     "type": "integer"  
-//                   }
-//                 },
-//                 "minUptime": {
-//                   "type": "integer",
-//                   "default": 90,
-//                   "description": "The minimum amount of seconds before a component is considered running and the restart counter is reset."
-//                 },
-//                 "shareAs": {
-//                   "type": "string",
-//                   "description": "Determines which SHAREAS mode should be used when starting a component",
-//                   "enum": ["no", "yes", "must", ""],
-//                   "default": "yes"
-//                 }
-//               }
-//             },
-//             "zowe": {
-//               "type": "object",
-//               "description": "Component level overrides for top level Zowe network configuration.",
-//               "additionalProperties": false,
-//               "properties": {
-//                 "network": {
-//                   "$ref": "#/$defs/networkSettings"
-//                 },
-//                 "job": {
-//                   "$ref": "#/$defs/componentJobSettings"
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       }
-//     },
-//     "haInstances": {
-//       "type": "object",
-//       "patternProperties": {
-//         "^.*$": {
-//           "type": "object",
-//           "description": "Configuration of Zowe high availability instance.",
-//           "required": ["hostname", "sysname"],
-//           "properties": {
-//             "hostname": {
-//               "type": "string",
-//               "description": "Host name of the Zowe high availability instance. This is hostname for internal communications."
-//             },
-//             "sysname": {
-//               "type": "string",
-//               "description": "z/OS system name of the Zowe high availability instance. Some JES command will be routed to this system name."
-//             },
-//             "components": {
-//               "type": "object",
-//               "patternProperties": {
-//                 "^.*$": {
-//                   "$ref": "#/$defs/component"
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       }
-//     }
-//   },
-//   "$defs": {
-//     "port": {
-//       "type": "integer",
-//       "minimum": 0,
-//       "maximum": 65535
-//     },
-//     "scheme": {
-//       "type": "string",
-//       "enum": [
-//         "http",
-//         "https"
-//       ],
-//       "default": "https"
-//     },
-//     "certificate": {
-//       "oneOf": [
-//         { "$ref": "#/$defs/pkcs12-certificate" }, 
-//         { "$ref": "#/$defs/keyring-certificate" }
-//       ]
-//     },
-//     "pkcs12-certificate": { 
-//       "type": "object",
-//       "additionalProperties": false,
-//       "required": ["keystore", "truststore", "pem"],
-//       "properties": {
-//         "keystore": {
-//           "type": "object",
-//           "additionalProperties": false,
-//           "description": "Certificate keystore.",
-//           "required": ["type", "file", "alias"],
-//           "properties": {
-//             "type": {
-//               "type": "string",
-//               "description": "Keystore type.",
-//               "const": "PKCS12"
-//             },
-//             "file": {
-//               "type": "string",
-//               "pattern": "^([^\\0]){1,1024}$",
-//               "minLength": 1,
-//               "maxLength": 1024,
-//               "description": "Path to your PKCS#12 keystore."
-//             },
-//             "password": {
-//               "type": "string",
-//               "description": "Password of your PKCS#12 keystore."
-//             },
-//             "alias": {
-//               "type": "string",
-//               "description": "Certificate alias name of defined in your PKCS#12 keystore"
-//             }
-//           }
-//         },
-//         "truststore": {
-//           "type": "object",
-//           "additionalProperties": false,
-//           "description": "Certificate truststore.",
-//           "required": ["type", "file"],
-//           "properties": {
-//             "type": {
-//               "type": "string",
-//               "description": "Truststore type.",
-//               "const": "PKCS12"
-//             },
-//             "file": {
-//               "type": "string",
-//               "pattern": "^([^\\0]){1,1024}$",
-//               "minLength": 1,
-//               "maxLength": 1024,
-//               "description": "Path to your PKCS#12 keystore."
-//             },
-//             "password": {
-//               "type": "string",
-//               "description": "Password of your PKCS#12 keystore."
-//             }
-//           }
-//         },
-//         "pem": {
-//           "type": "object",
-//           "additionalProperties": false,
-//           "description": "Certificate in PEM format.",
-//           "required": ["key", "certificate"],
-//           "properties": {
-//             "key": {
-//               "type": "string",
-//               "pattern": "^([^\\0]){1,1024}$",
-//               "minLength": 1,
-//               "maxLength": 1024,
-//               "description": "Path to the certificate private key stored in PEM format."
-//             },
-//             "certificate": {
-//               "type": "string",
-//               "pattern": "^([^\\0]){1,1024}$",
-//               "minLength": 1,
-//               "maxLength": 1024,
-//               "description": "Path to the certificate stored in PEM format."
-//             },
-//             "certificateAuthorities": {
-//               "description": "List of paths to the certificate authorities stored in PEM format.",
-//               "oneOf": [{
-//                   "type": "string",
-//                   "pattern": "^([^\\0]){1,1024}$",
-//                   "minLength": 1,
-//                   "maxLength": 1024,
-//                   "description": "Paths to the certificate authorities stored in PEM format. You can separate multiple certificate authorities by comma."
-//                 },
-//                 {
-//                   "type": "array",
-//                   "description": "Path to the certificate authority stored in PEM format.",
-//                   "items": {
-//                     "type": "string",
-//                     "pattern": "^([^\\0]){1,1024}$",
-//                     "minLength": 1,
-//                     "maxLength": 1024,
-//                   }
-//                 }
-//               ]
-//             }
-//           }
-//         }
-//       }
-//     },
-//     "keyring-certificate": { 
-//       "type": "object",
-//       "additionalProperties": false,
-//       "required": ["keystore", "truststore"],
-//       "properties": {
-//         "keystore": {
-//           "type": "object",
-//           "additionalProperties": false,
-//           "description": "Certificate keystore.",
-//           "required": ["type", "file", "alias"],
-//           "properties": {
-//             "type": {
-//               "type": "string",
-//               "description": "Keystore type.",
-//               "enum": ["JCEKS", "JCECCAKS", "JCERACFKS", "JCECCARACFKS", "JCEHYBRIDRACFKS"]
-//             },
-//             "file": {
-//               "type": "string",
-//               "description": "Path of your z/OS keyring, including ring owner and ring name. Case sensitivity and spaces matter.",
-//               "pattern": "^safkeyring:\/\/.*"
-//             },
-//             "password": {
-//               "type": "string",
-//               "description": "Literally 'password' may be needed when using keyrings for compatibility with java servers.",
-//               "enum": ["", "password"]
-//             },
-//             "alias": {
-//               "type": "string",
-//               "description": "Certificate label of z/OS keyring. Case sensitivity and spaces matter."
-//             }
-//           }
-//         },
-//         "truststore": {
-//           "type": "object",
-//           "additionalProperties": false,
-//           "description": "Certificate truststore.",
-//           "required": ["type", "file"],
-//           "properties": {
-//             "type": {
-//               "type": "string",
-//               "description": "Truststore type.",
-//               "enum": ["JCEKS", "JCECCAKS", "JCERACFKS", "JCECCARACFKS", "JCEHYBRIDRACFKS"]
-//             },
-//             "file": {
-//               "type": "string",
-//               "description": "Path of your z/OS keyring, including ring owner and ring name. Case sensitivity and spaces matter.",
-//               "pattern": "^safkeyring:\/\/.*"
-//             },
-//             "password": {
-//               "type": "string",
-//               "description": "Literally 'password' may be needed when using keyrings for compatibility with java servers.",
-//               "enum": ["", "password"]
-//             }
-//           }
-//         },
-//         "pem": {
-//           "type": "object",
-//           "additionalProperties": false,
-//           "description": "Certificate in PEM format.",
-//           "properties": {
-//             "key": {
-//               "type": "string",
-//               "description": "Path to the certificate private key stored in PEM format."
-//             },
-//             "certificate": {
-//               "type": "string",
-//               "description": "Path to the certificate stored in PEM format."
-//             },
-//             "certificateAuthorities": {
-//               "description": "List of paths to the certificate authorities stored in PEM format.",
-//               "oneOf": [{
-//                   "type": "string",
-//                   "description": "Paths to the certificate authorities stored in PEM format. You can separate multiple certificate authorities by comma."
-//                 },
-//                 {
-//                   "type": "array",
-//                   "description": "Path to the certificate authority stored in PEM format.",
-//                   "items": {
-//                     "type": "string"
-//                   }
-//                 }
-//               ]
-//             }
-//           }
-//         }
-//       }
-//     },
-//     "component": {
-//       "$anchor": "zoweComponent",
-//       "type": "object",
-//       "properties": {
-//         "enabled": {
-//           "type": "boolean",
-//           "description": "Whether to enable or disable this component",
-//           "default": false
-//         },
-//         "certificate": {
-//           "$ref": "#/$defs/certificate",
-//           "description": "Certificate for current component."
-//         },
-//         "launcher": {
-//           "type": "object",
-//           "description": "Set behavior of how the Zowe launcher will handle this particular component",
-//           "additionalProperties": true,
-//           "properties": {
-//             "restartIntervals": {
-//               "type": "array",
-//               "description": "Intervals of seconds to wait before restarting a component if it fails before the minUptime value.",
-//               "items": {
-//                 "type": "integer"  
-//               }
-//             },
-//             "minUptime": {
-//               "type": "integer",
-//               "default": 90,
-//               "description": "The minimum amount of seconds before a component is considered running and the restart counter is reset."
-//             },
-//             "shareAs": {
-//               "type": "string",
-//               "description": "Determines which SHAREAS mode should be used when starting a component",
-//               "enum": ["no", "yes", "must", ""],
-//               "default": "yes"
-//             }
-//           }
-//         },
-//         "zowe": {
-//           "type": "object",
-//           "description": "Component level overrides for top level Zowe network configuration.",
-//           "additionalProperties": false,
-//           "properties": {
-//             "network": {
-//               "$ref": "#/$defs/networkSettings"
-//             },
-//             "job": {
-//               "$ref": "#/$defs/componentJobSettings"
-//             }
-//           }
-//         }
-//       }
-//     },
-//     "componentJobSettings": {
-//       "$anchor": "componentJobSettings",
-//       "type": "object",
-//       "description": "Component level overrides for job execution behavior",
-//       "properties": {
-//         "suffix": {
-//           "type": "string",
-//           "description": "Can be used by components to declare a jobname suffix to append to their job. This is not currently used by Zowe itself, it is up to components to use this value if desired. Zowe may use this value in the future."
-//         }
-//       }
-//     },
-//     "tlsSettings": {
-//      "$anchor": "tlsSettings",
-//       "type": "object",
-//       "properties": {
-//         "ciphers": {
-//           "type": "array",
-//           "description": "Acceptable TLS cipher suites for network connections, in IANA format.",
-//           "items": {
-//             "type": "string"
-//           }
-//         },
-//         "curves": {
-//           "type": "array",
-//           "description": "Acceptable key exchange elliptic curves for network connections.",
-//           "items": {
-//             "type": "string"
-//           }
-//         },
-//         "maxTls": {
-//           "type": "string",
-//           "enum": ["TLSv1.2", "TLSv1.3"],
-//           "default": "TLSv1.3",
-//           "description": "Maximum TLS version allowed for network connections."
-//         },
-//         "minTls": {
-//           "type": "string",
-//           "enum": ["TLSv1.2", "TLSv1.3"],
-//           "default": "TLSv1.2",
-//           "description": "Minimum TLS version allowed for network connections, and less than or equal to network.maxTls."
-//         }
-//       }
-//     },
-//     "networkSettings": {
-//       "type": "object",
-//       "$anchor": "networkSettings",
-//       "additionalProperties": false,
-//       "description": "Optional, advanced network configuration parameters",
-//       "properties": {
-//         "server": {
-//           "type": "object",
-//           "additionalProperties": false,
-//           "description": "Optional, advanced network configuration parameters for Zowe servers",
-//           "properties": {
-//             "tls": {
-//               "$ref": "#/$defs/tlsSettings"      
-//             },
-//             "listenAddresses": {
-//               "type": "array",
-//               "description": "The IP addresses which all of the Zowe servers will be binding on and listening to. Some servers may only support listening on the first element.",
-//               "items": {
-//                 "type": "string",
-//                 "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-//               }
-//             },
-//             "vipaIp": {
-//               "type": "string",
-//               "description": "The IP address which all of the Zowe servers will be binding to. If you are using multiple DIPVA addresses, do not use this option."
-//             },
-//             "validatePortFree": {
-//               "type": "boolean",
-//               "default": true,
-//               "description": "Whether or not to ensure that the port a server is about to use is available. Usually, servers will know this when they attempt to bind to a port, so this option allows you to disable the additional verification step."
-//             }
-//           }
-//         },
-//         "client": {
-//           "type": "object",
-//           "additionalProperties": false,
-//           "description": "Optional, advanced network configuration parameters for Zowe servers when sending requests as clients.",
-//           "properties": {
-//             "tls": {
-//                 "$ref": "#/$defs/tlsSettings"    
-//             }
-//           }
-//         }
-//       }
-//     },
-//     "registryHandler": {
-//       "$anchor": "registryHandler",
-//       "type": "object",
-//       "required": ["registry", "path"],
-//       "properties": {
-//         "registry": {
-//           "type": "string",
-//           "description": "The location of the default registry for this handler. It could be a URL, path, dataset, whatever this handler supports"
-//         },
-//         "path": {
-//           "$ref": "/schemas/v2/server-common#zowePath",
-//           "description": "Unix file path to the configmgr-compatible JS file which implements the handler API"
-//         }
-//       }
-//     }
-//   }
-// }
 
 function AddIcon(props: SvgIconProps) {
   return (
@@ -656,7 +164,7 @@ const Networking = () => {
       dispatch(setInitializationStatus(isInitializationStageComplete()));
     }
   }
-
+  // console.log(JSON.stringify(schema));
   return (
     yaml && schema && <div id="container-box-id">
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
@@ -679,13 +187,22 @@ const Networking = () => {
             //  onBlur={async () => dispatch(setYaml((await window.electron.ipcRenderer.getConfig()).details ?? yaml))} // REVIEW: Why?
         >
           {!isFormValid && <div style={{color: 'red', fontSize: 'small', marginBottom: '20px'}}>{formError}</div>}
-          <p key="external-domains" style={{fontSize: "24px"}}>External Domains <IconButton onClick={(e) => {
-            let domains = [...yaml.zowe?.externalDomains || [], ""];
-            const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
-            window.electron.ipcRenderer.setConfig(newYaml )
-            dispatch(setYaml(newYaml));
-            dispatch(setNetworkingStatus(false));
-          }}><AddIcon /></IconButton></p>
+          {/* REVIEW: button as child of <p> */}
+          <p key="external-domains" style={{fontSize: "20px"}}>
+            External Domains 
+            <IconButton 
+              sx={{ml: '16px'}}
+              size='small' 
+              onClick={(e) => {
+                let domains = [...yaml.zowe?.externalDomains || [], ""];
+                const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
+                window.electron.ipcRenderer.setConfig(newYaml )
+                dispatch(setYaml(newYaml));
+                dispatch(setNetworkingStatus(false));
+            }}>
+              <AddIcon />
+            </IconButton>
+          </p>
           {yaml.zowe.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box key={`box-${index}`} sx={{display: "flex", flexDirection: "row"}}><TextField
             variant="standard"
             value={domain}
@@ -700,6 +217,8 @@ const Networking = () => {
             }}
           />
           {yaml.zowe?.externalDomains.length > 1 && <IconButton 
+            sx={{ml: '16px'}}
+            size='small'
             onClick={(e) => {
               let domains = [...yaml.zowe?.externalDomains];
               domains.splice(index, 1);
@@ -727,19 +246,19 @@ const Networking = () => {
               // // dispatch(setYaml(newYaml));
             }}
           />
-          <Accordion sx={{width: '650px'}}>
+          <Accordion sx={{mt: '24px'}}>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls="components-content"
               id="components-header"
             >
-              Components
+              <Typography>Components</Typography>
             </AccordionSummary>
             <AccordionDetails>
               {Object.keys(yaml.components).filter(component => yaml.components[component].hasOwnProperty('port')).map(component => { // yaml.components[component].hasOwnProperty('enabled') && 
-                console.log(component, yaml.components[component].enabled, yaml.components[component].port);
-                return <div key={`div-${component}`} style={{display: 'flex', justifyContent: 'space-between'}}>
+                return <div key={`div-${component}`} style={{display: 'flex', alignItems: 'center'}}> 
                   <FormControlLabel
+                    sx={{width: '200px'}}
                     label={component}
                     key={`toggle-${component}`}
                     control={<Checkbox checked={yaml.components[component].enabled} onChange={async (e) => {
@@ -751,12 +270,17 @@ const Networking = () => {
                     }}/>}
                   />
                   <TextField
-                    label="Port"
+                    // label="Port"
+                    // error={!yaml.components[component].port || yaml.components[component].port > 65535}
                     variant="standard"
+                    size="small"
                     required={yaml.components[component].enabled}
                     type="number"
                     key={`port-input-${component}`}
                     value={yaml.components[component].port}
+                    InputProps={{
+                        style: {minWidth: '100px', width: '100px'}
+                    }}
                     onChange={async (e) => {
                       if (!Number.isNaN(Number(e.target.value))) { // REVIEW: Use schema for validation
                         const newYaml = {...yaml, components: {...yaml.components, [component]: {...yaml.components[component], port: Number(e.target.value)}}};
@@ -770,65 +294,8 @@ const Networking = () => {
               })}
             </AccordionDetails>
           </Accordion>
-          {/* <div>
-            {Object.keys(customSchema.properties).map((schemaKey, index) => {
-              if(index < LOOP_LIMIT){
-                if (customSchema.properties[schemaKey].patternProperties != undefined) { //only for rendering patternProperties
-                  if(typeof yaml[schemaKey] === "object" && Object.keys(yaml[schemaKey]).length > 0) {
-                    return <div key={`div-` + schemaKey + `-` + index}>
-                      <p key={`title-p-` + schemaKey} style={{fontSize: "24px"}}>{schemaKey}</p>
-                      {Object.keys(customSchema.properties[schemaKey].patternProperties).map((regexPattern, rIndex) => {
-                         const pattern = new RegExp(regexPattern);
-                        if(rIndex < LOOP_LIMIT && yaml[schemaKey]) {
-                          return Object.keys(yaml[schemaKey]).map((matchedPattern, mIndex) => {
-                            if(mIndex < LOOP_LIMIT && pattern.test(matchedPattern)){
-                              return <div style={{display: 'flex'}} key={`div-` + matchedPattern + `-` + mIndex}>
-                                {yaml[schemaKey][matchedPattern].hasOwnProperty('enabled') && <FormControlLabel
-                                        label=""
-                                        key={`toggle-` + schemaKey + '.' + matchedPattern + '.enabled-'}
-                                        control={<Checkbox checked={yaml[schemaKey][matchedPattern].enabled} onChange={async (e) => {
-                                          // console.log('new yaml:', JSON.stringify({...yaml, [keys[i]]: {...yaml[keys[i]], [toMatch[k]]: {...yaml[keys[i]][toMatch[k]], [matchedProps[l]]: !yaml[keys[i]][toMatch[k]][matchedProps[l]]}}}));
-                                          const newYaml = {...yaml, [schemaKey]: {...yaml[schemaKey], [matchedPattern]: {...yaml[schemaKey][matchedPattern], enabled: !yaml[schemaKey][matchedPattern].enabled}}};
-                                          await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${schemaKey}.${matchedPattern}.enabled`, !yaml[schemaKey][matchedPattern].enabled);
-                                          dispatch(setYaml(newYaml));
-                                          dispatch(setNetworkingStatus(false));
-                                        }}/>}
-                                />}
-                                <span key={`span-${mIndex}`}>
-                                  <strong>{matchedPattern}</strong>
-                                  <br key={`br-${mIndex}`} />
-                                </span>
-                                {yaml[schemaKey][matchedPattern].port && <TextField
-                                      label="Port"
-                                      variant="standard"
-                                      type="text"
-                                      key={index + '.' + matchedPattern + '.' + rIndex}
-                                      value={yaml[schemaKey][matchedPattern].port}
-                                      onChange={async (e) => {
-                                        if(!Number.isNaN(Number(e.target.value))){
-                                          const newYaml = {...yaml, [schemaKey]: {...yaml[schemaKey], [matchedPattern]: {...yaml[schemaKey][matchedPattern], port: Number(e.target.value)}}};
-                                          await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${schemaKey}.${matchedPattern}.port`, Number(e.target.value))
-                                          dispatch(setYaml(newYaml));
-                                          dispatch(setNetworkingStatus(false));
-                                        }
-                                      }}
-                                    />}
-                                </div>
-                            }
-                            return null;
-                          })
-                        }
-                        return null;
-                      })
-                      }
-                    </div>
-                  }
-                }
-              }
-               return null;
-            })}
-          </div> */}
-          <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => onSaveYaml(e)}>{'Save YAML to z/OS'}</Button>
+          <JsonForm schema={schema.properties.zowe.properties.network} onChange={(wut: any) => {console.log(wut)}} formData={yaml.zowe.network}/>
+          <Button id="reinstall-button" sx={{boxShadow: 'none', mr: '12px', mt: '24px'}} type="submit" variant="text" onClick={e => onSaveYaml(e)}>{'Save YAML to z/OS'}</Button>
         </Box>
       </ContainerCard>
     </div>
