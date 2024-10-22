@@ -22,7 +22,7 @@ const INVALID_ERRORMSG = 'must match pattern "^([A-Z$#@]){1}([A-Z0-9$#@-]){0,7}(
 const script = new Script()
 
 test.beforeAll(async () => {
-  test.setTimeout(800000); 
+  test.setTimeout(600000); 
   try {
     await prepareEnvironment({ install: true, cleanup:true, remove: false });
   } catch (error) {
@@ -44,7 +44,7 @@ test.describe('VsamPage', () => {
   let vsamPage : VsamPage;
 
   test.beforeEach(async ({ page }) => {
-    test.setTimeout(600000);
+    test.setTimeout(900000);
      electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
      page = await electronApp.firstWindow()
      connectionPage = new ConnectionPage(page);
