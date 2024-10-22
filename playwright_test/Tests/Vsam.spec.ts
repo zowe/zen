@@ -18,11 +18,11 @@ let electronApp: ElectronApplication
 const VSAM_TITLE = 'CachingService'
 const CERTIFICATE_TITLE = 'Certificates';
 const LAUNCHCONFIG_TITLE = 'Configuration'
-const INVALID_ERRORMSG = 'Invalid input. Please enter a valid VSAM dataset name.'
+const INVALID_ERRORMSG = 'must match pattern "^([A-Z$#@]){1}([A-Z0-9$#@-]){0,7}(.([A-Z$#@]){1}([A-Z0-9$#@-]){0,7}){0,11}$"'
 const script = new Script()
 
 test.beforeAll(async () => {
-  test.setTimeout(600000); 
+  test.setTimeout(800000); 
   try {
     await prepareEnvironment({ install: true, cleanup:true, remove: false });
   } catch (error) {
@@ -44,7 +44,7 @@ test.describe('VsamPage', () => {
   let vsamPage : VsamPage;
 
   test.beforeEach(async ({ page }) => {
-    test.setTimeout(900000);
+    test.setTimeout(600000);
      electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
      page = await electronApp.firstWindow()
      connectionPage = new ConnectionPage(page);
@@ -102,6 +102,7 @@ test.describe('VsamPage', () => {
    await expect(vsamPage.StorageClass).toBeTruthy()
    await expect(vsamPage.VsamDatasetName).toBeTruthy()
  })
+ 
    test('test with invalid vsam dataset name ', async ({ page }) => {
    await vsamPage.fillVsamDatasetName('%^%%&^')
    const errorMsg = await vsamPage.invalidInput_ErrorMsg();

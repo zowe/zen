@@ -34,7 +34,7 @@ class VsamPage{
     this.Mode = page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[2]/div[1]/div/div/label');
     this.volume = page.getByLabel('Volume');
     this.StorageClass = page.getByLabel('Storage Class');
-    this.VsamDatasetName   = page.getByLabel('Vsam Dataset Name');
+    this.VsamDatasetName   = page.getByLabel('Name');
     this.dataset_proclib = page.getByLabel('Dataset Proclib');
     this.click_dropDown = page.locator('//*[@id="container-box-id"]/form/div/div[2]/div[1]/div/svg')
     this.storage_mode = page.getByLabel('Storage Mode')
@@ -60,7 +60,7 @@ class VsamPage{
     this.uploadYaml_greenCheckXpath = page.locator('#card-download-progress-card')
     this.init_vsam_greenCheckXpath = page.locator("#card-success-progress-card")
     this.Error = page.locator('//div[@class="MuiAlert-message css-1pxa9xg-MuiAlert-message"]')
-    this.invalidInput_msg = page.locator("//p[@style='margin-top: 5px; margin-bottom: 0px; font-size: smaller; color: red;']")
+    this.invalidInput_msg = page.locator('p.MuiFormHelperText-root.Mui-error')
   }
 
   async movetoVsamPage(){
@@ -85,7 +85,7 @@ class VsamPage{
    await this.page.waitForTimeout(1000);
    await this.volume.fill(volume)
    await this.page.waitForTimeout(1000);
-   await this.StorageClass.fill(storage_class);
+   await this.StorageClass.fill(storage_class)
    await this.page.waitForTimeout(1000);
    await this.VsamDatasetName.fill(VsamDatasetName)
    await this.page.waitForTimeout(2000);

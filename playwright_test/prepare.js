@@ -18,6 +18,8 @@ async function prepareEnvironment(options = {}) {
   const PARM_LIB = process.env.PARM_LIB;
   const JCL_LIB = process.env.JCL_LIB;
   const VSAM_DATASET_NAME = process.env.VSAM_DATASET_NAME;
+  const VOLUME = process.env.VOLUME;
+  const STORAGECLASS = process.env.STORAGECLASS;
   const AUTH_LOAD_LIB = process.env.AUTH_LOAD_LIB;
   const AUTH_PLUGIN_LIB = process.env.AUTH_PLUGIN_LIB;
   const SECURITY_ADMIN = process.env.SECURITY_ADMIN;
@@ -82,6 +84,12 @@ async function prepareEnvironment(options = {}) {
   }
   if (!VSAM_DATASET_NAME) {
     throw new Error('VSAM_DATASET_NAME is not defined');
+  }
+  if (!VOLUME) {
+    throw new Error('VOLUME is not defined');
+  }
+  if (!STORAGECLASS) {
+    throw new Error('STORAGECLASS is not defined');
   }
   if (!AUTH_PLUGIN_LIB) {
     throw new Error('AUTH_PLUGIN_LIB is not defined');

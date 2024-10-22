@@ -35,8 +35,7 @@ ${command} &&
 echo "${JCL_UNIX_SCRIPT_OK}"
 /* `;
 
-    //console.log(`Connecting to host: ${connectArgs.host} on port: ${connectArgs.port || 21}`);
-
+   
     const timeoutPromise = new Promise<CommandResult>((_, reject) => {
         setTimeout(() => {
             reject(new Error('Command execution timed out.'));
@@ -67,8 +66,18 @@ echo "${JCL_UNIX_SCRIPT_OK}"
 }
     
     async unpax(installDir: string): Promise<CommandResult> {
-        const script = `cd ${installDir};\npax -ppx -rf zowe.pax;\nrm zowe.pax`;
-        return this.runCommand(script); 
+      const script = `cd ${installDir};\npax -ppx -rf  zowe.pax;\nrm zowe.pax`;
+
+      try {
+          const result = await this.runCommand(script);
+          if (!result.status) {
+              throw new Error(`unpax command failed. Details: ${result.details}`);
+          }
+          return result;
+      } catch (error) {
+          console.error(`Error during unpax operation: ${error.message}`);
+          throw new Error(`unpax operation failed: ${error.message}`);
+      }
     }
 
     async download(installDir) {
@@ -78,7 +87,7 @@ echo "${JCL_UNIX_SCRIPT_OK}"
           throw new Error('Failed to retrieve Zowe version.');
         }
 	    const script = `URL="https://zowe.jfrog.io/zowe/list/libs-release-local/org/zowe";
-    curl $URL/${version}/zowe-${version}.pax
+    curl -L $URL/${version}/zowe-${version}.pax
     -k
     -o ${installDir}/zowe.pax`
           return this.runCommand(script);
@@ -90,7 +99,7 @@ echo "${JCL_UNIX_SCRIPT_OK}"
 
     static getZoweVersion() {
       return new Promise((resolve, reject) => {
-        https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/manifest.json.template', (res) => {
+        https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v3.x/master/manifest.json.template', (res) => {
           let data = '';
 
           res.on('data', (chunk) => {
@@ -124,7 +133,7 @@ echo "${JCL_UNIX_SCRIPT_OK}"
   async remove_createdDataset(dataset_prefix, loadlib, authPluginLib, authLoadlib, parmlib, jcllib, vsam) {
   const script = `
     tsocmd "DELETE '${dataset_prefix}.SZWEEXEC'";
-    tsocmd "DELETE '${dataset_prefix}.'";
+    tsocmd "DELETE '${dataset_prefix}.SZWESAMP'";
     tsocmd "DELETE '${loadlib}'";
     tsocmd "DELETE '${authPluginLib}'";
     tsocmd "DELETE '${authLoadlib}'";
