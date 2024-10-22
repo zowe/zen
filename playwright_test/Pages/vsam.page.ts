@@ -29,19 +29,21 @@ class VsamPage{
 
   constructor(page: Page) {
     this.page = page;
-    this.click_vsam = page.locator('//span[text()="Vsam"]')
+    this.click_vsam = page.locator('//span[text()="Caching Service"]')
     this.Security_title = page.locator('//div[text()="Security"]')
-    this.mode = page.getByLabel('Mode');
+    this.Mode = page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[2]/div[1]/div/div/label');
     this.volume = page.getByLabel('Volume');
     this.StorageClass = page.getByLabel('Storage Class');
     this.VsamDatasetName   = page.getByLabel('Vsam Dataset Name');
     this.dataset_proclib = page.getByLabel('Dataset Proclib');
+    this.click_dropDown = page.locator('//*[@id="container-box-id"]/form/div/div[2]/div[1]/div/svg')
+    this.storage_mode = page.getByLabel('Storage Mode')
     this.readYaml = page.locator('div.view-lines')
     this.initVSAM = page.locator('//button[contains(text(),"Initialize Vsam Config")]')
     this.previous_step_button = page.locator('//button[contains(text(),"Previous step")]')
     this.skip_button = page.locator('//button[contains(text(),"Skip")]')
     this.editor_title_element = page.locator('//h2[text()="Editor"]')
-    this.VSAM_TITLE = page.locator(' //div[text()="Vsam"]')
+    this.VSAM_TITLE = page.locator(' //div[text()="CachingService"]')
     this.continueToComponentInstallation = page.locator('//button[contains(text(), "Continue to Components Installation")]')
     this.view_yaml =  page.locator('//button[contains(text(),"View/Edit Yaml")]')
     this.viewAndSubmitJob =  page.locator('//button[contains(text(), "Preview Job")]')
@@ -69,9 +71,17 @@ class VsamPage{
    return Vsam_title;
   }
 
+  async select_storageMode(storage_mode:string){
+   await this.page.waitForTimeout(1000);
+   await this.storage_mode.click({timeout: 5000});
+   const itemLocator = this.page.locator(`//li[text()="${storage_mode}"]`);
+   await itemLocator.waitFor({ state: 'visible' });
+   await itemLocator.click();
+  }
+
   async fillVsamDetails(mode:string, volume:string,storage_class:string,VsamDatasetName:string){
    await this.page.waitForTimeout(1000);
-   await this.mode.fill(mode)
+   await this.Mode.fill(mode)
    await this.page.waitForTimeout(1000);
    await this.volume.fill(volume)
    await this.page.waitForTimeout(1000);
@@ -82,7 +92,7 @@ class VsamPage{
   }
   async get_VsamMode_value(): Promise<string> {
     await this.page.waitForTimeout(2000);
-	  return await this.mode.inputValue();
+	  return await this.Mode.inputValue();
   }
 
   async get_VsamVolume_value(){
@@ -122,6 +132,22 @@ class VsamPage{
   async is_skipVsamButtonEnable(){
    return await this.skip_button.isEnabled({ timeout: 5000 });
   }
+
+  async is_initVsamButtonVisible() {
+    return await this.initVSAM.isVisible({ timeout: 5000 });
+  }
+
+  async is_initVsamButtonVisible() {
+    return await this.initVSAM.isVisible({ timeout: 5000 });
+  }
+
+  async  isElement_Visible(element) {
+    try {
+        return await element.isVisible();
+    } catch (error) {
+        return false;
+    }
+}
 
 
   async isPreviousButtonEnable(){

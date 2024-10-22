@@ -1,4 +1,5 @@
 import { test, ElectronApplication, expect, _electron as electron } from '@playwright/test';
+import { prepareEnvironment } from '../prepare.js';
 import TitlePage from '../Pages/title.page.ts';
 import ConnectionPage from '../Pages/connection.page.ts';
 import PlanningPage from '../Pages/planning.page.ts';
@@ -16,8 +17,17 @@ let electronApp: ElectronApplication
 const STCS_TITLE = 'Stcs'
 const SECURITY_TITLE = 'Security';
 const CERTIFICATE_TITLE = 'Certificates'
-
 const script = new Script();
+
+test.beforeAll(async () => {
+  test.setTimeout(600000); 
+  try {
+    await prepareEnvironment({ install: true, cleanup:true, remove: false });
+  } catch (error) {
+    console.error('Error during environment preparation:', error);
+    process.exit(1);
+  }
+});
 
 test.describe('StcsTab', () => {
   let connectionPage: ConnectionPage;
@@ -49,23 +59,20 @@ test.describe('StcsTab', () => {
 	  await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
 	  await connectionPage.SubmitValidateCredential();
 	  await connectionPage.clickContinueButton();
-    await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
+   await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
 	    config.ZOWE_WORKSPACE_DIR,
 		config.ZOWE_EXTENSION_DIR,
 		config.ZOWE_LOG_DIR,
-		'1',
-		config.JOB_NAME,
-		config.JOB_PREFIX,
 		config.JAVA_HOME,
 		config.NODE_HOME,
 		config.ZOSMF_HOST,
 		config.ZOSMF_PORT,
 		config.ZOSMF_APP_ID
 	  );
-    await planningPage.clickValidateLocations()
+     await planningPage.clickValidateLocations()
       await planningPage.clickContinueToInstallation()
 	  await installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
-      await installationTypePage.clickOnContinueToUnpax()
+    await installationTypePage.clickOnContinueToUnpax()
 	  await installationTypePage.skipUnpax()
 	  await installationPage.fillAllFields(config.DATASET_PREFIX,
 	    config.PARM_LIB,
@@ -122,7 +129,8 @@ test.describe('StcsTab', () => {
      expect(stcZis_value).toBe(Zis_Value);
      expect(Aux_Value).toBe(aux_value);
  })
-   test('verify yaml updated on zos', async ({ page }) => {
+   test('verify yaml updated on zos correctly', async ({ page }) => {
+    await stcsPage.initializeSTC()
     const result = await script.runCommand(`cat ${process.env.ZOWE_ROOT_DIR}/zowe.yaml`); 
     await expect(result.details).toContain(config.SECURITY_AUX);
     await expect(result.details).toContain(config.SECURITY_STC_ZOWE);

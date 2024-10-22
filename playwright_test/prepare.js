@@ -1,7 +1,7 @@
 import { connectArgs, Script }  from './setup';
 
 async function prepareEnvironment(options = {}) {
-  const { install = false, remove = false } = options;
+  const { install = false, cleanup= false, remove = false } = options;
 
   const SSH_HOST = process.env.SSH_HOST;
   const SSH_PORT = process.env.SSH_PORT;
@@ -14,6 +14,10 @@ async function prepareEnvironment(options = {}) {
   const JAVA_HOME = process.env.JAVA_HOME;
   const NODE_HOME = process.env.NODE_HOME;
   const DATASET_PREFIX = process.env.DATASET_PREFIX;
+  const LOAD_LIB = process.env.LOAD_LIB;
+  const PARM_LIB = process.env.PARM_LIB;
+  const JCL_LIB = process.env.JCL_LIB;
+  const VSAM_DATASET_NAME = process.env.VSAM_DATASET_NAME;
   const AUTH_LOAD_LIB = process.env.AUTH_LOAD_LIB;
   const AUTH_PLUGIN_LIB = process.env.AUTH_PLUGIN_LIB;
   const SECURITY_ADMIN = process.env.SECURITY_ADMIN;
@@ -67,6 +71,18 @@ async function prepareEnvironment(options = {}) {
   if (!AUTH_LOAD_LIB) {
     throw new Error('AUTH_LOAD_LIB is not defined');
   }
+   if (!LOAD_LIB) {
+    throw new Error('LOAD_LIB is not defined');
+  }
+  if (!PARM_LIB) {
+    throw new Error('PARM_LIB is not defined');
+  }
+  if (!JCL_LIB) {
+    throw new Error('JCL_LIB is not defined');
+  }
+  if (!VSAM_DATASET_NAME) {
+    throw new Error('VSAM_DATASET_NAME is not defined');
+  }
   if (!AUTH_PLUGIN_LIB) {
     throw new Error('AUTH_PLUGIN_LIB is not defined');
   }
@@ -112,10 +128,16 @@ async function prepareEnvironment(options = {}) {
   });
 
   if (install) {
+    console.time('Installation Time');
     await scriptRunner.install(ZOWE_ROOT_DIR);
+    console.timeEnd('Installation Time');
     console.log('Installation complete.');
   }
-  
+  if (cleanup) {
+    await scriptRunner.remove_createdDataset(DATASET_PREFIX,LOAD_LIB,AUTH_PLUGIN_LIB,AUTH_LOAD_LIB,PARM_LIB, JCL_LIB, VSAM_DATASET_NAME);
+   console.log("Removed all created datasets")
+  }
+
   if (remove) { 
     await scriptRunner.remove(ZOWE_ROOT_DIR);
     console.log('Removal complete.');

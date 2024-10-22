@@ -70,7 +70,7 @@ class InstallationTypePage{
   }
 
   async continueComponentInstallation(){
-    const timeout = 5000;
+    const timeout = 6000;
 	const interval = 500;
 	while (true) {
 		if (await this.continueCompInstallation.isEnabled()) {
@@ -127,7 +127,9 @@ class InstallationTypePage{
   }
 
   async skipUnpax(){
-    await this.skipUnpaxButton.click({timeout: 5000});
+    await this.skipUnpaxButton.click({timeout: 50000});
+    await this.page.waitForTimeout(50000);
+
   }
 
   async enterRuntimeDir(runtimeDir: any){

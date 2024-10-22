@@ -84,7 +84,7 @@ class InstallationPage{
   }
 
   async enterJclLib(Jcllib: string): Promise<void> {
-    await this.page.waitForTimeout(500)
+    await this.page.waitForTimeout(5000)
     await this.jclLib.fill(Jcllib);
   }
 
