@@ -62,7 +62,7 @@ echo "${JCL_UNIX_SCRIPT_OK}"
         }
     } catch (error) {
         console.error('Error during command execution:', error);
-        throw error; // Re-throw the error to be handled by the caller
+        throw error;
     }
 }
     

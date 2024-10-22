@@ -130,7 +130,7 @@ test.describe('StcsTab', () => {
      expect(Aux_Value).toBe(aux_value);
  })
    test('verify yaml updated on zos correctly', async ({ page }) => {
-    await stcsPage.initializeSTC()
+     await stcsPage.initializeSTC()
     const result = await script.runCommand(`cat ${process.env.ZOWE_ROOT_DIR}/zowe.yaml`); 
     await expect(result.details).toContain(config.SECURITY_AUX);
     await expect(result.details).toContain(config.SECURITY_STC_ZOWE);

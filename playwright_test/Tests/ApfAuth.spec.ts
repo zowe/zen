@@ -12,7 +12,6 @@ import { spawn } from 'child_process';
 import path from 'path';
 let page: Page;
 
-test.setTimeout(60000);
 
 let electronApp: ElectronApplication
 const APF_AUTH_TITLE ='APF Authorize Load Libraries'
@@ -22,7 +21,7 @@ const SECURITY_TITLE = 'Security'
 
 
 test.beforeAll(async () => {
-  test.setTimeout(300000); // Set timeout to 300,000 ms (5 minutes)
+  test.setTimeout(300000);
   try {
     await prepareEnvironment({ install: true, cleanup:true, remove: false });
   } catch (error) {
