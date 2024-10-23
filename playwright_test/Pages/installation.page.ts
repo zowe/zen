@@ -53,111 +53,93 @@ class InstallationPage {
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
-  async enterPrefix(prefix: any) {
-    await this.commonPage.waitForElement(this.prefix)
-    await this.prefix.clear({ timeout: 2000 })
+  async enterPrefix(prefix: string): Promise<void>{
+    await this.page.waitForTimeout(500)
     await this.prefix.fill(prefix);
     await this.commonPage.validateElementValue(this.prefix, prefix)
   }
 
-  async getPrefixValue() {
-    await this.commonPage.waitForElement(this.prefix)
-    return await this.prefix.textContent();
+  async getPrefixValue(): Promise<string> {
+    return await this.prefix.inputValue();
   }
 
-  async enterProcLib(proclib: any) {
-    await this.commonPage.waitForElement(this.procLib)
-    await this.procLib.clear({ timeout: 2000 })
+  async enterProcLib(proclib: string): Promise<void> {
+    await this.page.waitForTimeout(500)
     await this.procLib.fill(proclib);
     await this.commonPage.validateElementValue(this.procLib, proclib)
   }
 
-  async getProclibValue() {
-    await this.commonPage.waitForElement(this.procLib)
-    return await this.procLib.textContent();
+
+  async getProclibValue(): Promise<string> {
+    return await this.procLib.inputValue();
   }
 
-  async enterParmLib(parmlib: any) {
-    await this.commonPage.waitForElement(this.parmLib)
-    await this.parmLib.clear({ timeout: 2000 })
+  async enterParmLib(parmlib: string): Promise<void>{
+    await this.page.waitForTimeout(500)
     await this.parmLib.fill(parmlib);
     await this.commonPage.validateElementValue(this.parmLib, parmlib)
   }
 
-  async getParmlibValue() {
-    await this.commonPage.waitForElement(this.parmLib)
-    return await this.parmLib.textContent();
+  async getParmlibValue(): Promise<string> {
+    return await this.parmLib.inputValue();
   }
 
-  async enterZis(zis: any) {
-    await this.commonPage.waitForElement(this.zis)
-    await this.zis.clear({ timeout: 2000 })
+  async enterZis(zis: string): Promise<void> {
+    await this.page.waitForTimeout(500)
     await this.zis.fill(zis);
     await this.commonPage.validateElementValue(this.zis, zis)
   }
 
-  async enterJclLib(Jcllib: any) {
-    await this.commonPage.waitForElement(this.jclLib)
-    await this.jclLib.clear({ timeout: 2000 })
+  async enterJclLib(Jcllib: string): Promise<void> {
+    await this.page.waitForTimeout(500)
     await this.jclLib.fill(Jcllib);
     await this.commonPage.validateElementValue(this.jclLib, Jcllib)
   }
 
-  async enterLoadLib(loadlib: any) {
-    await this.commonPage.waitForElement(this.loadLib)
-    await this.loadLib.clear({ timeout: 2000 })
+  async enterLoadLib(loadlib: string): Promise<void>{
+    await this.page.waitForTimeout(500)
     await this.loadLib.fill(loadlib);
     await this.commonPage.validateElementValue(this.loadLib, loadlib)
   }
 
-  async enterAuthLoadLib(authloadlib: any) {
-    await this.commonPage.waitForElement(this.authLoadLib)
-    await this.authLoadLib.clear({ timeout: 2000 })
+  async enterAuthLoadLib(authloadlib: string): Promise<void> {
     await this.authLoadLib.fill(authloadlib);
-    await this.commonPage.validateElementValue(this.authLoadLib, authloadlib)
+	await this.page.waitForTimeout(5000)
   }
 
-  async getAuthLoadLibValue() {
-    await this.commonPage.waitForElement(this.authLoadLib)
-    return await this.authLoadLib.textContent();
+  async getAuthLoadLibValue(): Promise<string> {
+	return await this.authLoadLib.inputValue();
   }
 
-  async enterAuthPluginLib(authpluginlib: any) {
-    await this.commonPage.waitForElement(this.authPluginLib)
-    await this.authPluginLib.clear({ timeout: 2000 })
+  async enterAuthPluginLib(authpluginlib: string): Promise<void> {
     await this.authPluginLib.fill(authpluginlib);
-    await this.commonPage.validateElementValue(this.authPluginLib, authpluginlib)
+	await this.page.waitForTimeout(5000)
   }
 
-  async getAuthPluginLibValue() {
-    await this.commonPage.waitForElement(this.authPluginLib)
-    return await this.authPluginLib.textContent();
+  async getAuthPluginLibValue(): Promise<string> {
+    return await this.authPluginLib.inputValue();
   }
 
-  async clickInstallMvsDatasets() {
-    await this.commonPage.waitForElement(this.installMVSDatasets)
-    await this.installMVSDatasets.click();
+  async clickInstallMvsDatasets(){
+	await this.installMVSDatasets.click();
+	await this.waitForContinueButtonToBeEnabled();
   }
 
-  async clickViewEditYaml() {
-    await this.commonPage.waitForElement(this.viewEditYaml)
+  async clickViewEditYaml(){
     await this.viewEditYaml.click();
   }
 
-  async clickViewSubmitJob() {
-    await this.commonPage.waitForElement(this.viewSubmitJob)
+  async clickViewSubmitJob(){
     await this.viewSubmitJob.click();
   }
 
-  async clickViewJobOutput() {
-    await this.commonPage.waitForElement(this.viewJobOutput)
+  async clickViewJobOutput(){
     await this.viewJobOutput.click();
     await this.page.waitForTimeout(2000);
   }
 
-  async clickSaveAndClose() {
-    await this.commonPage.waitForElement(this.saveAndClose)
-    await this.saveAndClose.click({ timeout: 2000 });
+  async clickSaveAndClose(){
+    await this.saveAndClose.click({timeout: 2000});
   }
 
   async clickPreviousStep() {
@@ -175,18 +157,16 @@ class InstallationPage {
     await this.continueToNetworkSetup.click();
   }
 
-  async isContinueToNetworkSetupDisabled() {
-    await this.commonPage.waitForElement(this.continueToNetworkSetup)
+  async isContinueToNetworkSetupDisabled(){
     return await this.continueToNetworkSetup.isDisabled()
   }
 
-  async isContinueToNetworkSetupEnabled() {
-    await this.commonPage.waitForElement(this.continueToNetworkSetup)
+  async isContinueToNetworkSetupEnabled(){
     return await this.continueToNetworkSetup.isEnabled()
   }
 
-  async open_monacoEditor() {
-    await this.commonPage.waitForElement(this.viewEditYaml)
+  async open_monacoEditor(){
+    await this.page.waitForTimeout(1000)
     this.viewEditYaml.click({ timeout: 2000 })
     await this.commonPage.waitForElement(this.editorTitleElement)
     const editor_title = await this.editorTitleElement.textContent();
@@ -198,5 +178,22 @@ class InstallationPage {
     await this.closeEditorButton.click();
   }
 
+  async clickInstallMvsDatasetsInvalid(){
+	await this.installMVSDatasets.click();
+  }
+
+  async fillAllFields(datasetPrefix: string, parmLib: string, procLib: string, jclLib: string, loadLib: string, authLoadLib: string, authPluginLib: string){
+    await this.enterPrefix(datasetPrefix);
+	await this.enterParmLib(parmLib);
+	await this.enterProcLib(procLib);
+	await this.enterJclLib(jclLib);
+	await this.enterLoadLib(loadLib);
+	await this.enterAuthLoadLib(authLoadLib);
+	await this.enterAuthPluginLib(authPluginLib);
+	await this.enterAuthLoadLib(authLoadLib);
+	await this.enterAuthPluginLib(authPluginLib);
+	await this.enterAuthLoadLib(authLoadLib);
+	await this.enterAuthPluginLib(authPluginLib);
+  }
 }
 export default InstallationPage;

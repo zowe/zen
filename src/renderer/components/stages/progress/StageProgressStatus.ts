@@ -9,26 +9,37 @@
  */
 
 import { flatten, unflatten } from 'flat';
-import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, SkipState, InstallationArgs} from '../../../../types/stateInterfaces';
+import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, subStepState, stepSkipState, InstallationArgs, DownloadUnpaxState} from '../../../../types/stateInterfaces';
 import { stages } from '../../configuration-wizard/Wizard';
 
 const installationTypeStatus: InstallationType = {
   installationType: 'download',
   licenseAgreement: false,
   userUploadedPaxPath: '',
-} 
+}
+
+export const downloadUnpaxStatus: DownloadUnpaxState = {
+  uploadYaml: false,
+  download: false,
+  upload: false,
+  unpax: false,
+  getExampleYaml: false,
+  getSchemas: false,
+}
 
 const progressStatus: ProgressState = {
   connectionStatus: false,
   planningStatus: false,
   installationTypeStatus: false,
+  downloadUnpaxStatus: false,
   initializationStatus: false,
   datasetInstallationStatus: false,
   networkingStatus: false,
   apfAuthStatus: false,
   securityStatus: false,
+  stcsStatus: false,
   certificateStatus: false,
-  vsamStatus: false,
+  cachingServiceStatus: false,
   launchConfigStatus: false,
   reviewStatus: false,
 }
@@ -45,11 +56,8 @@ const planningStageStatus: PlanningState = {
   isLocationValid: false,
 }
 
-const datasetInstallationStatus: DatasetInstallationState = {
+export const datasetInstallationStatus: DatasetInstallationState = {
   uploadYaml: false,
-  download: false,
-  upload: false,
-  unpax: false,
   install: false,
   initMVS: false
 }
@@ -61,6 +69,12 @@ const apfAuthStatus: InitSubStepsState = {
 }
 
 const securityInitStatus: InitSubStepsState = {
+  writeYaml: false,
+  uploadYaml: false,
+  success: false
+}
+
+const stcsInitStatus: InitSubStepsState = {
   writeYaml: false,
   uploadYaml: false,
   success: false
@@ -85,14 +99,23 @@ const planningValidationDetailsStatus: PlanningValidationDetails = {
   error: ''
 }
 
-const stepSkipStatus: SkipState = {
+const subStepSkipStatus: subStepState = {
   datasetInstallation: false,
   networking: false,
   apfAuth: false,
   security: false,
+  stcs: false,
   certificate: false,
-  vsam: false,
+  cachingService: false,
   launchConfig: false
+}
+
+const stepSkipStatus: stepSkipState = {
+  planning: false,
+  installationType: false,
+  unpax: false,
+  initialization: false,
+  reviewInstallation: false
 }
 
 const installationArgsStatus: InstallationArgs = {
@@ -112,141 +135,186 @@ const installationArgsStatus: InstallationArgs = {
     cookieId: '1',
     zosmfHost: '',
     zosmfPort: '443',
-    zosmfApplId: 'IZUDFLT'
+    zosmfApplId: 'IZUDFLT',
+    dryRunMode:false
 }
 
 let progressStateKey = 'stage_progress';
 let activeStateKey = 'active_state';
 let planningStateKey = 'planning_stage';
 let installationTypeKey = 'installation_type';
+let downloadUnpaxKey = 'download_unpax';
 let datasetInstallationKey = 'dataset_installation';
 let apfAuthKey = 'apf_auth';
 let securityKey = 'security_init';
+let stcsKey = 'stcs_init';
 let certificateKey = 'certificate_init';
 let vsamKey = 'vsam_init';
 let planningValidationDetailsKey = `planning_validation_details`;
 let prevInstallationKey = `prev_installation`;
+let skipSubStateKey = `skip_sub_state`;
 let skipStateKey = `skip_state`;
 let installationArgsKey = `intallation_args`;
+let paxVersionKey = `pax_version`;
 
-let skipKeysArray: (keyof SkipState)[] = Object.keys(stepSkipStatus) as (keyof SkipState)[];
+let subStepSkipKeysArray: (keyof subStepState)[] = Object.keys(subStepSkipStatus) as (keyof subStepState)[];
+let stepSkipKeysArray: (keyof stepSkipState)[] = Object.keys(stepSkipStatus) as (keyof stepSkipState)[];
 
 const setKeys = (id: string) => {
   progressStateKey = `${progressStateKey}_${id}`;
   activeStateKey = `${activeStateKey}_${id}`;
   planningStateKey = `${planningStateKey}_${id}`;
   installationTypeKey = `${installationTypeKey}_${id}`;
+  downloadUnpaxKey = `${downloadUnpaxKey}_${id}`;
   datasetInstallationKey = `${datasetInstallationKey}_${id}`;
   apfAuthKey = `${apfAuthKey}_${id}`;
   securityKey = `${securityKey}_${id}`;
+  stcsKey = `${stcsKey}_${id}`;
   certificateKey = `${certificateKey}_${id}`;
   vsamKey = `${vsamKey}_${id}`;
   planningValidationDetailsKey = `${planningValidationDetailsKey}_${id}`;
+  skipSubStateKey = `${skipSubStateKey}_${id}`;
   skipStateKey = `${skipStateKey}_${id}`;
   installationArgsKey = `${installationArgsKey}_${id}`;
+  paxVersionKey = `${paxVersionKey}_${id}`;
 }
 
-export const initializeProgress = (host: string, user: string) => {
+export const initializeProgress = (host: string, user: string, isResume: boolean) => {
   const id = `${host}_${user}`;
   setKeys(id);
-
+  
   const progress = localStorage.getItem(progressStateKey);
-  if(!progress) {
+  if(!progress || !isResume) {
     const flattenedData = flatten(progressStatus);
     localStorage.setItem(progressStateKey, JSON.stringify(flattenedData));
   }
 
   const activeStage = localStorage.getItem(activeStateKey);
-  if(!activeStage) {
+  if(!activeStage || !isResume) {
     const flattenedData = flatten(activeStatus);
     localStorage.setItem(activeStateKey, JSON.stringify(flattenedData));
   }
 
   const planningState = localStorage.getItem(planningStateKey);
-  if(!planningState) {
+  if(!planningState || !isResume) {
     const flattenedData = flatten(planningStageStatus);
     localStorage.setItem(planningStateKey, JSON.stringify(flattenedData));
   }
 
   const installationTypeState = localStorage.getItem(installationTypeKey);
-  if(!installationTypeState) {
+  if(!installationTypeState || !isResume) {
     const flattenedData = flatten(installationTypeStatus);
     localStorage.setItem(installationTypeKey, JSON.stringify(flattenedData));
   }
 
+  const downloadUnpaxState = localStorage.getItem(downloadUnpaxKey);
+  if(!downloadUnpaxState || !isResume) {
+    const flattenedData = flatten(downloadUnpaxStatus);
+    localStorage.setItem(downloadUnpaxKey, JSON.stringify(flattenedData));
+  }
+
   const datasetInstallationState = localStorage.getItem(datasetInstallationKey);
-  if(!datasetInstallationState) {
+  if(!datasetInstallationState || !isResume) {
     const flattenedData = flatten(datasetInstallationStatus);
     localStorage.setItem(datasetInstallationKey, JSON.stringify(flattenedData));
   }
 
   const apfAuthState = localStorage.getItem(apfAuthKey);
-  if(!apfAuthState) {
+  if(!apfAuthState || !isResume) {
     const flattenedData = flatten(apfAuthStatus);
     localStorage.setItem(apfAuthKey, JSON.stringify(flattenedData));
   }
 
   const securityInitState = localStorage.getItem(securityKey);
-  if(!securityInitState) {
+  if(!securityInitState || !isResume) {
     const flattenedData = flatten(securityInitStatus);
     localStorage.setItem(securityKey, JSON.stringify(flattenedData));
   }
 
+  const stcsInitState = localStorage.getItem(stcsKey);
+  if(!stcsInitState || !isResume) {
+    const flattenedData = flatten(stcsInitStatus);
+    localStorage.setItem(stcsKey, JSON.stringify(flattenedData));
+  }
+
   const certificateInitState = localStorage.getItem(certificateKey);
-  if(!certificateInitState) {
+  if(!certificateInitState || !isResume) {
     const flattenedData = flatten(certificateInitStatus);
     localStorage.setItem(certificateKey, JSON.stringify(flattenedData));
   }
 
   const vsamInitState = localStorage.getItem(vsamKey);
-  if(!vsamInitState) {
+  if(!vsamInitState || !isResume) {
     const flattenedData = flatten(vsamInitStatus);
     localStorage.setItem(vsamKey, JSON.stringify(flattenedData));
   }
 
   const planningValidationDetailsState = localStorage.getItem(certificateKey);
-  if(!planningValidationDetailsState) {
+  if(!planningValidationDetailsState || !isResume) {
     const flattenedData = flatten(planningValidationDetailsStatus);
     localStorage.setItem(planningValidationDetailsKey, JSON.stringify(flattenedData));
   }
 
+  const subStepSkipStatusState = localStorage.getItem(skipSubStateKey);
+  if(!subStepSkipStatusState) {
+    const flattenedData = flatten(subStepSkipStatus);
+    localStorage.setItem(skipSubStateKey, JSON.stringify(flattenedData));
+  }
+
   const stepSkipStatusState = localStorage.getItem(skipStateKey);
-  if(!stepSkipStatusState) {
+  if(!stepSkipStatusState || !isResume) {
     const flattenedData = flatten(stepSkipStatus);
     localStorage.setItem(skipStateKey, JSON.stringify(flattenedData));
   }
 
   const installationArgsState = localStorage.getItem(installationArgsKey);
-  if(!installationArgsState) {
+  if(!installationArgsState || !isResume) {
     const flattenedData = flatten(installationArgsStatus);
     localStorage.setItem(installationArgsKey, JSON.stringify(flattenedData));
   }
 }
 
-export const mapAndSetSkipStatus = (subStageId: number, value: boolean): void => {
-  setSubStageSkipStatus(skipKeysArray[subStageId], value);
+export const updateSubStepSkipStatus = (subStageId: number, value: boolean): void => {
+  if(subStageId < 0 || subStageId > 7) {
+    return;
+  }
+  setSubStageSkipStatus(subStepSkipKeysArray[subStageId], value);
 }
 
-export const mapAndGetSkipStatus = (subStageId: number): boolean => {
-  const skipStatus = getSubStageSkipStatus();
-  const skipStatusArray = [
-    skipStatus.datasetInstallation,
-    skipStatus.networking,
-    skipStatus.apfAuth,
-    skipStatus.security,
-    skipStatus.certificate,
-    skipStatus.vsam,
-    skipStatus.launchConfig
-  ]
-
-  return skipStatusArray[subStageId];
+export const updateStepSkipStatus = (stageId: number, value: boolean): void => {
+  if(stageId < 0 || stageId > 5) {
+    return;
+  }
+  setStageSkipStatus(stepSkipKeysArray[stageId-1], value);
 }
 
-export const setSubStageSkipStatus = (key: keyof SkipState, newValue: boolean): void => {
+export const setSubStageSkipStatus = (key: keyof subStepState, newValue: boolean): void => {
+  const skipStatus = localStorage.getItem(skipSubStateKey);
+  if (skipStatus) {
+    const flattenedData = JSON.parse(skipStatus);
+    const unFlattenedData = unflatten(flattenedData) as subStepState;
+    Object.assign(subStepSkipStatus, unFlattenedData);
+  }
+  subStepSkipStatus[key] = newValue;
+  const flattenedData = flatten(subStepSkipStatus);
+  localStorage.setItem(skipSubStateKey, JSON.stringify(flattenedData));
+}
+
+export const getSubStageSkipStatus = () : subStepState => {
+  const skipStatus = localStorage.getItem(skipSubStateKey);
+  if(skipStatus) {
+    const flattenedData =  JSON.parse(skipStatus);
+    return unflatten(flattenedData);
+  } else {
+    return subStepSkipStatus;
+  }
+}
+
+export const setStageSkipStatus = (key: keyof stepSkipState, newValue: boolean): void => {
   const skipStatus = localStorage.getItem(skipStateKey);
   if (skipStatus) {
     const flattenedData = JSON.parse(skipStatus);
-    const unFlattenedData = unflatten(flattenedData) as SkipState;
+    const unFlattenedData = unflatten(flattenedData) as stepSkipState;
     Object.assign(stepSkipStatus, unFlattenedData);
   }
   stepSkipStatus[key] = newValue;
@@ -254,7 +322,7 @@ export const setSubStageSkipStatus = (key: keyof SkipState, newValue: boolean): 
   localStorage.setItem(skipStateKey, JSON.stringify(flattenedData));
 }
 
-export const getSubStageSkipStatus = () : SkipState => {
+export const getStageSkipStatus = () : stepSkipState => {
   const skipStatus = localStorage.getItem(skipStateKey);
   if(skipStatus) {
     const flattenedData =  JSON.parse(skipStatus);
@@ -306,6 +374,21 @@ export const getSecurityInitState = (): InitSubStepsState => {
     return unflatten(flattenedData)
   } else {
     return securityInitStatus;
+  }
+}
+
+export const setStcsInitState = (stcsInitSteps: InitSubStepsState): void => {
+  Object.assign(stcsInitStatus, stcsInitSteps);
+  localStorage.setItem(stcsKey, JSON.stringify(stcsInitStatus));
+}
+
+export const getStcsInitState = (): InitSubStepsState => {
+  const stcsInitState = localStorage.getItem(stcsKey);
+  if(stcsInitState) {
+    const flattenedData = JSON.parse(stcsInitState);
+    return unflatten(flattenedData)
+  } else {
+    return stcsInitStatus;
   }
 }
 
@@ -375,6 +458,21 @@ export const getInstallationTypeStatus = (): InstallationType => {
     return installationTypeStatus;
   }
 }
+
+export const setDownloadUnpaxState = (downloadUnpaxSteps: DownloadUnpaxState): void => {
+  Object.assign(downloadUnpaxStatus, downloadUnpaxSteps);
+  localStorage.setItem(downloadUnpaxKey, JSON.stringify(downloadUnpaxStatus));
+}
+
+export const getDownloadUnpaxState = (): DownloadUnpaxState => {
+  const downloadUnpaxState = localStorage.getItem(downloadUnpaxKey);
+  if(downloadUnpaxState) {
+    const flattenedData = JSON.parse(downloadUnpaxState);
+    return unflatten(flattenedData);
+  } else {
+    return downloadUnpaxStatus;
+  }
+};
 
 export const setPlanningStageStatus = <K extends keyof PlanningState>(key: K, newValue: PlanningState[K]): void => {
   const planningData = localStorage.getItem(planningStateKey);
@@ -447,6 +545,16 @@ export const getCompleteProgress = () : ProgressState => {
   }
 }
 
+export const isInitializationStageComplete = (): boolean => {
+  const progress = localStorage.getItem(progressStateKey);
+  if(progress) {
+    const data:any = unflatten(JSON.parse(progress));
+    return data.datasetInstallationStatus && data.networkingStatus && data.apfAuthStatus && data.securityStatus && data.stcsStatus && data.certificateStatus && data.cachingServiceStatus && data.launchConfigStatus;
+  } else {
+    return false;
+  }
+}
+
 export const setActiveStage = (stageId: number, isSubStage: boolean, date: string, subStageId?: number): void => {
   activeStatus.activeStepIndex = stageId;
   activeStatus.isSubStep = isSubStage;
@@ -481,6 +589,15 @@ export const getPreviousInstallation = () : ActiveState => {
   } else {
     return activeStatus;
   }
+}
+
+export const setAndStoreZoweVersion = (version: number): void => {
+  localStorage.setItem(paxVersionKey, version.toString());
+}
+
+export const getCachedZoweVersion = () : number => {
+  const version = localStorage.getItem(paxVersionKey);
+  return version ? Number(version) : NaN;
 }
 
 

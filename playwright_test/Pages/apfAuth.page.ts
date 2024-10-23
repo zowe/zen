@@ -80,6 +80,10 @@ class ApfAuthPage {
     this.dataset_prefix_value = page.getByLabel('Dataset Prefix')
     this.auth_load_lib_value = page.getByLabel('APF Authorized Load Library')
     this.auth_plugin_lib_value = page.getByLabel('Zowe ZIS Plugins Load Library')
+
+	//this.select_SMPE = page.getByLabel('//button[contains(text(),"SMP/E")]')
+	this.select_SMPE = page.locator('span:has-text("SMP/E")');
+
   }
 
   commonPage = new CommonPage();
@@ -94,13 +98,16 @@ class ApfAuthPage {
     await this.click_ApfAuth.click({ timeout: 9000 })
   }
 
-  async movetoInstallationPage() {
-    await this.commonPage.waitForElement(this.licenseAgreement)
-    await this.licenseAgreement.click({ timeout: 9000 })
-    await this.commonPage.waitForElement(this.acceptLicense)
-    await this.acceptLicense.click({ timeout: 9000 })
-    await this.commonPage.waitForElement(this.continueToComponentInstallation)
-    await this.continueToComponentInstallation.click({ timeout: 5000 })
+  async selectInstallationType(){
+   await this.select_SMPE.waitFor({ state: 'visible', timeout: 9000 }); // Adjust timeout if needed
+   console.log('SMP/E span is visible.');
+   await this.select_SMPE.click({timeout: 9000})
+  }
+
+  async movetoInstallationPage(){
+   await this.licenseAgreement.click({timeout: 9000})
+   await this.acceptLicense.click({timeout: 9000})
+   await this.continueToComponentInstallation.click({timeout: 5000})
   }
 
   async fillApfDetails(datasetPrefix: string, authLoadLib: string, authpluginLib: string) {

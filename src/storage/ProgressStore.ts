@@ -9,15 +9,21 @@
  */
 
 import Store from 'electron-store';
+import { DefaultStore } from './DefaultStore';
 
 // TODO: Store overall progress and restore up to last successful step
 
-const storeDefault = {
-  "installation": {
+const STORE_DEFAULT = {
+  "downloadUnpax": {
     "uploadYaml": false,
     "download": false,
     "upload": false,
     "unpax": false,
+    "getExampleYaml": false,
+    "getSchemas": false,
+  },
+  "installation": {
+    "uploadYaml": false,
     "install": false,
     "initMVS": false
   },
@@ -31,27 +37,28 @@ const storeDefault = {
     "uploadYaml": false,
     "success": false
   },
+  "initStcs": {
+    "writeYaml": false,
+    "uploadYaml": false,
+    "success": false
+  },
   "certificate": {
     "writeYaml": false,
     "uploadYaml": false,
     "zweInitCertificate": false,
   }
 };
+const STORE_NAME = 'zen-progress-store';
+const store = new Store({cwd: STORE_NAME});
+store.set(STORE_DEFAULT);
 
-const store = new Store({cwd: 'zen-progress-store'});
-store.set(storeDefault);
+export class ProgressStore extends DefaultStore {
 
-export class ProgressStore {
-
-  public static getAll(): any {
-    return store.store;
-  }
-
-  public static set(key: string, value: string | boolean) {
-    store.set(key, value);
+  protected static getStore(): Store {
+    return new Store({cwd: STORE_NAME});
   }
 
   public static deleteAll(): void {
-    store.store = storeDefault;
+    this.getStore().store = STORE_DEFAULT;
   }
 }

@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { useSelector } from 'react-redux';
 import {Box, Button, Typography, Tooltip} from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -17,14 +17,15 @@ import ContainerCard from '../common/ContainerCard';
 import {stages} from "../configuration-wizard/Wizard";
 import { selectConnectionArgs } from './connection/connectionSlice';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import eventDispatcher from '../../../utils/eventDispatcher';
+import eventDispatcher from '../../../services/eventDispatcher';
 import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
-import { selectConnectionStatus, selectPlanningStatus, selectInstallationTypeStatus, selectInitializationStatus, selectDatasetInstallationStatus, selectNetworkingStatus, selectApfAuthStatus, selectSecurityStatus, selectCertificateStatus, selectLaunchConfigStatus, setReviewStatus } from './progress/progressSlice';
+import { selectConnectionStatus, setReviewStatus } from './progress/progressSlice';
 import { setActiveStep } from './progress/activeStepSlice';
 import { setNextStepEnabled } from '../configuration-wizard/wizardSlice';
-import { getStageDetails, getSubStageDetails } from "../../../utils/StageDetails";
-import { getCompleteProgress } from "./progress/StageProgressStatus";
+import { getStageDetails } from "../../../services/StageDetails";
+import { TYPE_YAML, TYPE_OUTPUT } from '../common/Utils';
+import { getCompleteProgress, updateStepSkipStatus } from "./progress/StageProgressStatus";
 
 import '../../styles/ReviewInstallation.css';
 
@@ -50,6 +51,7 @@ const ReviewInstallation = () => {
     useSelector(selectConnectionStatus),
     completeProgress.planningStatus,
     completeProgress.installationTypeStatus,
+    completeProgress.downloadUnpaxStatus,
     completeProgress.initializationStatus,
   ];
   
@@ -58,41 +60,32 @@ const ReviewInstallation = () => {
     completeProgress.networkingStatus,
     completeProgress.apfAuthStatus,
     completeProgress.securityStatus,
+    completeProgress.stcsStatus,
     completeProgress.certificateStatus,
-    completeProgress.vsamStatus,
+    completeProgress.cachingServiceStatus,
     completeProgress.launchConfigStatus
   ];
-
-  const TYPE_YAML = "yaml";
-  const TYPE_JCL = "jcl";
-  const TYPE_OUTPUT = "output";
 
   useEffect(() => {
 
     const stageProgress = stageProgressStatus.every(status => status === true);
     const subStageProgress = subStageProgressStatus.every(status => status === true);
 
-    const setStageSkipStatus = (status: boolean) => {
-      stages[STAGE_ID].isSkipped = status;
-    }
-
-    const setDsInstallStageStatus = (status: boolean) => {
-      dispatch(setNextStepEnabled(status));
-      dispatch(setReviewStatus(status));
-    }
-
     if(stageProgress && subStageProgress) {
-      setStageSkipStatus(false);
-      setDsInstallStageStatus(true);
+      updateProgress(true);
     } else {
-      setStageSkipStatus(true);
-      setDsInstallStageStatus(false);
+      updateProgress(false);
     }
 
     return () => {
       dispatch(setActiveStep({ activeStepIndex: STAGE_ID, isSubStep: SUB_STAGES, activeSubStepIndex: 0 }));
     }
   }, []);
+
+  const updateProgress = (status: boolean) => {
+    dispatch(setNextStepEnabled(status));
+    dispatch(setReviewStatus(status));
+  }
 
   const toggleEditorVisibility = (type: any) => {
     setContentType(type);
@@ -107,7 +100,7 @@ const ReviewInstallation = () => {
     <div>
       <Box sx={{ position:'absolute', bottom: '1px', display: 'flex', flexDirection: 'row', p: 1, justifyContent: 'flex-start', [theme.breakpoints.down('lg')]: {flexDirection: 'column',alignItems: 'flex-start'}}}>
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_YAML)}>View Yaml</Button>
-        <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button>
+        {/* <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_JCL)}>View/Submit Job</Button> */}
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility(TYPE_OUTPUT)}>View Job Output</Button>
       </Box>
     <ContainerCard title="Review Installation" description="Review all steps before clicking Finish Installation. Visit a previous step to change it.">
@@ -147,7 +140,7 @@ const ReviewInstallation = () => {
                 </Box>
               </Box>
             )}
-            {stage.id !== 0 && stage.id < 4 && (
+            {stage.id !== 0 && stage.id < 5 && (
               <div>
                 <Box className="review-component-box">
                   <Typography className="review-component-text" onClick={() => updateActiveStep(stage.id, false)}>{stage.label}</Typography>

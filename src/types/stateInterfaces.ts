@@ -12,13 +12,15 @@ export interface ProgressState {
   connectionStatus: boolean;
   planningStatus: boolean;
   installationTypeStatus: boolean;
+  downloadUnpaxStatus: boolean;
   initializationStatus: boolean;
   datasetInstallationStatus: boolean;
   networkingStatus: boolean;
   apfAuthStatus: boolean;
   securityStatus: boolean;
+  stcsStatus: boolean;
   certificateStatus: boolean;
-  vsamStatus: boolean;
+  cachingServiceStatus: boolean;
   launchConfigStatus: boolean;
   reviewStatus: boolean;
 }
@@ -35,6 +37,15 @@ export interface InstallationType {
   userUploadedPaxPath: string;
 }
 
+export interface DownloadUnpaxState {
+  uploadYaml: boolean;
+  download: boolean,
+  upload: boolean,
+  unpax: boolean,
+  getExampleYaml: boolean,
+  getSchemas: boolean
+}
+
 export interface ActiveState {
   activeStepIndex: number,
   isSubStep: boolean,
@@ -46,9 +57,6 @@ export interface ActiveState {
 
 export interface DatasetInstallationState {
   uploadYaml: boolean,
-  download: boolean,
-  upload: boolean,
-  unpax: boolean,
   install: boolean,
   initMVS: boolean
 }
@@ -72,13 +80,22 @@ export interface PlanningValidationDetails {
   error: string
 }
 
-export interface SkipState {
+export interface stepSkipState {
+  planning: boolean,
+  installationType: boolean,
+  unpax: boolean,
+  initialization: boolean,
+  reviewInstallation: boolean
+}
+
+export interface subStepState {
   datasetInstallation: boolean,
   networking: boolean,
   apfAuth: boolean,
   security: boolean,
+  stcs: boolean,
   certificate: boolean,
-  vsam: boolean,
+  cachingService: boolean,
   launchConfig: boolean
 }
 
@@ -99,8 +116,9 @@ export interface InstallationArgs {
   cookieId: string;
   zosmfHost: string,
   zosmfPort: string,
-  zosmfApplId: string
-};
+  zosmfApplId: string,
+  dryRunMode: boolean,
+}
 
 
 

@@ -27,7 +27,7 @@ class InstallationTypePage {
     this.uploadPax = page.locator("//span[text()='Upload Zowe PAX for offline install']/preceding-sibling::span/input")
     this.smpe = page.locator("//span[text()='SMP/E']/preceding-sibling::span/input")
     this.licenseAgreement = page.locator("//button[text()='License Agreement']")
-    this.saveAndClose = page.locator("//button[contains(text(),'Save & close')]")
+	this.saveAndClose = page.locator("//button[contains(text(),'Save & close')]")
     this.previousStep = page.locator("//button[contains(text(),'Previous step')]")
     this.continueToComponentInstallation = page.locator("//button[text()='Continue to Components Installation']")
     this.zoweLink = page.locator("//a[@href='zowe.org']")
@@ -37,97 +37,107 @@ class InstallationTypePage {
     this.validateLocation = page.locator("//button[text()= 'Validate location']")
     this.validateLocationGreenCheck = page.locator("//button[text()='Validate location']//following-sibling::*[@data-testid='CheckCircleIcon']")
     this.licenseAgreementGreenCheck = page.locator("//button[text()='License Agreement']//following-sibling::*[@data-testid='CheckCircleIcon']")
+	this.continueUpnax = page.locator("//button[contains(text(),'Continue to Unpax')]")
+	this.retrieveExampleZoweYaml = page.locator("//button[contains(text(),'Retrieve example-zowe.yaml')]")
+	this.continueCompInstallation = page.locator("//button[contains(text(),'Continue to Components Installation')]")
+	this.skipUnpaxButton = page.locator("//button[text()='Skip ']")
   }
 
-  commonPage = new CommonPage();
-
-  async getInstallationTypePageTitle() {
-    await this.commonPage.waitForElement(this.pageTitle)
+  async getInstallationTypePageTitle(){
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
-  async selectDownloadZowePax() {
-    await this.commonPage.waitForElement(this.downloadPax)
-    await this.downloadPax.click({ timeout: 5000 })
+  async selectDownloadZowePax(){
+    await this.downloadPax.click({timeout: 5000})
   }
 
-  async selectUploadZowePax() {
-    await this.commonPage.waitForElement(this.uploadPax)
-    await this.uploadPax.click({ timeout: 5000 });
+  async selectUploadZowePax(){
+    await this.uploadPax.click({timeout: 5000});
   }
 
-  async selectSmpe() {
-    await this.commonPage.waitForElement(this.smpe)
-    await this.smpe.click({ timeout: 5000 });
+  async selectSmpe(){
+    await this.smpe.click({timeout: 5000});
   }
 
-  async clickZoweLink() {
-    await this.commonPage.waitForElement(this.zoweLink)
+  async continueToUnpax(){
+    await this.continueUpnax.click({timeout: 5000});
+  }
+
+  async retrieveExampleYaml(){
+    await this.retrieveExampleZoweYaml.click({timeout: 5000});
+  }
+
+  async continueComponentInstallation(){
+    const timeout = 5000;
+	const interval = 500;
+	while (true) {
+		if (await this.continueCompInstallation.isEnabled()) {
+		  await this.continueCompInstallation.click();
+		  return;
+      }
+      await this.page.waitForTimeout(interval);
+    }
+	await this.continueCompInstallation.click({timeout: timeout});
+  }
+
+  async clickZoweLink(){
     await this.zoweLink.click();
   }
 
-  async clickLicenseAgreement() {
-    await this.commonPage.waitForElement(this.licenseAgreement)
-    await this.licenseAgreement.click({ timeout: 5000 });
+  async clickLicenseAgreement(){
+    await this.licenseAgreement.click({timeout: 5000});
   }
 
-  async clickSaveAndClose() {
-    await this.commonPage.waitForElement(this.saveAndClose)
-    await this.saveAndClose.click({ timeout: 5000 });
-    await this.page.waitForTimeout(2000)
+  async clickSaveAndClose(){
+    await this.saveAndClose.click({timeout: 5000});
   }
 
-  async clickPreviousStep() {
-    await this.commonPage.waitForElement(this.previousStep)
+  async clickPreviousStep(){
     await this.previousStep.click();
-    await this.page.waitForTimeout(2000)
   }
 
-  async clickContinueToInstallation() {
-    await this.commonPage.waitForElement(this.continueToComponentInstallation)
+  async clickContinueToInstallation(){
     await this.continueToComponentInstallation.click();
-    await this.page.waitForTimeout(5000);
   }
 
-  async isContinueToComponentInstallationDisabled() {
-    await this.commonPage.waitForElement(this.continueToComponentInstallation)
+  async isContinueToComponentInstallationDisabled(){
     return await this.continueToComponentInstallation.isDisabled()
   }
 
-  async isContinueToComponentInstallationEnabled() {
-    await this.commonPage.waitForElement(this.continueToComponentInstallation)
+  async isContinueToComponentInstallationEnabled(){
     return await this.continueToComponentInstallation.isEnabled()
   }
 
-  async clickAgreeLicense() {
-    await this.commonPage.waitForElement(this.agreeLicense)
-    await this.agreeLicense.click({ timeout: 5000 });
+  async isContinueUnpaxEnabled(){
+    return await this.continueUpnax.isEnabled()
   }
 
-  async isLicenseAgreementGreenCheckVisible() {
-    await this.commonPage.waitForElement(this.licenseAgreementGreenCheck)
+  async clickAgreeLicense(){
+    await this.agreeLicense.click({timeout: 5000});
+  }
+
+  async isLicenseAgreementGreenCheckVisible(){
     return await this.licenseAgreementGreenCheck.isVisible();
   }
 
-  async clickUploadPaxButton() {
-    await this.commonPage.waitForElement(this.uploadPaxButton)
-    await this.uploadPaxButton.click({ timeout: 5000 });
+  async clickUploadPaxButton(){
+    await this.uploadPaxButton.click({timeout: 5000});
   }
 
-  async enterRuntimeDir(runtimeDir: any) {
-    await this.commonPage.waitForElement(this.runtimeDir)
-    await this.runtimeDir.clear({ timeout: 5000 })
+  async skipUnpax(){
+    await this.skipUnpaxButton.click({timeout: 5000});
+  }
+
+  async enterRuntimeDir(runtimeDir: any){
+    await this.runtimeDir.clear({timeout: 5000})
     await this.runtimeDir.fill(runtimeDir);
   }
 
-  async clickValidateLocation() {
-    await this.commonPage.waitForElement(this.validateLocation)
-    await this.validateLocation.click({ timeout: 5000 });
-    await this.page.waitForTimeout(2000)
+  async clickValidateLocation(){
+    await this.validateLocation.click({timeout: 5000});
   }
 
-  async isValidateLocationGreenCheckVisible() {
-    await this.commonPage.waitForElement(this.validateLocationGreenCheck)
+  async isValidateLocationGreenCheckVisible(){
     return await this.validateLocationGreenCheck.isVisible();
   }
 
@@ -139,9 +149,7 @@ class InstallationTypePage {
 
   async uploadZowePaxAndNavigateToInstallationPage(uploadPaxPath: any) {
     this.selectUploadZowePax()
-    await this.commonPage.waitForElement(this.uploadPaxButton)
     await this.uploadPaxButton.setInputFiles(uploadPaxPath)
-    await this.page.waitForTimeout(2000)
   }
 
   async smpeZowePaxAndNavigateToInstallationPage(runtimeDir: any) {
@@ -149,6 +157,5 @@ class InstallationTypePage {
     this.enterRuntimeDir(runtimeDir)
     this.clickValidateLocation()
   }
-  
 }
 export default InstallationTypePage;

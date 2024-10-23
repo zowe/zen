@@ -11,6 +11,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../../store';
 import { IIpcConnectionArgs, IIpcConnectionArgsSecureOptions } from '../../../../types/interfaces';
+import { DEF_JOB_STATEMENT } from '../../common/Utils';
 
 export interface ConnectionState {
   connectionArgs: IIpcConnectionArgs;
@@ -27,7 +28,7 @@ const initialState: ConnectionState = {
     port: 21,
     user: '',
     password: '',
-    jobStatement: "//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,\n//         MSGLEVEL=(1,1),MSGCLASS=A",
+    jobStatement: DEF_JOB_STATEMENT,
     secure: false,
     secureOptions: {
       enableTrace: false,
@@ -75,7 +76,7 @@ export const connectionSlice = createSlice({
     setConnectionValidationDetails: (state, action: PayloadAction<string>) => {
       state.connectionValidationDetails = action.payload;
     },
-    setAcceptCertificates: (state, action: PayloadAction<boolean>) => {
+    setAcceptAllCertificates: (state, action: PayloadAction<boolean>) => {
       state.acceptCertificates = action.payload;
     },
     setResumeProgress: (state, action: PayloadAction<boolean>) => {
@@ -85,13 +86,13 @@ export const connectionSlice = createSlice({
 });
 
 export const { setConnectionArgs, setHost, setPort,
-               setUser, setPassword, setJobStatementVal, setSecure, setSecureOptions, setConnectionValidationDetails, setAcceptCertificates, setResumeProgress,
+               setUser, setPassword, setJobStatementVal, setSecure, setSecureOptions, setConnectionValidationDetails, setAcceptAllCertificates, setResumeProgress,
              } = connectionSlice.actions;
 
 export const selectConnectionArgs = (state: RootState) => state.connection.connectionArgs;
 export const selectConnectionSecure= (state: RootState) => state.connection.connectionArgs.secure;
 export const selectConnectionValidationDetails = (state: RootState) => state.connection.connectionValidationDetails;
-export const selectAcceptCertificates = (state: RootState) => state.connection.acceptCertificates;
+export const selectAcceptAllCertificates = (state: RootState) => state.connection.acceptCertificates;
 export const selectInitJobStatement = (state: RootState) => state.connection.connectionArgs.jobStatement;
 export const selectResumeProgress = (state: RootState) => state.connection.resumeProgress;
 

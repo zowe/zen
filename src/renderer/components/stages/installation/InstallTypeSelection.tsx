@@ -8,29 +8,28 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import { Box, Button, FormControl, FormControlLabel, Link, Radio, RadioGroup, Typography } from '@mui/material';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { setNextStepEnabled } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, selectZoweVersion, setInstallationArgs, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath, selectInstallationType, selectLicenseAgreement } from './installationSlice';
-import { setInstallationTypeStatus } from "../progress/progressSlice"; 
+import { selectInstallationArgs, setInstallationArgs, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath } from './installationSlice';
+import { setDownloadUnpaxStatus, setInstallationTypeStatus } from "../progress/progressSlice";
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import LicenseDialog from "./LicenseDialog";
 import { setActiveStep } from "../progress/activeStepSlice"; 
-import { getStageDetails } from "../../../../utils/StageDetails";
-import { getInstallationTypeStatus } from "../progress/StageProgressStatus";
-import { connect } from "http2";
-
+import { getStageDetails } from "../../../../services/StageDetails";
+import { getInstallationTypeStatus, downloadUnpaxStatus, setDownloadUnpaxState } from "../progress/StageProgressStatus";
+import { INSTALLATION_TYPE_STAGE_LABEL } from "../../common/Utils";
 const InstallationType = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
 
-  const stageLabel = 'Installation Type';
+  const [stageLabel] = useState(INSTALLATION_TYPE_STAGE_LABEL);
 
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
+  const [STAGE_ID] = useState(getStageDetails(stageLabel).id);
+  const [SUB_STAGES] = useState(!!getStageDetails(stageLabel).subStages);
 
   const dispatch = useAppDispatch();
   const connectionArgs = useAppSelector(selectConnectionArgs);
@@ -55,7 +54,7 @@ const InstallationType = () => {
     }
     
   }, [installValue, paxPath, installationArgs, agreeLicense]);
-
+  
   const updateProgress = (status: boolean): void => {
     dispatch(setInstallationTypeStatus(status))
     dispatch(setNextStepEnabled(status));
@@ -82,6 +81,15 @@ const InstallationType = () => {
     }
     setInstallValue(type);
     updateProgress(false);
+    dispatch(setDownloadUnpaxStatus(false));
+    setDownloadUnpaxState({
+      uploadYaml: false,
+      download: false,
+      upload: false,
+      unpax: false,
+      getExampleYaml: false,
+      getSchemas: false,
+    })
   }
 
   return (
@@ -96,6 +104,7 @@ const InstallationType = () => {
             name="radio-buttons-group"
             onChange={(e) => {
                 dispatch(setInstallationArgs({...installationArgs, installationType: e.target.value}));
+                window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", {...installationArgs, installationType: e.target.value});
                 dispatch(setInstallationType(e.target.value))
                 installTypeChangeHandler(e.target.value)
             }}
@@ -106,13 +115,16 @@ const InstallationType = () => {
         </RadioGroup>
     </FormControl>
     {installValue === "smpe" && <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-        {`SMP/E installation must be done outside of ZEN. Return to ZEN and input the location Zowe was installed to before continuing.`}
+        {`SMP/E installation must be done outside of ZEN. Return to ZEN after completing the SMP/E installation process.`}
     </Typography>}
     {installValue === "download" &&
       <div>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-          {`Zen will download the latest Zowe convenience build in PAX archive format from `}
-          <Link href="zowe.org">{'https://zowe.org'}</Link>
+          Wizard will download the latest Zowe convenience build in PAX archive format from&nbsp;
+          { !agreeLicense && <><br />Please accept the license agreement to continue.<br/></>}
+          <Link href="https://www.zowe.org/download" target="_blank" rel="noopener noreferrer">
+            {'https://www.zowe.org/download'}
+          </Link>
         </Typography>
         <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'left'}}>
           <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '20px'}} 
@@ -124,20 +136,24 @@ const InstallationType = () => {
         </Box>
         {showLicense && <LicenseDialog isAgreementVisible={true} licenseAgreement={licenseAgreement}/>}
       </div>}
-    {installValue === "upload" &&   <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
-        {`Select a local Zowe PAX file (offline installation).`}
-      </Typography>}
-    {installValue === "upload" && <><Button sx={{boxShadow: 'none', mr: '12px'}} type="submit" variant="text" onClick={e => {
+    {installValue === "upload" && <><Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
+        Select a local Zowe PAX file (offline installation).
+      </Typography>
+      <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '16px'}} type="submit" onClick={e => {
         e.preventDefault();
-        window.electron.ipcRenderer.uploadPax().then((res: any) => {
-          if(res.filePaths && res.filePaths[0] != undefined){
-            setPaxPath(res.filePaths[0]);
-            dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: res.filePaths[0]}));
-            dispatch(setUserUploadedPaxPath(res.filePaths[0]));
-          } else {
-            setPaxPath("");
-          }
-        });
+        if(!installationArgs.dryRunMode){
+          window.electron.ipcRenderer.uploadPax().then((res: any) => {
+            if(res.filePaths && res.filePaths[0] != undefined){
+              setPaxPath(res.filePaths[0]);
+              dispatch(setInstallationArgs({...installationArgs, userUploadedPaxPath: res.filePaths[0]}));
+              dispatch(setUserUploadedPaxPath(res.filePaths[0]));
+            } else {
+              setPaxPath("");
+            }
+          });
+        }
+        else
+          updateProgress(true);
       }}>Upload PAX</Button>
       <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
         {`${paxPath === "" ? "No pax file selected." : paxPath}`}

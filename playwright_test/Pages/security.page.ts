@@ -44,7 +44,6 @@ class SecurityPage {
     this.uploadYaml_greenCheckXpath = page.locator('#card-download-progress-card svg.MuiSvgIcon-colorSuccess')
     this.init_security_greenCheckXpath = page.locator("#card-success-progress-card svg.MuiSvgIcon-colorSuccess")
     this.previous_step_button = page.locator('//button[contains(text(),"Previous step")]')
-    this.skip_button = page.locator('//button[contains(text(),"Skip")]')
     this.editor_title_element = page.locator('//h2[text()="Editor"]')
     this.APFAUTH_TITLE = page.locator('//div[text()="APF Authorize Load Libraries"]')
     this.licenseAgreement = page.locator('//button[contains(text(), "License Agreement")]')
@@ -58,12 +57,14 @@ class SecurityPage {
     this.view_job_output = page.locator('//button[contains(text(), "Submit Job")]')
     this.save_and_close = page.locator('//button[contains(text(),"Save & close")]')
     this.previous_step = page.locator('//button[contains(text(),"Previous step")]')
-    this.skip_button = page.locator('//button[contains(text(),"Skip")]')
+    this.skip_button = page.locator('//button[contains(text(),"Skip ")]')
     this.initSecurity = page.locator("//button[contains(text(), 'Initialize Security Config')]")
     this.close_button = page.locator('//button[contains(text(), "Close")]')
     this.certificateTab_title = page.locator('//div[text()="Certificates"]')
+	this.stc_title = page.locator('//div[text()="Stcs"]')
     this.securityTab_title = page.locator('//div[text()="Security"]')
-    this.continue_CertificateSelector = page.locator('//button[contains(text(), "Continue to Certificates Setup")]')
+    this.continue_CertificateSelector = page.locator('//button[contains(text(), "Continue to STC Setup")]')
+
     this.admin = page.getByLabel('Admin');
     this.stc = page.getByLabel('Stc');
     this.sys_prog = page.getByLabel('Sys Prog');
@@ -145,17 +146,17 @@ class SecurityPage {
     await this.commonPage.waitForElement(this.writeConfig_greenCheckXpath)
     return await this.writeConfig_greenCheckXpath.isVisible({ timeout: 50000 });
   }
-  
+
   async isUploadConfigGreenCheckVisible() {
     await this.commonPage.waitForElement(this.uploadYaml_greenCheckXpath)
     return await this.uploadYaml_greenCheckXpath.isVisible({ timeout: 50000 });
   }
-  
+
   async isInitSecurityGreenCheckVisible() {
     await this.commonPage.waitForElement(this.init_security_greenCheckXpath)
     return await this.init_security_greenCheckXpath.isVisible({ timeout: 50000 });
   }
-  
+
   async isPreviousButtonEnable() {
     await this.commonPage.waitForElement(this.previous_step)
     return await this.previous_step.isEnabled({ timeout: 50000 });
@@ -194,12 +195,8 @@ class SecurityPage {
     return await this.skip_button.isEnabled({ timeout: 5000 });
   }
 
-  async click_skipSecurity() {
-    await this.commonPage.waitForElement(this.skip_button)
-    await this.skip_button.click({ timeout: 2000 });
-    await this.commonPage.waitForElement(this.certificateTab_title)
-    const certificatePage_title = await this.certificateTab_title.textContent();
-    return certificatePage_title;
+  async click_skipSecurity(){
+   await this.skip_button.click({ timeout: 2000 });
   }
 
   async open_monacoEditor() {
@@ -267,12 +264,21 @@ class SecurityPage {
     const sysProg_value = await this.sys_prog.textContent();
     return sysProg_value;
   }
+  async returnTitleOfSecurityPage(){
+   const securityPage_title = await this.securityTab_title.textContent();
+   return securityPage_title;
+  }
 
-  async returnTitleOfSecurityPage() {
-    await this.commonPage.waitForElement(this.securityTab_title)
-    const securityPage_title = await this.securityTab_title.textContent();
-    return securityPage_title;
+  async returnTitleOfCertPage(){
+    const certPage_title = await this.certificateTab_title.textContent();
+    return certPage_title;
+  }
+
+  async returnTitleOfstcPage(){
+   const stcPage_title = await this.stc_title.textContent();
+   return stcPage_title;
   }
 
 }
+
 export default SecurityPage;

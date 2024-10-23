@@ -2,17 +2,16 @@ import { test, ElectronApplication, expect, _electron as electron } from '@playw
 import ConnectionPage from '../Pages/connection.page';
 import TitlePage from '../Pages/title.page';
 import { prepareEnvironment } from '../prepare.js';
+import config from '../utils/config';
+let page: Page;
 
 let electronApp: ElectronApplication
-const SSH_HOST = process.env.SSH_HOST;
-const SSH_PASSWD = process.env.SSH_PASSWD;
-const SSH_PORT = process.env.SSH_PORT;
-const SSH_USER = process.env.SSH_USER;
 const CONNECTION_PAGE_TITLE = 'Connection'
+const INSTALLATION_TITLE = 'Installation'
 
 test.beforeAll(async () => {
   try {
-    await prepareEnvironment({ install: true, remove: false });
+    await prepareEnvironment({ install: false, remove: false });
   } catch (error) {
     console.error('Error during environment preparation:', error);
     process.exit(1);
@@ -29,6 +28,7 @@ test.describe('ConnectionTab', () => {
     page = await electronApp.firstWindow()
     connectionPage = new ConnectionPage(page);
     titlePage = new TitlePage(page);
+	await titlePage.navigateToConnectionTab()
   });
 
   test.afterEach(async () => {
@@ -36,27 +36,23 @@ test.describe('ConnectionTab', () => {
   });
 
   test('Test Save and close and Resume Progress', async ({ page }) => {
-    titlePage.navigateToConnectionTab()
-    connectionPage.performLogin(SSH_HOST, SSH_PORT, SSH_USER, SSH_PASSWD)
-    await page.waitForTimeout(5000);
-    connectionPage.click_saveAndClose()
-    await page.waitForTimeout(3000);
-    titlePage.clickOnResumeProgress();
-    await page.waitForTimeout(5000);
+	await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+    await connectionPage.SubmitValidateCredential()
+    await connectionPage.click_saveAndClose()
+    await titlePage.clickOnResumeProgress();
     const title = await connectionPage.getConnectionPageTitle();
     expect(title).toBe(CONNECTION_PAGE_TITLE);
     const hostValue = await connectionPage.getHostValue();
-    expect(hostValue).toBe(SSH_HOST);
+    expect(hostValue).toBe(config.SSH_HOST);
     const portValue = await connectionPage.getPortValue();
-    expect(portValue).toBe(SSH_PORT);
+    expect(portValue).toBe(config.SSH_PORT);
     const userNameValue = await connectionPage.getUsernameValue();
-    expect(userNameValue).toBe(SSH_USER);
+    expect(userNameValue).toBe(config.SSH_USER);
   })
 
   test('test invalid credentials', async ({ page }) => {
-    titlePage.navigateToConnectionTab()
-    connectionPage.performLogin(SSH_HOST, SSH_PORT, SSH_USER, SSH_PASSWD)
-    await page.waitForTimeout(5000);
+    await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+    await connectionPage.SubmitValidateCredential()
     const isGreenIconHidden = await connectionPage.isGreenCheckIconVisible();
     expect(isGreenIconHidden).toBe(true);
     const isContinueDisable = await connectionPage.isContinueButtonVisible();
@@ -64,9 +60,8 @@ test.describe('ConnectionTab', () => {
   })
 
   test('test valid credentials', async ({ page }) => {
-    titlePage.navigateToConnectionTab()
-    connectionPage.performLogin(SSH_HOST, SSH_PORT, SSH_USER, SSH_PASSWD)
-    await page.waitForTimeout(5000);
+    await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+    await connectionPage.SubmitValidateCredential()
     const isGreenIconHidden = await connectionPage.isGreenCheckIconVisible();
     expect(isGreenIconHidden).toBe(false);
     const isContinueDisable = await connectionPage.isContinueButtonVisible();
@@ -74,17 +69,14 @@ test.describe('ConnectionTab', () => {
   })
 
   test('test required fields', async ({ page }) => {
-    expect(connectionPage.userName).toBeTruthy()
-    expect(connectionPage.password).toBeTruthy()
-    expect(connectionPage.port).toBeTruthy()
-    expect(connectionPage.host).toBeTruthy()
-    await page.waitForTimeout(2000);
+    await expect(connectionPage.userName).toBeTruthy()
+    await expect(connectionPage.password).toBeTruthy()
+    await expect(connectionPage.port).toBeTruthy()
+    await expect(connectionPage.host).toBeTruthy()
   })
 
   test('test continue disable', async ({ page }) => {
-    titlePage.navigateToConnectionTab()
     const isContinueButtonDisable = await connectionPage.isContinueButtonVisible();
     expect(isContinueButtonDisable).toBe(true);
-    await page.waitForTimeout(2000);
   })
 })
