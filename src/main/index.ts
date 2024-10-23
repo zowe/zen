@@ -16,14 +16,21 @@ import { InstallActions } from "../actions/InstallActions";
 import { PlanningActions } from "../actions/PlanningActions";
 import { IIpcConnectionArgs } from '../types/interfaces';
 import { ProgressStore } from "../storage/ProgressStore";
-import { checkDirExists } from '../services/utils';
+import { checkDirExists } from '../services/ServiceUtils';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
+import { EditorStore } from '../storage/EditorStore';
+import { log, warn, error, info } from 'electron-log/main';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 const connectionActions = new ConnectionActions();
 const installActions = new InstallActions();
+
+console.log = log;
+console.warn = warn;
+console.error = error;
+console.info = info;
 
 // REVIEW: electron-squirrel-startup, review the necessity of it, package will have an operation viloation as it is 7 years old. 
 // if (require('electron-squirrel-startup')) { // ?
@@ -34,7 +41,7 @@ const installActions = new InstallActions();
 // TODO: Add inline help for inputs, components, etc
 // TODO: Make separate component for validation button - button / icon / error details
 // REVIEW: services/FileTransfer.ts SubmitJcl.ts CheckHLQ.ts
-// REVIEW: merge all services to utils.ts file?
+// REVIEW: merge all services to ServiceUtils.ts file?
 
 const createWindow = (): void => {
 
@@ -92,13 +99,18 @@ const createWindow = (): void => {
   });
 
   ipcMain.handle('get-config', async (event) => {
-    const res: any = await PlanningActions.getConfig();
-    return res;
+    const res: any = await ConfigurationStore.getConfig();
+    return {status: true, details: res};
   });
 
   ipcMain.handle('set-schema', async (event, schema: any) => {
     const res: any = await ConfigurationStore.setSchema(schema);
     return res;
+  });
+
+  ipcMain.handle('get-schema', async (event, schema: any) => {
+    const res: any = await ConfigurationStore.getSchema();
+    return {status: true, details: res};
   });
 
 
@@ -108,7 +120,42 @@ const createWindow = (): void => {
   });
 
   ipcMain.handle('set-config-by-key', async (_event, key: string, value) => {
-    const res = await ConfigurationStore.setConfigByKey(key, value);
+    const res = await PlanningActions.setConfigByKeyAndValidate(key, value);
+    return res;
+  });
+
+  ipcMain.handle('get-jcl-output', async (event) => {
+    const res: any = await EditorStore.getJCLOutput();
+    return res;
+  });
+
+  ipcMain.handle('set-jcl-output', async (event, value) => {
+    const res: any = await EditorStore.setJCLOutput(value);
+    return res;
+  });
+
+  ipcMain.handle('get-standard-output', async (event) => {
+    const res: any = await EditorStore.getStandardOutput();
+    return res;
+  });
+
+  ipcMain.handle('set-standard-output', async (event, value) => {
+    const res: any = await EditorStore.setStandardOutput(value);
+    return res;
+  });
+
+  ipcMain.handle('get-yaml-output', async (event) => {
+    const res: any = await EditorStore.getYAMLOutput();
+    return res;
+  });
+
+  ipcMain.handle('set-yaml-output', async (event, value) => {
+    const res: any = await EditorStore.setYAMLOutput(value);
+    return res;
+  });
+
+  ipcMain.handle('set-config-by-key-no-validate', async (_event, key: string, value) => {
+    const res = await ConfigurationStore.setConfigByKeyNoValidate(key, value);
     return res;
   });
 
@@ -147,18 +194,28 @@ const createWindow = (): void => {
     return res;
   })
 
-  ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs, version, zoweConfig, skipDownload) => {
-    const res = await installActions.runInstallation(connectionArgs, installationArgs, version, zoweConfig, skipDownload);
+  ipcMain.handle('install-mvs', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.runInstallation(connectionArgs, installationArgs);
     return res;
   });
 
-  ipcMain.handle('init-certificates', async (event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.runInitCertificates(connectionArgs, installationArgs, zoweConfig);
+  ipcMain.handle('download-unpax', async (event, connectionArgs, installationArgs, version) => {
+    const res = await installActions.downloadUnpax(connectionArgs, installationArgs, version);
     return res;
   });
 
-  ipcMain.handle('init-apf', async (_event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.apfAuth(connectionArgs, installationArgs, zoweConfig);
+  ipcMain.handle('get-yaml-schema', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.smpeGetExampleYamlAndSchemas(connectionArgs, installationArgs);
+    return res;
+  });
+
+  ipcMain.handle('init-certificates', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.runInitCertificates(connectionArgs, installationArgs);
+    return res;
+  });
+
+  ipcMain.handle('init-apf', async (_event, connectionArgs, installationArgs) => {
+    const res = await installActions.runApfAuth(connectionArgs, installationArgs);
     return res;
   });
 
@@ -174,23 +231,43 @@ const createWindow = (): void => {
     return res;
   });
 
+  ipcMain.handle('get-download-unpax-progress', async () => {
+    const res = ProgressStore.getAll()['downloadUnpax'];
+    return res;
+  });
+
   ipcMain.handle('get-certificate-progress', async (event) => {
     const res = ProgressStore.getAll()['certificate'];
     return res;
   });
 
-  ipcMain.handle('init-security', async (event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.initSecurity(connectionArgs, installationArgs, zoweConfig);
+  ipcMain.handle('init-security', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.runInitSecurity(connectionArgs, installationArgs);
     return res;
   });
 
-  ipcMain.handle('init-vsam', async (event, connectionArgs, installationArgs, zoweConfig) => {
-    const res = await installActions.initVsam(connectionArgs, installationArgs, zoweConfig);
+  ipcMain.handle('upload-latest-yaml', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.uploadLatestYaml(connectionArgs, installationArgs);
+    return res;
+  });
+
+  ipcMain.handle('init-stcs', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.initStcs(connectionArgs, installationArgs);
+    return res;
+  });
+
+  ipcMain.handle('init-vsam', async (event, connectionArgs, installationArgs) => {
+    const res = await installActions.initVsam(connectionArgs, installationArgs);
     return res;
   });
 
   ipcMain.handle('get-init-security-progress', async () => {
     const res = ProgressStore.getAll()['initSecurity'];
+    return res;
+  });
+
+  ipcMain.handle('get-init-stcs-progress', async () => {
+    const res = ProgressStore.getAll()['initStcs'];
     return res;
   });
 

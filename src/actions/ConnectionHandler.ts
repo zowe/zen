@@ -9,7 +9,7 @@
  */
 
 import { ConnectionStore } from "../storage/ConnectionStore";
-import { connectFTPServer } from "../services/utils";
+import { connectFTPServer } from "../services/ServiceUtils";
 import { IIpcConnectionArgs, IResponse } from '../types/interfaces';
 
 class Connection {
@@ -36,6 +36,7 @@ export class FTPConnection extends Connection {
         response.details = e.message;
       }
     }
+    config.password = "";
     if (response.status) {
       this.saveConnectionData(config);
     }
@@ -44,10 +45,12 @@ export class FTPConnection extends Connection {
 
   saveConnectionData(args: IIpcConnectionArgs): IResponse {
     const details = Object.keys(args).reduce((acc: string, k: keyof IIpcConnectionArgs) => {
-      
-      const value = (typeof args[k] == 'number') ? args[k].toString() : args[k]; 
-      const status = ConnectionStore.set(`ftp-details.${k}`, value);
-      return acc + status ? '' : `\n Can't set ftp-details.${k}, check the store schema`;
+      if(k != "password"){
+        const value = (typeof args[k] == 'number') ? args[k].toString() : args[k]; 
+        const status = ConnectionStore.set(`ftp-details.${k}`, value);
+        return acc + status ? '' : `\n Can't set ftp-details.${k}, check the store schema`;
+      }
+      return;
     }, "");
   return {status: true, details}
   }

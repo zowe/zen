@@ -9,7 +9,6 @@
  */
 
 import React, { SyntheticEvent, useEffect, useState } from "react";
-import { useSelector } from 'react-redux';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -24,29 +23,22 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import secureIcon from '../../../assets/secure.png';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
-import { Tooltip } from '@mui/material';
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { IResponse } from '../../../../types/interfaces';
-import { setConnectionArgs, setConnectionValidationDetails, setHost, setPort,
-               setUser, setPassword, setSecure, setSecureOptions, selectConnectionArgs, setAcceptCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptCertificates, selectResumeProgress} from './connectionSlice';
-import { setYaml, setSchema, setLoading, setNextStepEnabled, selectZoweCLIVersion } from '../../configuration-wizard/wizardSlice';
+import { setConnectionValidationDetails, setHost, setPort,
+               setUser, setSecure, setSecureOptions, selectConnectionArgs, setAcceptAllCertificates, selectConnectionSecure, selectConnectionValidationDetails, selectAcceptAllCertificates, selectResumeProgress, setPassword} from './connectionSlice';
+import { setLoading, setNextStepEnabled, selectZoweCLIVersion} from '../../configuration-wizard/wizardSlice';
 import { setConnectionStatus,  selectConnectionStatus} from '../progress/progressSlice';
 import { Container } from "@mui/material";
 import { alertEmitter } from "../../Header";
-import { getStageDetails, initStageSkipStatus } from "../../../../utils/StageDetails";
+import { getStageDetails, initSubStageSkipStatus, initStageSkipStatus } from "../../../../services/StageDetails";
 import { initializeProgress, getActiveStage } from "../progress/StageProgressStatus";
-import eventDispatcher from "../../../../utils/eventDispatcher";
-import { setZoweVersion, setInstallationArgs, selectInstallationArgs, selectZoweVersion } from '../installation/installationSlice';
-import { EXAMPLE_YAML, YAML_SCHEMA } from "../../../config/constants";
+import eventDispatcher from "../../../../services/eventDispatcher";
+import { setLocationValidationDetails } from "../PlanningSlice";
+import { selectInstallationArgs } from "../installation/installationSlice";
 
 const Connection = () => {
-
-  const stageLabel = 'Connection';
-
-  const STAGE_ID = getStageDetails(stageLabel).id;
-  const SUB_STAGES = !!getStageDetails(stageLabel).subStages;
 
   const dispatch = useAppDispatch();
   const zoweCLIVersion = useAppSelector(selectZoweCLIVersion);
@@ -59,6 +51,19 @@ const Connection = () => {
   const connectionStatus = useAppSelector(selectConnectionStatus);
 
   useEffect(() => {
+    //This is a dirty hack to stop app from reloading to connection screen instead of home
+    const pageAccessedByReload = (
+      (window.performance.navigation && window.performance.navigation.type === 1) ||
+        window.performance
+          .getEntriesByType('navigation')
+          .map((nav: any) => nav.type)
+          .includes('reload')
+    );
+    if(pageAccessedByReload){
+      if(window.location.href.substring(0, window.location.href.lastIndexOf('/')) != window.location.origin)
+        window.location.assign(window.location.href.substring(0, window.location.href.lastIndexOf('/')));
+    }
+    //End of dirty hack
     connectionStatus ? dispatch(setNextStepEnabled(true)) : dispatch(setNextStepEnabled(false));
   }, []);
 
@@ -118,12 +123,14 @@ const FTPConnectionForm = () => {
   const connectionArgs = useAppSelector(selectConnectionArgs);
   const connValidationDetails = useAppSelector(selectConnectionValidationDetails);
   const [isFtpConnection, setIsFtpConnection] = useState(useAppSelector(selectConnectionSecure));
-  const [isCertificateAccepted, setIsCertificateAccepted] = useState(useAppSelector(selectAcceptCertificates));
+  const [isAllCertificatesAccepted, setIsAllCertificatesAccepted] = useState(useAppSelector(selectAcceptAllCertificates));
 
   const [formProcessed, toggleFormProcessed] = React.useState(false);
   const [validationDetails, setValidationDetails] = React.useState('');
 
   const [isResume, setIsResume] = useState(useAppSelector(selectResumeProgress));
+
+  const installationArgs = useAppSelector(selectInstallationArgs);
 
   const handleFormChange = (ftpConnection?:boolean, acceptCerts?:boolean) => {
     dispatch(setConnectionStatus(false));
@@ -137,47 +144,49 @@ const FTPConnectionForm = () => {
     }
     alertEmitter.emit('hideAlert');
     dispatch(setLoading(true));
-    window.electron.ipcRenderer
+    
+    if(!installationArgs.dryRunMode){
+      window.electron.ipcRenderer
       .connectionButtonOnClick(connectionArgs)
       .then((res: IResponse) => {
         dispatch(setConnectionStatus(res.status));
         if(res.status) {
           dispatch(setNextStepEnabled(true));
-          initializeProgress(connectionArgs.host, connectionArgs.user);
+          dispatch(setConnectionStatus(true));
+          initializeProgress(connectionArgs.host, connectionArgs.user, isResume);
           initStageSkipStatus();
-          setYamlAndConfig();
+          initSubStageSkipStatus();
+          setResume();
         }
         toggleFormProcessed(true);
         setValidationDetails(res.details);
         dispatch(setConnectionValidationDetails(res.details));
         dispatch(setLoading(false));
       }); 
+    }
+    else{
+      dispatch(setConnectionStatus(true));
+      toggleFormProcessed(true);
+      dispatch(setNextStepEnabled(true));
+      dispatch(setLoading(false));
+    }
   };
 
-  const setYamlAndConfig = () => {
-    window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
-      if (res && res.status && res.details) {
-        dispatch(setYaml(res.details.config));
-        const schema = res.details.schema;
-        dispatch(setSchema(schema));
-      } else {
-        dispatch(setYaml(EXAMPLE_YAML));
-        dispatch(setSchema(YAML_SCHEMA));
-        window.electron.ipcRenderer.setConfig(EXAMPLE_YAML).then((res: IResponse) => {
-          // yaml response
-        });
-        window.electron.ipcRenderer.setSchema(YAML_SCHEMA).then((res: IResponse) => {
-          // schema response
-        });
-      }
-      const { activeStepIndex, isSubStep, activeSubStepIndex } = getActiveStage();
+  const setResume = () => {
+    const { activeStepIndex, isSubStep, activeSubStepIndex } = getActiveStage();
 
-      if(isResume) {
-        eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
-        setIsResume(false);
-      }
-    })
+    if(isResume) {
+      eventDispatcher.emit('updateActiveStep', activeStepIndex, isSubStep, activeSubStepIndex);
+      setIsResume(false);
+    }
   }
+
+  useEffect(() => { // Set Wizard init to defaults - acceptAll -> false, rejectUnauth -> true
+    dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: true}));
+    dispatch(setAcceptAllCertificates(false));
+    handleFormChange(); 
+    setIsAllCertificatesAccepted(false);
+  }, []);
 
   return (
     <Box
@@ -203,7 +212,7 @@ const FTPConnectionForm = () => {
           type="number"
           InputLabelProps={{ shrink: true }}
           variant="standard"
-          helperText="FTP port number. If not specified, Zen will try to use a default service port."
+          helperText="FTP port number. If not specified, Wizard will try to use a default service port."
           value={connectionArgs.port}
     onChange={(e) => { dispatch(setPort(Number(e.target.value))); handleFormChange(); }}
         />
@@ -246,7 +255,7 @@ const FTPConnectionForm = () => {
                 setIsFtpConnection(e.target.checked);
               }} 
             />}
-            label="(Recommended, optional) Use FTP with TLS."
+            label="(Recommended) Use FTP with TLS."
             labelPlacement="start"
           />
         </Container>
@@ -298,16 +307,16 @@ const FTPConnectionForm = () => {
         <Container sx={{display: "flex", justifyContent: "center", flexDirection: "row"}}>
           <FormControlLabel
             control={<Checkbox  
-                checked = {isCertificateAccepted} 
+                checked = {isAllCertificatesAccepted} 
                 onChange={(e) => { 
-                  dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.value}));
-                  dispatch(setAcceptCertificates(e.target.checked));
+                  dispatch(setSecureOptions({...connectionArgs.secureOptions, rejectUnauthorized: !e.target.checked}));
+                  dispatch(setAcceptAllCertificates(e.target.checked));
                   handleFormChange(); 
-                  setIsCertificateAccepted(e.target.checked);
+                  setIsAllCertificatesAccepted(e.target.checked);
                 }}
               />
             }
-            label="Accept all certificates."
+            label="(Not recommended) Accept all certificates."
             labelPlacement="start"
           />
         </Container>

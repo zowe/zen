@@ -10,6 +10,7 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 import { IIpcConnectionArgs } from '../types/interfaces';
+import { InstallationArgs } from '../types/stateInterfaces';
 
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {
@@ -28,17 +29,44 @@ contextBridge.exposeInMainWorld('electron', {
     getConfig() {
       return ipcRenderer.invoke("get-config");
     },
+    uploadLatestYaml(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs) {
+      return ipcRenderer.invoke("upload-latest-yaml", connectionArgs, installationArgs);
+    },
     getConfigByKey(key: string, value: any) {
       return ipcRenderer.invoke("get-config-by-key", key);
     },
     setConfig(completeZoweYamlObj: any) {
       return ipcRenderer.invoke("set-config", completeZoweYamlObj);
     },
-    setConfigByKey(key: string, value: any) {
+    setConfigByKeyAndValidate(key: string, value: any) {
       return ipcRenderer.invoke("set-config-by-key", key, value);
+    },
+    setConfigByKeyNoValidate(key: string, value: any) {
+      return ipcRenderer.invoke("set-config-by-key-no-validate", key, value);
+    },
+    getJCLOutput() {
+      return ipcRenderer.invoke("get-jcl-output");
+    },
+    setJCLOutput(value: any) {
+      return ipcRenderer.invoke("set-jcl-output", value);
+    },
+    getYAMLOutput() {
+      return ipcRenderer.invoke("get-yaml-output");
+    },
+    setYAMLOutput(value: any) {
+      return ipcRenderer.invoke("set-yaml-output", value);
+    },
+    getStandardOutput() {
+      return ipcRenderer.invoke("get-standard-output");
+    },
+    setStandardOutput(value: any) {
+      return ipcRenderer.invoke("set-standard-output", value);
     },
     setSchema(schema: any) {
       return ipcRenderer.invoke("set-schema", schema);
+    },
+    getSchema() {
+      return ipcRenderer.invoke("get-schema");
     },
     checkZoweCLI() {
       return ipcRenderer.invoke("check-zowe-cli");
@@ -65,19 +93,33 @@ contextBridge.exposeInMainWorld('electron', {
       return ipcRenderer.invoke("check-space-create-dir", connectionArgs, location);
     },
     checkDirExists(connectionArgs: IIpcConnectionArgs, location: string) {
-      return ipcRenderer.invoke("check-dir-exists", connectionArgs, location);
+      try{
+        return ipcRenderer.invoke("check-dir-exists", connectionArgs, location);
+      } catch (e){
+        return {status: false, details: e.message}
+      }
     },
     checkDirOrCreate(connectionArgs: IIpcConnectionArgs, location: string) {
+      try{
       return ipcRenderer.invoke("check-dir-or-create", connectionArgs, location);
+      } catch (e) {
+        return {status: false, details: e.message}
+      }
     },
-    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string, javaHome: string, nodeHome: string, installationType: string, userUploadedPaxPath: string}, version: string, zoweConfig: any, skipDownload: boolean) {
-      return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version, zoweConfig, skipDownload);
+    installButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs, version: string) {
+      return ipcRenderer.invoke("install-mvs", connectionArgs, installationArgs, version);
     },
-    initCertsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
-      return ipcRenderer.invoke("init-certificates", connectionArgs, installationArgs, zoweConfig);
+    downloadButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs, version: string) {
+      return ipcRenderer.invoke("download-unpax", connectionArgs, installationArgs, version);
     },
-    apfAuthButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installationDir: string, installationType: string, userUploadedPaxPath: string}, zoweConfig: any) {
-      return ipcRenderer.invoke("init-apf", connectionArgs, installationArgs, zoweConfig);
+    fetchExampleYamlBtnOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs) {
+      return ipcRenderer.invoke("get-yaml-schema", connectionArgs, installationArgs);
+    },
+    initCertsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}) {
+      return ipcRenderer.invoke("init-certificates", connectionArgs, installationArgs);
+    },
+    apfAuthButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: InstallationArgs) {
+      return ipcRenderer.invoke("init-apf", connectionArgs, installationArgs);
     },
     getApfAuthProgress(){
       return ipcRenderer.invoke("get-apf-auth-progress");
@@ -85,24 +127,33 @@ contextBridge.exposeInMainWorld('electron', {
     getInstallationProgress() {
       return ipcRenderer.invoke("get-installation-progress");
     },
+    getDownloadUnpaxProgress() {
+      return ipcRenderer.invoke("get-download-unpax-progress");
+    },
     getCertificateProgress() {
       return ipcRenderer.invoke("get-certificate-progress");
     },
-    initSecurityButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
-      return ipcRenderer.invoke("init-security", connectionArgs, installationArgs, zoweConfig);
+    initSecurityButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}) {
+      return ipcRenderer.invoke("init-security", connectionArgs, installationArgs);
     },
-    initVsamButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}, zoweConfig: any) {
-      return ipcRenderer.invoke("init-vsam", connectionArgs, installationArgs, zoweConfig);
+    initStcsButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}) {
+      return ipcRenderer.invoke("init-stcs", connectionArgs, installationArgs);
+    },
+    initVsamButtonOnClick(connectionArgs: IIpcConnectionArgs, installationArgs: {installDir: string}) {
+      return ipcRenderer.invoke("init-vsam", connectionArgs, installationArgs);
     },
     getInitSecurityProgress(){
       return ipcRenderer.invoke("get-init-security-progress");
+    },
+    getInitStcsProgress(){
+      return ipcRenderer.invoke("get-init-stcs-progress");
     },
     getInitVsamProgress(){
       return ipcRenderer.invoke("get-init-vsam-progress");
     },
     on(channel: string, func: any) {
       // REVIEW: Used to have channel validation with ipcRenderer.send, do we need something similar for ipcRenderer.invoke?
-      const validChannels = ['install-mvs', 'init-security', 'init-vsam'];
+      const validChannels = ['install-mvs', 'init-apf', 'init-certificates', 'init-security', 'init-vsam', 'init-stcs'];
       if (validChannels.includes(channel)) {
         ipcRenderer.on(channel, (event, ...args) => func(...args));
       }

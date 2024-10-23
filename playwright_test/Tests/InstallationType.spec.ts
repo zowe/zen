@@ -4,26 +4,13 @@ import ConnectionPage from '../Pages/connection.page.ts';
 import PlanningPage from '../Pages/planning.page.ts';
 import InstallationTypePage from '../Pages/installationType.page.ts';
 import InstallationPage from '../Pages/installation.page.ts';
+import config from '../utils/config';
 
 let electronApp: ElectronApplication
 const PLANNING_TITLE = 'Before you start';
 const INSTALLATION_PAGE_TITLE = 'Installation';
-const RUNTIME_DIR = process.env.ZOWE_ROOT_DIR;
-const SSH_HOST = process.env.SSH_HOST;
-const SSH_PASSWD =  process.env.SSH_PASSWD;
-const SSH_PORT = process.env.SSH_PORT;
-const SSH_USER = process.env.SSH_USER;
-const ZOWE_EXTENSION_DIR= process.env.ZOWE_EXTENSION_DIR;
-const ZOWE_LOG_DIR=process.env.ZOWE_LOG_DIR;
-const ZOWE_WORKSPACE_DIR=process.env.ZOWE_WORKSPACE_DIR;
-const JOB_NAME= process.env.JOB_NAME;
-const JOB_PREFIX=process.env.JOB_PREFIX;
-const JAVA_HOME=process.env.JAVA_HOME;
-const NODE_HOME=process.env.NODE_HOME;
-const ZOSMF_HOST=process.env.ZOSMF_HOST;
-const ZOSMF_PORT=process.env.ZOSMF_PORT;
-const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
-const UPLOAD_PAX_PATH= process.env.ZOWE_ROOT_DIR
+const DOWNLOAD_ZOWE_PAX = 'Download Zowe Pax';
+
 
 test.describe('InstallationTypeTab', () => {
   let connectionPage: ConnectionPage;
@@ -35,26 +22,31 @@ test.describe('InstallationTypeTab', () => {
   test.beforeEach(async ({ page }) => {
     test.setTimeout(900000);
     electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
-    page= await electronApp.firstWindow()
+    page = await electronApp.firstWindow()
     connectionPage = new ConnectionPage(page);
     titlePage = new TitlePage(page);
     planningPage = new PlanningPage(page);
     installationTypePage = new InstallationTypePage(page);
     installationPage = new InstallationPage(page);
     titlePage.navigateToConnectionTab()
-    connectionPage.fillConnectionDetails(SSH_HOST,SSH_PORT,SSH_USER,SSH_PASSWD)
-    await page.waitForTimeout(5000);
-    connectionPage.SubmitValidateCredential()
-    await page.waitForTimeout(2000);
-    connectionPage.clickContinueButton()
-    planningPage.clickSaveValidate()
-    await page.waitForTimeout(20000);
-    planningPage.fillPlanningPageWithRequiredFields(RUNTIME_DIR, ZOWE_WORKSPACE_DIR,ZOWE_EXTENSION_DIR,ZOWE_LOG_DIR,'1',JOB_NAME,JOB_PREFIX,JAVA_HOME,NODE_HOME,ZOSMF_HOST,ZOSMF_PORT,ZOSMF_APP_ID)
-    await page.waitForTimeout(20000);
-    planningPage.clickValidateLocations()
-    await page.waitForTimeout(20000);
-    planningPage.clickContinueToInstallation()
-    await page.waitForTimeout(5000);
+    await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+    await connectionPage.SubmitValidateCredential();
+    await connectionPage.clickContinueButton();
+    await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
+	    config.ZOWE_WORKSPACE_DIR, 
+		config.ZOWE_EXTENSION_DIR, 
+		config.ZOWE_LOG_DIR, 
+		'1', 
+		config.JOB_NAME, 
+		config.JOB_PREFIX, 
+		config.JAVA_HOME, 
+		config.NODE_HOME, 
+		config.ZOSMF_HOST, 
+		config.ZOSMF_PORT, 
+		config.ZOSMF_APP_ID
+	  );
+    await planningPage.clickValidateLocations()
+    await planningPage.clickContinueToInstallation()
   })
 
   test.afterEach(async () => {
@@ -62,7 +54,6 @@ test.describe('InstallationTypeTab', () => {
   })
 
   test('Test all required fields on Installation Type page', async ({ page }) => {
-    await page.waitForTimeout(5000)
     expect(installationTypePage.downloadPax).toBeTruthy()
     expect(installationTypePage.uploadPax).toBeTruthy()
     expect(installationTypePage.smpe).toBeTruthy()
@@ -70,97 +61,62 @@ test.describe('InstallationTypeTab', () => {
     expect(installationTypePage.saveAndClose).toBeTruthy()
     expect(installationTypePage.previousStep).toBeTruthy()
     expect(installationTypePage.continueToComponentInstallation).toBeTruthy()
-    const is_Continue_Button_disable = await installationTypePage.isContinueToComponentInstallationDisabled();
-    expect(is_Continue_Button_disable).toBe(true);
+    const is_continue_button_enabled = await installationTypePage.isContinueUnpaxEnabled();
+    expect(is_continue_button_enabled).toBe(false);
   })
 
   test('Test Downlad Zowe Pax', async ({ page }) => {
-    await page.waitForTimeout(5000)
-    installationTypePage.selectDownloadZowePax()
-    installationTypePage.clickLicenseAgreement()
-    installationTypePage.clickAgreeLicense()
+    await installationTypePage.selectDownloadZowePax()
+    await installationTypePage.clickLicenseAgreement()
+    await installationTypePage.clickAgreeLicense()
     const is_GreenCheck_Visible = await installationTypePage.isLicenseAgreementGreenCheckVisible();
     expect(is_GreenCheck_Visible).toBe(true);
-    const Is_Continue_Button_Enable = await installationTypePage.isContinueToComponentInstallationEnabled();
-    expect(Is_Continue_Button_Enable).toBe(true);
+    const is_continue_button_enabled = await installationTypePage.isContinueUnpaxEnabled();
+    expect(is_continue_button_enabled).toBe(true);
   })
 
+  /* Need to figure out new logic
   test('Test Upload Zowe Pax', async ({ page }) => {
-    await page.waitForTimeout(5000)
-    installationTypePage.uploadZowePaxAndNavigateToInstallationPage(UPLOAD_PAX_PATH)
-    const Is_Continue_Button_Enable = await installationTypePage.isContinueToComponentInstallationEnabled();
+    await installationTypePage.uploadZowePaxAndNavigateToInstallationPage(UPLOAD_PAX_PATH)
+    const Is_Continue_Button_Enable = await installationTypePage.isContinueUnpaxEnabled();
     expect(Is_Continue_Button_Enable).toBe(true);
-  })
+  })*/ 
 
-  test('Test SMPE with Valid Path', async ({ page }) => {
-    await page.waitForTimeout(5000)
-    installationTypePage.selectSmpe()
-    installationTypePage.enterRuntimeDir(RUNTIME_DIR)
-    installationTypePage.clickValidateLocation()
-    await page.waitForTimeout(5000)
-    const is_GreenCheck_Visible = await installationTypePage.isValidateLocationGreenCheckVisible();
-    expect(is_GreenCheck_Visible).toBe(true);
-    const Is_Continue_Button_Enable = await installationTypePage.isContinueToComponentInstallationEnabled();
+  test('Test SMPE ', async ({ page }) => {
+    await installationTypePage.selectSmpe()
+    const Is_Continue_Button_Enable = await installationTypePage.isContinueUnpaxEnabled();
     expect(Is_Continue_Button_Enable).toBe(true);
-  })
-
-  test('Test SMPE with Invalid Path', async ({ page }) => {
-    await page.waitForTimeout(5000)
-    installationTypePage.selectSmpe()
-    installationTypePage.enterRuntimeDir('ABCDE')
-    installationTypePage.clickValidateLocation()
-    await page.waitForTimeout(5000)
-    const is_GreenCheck_Visible = await installationTypePage.isValidateLocationGreenCheckVisible();
-    expect(is_GreenCheck_Visible).toBe(false);
-    const Is_Continue_Button_Enable = await installationTypePage.isContinueToComponentInstallationEnabled();
-    expect(Is_Continue_Button_Enable).toBe(false);
-  })
-
-  test('Test SMPE with Empty Path', async ({ page }) => {
-    await page.waitForTimeout(5000)
-    installationTypePage.selectSmpe()
-    installationTypePage.enterRuntimeDir('')
-    installationTypePage.clickValidateLocation()
-    await page.waitForTimeout(5000)
-    const is_GreenCheck_Visible = await installationTypePage.isValidateLocationGreenCheckVisible();
-    expect(is_GreenCheck_Visible).toBe(false);
-    const Is_Continue_Button_Enable = await installationTypePage.isContinueToComponentInstallationEnabled();
-    expect(Is_Continue_Button_Enable).toBe(false);
   })
 
   test('Test Previous step', async ({ page }) => {
-    installationTypePage.clickPreviousStep();
-    await page.waitForTimeout(2000);
+    await installationTypePage.clickPreviousStep();
     const title = await planningPage.getPlanningPageTitle();
     expect(title).toBe(PLANNING_TITLE);
   })
 
   test('Test Continue To Components Installation Button', async ({ page }) => {
-    await page.waitForTimeout(5000)
-    installationTypePage.selectDownloadZowePax()
-    installationTypePage.clickLicenseAgreement()
-    installationTypePage.clickAgreeLicense()
-    const Is_Continue_Button_Enable = await installationTypePage.isContinueToComponentInstallationEnabled();
+    await installationTypePage.selectDownloadZowePax()
+    await installationTypePage.clickLicenseAgreement()
+    await installationTypePage.clickAgreeLicense()
+    const Is_Continue_Button_Enable = await installationTypePage.isContinueUnpaxEnabled();
     expect(Is_Continue_Button_Enable).toBe(true);
-    installationTypePage.clickContinueToInstallation()
+    await installationTypePage.continueToUnpax()
     const title = await installationPage.getInstallationPageTitle();
-    expect(title).toBe(INSTALLATION_PAGE_TITLE);
+    expect(title).toBe(DOWNLOAD_ZOWE_PAX);
   })
 
   test('Test Save and Close and Resume Progress', async ({page}) => {
-    await page.waitForTimeout(5000)
-    installationTypePage.selectDownloadZowePax()
-    installationTypePage.clickLicenseAgreement()
-    installationTypePage.clickAgreeLicense()
-    const Is_Continue_Button_Enable = await installationTypePage.isContinueToComponentInstallationEnabled();
+    await installationTypePage.selectDownloadZowePax()
+    await installationTypePage.clickLicenseAgreement()
+    await installationTypePage.clickAgreeLicense()
+    const Is_Continue_Button_Enable = await installationTypePage.isContinueUnpaxEnabled();
     expect(Is_Continue_Button_Enable).toBe(true);
-    installationTypePage.clickSaveAndClose();
-    await page.waitForTimeout(3000);
-    titlePage.clickOnResumeProgress();
-    await page.waitForTimeout(5000);
+    await installationTypePage.clickSaveAndClose();
+    await titlePage.clickOnResumeProgress();
+	await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
     const is_GreenCheck_Visible = await installationTypePage.isLicenseAgreementGreenCheckVisible();
     expect(is_GreenCheck_Visible).toBe(true);
-    const Is_Continue_Button_Enable_After_Save = await installationTypePage.isContinueToComponentInstallationEnabled();
+    const Is_Continue_Button_Enable_After_Save = await installationTypePage.isContinueUnpaxEnabled();
     expect(Is_Continue_Button_Enable_After_Save).toBe(true);
   }) 
 })

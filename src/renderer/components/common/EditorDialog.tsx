@@ -11,11 +11,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
-import Ajv2019 from "ajv/dist/2019"
+import { selectYaml, selectOutput, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import MonacoEditorComponent from "../common/MonacoEditor";
-import draft7MetaSchema from "ajv/dist/refs/json-schema-draft-07.json";
 import { parse, stringify } from "yaml";
+import { IResponse } from "../../../types/interfaces";
+import { DEF_NO_OUTPUT, schemaValidate } from "./Utils";
+import { alertEmitter } from "../Header";
 
 const test_jcl = `
 //MYJOB   JOB (ACCT), 'My Job Description',
@@ -32,8 +33,8 @@ const test_op = "WARNING: 'Some Warning'\nERROR: 'Some Error'\nINFO: 'Some Info'
 const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onChange, content, readOnlyYaml} : {contentType: any, isEditorVisible: boolean, toggleEditorVisibility: any, onChange?: any, content?: any, readOnlyYaml?: boolean}) => {
 
   const dispatch = useAppDispatch();
-  const schema = useAppSelector(selectSchema);
   const [setupYaml, setSetupYaml] = useState(useAppSelector(selectYaml));
+  const [setupOutput, setSetupOutput] = useState(useAppSelector(selectOutput));
   const [editorVisible, setEditorVisible] = useState(false);
   const [editorContent, setEditorContent] = useState(content ? content : '');
   const [isSchemaValid, setIsSchemaValid] = useState(true);
@@ -42,7 +43,8 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
 
   useEffect(() => {
     setEditorVisible(isEditorVisible);
-    if(isEditorVisible) {
+    /* TODO: Should use an array for the Store to house separate outputs (Security vs Certificates for example) */
+    if(isEditorVisible) { 
        if(contentType == 'yaml') {
         setEditorContent(stringify(setupYaml));
       }
@@ -50,7 +52,9 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
         setEditorContent(test_jcl);
       }
       if(contentType == 'output') {
-        setEditorContent(test_op);
+        window.electron.ipcRenderer.getStandardOutput().then((res: IResponse) => {
+          setEditorContent(res || DEF_NO_OUTPUT) // We may not always have output to show (for ex: no encountered error or run commands)
+        });
       }
     }
   }, [isEditorVisible])
@@ -80,24 +84,22 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
       jsonData = newCode;
     }
 
-    const ajv = new Ajv2019()
-    ajv.addKeyword("$anchor");
-    ajv.addMetaSchema(draft7MetaSchema)
-    const validate = ajv.compile(schema);
-
     // To validate the javascript object against the schema
-    const isValid = validate(jsonData);
-    setIsSchemaValid(isValid);
+    setIsSchemaValid(!schemaValidate.errors);
 
-    if(validate.errors && jsonData) {
-      const errPath = validate.errors[0].schemaPath;
-      const errMsg = validate.errors[0].message;
+    if(schemaValidate.errors && jsonData) {
+      const errPath = schemaValidate.errors[0].schemaPath;
+      const errMsg = schemaValidate.errors[0].message;
       setSchemaError(`Invalid Schema: ${errPath}. ${errMsg} `, );
       jsonData = jsonData ? jsonData : "";
       setSetupYaml(jsonData);
       window.electron.ipcRenderer.setConfig(jsonData);
       dispatch(setYaml(jsonData));
     } else if(isSchemaValid && jsonData) {
+      if(jsonData?.installationArgs) {
+        delete jsonData.installationArgs;
+        setEditorContent(stringify(jsonData));
+      }
       window.electron.ipcRenderer.setConfig(jsonData);
       dispatch(setYaml(jsonData));
       setSetupYaml(jsonData);
@@ -129,6 +131,11 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
     reader.readAsText(file);
   };
 
+  const handleClose = () => {
+    alertEmitter.emit('hideAlert');
+    toggleEditorVisibility();
+  };
+
   const handleFileExport = () => {
     const content = editorContent;
     const blob = new Blob([content], { type: 'text/plain' });
@@ -147,11 +154,13 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
   return (
     <div> 
       <Dialog 
+        fullWidth
+        maxWidth={'xl'}
         open={editorVisible} 
         onClose={toggleEditorVisibility} 
         PaperProps={{
           style: {
-            width: '100vw',
+            width: '95vw',
           },
         }}>
         <DialogTitle>Editor</DialogTitle>
@@ -172,7 +181,7 @@ const EditorDialog = ({contentType, isEditorVisible, toggleEditorVisibility, onC
           )}
           {contentType === 'jcl' && <Button onClick={toggleEditorVisibility}>Submit Job</Button>}
           <Button onClick={handleFileExport}>Export</Button>
-          <Button onClick={toggleEditorVisibility}>Close</Button>
+          <Button onClick={handleClose}>Close</Button>
         </DialogActions>
       </Dialog> 
     </div>
