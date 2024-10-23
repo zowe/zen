@@ -17,6 +17,7 @@ class InstallationTypePage{
   validateLocation: Locator;
   validateLocationGreenCheck: Locator;
   licenseAgreementGreenCheck: Locator;
+  disagreeLicense: Locator;
 
 
   constructor(page: Page) {
@@ -31,6 +32,7 @@ class InstallationTypePage{
     this.continueToComponentInstallation = page.locator("//button[text()='Continue to Components Installation']")
     this.zoweLink = page.locator("//a[@href='zowe.org']")
     this.agreeLicense = page.locator("//button[text()='Agree']")
+    this.disagreeLicense = page.locator("//button[text()='Agree']")
     this.uploadPaxButton = page.locator("//button[text()='Upload PAX']")
     this.runtimeDir = page.locator("//label[contains(text(),'Runtime Directory')]//following-sibling::div/input")
     this.validateLocation = page.locator("//button[text()= 'Validate location']")
@@ -50,8 +52,18 @@ class InstallationTypePage{
     await this.downloadPax.click({timeout: 5000})
   }
 
+  async isDownloadZowePaxSelected(){
+    await this.page.waitForTimeout(1000)
+    return await this.downloadPax.isChecked()
+  }
+
   async selectUploadZowePax(){
     await this.uploadPax.click({timeout: 5000});
+  }
+
+  async isUploadZowePaxSelected(){
+    await this.page.waitForTimeout(1000)
+    return await this.uploadPax.isChecked()
   }
 
   async selectSmpe(){
@@ -77,6 +89,11 @@ class InstallationTypePage{
       await this.page.waitForTimeout(interval);
     }
 	await this.continueCompInstallation.click({timeout: timeout});
+  }
+
+  async isSmpeSelected(){
+    await this.page.waitForTimeout(1000)
+    return await this.smpe.isChecked()
   }
 
   async clickZoweLink(){
@@ -113,6 +130,11 @@ class InstallationTypePage{
 
   async clickAgreeLicense(){
     await this.agreeLicense.click({timeout: 5000});
+  }
+
+  async clickDisagreeLicense(){
+    await this.page.waitForTimeout(1000)
+    await this.disagreeLicense.click({timeout: 5000});
   }
 
   async isLicenseAgreementGreenCheckVisible(){

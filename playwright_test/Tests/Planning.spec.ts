@@ -54,7 +54,7 @@ test.describe('PlanningTab', () => {
 
     test('Test Invalid Job Statement and Save Validate', async () => {
       await planningPage.enterJobStatement(INVALID_JOB_STATEMENT);
-      await planningPage.clickSaveAndValidate();  
+      await planningPage.clickSaveAndValidate();
       const error_Message = await planningPage.getErrorMessage()
       expect (error_Message).toBe(ERROR_MESSAGE);
       const isGreen_check_visible = await planningPage.isSaveAndValidateGreenCheckVisible();
@@ -96,17 +96,17 @@ test.describe('PlanningTab', () => {
     })
 
     test('Test Validate Locations with Valid Data', async () => {
-      await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
-	    config.ZOWE_WORKSPACE_DIR, 
-		config.ZOWE_EXTENSION_DIR, 
-		config.ZOWE_LOG_DIR, 
-		'1', 
-		config.JOB_NAME, 
-		config.JOB_PREFIX, 
-		config.JAVA_HOME, 
-		config.NODE_HOME, 
-		config.ZOSMF_HOST, 
-		config.ZOSMF_PORT, 
+      await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
+	    config.ZOWE_WORKSPACE_DIR,
+		config.ZOWE_EXTENSION_DIR,
+		config.ZOWE_LOG_DIR,
+		'1',
+		config.JOB_NAME,
+		config.JOB_PREFIX,
+		config.JAVA_HOME,
+		config.NODE_HOME,
+		config.ZOSMF_HOST,
+		config.ZOSMF_PORT,
 		config.ZOSMF_APP_ID
 	  );
 	  await planningPage.clickValidateLocations()
@@ -146,17 +146,17 @@ test.describe('PlanningTab', () => {
      })
 
      test('Test Save and Close and Resume Progress', async () => {
-      await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
-	    config.ZOWE_WORKSPACE_DIR, 
-		config.ZOWE_EXTENSION_DIR, 
-		config.ZOWE_LOG_DIR, 
-		'1', 
-		config.JOB_NAME, 
-		config.JOB_PREFIX, 
-		config.JAVA_HOME, 
-		config.NODE_HOME, 
-		config.ZOSMF_HOST, 
-		config.ZOSMF_PORT, 
+      await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
+	    config.ZOWE_WORKSPACE_DIR,
+		config.ZOWE_EXTENSION_DIR,
+		config.ZOWE_LOG_DIR,
+		'1',
+		config.JOB_NAME,
+		config.JOB_PREFIX,
+		config.JAVA_HOME,
+		config.NODE_HOME,
+		config.ZOSMF_HOST,
+		config.ZOSMF_PORT,
 		config.ZOSMF_APP_ID
 	  );
 	  await planningPage.clickValidateLocations()

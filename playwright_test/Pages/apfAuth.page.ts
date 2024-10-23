@@ -13,7 +13,6 @@ class ApfAuthPage{
   skip_apf_auth_button: Locator;
   continue_apfauth_setup: Locator;
   continue_security_setup: Locator;
-  continueButtonSelector: Locator;
   editor_title_element: Locator;
   installationTitle: Locator;
   APFAUTH_TITLE: Locator;
@@ -40,12 +39,7 @@ class ApfAuthPage{
   auth_load_lib_value:Locator;
   auth_plugin_lib_value:Locator;
   dataset_prefix_value:Locator;
-
-
-
-
-
-
+  apf_auth_tab: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -83,7 +77,7 @@ class ApfAuthPage{
     this.dataset_prefix_value = page.getByLabel('Dataset Prefix')
     this.auth_load_lib_value = page.getByLabel('APF Authorized Load Library')
     this.auth_plugin_lib_value = page.getByLabel('Zowe ZIS Plugins Load Library')
-	
+
 	//this.select_SMPE = page.getByLabel('//button[contains(text(),"SMP/E")]')
 	this.select_SMPE = page.locator('span:has-text("SMP/E")');
 
@@ -96,13 +90,13 @@ class ApfAuthPage{
   async movetoApfAuthPage(){
    await this.click_ApfAuth.click({timeout: 9000})
   }
-  
+
   async selectInstallationType(){
    await this.select_SMPE.waitFor({ state: 'visible', timeout: 9000 }); // Adjust timeout if needed
    console.log('SMP/E span is visible.');
    await this.select_SMPE.click({timeout: 9000})
   }
-  
+
   async movetoInstallationPage(){
    await this.licenseAgreement.click({timeout: 9000})
    await this.acceptLicense.click({timeout: 9000})
@@ -163,9 +157,14 @@ class ApfAuthPage{
    return editor_title;
   }
 
-  async isContinueButtonDisable(){
+  async isContinueButtonEnabled(){
+    return await this.continue_security_setup.isEnabled({ timeout: 5000 });
+   }
+
+   async isContinueButtonDisable(){
    return await this.continue_security_setup.isDisabled({ timeout: 5000 });
   }
+
   async click_saveAndClose(){
    this.save_and_close.click({ timeout: 2000 })
   }

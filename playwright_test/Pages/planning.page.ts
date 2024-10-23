@@ -29,6 +29,7 @@ class PlanningPage{
   continueInstallationOptions: Locator;
   readyToProceedMessage: Locator;
   errorMessage: Locator;
+  save_and_close: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -70,6 +71,11 @@ class PlanningPage{
   async getPlanningPageTitle(){
     await this.page.waitForTimeout(1000);
     return await this.planningPageTitle.textContent();
+  }
+
+  async getJobStatement(){
+    await this.page.waitForTimeout(1000);
+    return await this.jobStatement.textContent();
   }
 
   async click_saveAndClose(){
@@ -210,7 +216,7 @@ class PlanningPage{
       return false;
     }
   }
-  
+
 
   async clickSaveAndClose(){
     await this.saveAndClose.click({timeout: 15000});
@@ -223,7 +229,7 @@ class PlanningPage{
 
   async clickContinueToInstallation(){
     const timeout = 30000;
-    const interval = 100; 
+    const interval = 100;
     const startTime = Date.now();
 	const isButtonEnabled = async (): Promise<boolean> => {
       return await this.isContinueToInstallationEnabled();
@@ -257,8 +263,8 @@ class PlanningPage{
     await this.saveAndValidate.click();
 	await this.page.waitForTimeout(500);
   }
-  
-  
+
+
   async fillPlanningPageWithRequiredFields(runtimeDir: any, workspaceDir: any, extensionDir: any, logDir: any, profileIdentifier:any, jobPrefix:any,jobname:any, javaLocation:any,nodejsLocation:any,zOSMFHost:any,zOSMFPort:any,zOSMFAppID:any){
     await this.clickSaveValidate();
     await this.enterRuntimeDir(runtimeDir);
