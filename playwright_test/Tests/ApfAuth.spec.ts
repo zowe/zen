@@ -25,7 +25,7 @@ test.beforeAll(async () => {
     await prepareEnvironment({ install: true, remove: false });
   } catch (error) {
     console.error('Error during environment preparation:', error);
-    process.exit(1);
+    process.exit(1); 
   }
 });
 
@@ -54,17 +54,17 @@ test.describe('ApfAuthTab', () => {
 	  await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
 	  await connectionPage.SubmitValidateCredential();
 	  await connectionPage.clickContinueButton();
-      await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
-	    config.ZOWE_WORKSPACE_DIR,
-		config.ZOWE_EXTENSION_DIR,
-		config.ZOWE_LOG_DIR,
-		'1',
-		config.JOB_NAME,
-		config.JOB_PREFIX,
-		config.JAVA_HOME,
-		config.NODE_HOME,
-		config.ZOSMF_HOST,
-		config.ZOSMF_PORT,
+      await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
+	    config.ZOWE_WORKSPACE_DIR, 
+		config.ZOWE_EXTENSION_DIR, 
+		config.ZOWE_LOG_DIR, 
+		'1', 
+		config.JOB_NAME, 
+		config.JOB_PREFIX, 
+		config.JAVA_HOME, 
+		config.NODE_HOME, 
+		config.ZOSMF_HOST, 
+		config.ZOSMF_PORT, 
 		config.ZOSMF_APP_ID
 	  );
       await planningPage.clickValidateLocations()

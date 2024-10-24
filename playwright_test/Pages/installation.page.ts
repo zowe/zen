@@ -29,17 +29,17 @@ class InstallationPage{
     this.procLib = page.locator("//label[text()='Proclib']//following-sibling::div/input")
     this.parmLib = page.locator("//label[text()='Parmlib']//following-sibling::div/input")
     this.zis = page.locator("//label[text()='Zis']//following-sibling::div/input")
-    this.jclLib = page.locator("//label[text()='Jcllib']//following-sibling::div/input")
-    this.loadLib = page.locator("//label[text()='Loadlib']//following-sibling::div/input")
-    this.authLoadLib = page.locator("//label[text()='Auth Loadlib']//following-sibling::div/input")
-    this.authPluginLib = page.locator("//label[text()='Auth Plugin Lib']//following-sibling::div/input")
-    this.installMVSDatasets = page.locator("//button[text()='Install MVS datasets']")
-    this.viewEditYaml = page.locator("//button[text()='View/Edit Yaml']")
-    this.viewSubmitJob = page.locator("//button[text()='View/Submit Job']")
-    this.viewJobOutput = page.locator("//button[text()='View Job Output']")
+    this.jclLib = page.locator("//label[text()='Jcllib']//following-sibling::div/input")    
+    this.loadLib = page.locator("//label[text()='Loadlib']//following-sibling::div/input")    
+    this.authLoadLib = page.locator("//label[text()='Auth Loadlib']//following-sibling::div/input")    
+    this.authPluginLib = page.locator("//label[text()='Auth Plugin Lib']//following-sibling::div/input")    
+    this.installMVSDatasets = page.locator("//button[text()='Install MVS datasets']")    
+    this.viewEditYaml = page.locator("//button[text()='View/Edit Yaml']")    
+    this.viewSubmitJob = page.locator("//button[text()='View/Submit Job']")    
+    this.viewJobOutput = page.locator("//button[text()='View Job Output']")    
 	this.saveAndClose = page.locator("//button[text()='Save & close']")
     this.previousStep = page.locator("//button[text()='Previous step']")
-    this.skipInstallation = page.locator("//button[contains(text(),'Skip')]")
+    this.skipInstallation = page.locator("//button[contains(text(),'Skip')]")    
     this.continueToNetworkSetup = page.locator("//button[text()='Continue to Network Setup']")
     this.editorTitleElement = page.locator("//h2[text()='Editor']")
     this.closeEditorButton = page.locator("//button[text()='Close']")
@@ -58,17 +58,17 @@ class InstallationPage{
   async getPrefixValue(): Promise<string> {
     return await this.prefix.inputValue();
   }
-
+ 
   async enterProcLib(proclib: string): Promise<void> {
     await this.page.waitForTimeout(500)
     await this.procLib.fill(proclib);
   }
 
-
+  
   async getProclibValue(): Promise<string> {
     return await this.procLib.inputValue();
   }
-
+ 
   async enterParmLib(parmlib: string): Promise<void>{
     await this.page.waitForTimeout(500)
     await this.parmLib.fill(parmlib);
@@ -155,18 +155,18 @@ class InstallationPage{
   async isContinueToNetworkSetupEnabled(){
     return await this.continueToNetworkSetup.isEnabled()
   }
-
+  
   async isSkipToNetworkSetupEnabled(){
     return await this.skipInstallation.isEnabled()
   }
-
+  
   private async waitForContinueButtonToBeEnabled(): Promise<void> {
-    const timeout = 100000;
-    const interval = 500;
+    const timeout = 100000; 
+    const interval = 500; 
     const endTime = Date.now() + timeout;
     while (Date.now() < endTime) {
       if (await this.isContinueToNetworkSetupEnabled()) {
-        return;
+        return; 
       }
       await this.page.waitForTimeout(interval);
     }
@@ -185,11 +185,11 @@ class InstallationPage{
     await this.page.waitForTimeout(500)
     await this.closeEditorButton.click();
   }
-
+  
   async clickInstallMvsDatasetsInvalid(){
 	await this.installMVSDatasets.click();
   }
-
+  
   async fillAllFields(datasetPrefix: string, parmLib: string, procLib: string, jclLib: string, loadLib: string, authLoadLib: string, authPluginLib: string){
     await this.enterPrefix(datasetPrefix);
 	await this.enterParmLib(parmLib);

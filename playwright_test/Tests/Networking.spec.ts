@@ -24,7 +24,7 @@ test.beforeAll(async () => {
     await prepareEnvironment({ install: true, remove: false });
   } catch (error) {
     console.error('Error during environment preparation:', error);
-    process.exit(1);
+    process.exit(1); 
   }
 });
 
@@ -51,17 +51,17 @@ test.describe('networkingTab', () => {
       await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
       await connectionPage.SubmitValidateCredential();
       await connectionPage.clickContinueButton();
-	  await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
-	    config.ZOWE_WORKSPACE_DIR,
-		config.ZOWE_EXTENSION_DIR,
-		config.ZOWE_LOG_DIR,
-		'1',
-		config.JOB_NAME,
-		config.JOB_PREFIX,
-		config.JAVA_HOME,
-		config.NODE_HOME,
-		config.ZOSMF_HOST,
-		config.ZOSMF_PORT,
+	  await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
+	    config.ZOWE_WORKSPACE_DIR, 
+		config.ZOWE_EXTENSION_DIR, 
+		config.ZOWE_LOG_DIR, 
+		'1', 
+		config.JOB_NAME, 
+		config.JOB_PREFIX, 
+		config.JAVA_HOME, 
+		config.NODE_HOME, 
+		config.ZOSMF_HOST, 
+		config.ZOSMF_PORT, 
 		config.ZOSMF_APP_ID
 	  );
       await planningPage.clickValidateLocations()
@@ -89,7 +89,7 @@ test.describe('networkingTab', () => {
    const title = await networkingPage.returnTitleOfNetworkingPage();
    expect(title).toBe(NETWORKING_TITLE);
    })
-
+   
   test('test all required fields', async ({ page }) => {
     await expect(networkingPage.externalDomains).toBeTruthy()
     await expect(networkingPage.externalPort).toBeTruthy()
@@ -128,7 +128,7 @@ test.describe('networkingTab', () => {
     await networkingPage.add_DomainNameField();
     await expect(networkingPage.domainName).toBeTruthy()
   })
-
+  
   test('test add special char in other port no', async ({ page }) => {
     const originalValue = await networkingPage.get_metricServiceport_value();
     await networkingPage.fillMetricServicePort('*^%$^&');
@@ -176,7 +176,7 @@ test.describe('networkingTab', () => {
      const is_ContinueButtonDisable = await networkingPage.isContinueButtonDisable();
      expect(is_ContinueButtonDisable).toBe(true);
     })
-
+	
   test('Test Skip networking button is enable', async ({ page }) => {
      const isLaunchConfigEnable = await networkingPage.is_skipNetworkingButtonEnable();
      expect(isLaunchConfigEnable).toBe(true);

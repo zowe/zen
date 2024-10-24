@@ -33,22 +33,22 @@ test.describe('InstallationTab', () => {
     installationTypePage = new InstallationTypePage(page);
     installationPage = new InstallationPage(page);
     networkingPage = new NetworkingPage(page);
-
+	
     titlePage.navigateToConnectionTab()
     await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
     await connectionPage.SubmitValidateCredential();
     await connectionPage.clickContinueButton();
-    await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
-	    config.ZOWE_WORKSPACE_DIR,
-		config.ZOWE_EXTENSION_DIR,
-		config.ZOWE_LOG_DIR,
-		'1',
-		config.JOB_NAME,
-		config.JOB_PREFIX,
-		config.JAVA_HOME,
-		config.NODE_HOME,
-		config.ZOSMF_HOST,
-		config.ZOSMF_PORT,
+    await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
+	    config.ZOWE_WORKSPACE_DIR, 
+		config.ZOWE_EXTENSION_DIR, 
+		config.ZOWE_LOG_DIR, 
+		'1', 
+		config.JOB_NAME, 
+		config.JOB_PREFIX, 
+		config.JAVA_HOME, 
+		config.NODE_HOME, 
+		config.ZOSMF_HOST, 
+		config.ZOSMF_PORT, 
 		config.ZOSMF_APP_ID
 	  );
     await planningPage.clickValidateLocations()
@@ -97,7 +97,7 @@ test.describe('InstallationTab', () => {
     expect(is_Continue_Button_enable).toBe(true);
     await installationPage.clickContinueToNetworkSetup();
     const networkconfig_title = await networkingPage.returnTitleOfNetworkingPage()
-    expect (networkconfig_title).toBe(NETWORKING_PAGE_TITLE);
+    expect (networkconfig_title).toBe(NETWORKING_PAGE_TITLE);     
   })
 
   test('Test Installation with the Invalid Data', async ({ page }) => {
@@ -164,5 +164,5 @@ test.describe('InstallationTab', () => {
     expect(procLib_value).toBe(config.PROC_LIB);
     expect(authLoadLib_value).toBe(config.AUTH_LOAD_LIB);
     expect(authPluginLib_value).toBe(config.AUTH_PLUGIN_LIB);
-  })
+  }) 
 })

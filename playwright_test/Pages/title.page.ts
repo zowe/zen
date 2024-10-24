@@ -16,7 +16,7 @@ class TitlePage {
   async navigateToConnectionTab(){
     await this.zoweInstallButton.click({timeout: 9000})
   }
-
+  
   async clickOnResumeProgress(){
     await this.resumeProgressButton.click({timeout: 3000})
   }

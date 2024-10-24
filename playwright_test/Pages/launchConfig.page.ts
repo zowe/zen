@@ -3,7 +3,6 @@ let electronApp: ElectronApplication
 
 class LaunchConfigPage{
   page: Page;
-  pageTitle: Locator;
   fillValidation: Locator;
   logLevel: Locator;
   fillLogLevel: Locator;
@@ -27,7 +26,6 @@ class LaunchConfigPage{
 
   constructor(page: Page) {
     this.page = page;
-    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.click_launchConfig = page.locator('//span[text()="Launch Config"]')
     this.validation = page.getByLabel('Validation');
     this.logLevel = page.getByLabel('LogLevel');
@@ -55,15 +53,11 @@ class LaunchConfigPage{
     this.errorMsg = page.locator('//p[text()="is a required property"]')
   }
 
-  async getLaunchConfigurationPageTitle() {
-    return await this.pageTitle.textContent({ timeout: 2000 });
-  }
-
-  async movetoLaunchConfigPage() {
-    await this.licenseAgreement.click({ timeout: 9000 })
-    await this.acceptLicense.click({ timeout: 9000 })
-    await this.continueToComponentInstallation.click({ timeout: 5000 })
-    await this.click_launchConfig.click({ timeout: 5000 })
+  async movetoLaunchConfigPage(){
+   await this.licenseAgreement.click({timeout: 9000})
+   await this.acceptLicense.click({timeout: 9000})
+   await this.continueToComponentInstallation.click({timeout: 5000})
+   await this.click_launchConfig.click({timeout: 5000})
   }
   async returnTitleOfConfPage(){
    const apfAuth_title = await this.CONFPAGE_TITLE.textContent();

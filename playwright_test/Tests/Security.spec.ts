@@ -56,17 +56,17 @@ test.describe('securityTab', () => {
       await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
       await connectionPage.SubmitValidateCredential();
       await connectionPage.clickContinueButton();
-	  await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
-	    config.ZOWE_WORKSPACE_DIR,
-		config.ZOWE_EXTENSION_DIR,
-		config.ZOWE_LOG_DIR,
-		'1',
-		config.JOB_NAME,
-		config.JOB_PREFIX,
-		config.JAVA_HOME,
-		config.NODE_HOME,
-		config.ZOSMF_HOST,
-		config.ZOSMF_PORT,
+	  await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
+	    config.ZOWE_WORKSPACE_DIR, 
+		config.ZOWE_EXTENSION_DIR, 
+		config.ZOWE_LOG_DIR, 
+		'1', 
+		config.JOB_NAME, 
+		config.JOB_PREFIX, 
+		config.JAVA_HOME, 
+		config.NODE_HOME, 
+		config.ZOSMF_HOST, 
+		config.ZOSMF_PORT, 
 		config.ZOSMF_APP_ID
 	  );
       await planningPage.clickValidateLocations()
@@ -111,8 +111,8 @@ test.describe('securityTab', () => {
     })
 	//needs to be done
     test('test security with valid data', async ({ page }) => {
-      await securityPage.fillSecurityDetails('RACF',
-	    config.SECURITY_ADMIN,
+      await securityPage.fillSecurityDetails('RACF', 
+	    config.SECURITY_ADMIN, 
 		config.SECURITY_STC,
 		config.SECURITY_SYSPROG,
 		config.SECURITY_USER_ZIS,
@@ -163,8 +163,8 @@ test.describe('securityTab', () => {
     })
 
     test('Test save and close and Resume Progress', async ({ page }) => {
-     await securityPage.fillSecurityDetails('RACF',
-	    config.SECURITY_ADMIN,
+     await securityPage.fillSecurityDetails('RACF', 
+	    config.SECURITY_ADMIN, 
 		config.SECURITY_STC,
 		config.SECURITY_SYSPROG,
 		config.SECURITY_USER_ZIS,

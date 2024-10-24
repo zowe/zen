@@ -19,7 +19,6 @@ interface Config {
   AUTH_PLUGIN_LIB: string | undefined;
   PROC_LIB: string | undefined;
   PARM_LIB: string | undefined;
-  ZIS: string | undefined;
   JCL_LIB: string | undefined;
   LOAD_LIB: string | undefined;
   DOMAIN_NAME: string | undefined;
@@ -32,6 +31,7 @@ interface Config {
   SECURITY_AUX: string | undefined;
   SECURITY_STC_ZOWE: string | undefined;
   SECURITY_STC_ZIS: string | undefined;
+  
 }
 
 const config: Config = {
@@ -50,12 +50,11 @@ const config: Config = {
   ZOSMF_HOST: process.env.ZOSMF_HOST,
   ZOSMF_PORT: process.env.ZOSMF_PORT,
   ZOSMF_APP_ID: process.env.ZOSMF_APP_ID,
-  DATASET_PREFIX: process.env.DATASET_PREFIX,
+  DATASET_PREFIX: process.env.DATASET_PREFIX,  
   AUTH_LOAD_LIB: process.env.AUTH_LOAD_LIB,
   AUTH_PLUGIN_LIB: process.env.AUTH_PLUGIN_LIB,
   PROC_LIB: process.env.PROC_LIB,
   PARM_LIB: process.env.PARM_LIB,
-  ZIS: process.env.ZIS,
   JCL_LIB: process.env.JCL_LIB,
   LOAD_LIB: process.env.LOAD_LIB,
   EXTERNAL_PORT: process.env.EXTERNAL_PORT,
