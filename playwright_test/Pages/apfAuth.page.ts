@@ -3,6 +3,7 @@ let electronApp: ElectronApplication
 
 class ApfAuthPage{
   page: Page;
+  pageTitle: Locator;
   continueButtonSelector: Locator;
   userNameInputSelector: Locator;
   writeConfig_greenCheckXpath: Locator;
@@ -49,6 +50,7 @@ class ApfAuthPage{
 
   constructor(page: Page) {
     this.page = page;
+    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.continueButtonSelector = page.locator('.MuiButton-containedPrimary.MuiButton-sizeMedium')
     this.userNameInputSelector = page.locator('label:has-text("User Name") + div input#standard-required')
     this.writeConfig_greenCheckXpath = page.locator('#card-download-progress-card svg.MuiSvgIcon-colorSuccess')
@@ -83,26 +85,25 @@ class ApfAuthPage{
     this.dataset_prefix_value = page.getByLabel('Dataset Prefix')
     this.auth_load_lib_value = page.getByLabel('APF Authorized Load Library')
     this.auth_plugin_lib_value = page.getByLabel('Zowe ZIS Plugins Load Library')
-	
+
 	//this.select_SMPE = page.getByLabel('//button[contains(text(),"SMP/E")]')
 	this.select_SMPE = page.locator('span:has-text("SMP/E")');
 
   }
   async returnTitleOfApfAuthPage(){
-   const ApfAuthTitle = await this.APFAUTH_TITLE.textContent();
-   return ApfAuthTitle;
+    return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
   async movetoApfAuthPage(){
    await this.click_ApfAuth.click({timeout: 9000})
   }
-  
+
   async selectInstallationType(){
    await this.select_SMPE.waitFor({ state: 'visible', timeout: 9000 }); // Adjust timeout if needed
    console.log('SMP/E span is visible.');
    await this.select_SMPE.click({timeout: 9000})
   }
-  
+
   async movetoInstallationPage(){
    await this.licenseAgreement.click({timeout: 9000})
    await this.acceptLicense.click({timeout: 9000})

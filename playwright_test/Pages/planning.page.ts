@@ -210,7 +210,7 @@ class PlanningPage{
       return false;
     }
   }
-  
+
 
   async clickSaveAndClose(){
     await this.saveAndClose.click({timeout: 15000});
@@ -223,7 +223,7 @@ class PlanningPage{
 
   async clickContinueToInstallation(){
     const timeout = 30000;
-    const interval = 100; 
+    const interval = 100;
     const startTime = Date.now();
 	const isButtonEnabled = async (): Promise<boolean> => {
       return await this.isContinueToInstallationEnabled();
@@ -257,21 +257,18 @@ class PlanningPage{
     await this.saveAndValidate.click();
 	await this.page.waitForTimeout(500);
   }
-  
-  
-  async fillPlanningPageWithRequiredFields(runtimeDir: any, workspaceDir: any, extensionDir: any, logDir: any, profileIdentifier:any, jobPrefix:any,jobname:any, javaLocation:any,nodejsLocation:any,zOSMFHost:any,zOSMFPort:any,zOSMFAppID:any){
+
+
+  async fillPlanningPageWithRequiredFields(runtimeDir: any, workspaceDir: any, extensionDir: any, logDir: any, javaLocation:any,nodejsLocation:any,zOSMFHost:any,zOSMFPort:any,zOSMFAppID:any){
     await this.clickSaveValidate();
     await this.enterRuntimeDir(runtimeDir);
     await this.enterWorkspaceDir(workspaceDir);
     await this.enterLogsDir(logDir);
     await this.enterExtensionsDir(extensionDir);
-    await this.enterRbacProfileIdentifier(profileIdentifier);
-    await this.enterJobName(jobname);
-    await this.enterJobPrefix(jobPrefix);
     await this.enterJavaLocation(javaLocation);
     await this.enterNodeJsLocation(nodejsLocation);
-    //await this.enterZosmfHost(zOSMFHost);
-    //await this.enterZosmfPort(zOSMFPort);
+    await this.enterZosmfHost(zOSMFHost);
+    await this.enterZosmfPort(zOSMFPort);
     await this.enterZosmfApplicationId(zOSMFAppID);
     await this.page.waitForTimeout(2000);
   }

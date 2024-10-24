@@ -57,6 +57,11 @@ class ConnectionPage{
     return await this.connectionPageTitle.textContent();
   }
 
+  async fillPassword(password: string){
+    await this.page.waitForTimeout(1000);
+    await this.password.fill(password);
+   }
+
   async SubmitValidateCredential(){
     console.log("Submitting credentials...");
     await this.page.waitForTimeout(1000);
