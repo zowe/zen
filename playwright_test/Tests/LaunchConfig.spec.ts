@@ -30,6 +30,7 @@ const ZOSMF_PORT=process.env.ZOSMF_PORT;
 const ZOSMF_APP_ID=process.env.ZOSMF_APP_ID;
 
 test.beforeAll(async () => {
+  test.setTimeout(600000);
   try {
     await prepareEnvironment({ install: true, remove: false });
   } catch (error) {

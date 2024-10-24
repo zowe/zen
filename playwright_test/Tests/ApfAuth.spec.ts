@@ -21,11 +21,12 @@ const SECURITY_TITLE = 'Security'
 
 
 test.beforeAll(async () => {
+  test.setTimeout(600000);
   try {
-    await prepareEnvironment({ install: true, remove: false });
+    await prepareEnvironment({ install: true, cleanup:true, remove: false });
   } catch (error) {
     console.error('Error during environment preparation:', error);
-    process.exit(1); 
+    process.exit(1);
   }
 });
 

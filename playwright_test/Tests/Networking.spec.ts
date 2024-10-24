@@ -20,6 +20,7 @@ const INSTALLATION_TITLE = 'Installation';
 
 
 test.beforeAll(async () => {
+  test.setTimeout(600000);
   try {
     await prepareEnvironment({ install: true, remove: false });
   } catch (error) {
