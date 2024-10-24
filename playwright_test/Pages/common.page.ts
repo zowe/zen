@@ -26,7 +26,6 @@ class CommonPage {
     try {
       await this.page.waitForTimeout(1000);
       await locator.waitFor({ state: 'visible', timeout: 10000 });
-      // await expect(locator).toBeVisible();
     } catch (error) {
       console.error('Error while checking visibility of locator', error);
       return false;
