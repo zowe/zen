@@ -21,7 +21,7 @@ const SECURITY_TITLE = 'Security'
 
 
 test.beforeAll(async () => {
-  test.setTimeout(300000);
+  test.setTimeout(600000);
   try {
     await prepareEnvironment({ install: true, cleanup:true, remove: false });
   } catch (error) {

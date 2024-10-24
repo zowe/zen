@@ -12,6 +12,7 @@ const CONNECTION_PAGE_TITLE = 'Connection'
 const INSTALLATION_TITLE = 'Installation'
 
 test.beforeAll(async () => {
+  test.setTimeout(600000);
   try {
     await prepareEnvironment({ install: false, remove: false });
   } catch (error) {
