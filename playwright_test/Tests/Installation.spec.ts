@@ -16,11 +16,11 @@ const DOWNLOAD_ZOWE_TITLE = 'Download Zowe Pax';
 
 test.describe('InstallationTab', () => {
   let connectionPage: ConnectionPage;
-  let titlePage: TitlePage;
-  let installationTypePage: InstallationTypePage;
-  let planningPage: PlanningPage;
-  let installationPage: InstallationPage;
-  let networkingPage: NetworkingPage
+  let titlePage : TitlePage;
+  let installationTypePage : InstallationTypePage;
+  let planningPage : PlanningPage;
+  let installationPage : InstallationPage;
+  let networkingPage : NetworkingPage
 
 
   test.beforeEach(async ({ page }) => {
@@ -39,20 +39,23 @@ test.describe('InstallationTab', () => {
     await connectionPage.SubmitValidateCredential();
     await connectionPage.clickContinueButton();
     await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
-      config.ZOWE_WORKSPACE_DIR,
-      config.ZOWE_EXTENSION_DIR,
-      config.ZOWE_LOG_DIR,
-      config.JAVA_HOME,
-      config.NODE_HOME,
-      config.ZOSMF_HOST,
-      config.ZOSMF_PORT,
-      config.ZOSMF_APP_ID
-    );
+	    config.ZOWE_WORKSPACE_DIR,
+		config.ZOWE_EXTENSION_DIR,
+		config.ZOWE_LOG_DIR,
+		'1',
+		config.JOB_NAME,
+		config.JOB_PREFIX,
+		config.JAVA_HOME,
+		config.NODE_HOME,
+		config.ZOSMF_HOST,
+		config.ZOSMF_PORT,
+		config.ZOSMF_APP_ID
+	  );
     await planningPage.clickValidateLocations()
     await planningPage.clickContinueToInstallation()
-    await installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
+	await installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
     await installationTypePage.continueToUnpax()
-    await installationTypePage.skipUnpax()
+	await installationTypePage.skipUnpax()
   })
 
   test.afterEach(async () => {
@@ -78,24 +81,23 @@ test.describe('InstallationTab', () => {
     expect(installationPage.clickContinueToNetworkSetup).toBeTruthy()
     const is_Continue_Button_disable = await installationPage.isContinueToNetworkSetupEnabled();
     expect(is_Continue_Button_disable).toBe(true);
-  })
+	})
 
   test('Test Installation with Valid Data with Download Pax', async ({ page }) => {
-    await installationPage.fillInstallationPageDetails(config.DATASET_PREFIX,
-      config.PROC_LIB,
-      config.PARM_LIB,
-      config.ZIS,
-      config.JCL_LIB,
-      config.LOAD_LIB,
-      config.AUTH_LOAD_LIB,
-      config.AUTH_PLUGIN_LIB
-    )
+    await installationPage.fillAllFields(config.DATASET_PREFIX,
+	    config.PARM_LIB,
+		config.PROC_LIB,
+		config.JCL_LIB,
+		config.LOAD_LIB,
+		config.AUTH_LOAD_LIB,
+		config.AUTH_PLUGIN_LIB
+	  )
     await installationPage.clickInstallMvsDatasets();
     const is_Continue_Button_enable = await installationPage.isContinueToNetworkSetupEnabled();
     expect(is_Continue_Button_enable).toBe(true);
     await installationPage.clickContinueToNetworkSetup();
     const networkconfig_title = await networkingPage.returnTitleOfNetworkingPage()
-    expect(networkconfig_title).toBe(NETWORKING_PAGE_TITLE);
+    expect (networkconfig_title).toBe(NETWORKING_PAGE_TITLE);
   })
 
   test('Test Installation with the Invalid Data', async ({ page }) => {
@@ -107,7 +109,7 @@ test.describe('InstallationTab', () => {
     await installationPage.enterAuthLoadLib('AuthLoad')
     await installationPage.enterAuthPluginLib('')
     await installationPage.clickInstallMvsDatasetsInvalid();
-    await installationPage.clickCloseEditor();
+	await installationPage.clickCloseEditor();
     const is_Continue_Button_enable = await installationPage.isContinueToNetworkSetupEnabled();
     expect(is_Continue_Button_enable).toBe(false);
   })
@@ -121,9 +123,9 @@ test.describe('InstallationTab', () => {
   test('Test Skip Installation Button', async ({ page }) => {
     const is_Continue_Button_disable = await installationPage.isContinueToNetworkSetupEnabled();
     expect(is_Continue_Button_disable).toBe(false);
-    const is_Skip_Button_disable = await installationPage.isSkipToNetworkSetupEnabled();
+	const is_Skip_Button_disable = await installationPage.isSkipToNetworkSetupEnabled();
     expect(is_Skip_Button_disable).toBe(false);
-    const title = await installationTypePage.getInstallationTypePageTitle();
+	const title = await installationTypePage.getInstallationTypePageTitle();
     expect(title).toBe(INSTALLATION_TYPE_TITLE);
   })
 
@@ -139,19 +141,18 @@ test.describe('InstallationTab', () => {
     await installationPage.clickCloseEditor()
   })
 
-  test('Test Save and Close and Resume Progress', async ({ page }) => {
-    await installationPage.fillInstallationPageDetails(config.DATASET_PREFIX,
-      config.PROC_LIB,
-      config.PARM_LIB,
-      config.ZIS,
-      config.JCL_LIB,
-      config.LOAD_LIB,
-      config.AUTH_LOAD_LIB,
-      config.AUTH_PLUGIN_LIB
-    )
+  test('Test Save and Close and Resume Progress', async ({page}) => {
+    await installationPage.fillAllFields(config.DATASET_PREFIX,
+	    config.PARM_LIB,
+		config.PROC_LIB,
+		config.JCL_LIB,
+		config.LOAD_LIB,
+		config.AUTH_LOAD_LIB,
+		config.AUTH_PLUGIN_LIB
+	  )
     await installationPage.clickSaveAndClose();
     await titlePage.clickOnResumeProgress();
-    await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+	await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
     await connectionPage.SubmitValidateCredential();
     const prefix_value = await installationPage.getPrefixValue();
     const procLib_value = await installationPage.getProclibValue();

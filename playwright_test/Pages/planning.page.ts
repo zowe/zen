@@ -29,7 +29,6 @@ class PlanningPage{
   continueInstallationOptions: Locator;
   readyToProceedMessage: Locator;
   errorMessage: Locator;
-  save_and_close: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -60,7 +59,7 @@ class PlanningPage{
     this.continueInstallationOptions = page.locator("//button[contains(text(), 'Continue to Installation Options')]")
     this.readyToProceedMessage = page.locator("//div[contains(@class,'MuiBox-root css-hieomr')]/p")
     this.errorMessage = page.locator("//div[contains(@class,'MuiAlert-message')]")
-    this.save_and_close = page.locator('//button[contains(text(),"Save & close")]')
+    this.save_and_close =  page.locator('//button[contains(text(),"Save & close")]')
   }
 
   async clickZoweInstallationLink(){

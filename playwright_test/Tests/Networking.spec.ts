@@ -29,64 +29,66 @@ test.beforeAll(async () => {
 });
 
 test.describe('networkingTab', () => {
-  let connectionPage: ConnectionPage;
-  let titlePage: TitlePage;
-  let securityPage: SecurityPage;
-  let planningPage: PlanningPage;
-  let networkingPage: NetworkingPage;
-  let installationTypePage: InstallationTypePage;
-  let installationPage: InstallationPage;
+    let connectionPage: ConnectionPage;
+    let titlePage : TitlePage;
+    let securityPage : SecurityPage;
+    let planningPage : PlanningPage;
+    let networkingPage : NetworkingPage;
+	let installationTypePage : InstallationTypePage;
+	let installationPage : InstallationPage;
 
-  test.beforeEach(async ({ page }) => {
-    test.setTimeout(900000);
-    electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
-    page = await electronApp.firstWindow()
-    connectionPage = new ConnectionPage(page);
-    networkingPage = new NetworkingPage(page);
-    titlePage = new TitlePage(page);
-    planningPage = new PlanningPage(page);
-    installationPage = new InstallationPage(page);
-    installationTypePage = new InstallationTypePage(page);
-    titlePage.navigateToConnectionTab()
-    await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
-    await connectionPage.SubmitValidateCredential();
-    await connectionPage.clickContinueButton();
-    await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
-      config.ZOWE_WORKSPACE_DIR,
-      config.ZOWE_EXTENSION_DIR,
-      config.ZOWE_LOG_DIR,
-      config.JAVA_HOME,
-      config.NODE_HOME,
-      config.ZOSMF_HOST,
-      config.ZOSMF_PORT,
-      config.ZOSMF_APP_ID
-    );
-    await planningPage.clickValidateLocations()
-    await planningPage.clickContinueToInstallation()
-    await installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
-    await installationTypePage.continueToUnpax()
-    await installationTypePage.skipUnpax()
-    await installationPage.fillInstallationPageDetails(config.DATASET_PREFIX,
-      config.PROC_LIB,
-      config.PARM_LIB,
-      config.ZIS,
-      config.JCL_LIB,
-      config.LOAD_LIB,
-      config.AUTH_LOAD_LIB,
-      config.AUTH_PLUGIN_LIB
-    )
-    await installationPage.clickInstallMvsDatasets();
-    await installationPage.clickContinueToNetworkSetup();
-  })
+    test.beforeEach(async ({ page }) => {
+      test.setTimeout(900000);
+      electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
+      page = await electronApp.firstWindow()
+      connectionPage = new ConnectionPage(page);
+      networkingPage = new NetworkingPage(page);
+      titlePage = new TitlePage(page);
+      planningPage = new PlanningPage(page);
+	  installationPage = new InstallationPage(page);
+	  installationTypePage = new InstallationTypePage(page);
+      titlePage.navigateToConnectionTab()
+      await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+      await connectionPage.SubmitValidateCredential();
+      await connectionPage.clickContinueButton();
+	  await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
+	    config.ZOWE_WORKSPACE_DIR,
+		config.ZOWE_EXTENSION_DIR,
+		config.ZOWE_LOG_DIR,
+		'1',
+		config.JOB_NAME,
+		config.JOB_PREFIX,
+		config.JAVA_HOME,
+		config.NODE_HOME,
+		config.ZOSMF_HOST,
+		config.ZOSMF_PORT,
+		config.ZOSMF_APP_ID
+	  );
+      await planningPage.clickValidateLocations()
+      await planningPage.clickContinueToInstallation()
+	  await installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
+      await installationTypePage.continueToUnpax()
+	  await installationTypePage.skipUnpax()
+	  await installationPage.fillAllFields(config.DATASET_PREFIX,
+	    config.PARM_LIB,
+		config.PROC_LIB,
+		config.JCL_LIB,
+		config.LOAD_LIB,
+		config.AUTH_LOAD_LIB,
+		config.AUTH_PLUGIN_LIB
+	  )
+      await installationPage.clickInstallMvsDatasets();
+	  await installationPage.clickContinueToNetworkSetup();
+    })
 
-  test.afterEach(async () => {
-    await electronApp.close()
-  })
+    test.afterEach(async () => {
+      await electronApp.close()
+    })
 
   test('test title of page', async ({ page }) => {
-    const title = await networkingPage.returnTitleOfNetworkingPage();
-    expect(title).toBe(NETWORKING_TITLE);
-  })
+   const title = await networkingPage.returnTitleOfNetworkingPage();
+   expect(title).toBe(NETWORKING_TITLE);
+   })
 
   test('test all required fields', async ({ page }) => {
     await expect(networkingPage.externalDomains).toBeTruthy()
@@ -106,7 +108,7 @@ test.describe('networkingTab', () => {
     await expect(networkingPage.appServer).toBeTruthy()
     await expect(networkingPage.cachingService).toBeTruthy()
     await expect(networkingPage.discovery).toBeTruthy()
-  })
+    })
 
   test('test external domain field', async ({ page }) => {
     await networkingPage.fillexternal_domainvalues(config.DOMAIN_NAME, config.EXTERNAL_PORT);
@@ -136,49 +138,49 @@ test.describe('networkingTab', () => {
 
   test('test enabled metric service debug', async ({ page }) => {
     const beforeClick = await networkingPage.isMetricsServiceDebugChecked();
-    expect(beforeClick).toBe(false);
-    await networkingPage.clickMetricsServiceDebug();
-    const afterClick = await networkingPage.isMetricsServiceDebugChecked();
-    expect(afterClick).toBe(true);
+	expect(beforeClick).toBe(false);
+	await networkingPage.clickMetricsServiceDebug();
+	const afterClick = await networkingPage.isMetricsServiceDebugChecked();
+	expect(afterClick).toBe(true);
   })
 
   test('Test view yaml button', async ({ page }) => {
     await networkingPage.viewYaml()
     await expect(networkingPage.editor_title_element).toBeTruthy();
     await networkingPage.closeButton()
-  })
+    })
 
 
   test('Test save and close', async ({ page }) => {
     await networkingPage.fillexternal_domainvalues(config.DOMAIN_NAME, config.EXTERNAL_PORT);
     await networkingPage.click_saveAndClose()
     await titlePage.clickOnResumeProgress();
-    await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
-    await connectionPage.SubmitValidateCredential();
+	await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+	await connectionPage.SubmitValidateCredential();
     const title = await networkingPage.returnTitleOfNetworkingPage();
     expect(title).toBe(NETWORKING_TITLE);
     const port = await networkingPage.get_externalDomainport_value();
     const domainName = await networkingPage.get_externalDomainName_value();
     expect(port).toBe(config.EXTERNAL_PORT);
     expect(domainName).toBe(config.DOMAIN_NAME);
-  })
+    })
 
   test('click Previous step button', async ({ page }) => {
-    const is_prevButtonEnable = await networkingPage.isPreviousButtonEnable();
-    expect(is_prevButtonEnable).toBe(true);
-    const title = await networkingPage.returnTitleOfPrevPage();
-    expect(title).toBe(INSTALLATION_TITLE);
-  })
+     const is_prevButtonEnable = await networkingPage.isPreviousButtonEnable();
+     expect(is_prevButtonEnable).toBe(true);
+     const title = await networkingPage.returnTitleOfPrevPage();
+     expect(title).toBe(INSTALLATION_TITLE);
+    })
 
   test('Test continue to APF Auth button is disable', async ({ page }) => {
-    const is_ContinueButtonDisable = await networkingPage.isContinueButtonDisable();
-    expect(is_ContinueButtonDisable).toBe(true);
-  })
+     const is_ContinueButtonDisable = await networkingPage.isContinueButtonDisable();
+     expect(is_ContinueButtonDisable).toBe(true);
+    })
 
   test('Test Skip networking button is enable', async ({ page }) => {
-    const isLaunchConfigEnable = await networkingPage.is_skipNetworkingButtonEnable();
-    expect(isLaunchConfigEnable).toBe(true);
-  })
+     const isLaunchConfigEnable = await networkingPage.is_skipNetworkingButtonEnable();
+     expect(isLaunchConfigEnable).toBe(true);
+    })
 
   test('Test yaml should be updated', async ({ page }) => {
     await networkingPage.fillexternal_domainvalues(config.DOMAIN_NAME, config.EXTERNAL_PORT);
@@ -187,5 +189,5 @@ test.describe('networkingTab', () => {
     const yaml = await networkingPage.read_yaml();
     expect(yaml).toContain(config.DOMAIN_NAME);
     expect(yaml).toContain(config.EXTERNAL_PORT);
-  })
+   })
 });

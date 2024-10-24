@@ -150,7 +150,7 @@ test.describe('ReviewTab', () => {
   test('Test Navigation to Apf Auth page', async ({ page }) => {
     reviewPage.clickApfAuthTab();
     await page.waitForTimeout(1000);
-    const apfAuth_title = await apfAuthPage.getApfAuthPageTitle();
+    const apfAuth_title = await apfAuthPage.returnTitleOfApfAuthPage();
     expect(apfAuth_title).toBe(APF_AUTH_PAGE_TITLE);
   })
 

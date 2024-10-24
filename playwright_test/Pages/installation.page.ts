@@ -190,15 +190,18 @@ class InstallationPage{
 	await this.installMVSDatasets.click();
   }
 
-  async fillInstallationPageDetails(DATASET_PREFIX: string, PROC_LIB: string, PARM_LIB: string, ZIS: string, JCL_LIB: string, LOAD_LIB: string, AUTH_LOAD_LIB: string, AUTH_PLUGIN_LIB: string) {
-    await this.enterPrefix(DATASET_PREFIX)
-    await this.enterProcLib(PROC_LIB)
-    await this.enterParmLib(PARM_LIB)
-    await this.enterZis(ZIS)
-    await this.enterJclLib(JCL_LIB)
-    await this.enterLoadLib(LOAD_LIB)
-    await this.enterAuthLoadLib(AUTH_LOAD_LIB)
-    await this.enterAuthPluginLib(AUTH_PLUGIN_LIB)
+  async fillAllFields(datasetPrefix: string, parmLib: string, procLib: string, jclLib: string, loadLib: string, authLoadLib: string, authPluginLib: string){
+    await this.enterPrefix(datasetPrefix);
+	await this.enterParmLib(parmLib);
+	await this.enterProcLib(procLib);
+	await this.enterJclLib(jclLib);
+	await this.enterLoadLib(loadLib);
+	await this.enterAuthLoadLib(authLoadLib);
+	await this.enterAuthPluginLib(authPluginLib);
+	await this.enterAuthLoadLib(authLoadLib);
+	await this.enterAuthPluginLib(authPluginLib);
+	await this.enterAuthLoadLib(authLoadLib);
+	await this.enterAuthPluginLib(authPluginLib);
   }
 }
   export default InstallationPage;

@@ -1,5 +1,4 @@
-import { Page, Locator } from '@playwright/test';
-import CommonPage from './common.page';
+import { Page,Locator } from '@playwright/test';
 
 class TitlePage {
   page: Page;
@@ -14,16 +13,14 @@ class TitlePage {
     this.resumeProgressButton = page.locator("//button[text()='Resume Progress']")
   }
 
-  commonPage = new CommonPage();
-
-  async navigateToConnectionTab() {
-    await this.commonPage.waitForElement(this.zoweInstallButton)
-    await this.zoweInstallButton.click({ timeout: 9000 })
+  async navigateToConnectionTab(){
+    await this.zoweInstallButton.click({timeout: 9000})
   }
 
-  async clickOnResumeProgress() {
-    await this.commonPage.waitForElement(this.resumeProgressButton)
-    await this.resumeProgressButton.click({ timeout: 3000 })
+  async clickOnResumeProgress(){
+    await this.resumeProgressButton.click({timeout: 3000})
   }
+
 }
-export default TitlePage;
+
+  export default TitlePage;
