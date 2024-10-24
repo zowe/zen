@@ -20,8 +20,6 @@ class ConnectionPage{
     this.validateCredential = page.locator("//button[contains(text(), 'Validate credentials')]")
     this.connectionPageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.continueButton = page.locator('.MuiButton-containedPrimary.MuiButton-sizeMedium')
-    this.save_and_close =  page.locator('//button[contains(text(),"Save & close")]')
-    this.resumeProgress =  page.locator('//button[contains(text(),"Resume Progress")]')
     this.continueButton = page.locator('.MuiButton-containedPrimary.MuiButton-sizeMedium')
     this.greenCheckIconSelector = page.locator('.MuiContainer-root svg[data-testid="CheckCircleIcon"]')
   }
@@ -57,6 +55,11 @@ class ConnectionPage{
     return await this.connectionPageTitle.textContent();
   }
 
+  async fillPassword(password: string){
+    await this.page.waitForTimeout(1000);
+    await this.password.fill(password);
+   }
+
   async SubmitValidateCredential(){
     console.log("Submitting credentials...");
     await this.page.waitForTimeout(1000);
@@ -69,9 +72,6 @@ class ConnectionPage{
     return await this.continueButton.click();
   }
 
-  async click_saveAndClose(){
-   this.save_and_close.click({ timeout: 5000 })
-  }
   async isContinueButtonVisible() {
     return await this.continueButton.isDisabled();
   }
