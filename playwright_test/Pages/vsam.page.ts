@@ -1,7 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 import CommonPage from './common.page';
 
-class CertificatesPage {
+class VsamPage {
   page: Page;
   pageTitle: Locator;
 
@@ -12,9 +12,9 @@ class CertificatesPage {
 
   commonPage = new CommonPage();
 
-  async getCertificatesPageTitle() {
+  async getVsamPageTitle() {
     await this.commonPage.waitForElement(this.pageTitle)
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 }
-export default CertificatesPage;
+export default VsamPage;

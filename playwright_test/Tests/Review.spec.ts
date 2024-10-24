@@ -7,7 +7,9 @@ import InstallationPage from '../Pages/installation.page.ts';
 import NetworkingPage from '../Pages/networking.page.ts';
 import ApfAuthPage from '../Pages/ApfAuth.page.ts';
 import SecurityPage from '../Pages/security.page.ts';
+import StcsPage from '../Pages/stcs.page.ts';
 import CertificatesPage from '../Pages/certificates.page.ts';
+import VsamPage from '../Pages/vsam.page.ts';
 import LaunchConfigPage from '../Pages/launchConfig.page';
 import ReviewPage from '../Pages/review.page.ts';
 import config from '../utils/config.ts';
@@ -36,7 +38,9 @@ test.describe('ReviewTab', () => {
   let networkingPage: NetworkingPage
   let apfAuthPage: ApfAuthPage
   let securityPage: SecurityPage
+  let stcsPage: StcsPage
   let certificatesPage: CertificatesPage;
+  let vsamPage: VsamPage
   let launchConfigPage: LaunchConfigPage;
   let reviewPage: ReviewPage;
 
@@ -61,7 +65,9 @@ test.describe('ReviewTab', () => {
     networkingPage = new NetworkingPage(page);
     apfAuthPage = new ApfAuthPage(page);
     securityPage = new SecurityPage(page);
+    stcsPage = new StcsPage(page);
     certificatesPage = new CertificatesPage(page);
+    vsamPage = new VsamPage(page);
     launchConfigPage = new LaunchConfigPage(page);
     reviewPage = new ReviewPage(page);
     titlePage.navigateToConnectionTab()
@@ -164,7 +170,7 @@ test.describe('ReviewTab', () => {
   test('Test Navigation to Stcs page', async ({ page }) => {
     reviewPage.clickStcsTab();
     await page.waitForTimeout(1000);
-    const stcs_title = await securityPage.getSecurityPageTitle();
+    const stcs_title = await stcsPage.getStcsPageTitle();
     expect(stcs_title).toBe(STCS_PAGE_TITLE);
   })
 
@@ -178,7 +184,7 @@ test.describe('ReviewTab', () => {
   test('Test Navigation to Caching Service page', async ({ page }) => {
     reviewPage.clickCachingServiceTab();
     await page.waitForTimeout(1000);
-    const cachingService_title = await securityPage.getSecurityPageTitle();
+    const cachingService_title = await vsamPage.getVsamPageTitle();
     expect(cachingService_title).toBe(CACHING_SERVICE_PAGE_TITLE);
   })
 
