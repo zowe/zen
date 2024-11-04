@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useRef, Fragment } from "react";
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Checkbox, FormControlLabel, IconButton, SvgIcon, SvgIconProps, TextField, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Checkbox, FormControlLabel, IconButton, TextField, Typography } from '@mui/material';
 import { ExpandMore, Add, DeleteForever} from '@mui/icons-material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, setNextStepEnabled, setYaml, selectSchema } from '../configuration-wizard/wizardSlice';
@@ -18,18 +18,16 @@ import EditorDialog from "../common/EditorDialog";
 import { createTheme } from '@mui/material/styles';
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { stages } from "../configuration-wizard/Wizard";
-import { selectInitializationStatus, setInitializationStatus, setNetworkingStatus } from "./progress/progressSlice";
+import { setInitializationStatus, setNetworkingStatus } from "./progress/progressSlice";
 import { setActiveStep } from "./progress/activeStepSlice";
-import { TYPE_YAML, TYPE_JCL, TYPE_OUTPUT, ajv } from "../common/Utils";
+import { TYPE_YAML, TYPE_OUTPUT } from "../common/Utils";
 import { IResponse } from "../../../types/interfaces";
 import { selectConnectionArgs } from "./connection/connectionSlice";
 import { getInstallationArguments, getProgress, isInitializationStageComplete, updateSubStepSkipStatus } from "./progress/StageProgressStatus";
 import { alertEmitter } from "../Header";
 import JsonForm from '../common/JsonForms';
 
-// TODO: Fix the schema usage, remove schema validation as useless
-
-// FIXME: Hardcoded altered network schema as JsonForms can't work with complete schema syntax ("attls": {"const": true, ...})
+// FIXME: Hardcoded altered network schema for render purpose as JsonForms can't work with complete schema syntax like ("attls": {"const": true, ...})
 const networkSchema = {
   "type": "object",
   "additionalProperties": false,
@@ -113,21 +111,20 @@ const Networking = () => {
 
   const installationArgs = getInstallationArguments();
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  // const validate = ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(customSchema); // REVIEW: What is returned by getSchema, do we need ajv? maybe only once on customSchema retrieving.
-  const LOOP_LIMIT = 1024;
+  // const validate = ajv.compile(schema); // REVIEW: Does not work with current schema. "reference "https://zowe.org/schemas/v2/server-base#zowePath" resolves to more than one schema"
 
   const [stageStatus, setStageStatus] = useState(stages[STAGE_ID].subStages[SUB_STAGE_ID].isSkipped);
   const stageStatusRef = useRef(stageStatus);
 
-  // const isInitializationSkipped = !useAppSelector(selectInitializationStatus);
+  // const isInitializationSkipped = !useAppSelector(selectInitializationStatus); // Not used
 
   useEffect(() => {
     stageStatusRef.current = stageStatus;
   }, [stageStatus]);
 
   useEffect(() => {
-    // const nextPosition = document.getElementById('container-box-id');
-    // if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
+    const nextPosition = document.getElementById('container-box-id');
+    if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
     if (yaml.zowe?.externalDomains?.length === 1 && yaml.zowe.externalDomains[0] === 'sample-domain.com') {
       dispatch(setYaml({...yaml, zowe: {...yaml.zowe, externalDomains: [connectionArgs.host]}}));
     }
@@ -147,7 +144,6 @@ const Networking = () => {
   }
 
   const updateProgress = (status: boolean) => {
-    // setStateUpdated(!setStateUpdated);
     dispatch(setNetworkingStatus(status));
     dispatch(setNextStepEnabled(status));
     setStageSkipStatus(!status);
@@ -163,33 +159,16 @@ const Networking = () => {
     setFormError(errorMsg);
     dispatch(setYaml(data));
   }
-  
-  // const handleFormChange = async (data: any, isYamlUpdated?: boolean) => {
-  //   if(validate) {
-  //     validate(data);
-  //     if(validate.errors) {
-  //       const errPath = validate.errors[0].schemaPath;
-  //       const errMsg = validate.errors[0].message;
-  //       setStageConfig(false, errPath+' '+errMsg, data.zowe);
 
-  //     }
-  //   }
-  //   let newYaml;
-  //   if (data.zowe && data.zowe.externalDomains && data.zowe.externalPort) {
-  //     newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: data.zowe.externalDomains, externalPort: data.zowe.externalPort}};
-  //   }
-  //   if(data.components){
-  //     newYaml = {...newYaml, components: data.components};
-  //   }
-  //   window.electron.ipcRenderer.setConfig(newYaml)
-  //   setStageConfig(true, '', newYaml);
-  // };
+  const handleFormChange = async (data: any) => {
+    window.electron.ipcRenderer.setConfig(data)
+    dispatch(setYaml(data));
+    dispatch(setNetworkingStatus(false));
+  };
 
   const handleNetworkTLSChange = async (data: any, section: string) => {
     const newYaml = {...yaml, zowe: {...yaml.zowe, network: {...yaml.zowe.network, [section]: {...yaml.zowe.network[section], tls: data}}}};
-    await window.electron.ipcRenderer.setConfigByKeyAndValidate(`zowe.network.${section}.tls`, data);
-    dispatch(setYaml(newYaml));
-    dispatch(setNetworkingStatus(false));
+    handleFormChange(newYaml);
   }
 
   const onSaveYaml = (e: any) => {
@@ -262,9 +241,7 @@ const Networking = () => {
                 let domains = [...yaml.zowe?.externalDomains];
                 domains[index] = e.target.value;
                 const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
-                window.electron.ipcRenderer.setConfig(newYaml)
-                dispatch(setYaml(newYaml));
-                dispatch(setNetworkingStatus(false));
+                handleFormChange(newYaml);
               }}
             />
             <IconButton 
@@ -273,9 +250,7 @@ const Networking = () => {
               onClick={(e) => {
                 let domains = [...yaml.zowe?.externalDomains || [], ""];
                 const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
-                window.electron.ipcRenderer.setConfig(newYaml )
-                dispatch(setYaml(newYaml));
-                dispatch(setNetworkingStatus(false));
+                handleFormChange(newYaml);
             }}>
               <Add/>
             </IconButton>
@@ -286,9 +261,7 @@ const Networking = () => {
                 let domains = [...yaml.zowe?.externalDomains];
                 domains.splice(index, 1);
                 const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
-                window.electron.ipcRenderer.setConfig(newYaml )
-                dispatch(setYaml(newYaml))
-                dispatch(setNetworkingStatus(false));
+                handleFormChange(newYaml);
               }}>
               <DeleteForever/>
             </IconButton>}
@@ -303,11 +276,7 @@ const Networking = () => {
             value={yaml.zowe.externalPort}
             onChange={async (e) => {
               const newYaml = {...yaml, zowe: {...yaml.zowe, externalPort: Number(e.target.value)}};
-              window.electron.ipcRenderer.setConfig(newYaml)
-              dispatch(setYaml(newYaml));
-              // // props.setYaml(newYaml);
-              // await window.electron.ipcRenderer.setConfigByKeyAndValidate(`${keys[i]}.${toMatch[k]}.${matchedProps[l]}`, Number(e.target.value))
-              // // dispatch(setYaml(newYaml));
+              handleFormChange(newYaml);
             }}
           />
           <Typography variant="caption" sx={{opacity: '0.8'}}>You can configure which port will be used by every component.<br></br> 
@@ -332,13 +301,10 @@ const Networking = () => {
                     key={`toggle-${component}`}
                     control={<Checkbox checked={yaml.components[component].enabled} onChange={async (e) => {
                       const newYaml = {...yaml, components: {...yaml.components, [component]: {...yaml.components[component], enabled: !yaml.components[component].enabled}}};
-                      await window.electron.ipcRenderer.setConfigByKeyAndValidate(`components.${component}.enabled`, !yaml.components[component].enabled);
-                      dispatch(setYaml(newYaml));
-                      dispatch(setNetworkingStatus(false));
+                      handleFormChange(newYaml);
                     }}/>}
                   />
                   <TextField
-                    // label="Port"
                     error={!yaml.components[component].port || yaml.components[component].port > 65535}
                     variant="standard"
                     size="small"
@@ -351,9 +317,7 @@ const Networking = () => {
                     onChange={async (e) => {
                       if (!Number.isNaN(Number(e.target.value))) {
                         const newYaml = {...yaml, components: {...yaml.components, [component]: {...yaml.components[component], port: Number(e.target.value)}}};
-                        await window.electron.ipcRenderer.setConfigByKeyAndValidate(`components.${component}.port`, Number(e.target.value))
-                        dispatch(setYaml(newYaml));
-                        dispatch(setNetworkingStatus(false));
+                        handleFormChange(newYaml);
                       }
                     }}
                   />
