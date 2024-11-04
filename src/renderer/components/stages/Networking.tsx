@@ -233,23 +233,20 @@ const Networking = () => {
           <Typography variant="h6">External Domains</Typography>
           <Typography variant="caption" sx={{opacity: '0.8'}}>You can list your external domains on how you want to access Zowe.<br></br>
           This should be the domain list you would like to put into your web browser's address bar. </Typography>
-          {yaml.zowe?.externalDomains != undefined && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box key={`box-${index}`} sx={{display: "flex", flexDirection: "row", mt: '6px'}}>
+          {Array.isArray(yaml.zowe?.externalDomains) && yaml.zowe.externalDomains.map((domain: string, index: number) => <Box key={`box-${index}`} sx={{display: "flex", flexDirection: "row", mt: '6px'}}>
             <TextField
               variant="standard"
               value={domain}
               onChange={async (e) => {
-                let domains = [...yaml.zowe?.externalDomains];
-                domains[index] = e.target.value;
-                const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
+                const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: yaml.zowe.externalDomains.with(index, e.target.value)}};
                 handleFormChange(newYaml);
               }}
             />
             <IconButton 
               sx={{ml: '16px'}}
               size='small' 
-              onClick={(e) => {
-                let domains = [...yaml.zowe?.externalDomains || [], ""];
-                const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
+              onClick={() => {
+                const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: [...yaml.zowe.externalDomains, ""]}};
                 handleFormChange(newYaml);
             }}>
               <Add/>
@@ -257,9 +254,8 @@ const Networking = () => {
             {yaml.zowe?.externalDomains.length > 1 && <IconButton 
               sx={{ml: '8px'}}
               size='small'
-              onClick={(e) => {
-                let domains = [...yaml.zowe?.externalDomains];
-                domains.splice(index, 1);
+              onClick={() => {
+                const domains = [...yaml.zowe.externalDomains.slice(0, index), ...yaml.zowe.externalDomains.slice(index + 1)];
                 const newYaml = {...yaml, zowe: {...yaml.zowe, externalDomains: domains}};
                 handleFormChange(newYaml);
               }}>
@@ -293,13 +289,13 @@ const Networking = () => {
               <Typography>Component ports configuration</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              {Object.keys(yaml.components).filter(component => yaml.components[component].hasOwnProperty('port')).map(component => {
+              {Object.keys(yaml.components).filter(component => Object.prototype.hasOwnProperty.call(yaml.components[component], "port")).map(component => {
                 return <div key={`div-${component}`} style={{display: 'flex', alignItems: 'center'}}> 
                   <FormControlLabel
                     sx={{width: '200px'}}
                     label={component}
                     key={`toggle-${component}`}
-                    control={<Checkbox checked={yaml.components[component].enabled} onChange={async (e) => {
+                    control={<Checkbox checked={yaml.components[component].enabled} onChange={async () => {
                       const newYaml = {...yaml, components: {...yaml.components, [component]: {...yaml.components[component], enabled: !yaml.components[component].enabled}}};
                       handleFormChange(newYaml);
                     }}/>}
