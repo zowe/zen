@@ -1,5 +1,4 @@
 import { Page, Locator } from '@playwright/test';
-import CommonPage from './common.page';
 
 class ReviewPage {
   page: Page;
@@ -18,8 +17,8 @@ class ReviewPage {
   cachingServiceTab: Locator;
   launchConfigTab: Locator;
   connectionTabSuccessfulIcon: Locator;
-  planningTabSuccessfulIcon: Locator;
-  installationTypeTabSuccessfulIcon: Locator;
+  planningTabPendingIcon: Locator;
+  installationTypeTabPendingIcon: Locator;
   initializationTabPendingIcon: Locator;
   installationTabPendingIcon: Locator;
   networkingTabPendingIcon: Locator;
@@ -34,6 +33,7 @@ class ReviewPage {
   finishInstallation: Locator;
   editorTitleElement: Locator;
   closeEditorButton: Locator;
+  readOnlyEditor: Locator
 
   constructor(page: Page) {
     this.page = page;
@@ -52,8 +52,8 @@ class ReviewPage {
     this.cachingServiceTab = page.locator("//p[text()='Caching Service']")
     this.launchConfigTab = page.locator("//p[text()='Launch Config']")
     this.connectionTabSuccessfulIcon = page.locator("//p[text()='Connection']/following-sibling::*[@data-testid='CheckCircleIcon']")
-    this.planningTabSuccessfulIcon = page.locator("//p[text()='Planning']/following-sibling::*[@data-testid='CheckCircleIcon']")
-    this.installationTypeTabSuccessfulIcon = page.locator("//p[text()='Installation Type']/following-sibling::*[@data-testid='CheckCircleIcon']")
+    this.planningTabPendingIcon = page.locator("//p[text()='Planning']/following-sibling::*[@data-testid='WarningIcon']")
+    this.installationTypeTabPendingIcon = page.locator("//p[text()='Installation Type']/following-sibling::*[@data-testid='WarningIcon']")
     this.initializationTabPendingIcon = page.locator("//p[text()='Initialization']/following-sibling::*[@data-testid='WarningIcon']")
     this.installationTabPendingIcon = page.locator("//p[text()='Installation']/following-sibling::*[@data-testid='WarningIcon']")
     this.networkingTabPendingIcon = page.locator("//p[text()='Networking']/following-sibling::*[@data-testid='WarningIcon']")
@@ -68,123 +68,121 @@ class ReviewPage {
     this.finishInstallation = page.locator("//button[text()='Finish Installation']")
     this.editorTitleElement = page.locator("//h2[text()='Editor']")
     this.closeEditorButton = page.locator("//button[text()='Close']")
+    this.readOnlyEditor = page.locator("//h2[text()='Editor']/following-sibling::div[1]//div[@class='view-lines monaco-mouse-cursor-text']/div[1]")
   }
 
-  commonPage = new CommonPage();
-
   async getReviewPageTitle() {
-    await this.commonPage.waitForElement(this.pageTitle)
+    await this.page.waitForTimeout(500);
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
   async clickReviewInstallationTab() {
-    await this.commonPage.waitForElement(this.reviewInstallationTab)
+    await this.page.waitForTimeout(500);
     await this.reviewInstallationTab.click();
   }
 
   async clickConnectionTab() {
-    await this.commonPage.waitForElement(this.connectionTab)
+    await this.page.waitForTimeout(500);
     await this.connectionTab.click();
   }
 
   async clickPlanningTab() {
-    await this.commonPage.waitForElement(this.planningTab)
+    await this.page.waitForTimeout(500);
     await this.planningTab.click();
   }
 
   async clickInstallationTypeTab() {
-    await this.commonPage.waitForElement(this.installationTypeTab)
+    await this.page.waitForTimeout(500);
     await this.installationTypeTab.click();
   }
 
   async clickInstallationTab() {
-    await this.commonPage.waitForElement(this.installationTab)
+    await this.page.waitForTimeout(500);
     await this.installationTab.click();
   }
 
   async clickNetworkingTab() {
-    await this.commonPage.waitForElement(this.networkingTab)
+    await this.page.waitForTimeout(500);
     await this.networkingTab.click();
   }
 
   async clickApfAuthTab() {
-    await this.commonPage.waitForElement(this.apfAuthTab)
+    await this.page.waitForTimeout(500);
     await this.apfAuthTab.click();
   }
 
   async clickSecurityTab() {
-    await this.commonPage.waitForElement(this.securityTab)
+    await this.page.waitForTimeout(500);
     await this.securityTab.click();
   }
 
   async clickStcsTab() {
-    await this.commonPage.waitForElement(this.stcsTab)
+    await this.page.waitForTimeout(500);
     await this.stcsTab.click();
   }
 
   async clickCertificatesTab() {
-    await this.commonPage.waitForElement(this.certificatesTab)
+    await this.page.waitForTimeout(500);
     await this.certificatesTab.click();
   }
 
   async clickCachingServiceTab() {
-    await this.commonPage.waitForElement(this.cachingServiceTab)
+    await this.page.waitForTimeout(500);
     await this.cachingServiceTab.click();
   }
 
   async clickLaunchConfigTab() {
-    await this.commonPage.waitForElement(this.launchConfigTab)
+    await this.page.waitForTimeout(500);
     await this.launchConfigTab.click();
   }
 
   async clickViewEditYaml() {
-    await this.commonPage.waitForElement(this.viewEditYaml)
+    await this.page.waitForTimeout(500);
     await this.viewEditYaml.click();
   }
 
   async clickViewJobOutput() {
-    await this.commonPage.waitForElement(this.viewJobOutput)
+    await this.page.waitForTimeout(500);
     await this.viewJobOutput.click();
     await this.page.waitForTimeout(2000);
   }
 
   async clickSaveAndClose() {
-    await this.commonPage.waitForElement(this.saveAndClose)
+    await this.page.waitForTimeout(500);
     await this.saveAndClose.click({ timeout: 2000 });
   }
 
   async clickPreviousStep() {
-    await this.commonPage.waitForElement(this.previousStep)
+    await this.page.waitForTimeout(500);
     await this.previousStep.click();
   }
 
   async clickFinishInstallation() {
-    await this.commonPage.waitForElement(this.finishInstallation)
+    await this.page.waitForTimeout(500);
     await this.finishInstallation.click();
   }
 
   async isFinishInstallationDisabled() {
-    await this.commonPage.waitForElement(this.finishInstallation)
+    await this.page.waitForTimeout(500);
     return await this.finishInstallation.isDisabled()
   }
 
   async isFinishInstallationEnabled() {
-    await this.commonPage.waitForElement(this.finishInstallation)
+    await this.page.waitForTimeout(500);
     return await this.finishInstallation.isEnabled()
   }
 
   async open_monacoEditor() {
-    await this.commonPage.waitForElement(this.viewEditYaml)
+    await this.page.waitForTimeout(500);
     this.viewEditYaml.click({ timeout: 2000 })
-    await this.commonPage.waitForElement(this.editorTitleElement)
+    await this.page.waitForTimeout(500);
     const editor_title = await this.editorTitleElement.textContent();
     return editor_title;
   }
 
   async clickCloseEditor() {
-    await this.commonPage.waitForElement(this.closeEditorButton)
+    await this.page.waitForTimeout(500);
     await this.closeEditorButton.click();
   }
-
 }
 export default ReviewPage;

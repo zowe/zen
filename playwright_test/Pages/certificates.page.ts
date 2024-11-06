@@ -1,5 +1,4 @@
 import { Page, Locator } from '@playwright/test';
-import CommonPage from './common.page';
 
 class CertificatesPage {
   page: Page;
@@ -10,10 +9,8 @@ class CertificatesPage {
     this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
   }
 
-  commonPage = new CommonPage();
-
   async getCertificatesPageTitle() {
-    await this.commonPage.waitForElement(this.pageTitle)
+    await this.page.waitForTimeout(500);
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 }

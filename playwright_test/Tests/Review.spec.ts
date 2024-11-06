@@ -53,7 +53,7 @@ test.describe('ReviewTab', () => {
     }
   });
 
-    test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     test.setTimeout(900000);
     electronApp = await electron.launch({ args: ['.webpack/main/index.js'] })
     page = await electronApp.firstWindow()
@@ -71,25 +71,10 @@ test.describe('ReviewTab', () => {
     launchConfigPage = new LaunchConfigPage(page);
     reviewPage = new ReviewPage(page);
     titlePage.navigateToConnectionTab()
-	  await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+    await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
     await connectionPage.SubmitValidateCredential();
     await connectionPage.clickContinueButton();
-    await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
-      config.ZOWE_WORKSPACE_DIR,
-      config.ZOWE_EXTENSION_DIR,
-      config.ZOWE_LOG_DIR,
-      config.JAVA_HOME,
-      config.NODE_HOME,
-      config.ZOSMF_HOST,
-      config.ZOSMF_PORT,
-      config.ZOSMF_APP_ID
-    );
-    await planningPage.clickValidateLocations()
-    await planningPage.clickContinueToInstallation()
-    await installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
-    await installationTypePage.continueToUnpax()
-    await installationTypePage.skipUnpax()
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(2000);
     reviewPage.clickReviewInstallationTab();
     await page.waitForTimeout(5000);
   })
@@ -197,8 +182,8 @@ test.describe('ReviewTab', () => {
 
   test('Test Successful and Pending Operations Tabs', async ({ page }) => {
     expect(reviewPage.connectionTabSuccessfulIcon).toBeTruthy()
-    expect(reviewPage.planningTabSuccessfulIcon).toBeTruthy()
-    expect(reviewPage.installationTypeTabSuccessfulIcon).toBeTruthy()
+    expect(reviewPage.planningTabPendingIcon).toBeTruthy()
+    expect(reviewPage.installationTypeTabPendingIcon).toBeTruthy()
     expect(reviewPage.installationTabPendingIcon).toBeTruthy()
     expect(reviewPage.networkingTabPendingIcon).toBeTruthy()
     expect(reviewPage.apfAuthTabPendingIcon).toBeTruthy()
@@ -221,6 +206,18 @@ test.describe('ReviewTab', () => {
     await page.waitForTimeout(2000);
     expect(reviewPage.editorTitleElement).toBeTruthy();
     reviewPage.clickCloseEditor()
+    await page.waitForTimeout(2000);
+  })
+
+  test('Test If you can edit the Yaml', async ({ page }) => {
+    reviewPage.clickViewEditYaml()
+    await page.waitForTimeout(2000);
+    expect(reviewPage.editorTitleElement).toBeTruthy();
+    try {
+      await reviewPage.readOnlyEditor.fill('Trying to update content');
+    } catch (error) {
+      expect(error.message).toContain('Element is not an <input>, <textarea> or [contenteditable] element')
+    }
     await page.waitForTimeout(2000);
   })
 

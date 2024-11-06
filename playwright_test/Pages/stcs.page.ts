@@ -1,5 +1,4 @@
 import { Page, Locator } from '@playwright/test';
-import CommonPage from './common.page';
 
 class StcsPage {
   page: Page;
@@ -10,10 +9,9 @@ class StcsPage {
     this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
   }
 
-  commonPage = new CommonPage();
 
   async getStcsPageTitle() {
-    await this.commonPage.waitForElement(this.pageTitle)
+    await this.page.waitForTimeout(500);
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 }
