@@ -35,7 +35,6 @@ ${command} &&
 echo "${JCL_UNIX_SCRIPT_OK}"
 /* `;
 
-   
     const timeoutPromise = new Promise<CommandResult>((_, reject) => {
         setTimeout(() => {
             reject(new Error('Command execution timed out.'));
@@ -52,13 +51,13 @@ echo "${JCL_UNIX_SCRIPT_OK}"
 
     try {
         const resp = await Promise.race([commandPromise, timeoutPromise]);
-
-        if (resp.rc === 0) {
-            const output = resp.jobOutput && resp.jobOutput["3"] ? resp.jobOutput["3"] : "No output found";
-            return { status: true, details: output };
-        } else {
-            return { status: false, details: `${resp.rc}: ${resp.jobOutput}` };
-        }
+        
+        // Streamlined job output processing
+        const output = resp.jobOutput?.["3"] ?? "No output found";
+        return { 
+            status: resp.rc === 0, 
+            details: resp.rc === 0 ? output : `${resp.rc}: ${resp.jobOutput}` 
+        };
     } catch (error) {
         console.error('Error during command execution:', error);
         throw error;

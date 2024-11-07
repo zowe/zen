@@ -6,13 +6,27 @@ import InstallationTypePage from '../Pages/installationType.page.ts';
 import InstallationPage from '../Pages/installation.page.ts';
 import NetworkingPage from '../Pages/networking.page.ts';
 import config from '../utils/config';
+import { prepareEnvironment } from '../prepare.js';
+import { connectArgs, Script }  from '../setup';
+
 
 let electronApp: ElectronApplication
 const NETWORKING_PAGE_TITLE = 'Networking'
 const INSTALLATION_TYPE_TITLE = 'Installation';
 const DOWNLOAD_ZOWE_TITLE = 'Download Zowe Pax';
+const ERROR_MSG ='One or more required dataset values are missing. Please ensure all fields are filled in.'
+const script = new Script()
 
 
+test.beforeAll(async () => {
+  test.setTimeout(600000); 
+  try {
+    await prepareEnvironment({ install: true, cleanup:true, remove: false });
+  } catch (error) {
+    console.error('Error during environment preparation:', error);
+    process.exit(1);
+  }
+});
 
 test.describe('InstallationTab', () => {
   let connectionPage: ConnectionPage;
@@ -37,31 +51,29 @@ test.describe('InstallationTab', () => {
     titlePage.navigateToConnectionTab()
     await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
     await connectionPage.SubmitValidateCredential();
-    await connectionPage.clickContinueButton();
-    await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
-	    config.ZOWE_WORKSPACE_DIR, 
-		config.ZOWE_EXTENSION_DIR, 
-		config.ZOWE_LOG_DIR, 
-		'1', 
-		config.JOB_NAME, 
-		config.JOB_PREFIX, 
-		config.JAVA_HOME, 
-		config.NODE_HOME, 
-		config.ZOSMF_HOST, 
-		config.ZOSMF_PORT, 
+	  await connectionPage.clickContinueButton();
+      await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
+	    config.ZOWE_WORKSPACE_DIR,
+		config.ZOWE_EXTENSION_DIR,
+		config.ZOWE_LOG_DIR,
+		config.JAVA_HOME,
+		config.NODE_HOME,
+		config.ZOSMF_HOST,
+		config.ZOSMF_PORT,
 		config.ZOSMF_APP_ID
 	  );
-    await planningPage.clickValidateLocations()
-    await planningPage.clickContinueToInstallation()
-	await installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
-    await installationTypePage.continueToUnpax()
-	await installationTypePage.skipUnpax()
+      await planningPage.clickValidateLocations()
+      await planningPage.clickContinueToInstallation()
+	  await installationTypePage.downloadZowePaxAndNavigateToInstallationPage()
+      await installationTypePage.clickOnContinueToUnpax()
+	  await installationTypePage.skipUnpax()
   })
 
   test.afterEach(async () => {
     await electronApp.close()
   })
 
+  
   test('Test all required fields on Installation page', async ({ page }) => {
     expect(installationPage.prefix).toBeTruthy()
     expect(installationPage.procLib).toBeTruthy()
@@ -79,8 +91,8 @@ test.describe('InstallationTab', () => {
     expect(installationPage.previousStep).toBeTruthy()
     expect(installationPage.skipInstallation).toBeTruthy()
     expect(installationPage.clickContinueToNetworkSetup).toBeTruthy()
-    const is_Continue_Button_disable = await installationPage.isContinueToNetworkSetupEnabled();
-    expect(is_Continue_Button_disable).toBe(true);
+    const isContinueButtonEnabled = await installationPage.isContinueToNetworkSetupEnabled();
+    expect(isContinueButtonEnabled).toBe(false);
 	})
 
   test('Test Installation with Valid Data with Download Pax', async ({ page }) => {
@@ -101,15 +113,16 @@ test.describe('InstallationTab', () => {
   })
 
   test('Test Installation with the Invalid Data', async ({ page }) => {
-    await installationPage.enterPrefix('DSPREFID')
+    await installationPage.enterPrefix('^&*(^$')
     await installationPage.enterProcLib('')
-    await installationPage.enterParmLib('test')
+    await installationPage.enterParmLib('test.')
     await installationPage.enterJclLib('BLANK')
     await installationPage.enterLoadLib('')
     await installationPage.enterAuthLoadLib('AuthLoad')
     await installationPage.enterAuthPluginLib('')
     await installationPage.clickInstallMvsDatasetsInvalid();
-	await installationPage.clickCloseEditor();
+    const ErrorMsgOnEmpyFields = await installationPage.getErrorMsg();
+    expect(ErrorMsgOnEmpyFields).toBe(ERROR_MSG);
     const is_Continue_Button_enable = await installationPage.isContinueToNetworkSetupEnabled();
     expect(is_Continue_Button_enable).toBe(false);
   })
@@ -140,6 +153,47 @@ test.describe('InstallationTab', () => {
     expect(installationPage.editorTitleElement).toBeTruthy();
     await installationPage.clickCloseEditor()
   })
+ 
+
+  test('verify yaml updated on zos correctly', async ({ page }) => {
+  await installationPage.fillAllFields(config.DATASET_PREFIX,
+	    config.PARM_LIB,
+		config.PROC_LIB,
+		config.JCL_LIB,
+		config.LOAD_LIB,
+		config.AUTH_LOAD_LIB,
+		config.AUTH_PLUGIN_LIB
+	  )
+    await installationPage.clickInstallMvsDatasets();
+    const result = await script.runCommand(`cat ${process.env.ZOWE_ROOT_DIR}/zowe.yaml`); 
+    await expect(result.details).toContain(config.DATASET_PREFIX);
+    await expect(result.details).toContain(config.PARM_LIB);
+    await expect(result.details).toContain(config.PROC_LIB);
+    await expect(result.details).toContain(config.JCL_LIB);
+    await expect(result.details).toContain(config.LOAD_LIB);
+    await expect(result.details).toContain(config.AUTH_LOAD_LIB);
+    await expect(result.details).toContain(config.AUTH_PLUGIN_LIB);
+    });
+
+  test('Verify MVS dataset was successfully created on z/OS.', async ({ page }) => {
+   await installationPage.fillAllFields(config.DATASET_PREFIX,
+	    config.PARM_LIB,
+		config.PROC_LIB,
+		config.JCL_LIB,
+		config.LOAD_LIB,
+		config.AUTH_LOAD_LIB,
+		config.AUTH_PLUGIN_LIB
+	  )
+    await installationPage.clickInstallMvsDatasets();
+   const result = await script.runCommand(`tso "LISTCAT"`);
+
+   await expect(result.details).toContain(config.DATASET_PREFIX);
+   await expect(result.details).toContain(config.PARM_LIB);
+   await expect(result.details).toContain(config.JCL_LIB);
+   await expect(result.details).toContain(config.LOAD_LIB);
+   await expect(result.details).toContain(config.AUTH_LOAD_LIB);
+   await expect(result.details).toContain(config.AUTH_PLUGIN_LIB);
+   });
 
   test('Test Save and Close and Resume Progress', async ({page}) => {
     await installationPage.fillAllFields(config.DATASET_PREFIX,

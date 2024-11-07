@@ -54,7 +54,7 @@ test.describe('ConnectionTab', () => {
   })
 
   test('test invalid credentials', async ({ page }) => {
-    await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+    await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, 'INVALID', 'INVALID_CRED');
     await connectionPage.SubmitValidateCredential()
     const isGreenIconHidden = await connectionPage.isGreenCheckIconVisible();
     expect(isGreenIconHidden).toBe(true);

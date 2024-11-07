@@ -61,9 +61,9 @@ class SecurityPage{
     this.click_security = page.locator('//span[text()="Security"]')
     this.continue_CertificateSelector = page.locator('//button[contains(text(), "Continue to STC Setup")]')
 
-    this.admin = page.getByLabel('Admin');
-    this.stc =  page.getByLabel('Stc');
-    this.sys_prog =  page.getByLabel('Sys Prog');
+    this.admin = page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[1]/div[2]/div/div[2]/div/div/div/div[1]/div/div[1]/div/div/input');
+    this.stc =  page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[1]/div[2]/div/div[2]/div/div/div/div[1]/div/div[2]/div/div/input');
+    this.sys_prog =  page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[1]/div[2]/div/div[2]/div/div/div/div[2]/div/div/div/div/input');
     this.user_zis =  page.locator(this.mainXpath +'/div/div/div[2]/div/label');
     this.user_zowe =  page.locator(this.mainXpath +'/div/div/div[1]/div/label');
     this.aux =  page.getByLabel('Aux');
@@ -106,7 +106,27 @@ class SecurityPage{
 
   async initializeSecurity(){
    await this.initSecurity.click()
+   await this.waitForContinueButtonToBeEnabled();
   }
+
+  async isContinueButtonEnabled(){
+   return await this.continue_CertificateSelector.isEnabled();
+  }
+
+  private async waitForContinueButtonToBeEnabled(): Promise<void> {
+    const timeout = 100000;
+    const interval = 500;
+    const endTime = Date.now() + timeout;
+    while (Date.now() < endTime) {
+      if (await this.isContinueButtonEnabled()) {
+        return;
+      }
+      await this.page.waitForTimeout(interval);
+    }
+
+    throw new Error('Continue button was not enabled within the timeout period');
+  }
+
   async isWriteConfigGreenCheckVisible(){
    return await this.writeConfig_greenCheckXpath.isVisible({ timeout: 50000 });
   }
@@ -131,13 +151,13 @@ class SecurityPage{
     await this.view_yaml.click({ timeout: 2000 })
   }
   async closeButton(){
-   this.close_button.click({ timeout: 2000 })
+   await this.close_button.click({ timeout: 2000 })
   }
   async click_viewAndSubmitJob(){
-   this.viewAndSubmitJob.click({ timeout: 2000 })
+   await this.viewAndSubmitJob.click({ timeout: 2000 })
   }
   async click_previewJob(){
-   this.view_job_output.click({ timeout: 2000 })
+   await this.view_job_output.click({ timeout: 2000 })
   }
   async is_skipSecurityButtonEnable(){
    return await this.skip_button.isEnabled({ timeout: 5000 });
@@ -148,7 +168,7 @@ class SecurityPage{
   }
 
   async open_monacoEditor(){
-   this.view_yaml.click({ timeout: 2000 })
+   await this.view_yaml.click({ timeout: 2000 })
    const editor_title = await this.editor_title_element.textContent();
    return editor_title;
   }
@@ -157,22 +177,22 @@ class SecurityPage{
    return await this.continue_CertificateSelector.isDisabled({ timeout: 5000 });
   }
   async click_saveAndClose(){
-   this.save_and_close.click({ timeout: 2000 })
+   await this.save_and_close.click({ timeout: 2000 })
   }
   async get_admin_value(){
-   const admin_value = await this.admin.textContent();
+   const admin_value = await this.admin.inputValue();
    return admin_value;
   }
   async get_stc_value(){
-   const stc_value = await this.stc.textContent();
-   return stc_value;
+   await this.page.waitForTimeout(5000);
+   return await this.stc.inputValue({timeout:2000});
   }
   async get_user_zowe_value(){
-   const userZowe_value = await this.user_zowe.textContent();
+   const userZowe_value = await this.user_zowe.inputValue();
    return userZowe_value;
   }
   async get_user_zis_value(){
-   const userZis_value = await this.user_zis.textContent();
+   const userZis_value = await this.user_zis.inputValue();
    return userZis_value;
   }
   async get_aux_value(){
@@ -190,7 +210,8 @@ class SecurityPage{
   }
 
   async get_sysProg_value(){
-   const sysProg_value = await this.sys_prog.textContent();
+   const sysProg_value = await this.sys_prog.inputValue();
+   console.log(sysProg_value);
    return sysProg_value;
   }
   async returnTitleOfSecurityPage(){

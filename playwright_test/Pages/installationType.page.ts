@@ -21,6 +21,7 @@ class InstallationTypePage{
 
   constructor(page: Page) {
     this.page = page;
+    this.installationPageTitle = page.locator("//div[text()='Installation']")
     this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.downloadPax = page.locator("//span[text()='Download Zowe convenience build PAX from internet']/preceding-sibling::span/input")
     this.uploadPax = page.locator("//span[text()='Upload Zowe PAX for offline install']/preceding-sibling::span/input")
@@ -82,6 +83,20 @@ class InstallationTypePage{
 	await this.continueCompInstallation.click({timeout: timeout});
   }
 
+  private async waitForInstallationPageVisible(): Promise<void> {
+    const timeout = 1000000; 
+    const interval = 500; 
+    const endTime = Date.now() + timeout;
+    while (Date.now() < endTime) {
+      if (await this.installationPageTitle.isVisible()) {
+        return; 
+      }
+      await this.page.waitForTimeout(interval);
+    }
+
+    throw new Error('Continue button was not enabled within the timeout period');
+  }
+
   async clickZoweLink(){
     await this.zoweLink.click();
   }
@@ -111,7 +126,7 @@ class InstallationTypePage{
   }
 
   async isContinueUnpaxEnabled(){
-    return await this.continueUpnax.isEnabled()
+    return await this.continueToUnpax.isEnabled()
   }
 
   async clickAgreeLicense(){
@@ -119,7 +134,8 @@ class InstallationTypePage{
   }
 
   async isLicenseAgreementGreenCheckVisible(){
-    return await this.licenseAgreementGreenCheck.isVisible();
+    await this.page.waitForTimeout(5000);
+    return await this.licenseAgreementGreenCheck.isVisible({timeout: 5000});
   }
 
   async clickUploadPaxButton(){
@@ -128,7 +144,7 @@ class InstallationTypePage{
 
   async skipUnpax(){
     await this.skipUnpaxButton.click({timeout: 5000});
-    //await this.page.waitForTimeout(50000);
+    await this.waitForInstallationPageVisible();
 
   }
 
