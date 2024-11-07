@@ -94,7 +94,7 @@ class InstallationTypePage{
       await this.page.waitForTimeout(interval);
     }
 
-    throw new Error('Continue button was not enabled within the timeout period');
+    throw new Error('Timed out waiting for the Installation Page to become visible.');
   }
 
   async clickZoweLink(){
