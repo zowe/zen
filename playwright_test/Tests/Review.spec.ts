@@ -155,7 +155,7 @@ test.describe('ReviewTab', () => {
   test('Test Navigation to Stcs page', async ({ page }) => {
     reviewPage.clickStcsTab();
     await page.waitForTimeout(1000);
-    const stcs_title = await stcsPage.getStcsPageTitle();
+    const stcs_title = await stcsPage.returnTitleOfStcsPage();
     expect(stcs_title).toBe(STCS_PAGE_TITLE);
   })
 
@@ -169,7 +169,7 @@ test.describe('ReviewTab', () => {
   test('Test Navigation to Caching Service page', async ({ page }) => {
     reviewPage.clickCachingServiceTab();
     await page.waitForTimeout(1000);
-    const cachingService_title = await vsamPage.getVsamPageTitle();
+    const cachingService_title = await vsamPage.returnTitleOfVsamPage();
     expect(cachingService_title).toBe(CACHING_SERVICE_PAGE_TITLE);
   })
 
