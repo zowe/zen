@@ -54,7 +54,6 @@ class PlanningPage{
     this.zosmfApplicationId = page.locator("//label[contains(text(),'z/OSMF Application Id')]//following-sibling::div/input")
     this.validateLocations = page.locator("//button[contains(text(), 'Validate locations')]")
     this.ValidateLocationsGreenCheck = page.locator("//button[text()='Validate locations']//following-sibling::*[@data-testid='CheckCircleIcon']")
-    this.saveAndClose = page.locator("//button[contains(text(),'Save & close')]")
     this.previousStep = page.locator("//button[contains(text(),'Previous step')]")
     this.continueInstallationOptions = page.locator("//button[contains(text(), 'Continue to Installation Options')]")
     this.readyToProceedMessage = page.locator("//div[contains(@class,'MuiBox-root css-hieomr')]/p")
@@ -73,7 +72,8 @@ class PlanningPage{
   }
 
   async click_saveAndClose(){
-   this.save_and_close.click({ timeout: 2000 })
+    await this.page.waitForTimeout(5000);
+    await this.save_and_close.click({ timeout: 2000 })
   }
 
   async enterJobStatement(jobStatement: string){
@@ -87,6 +87,7 @@ class PlanningPage{
 
   async isSaveAndValidateGreenCheckVisible(): Promise<boolean> {
     try {
+      await this.page.waitForTimeout(500);
       await this.saveAndValidateGreenCheck.waitFor({ state: 'visible', timeout: 10000 });
       return true;
     } catch (error) {
@@ -198,7 +199,7 @@ class PlanningPage{
 
   async clickValidateLocations(){
     await this.validateLocations.click({timeout: 5000});
-	await this.isContinueToInstallationEnabled()
+	  await this.waitForContinueButtonToBeEnabled();
   }
 
   async isValidateLocationsGreenCheckVisible(): Promise<boolean> {
@@ -213,7 +214,8 @@ class PlanningPage{
 
 
   async clickSaveAndClose(){
-    await this.saveAndClose.click({timeout: 15000});
+    await this.page.waitForTimeout(5000);
+    await this.save_and_close.click({ timeout: 5000 })
   }
 
   async clickPreviousStep(){
@@ -235,21 +237,25 @@ class PlanningPage{
       await new Promise(resolve => setTimeout(resolve, interval));
     }
     await this.continueInstallationOptions.click();
-  }
+}
 
   async isContinueToInstallationDisabled(){
     await this.page.waitForTimeout(500);
     return await this.continueInstallationOptions.isDisabled()
   }
 
+  async isContinueToInstallationEnabled(){
+    await this.page.waitForTimeout(500);
+    return await this.continueInstallationOptions.isEnabled()
+  }
   async getReadyToProceedMessage(){
     await this.page.waitForTimeout(1000);
     return await this.readyToProceedMessage.textContent({ timeout: 2000 });
   }
 
-  async isContinueToInstallationEnabled(){
+  async isContinueToInstallationDisabled(){
     await this.page.waitForTimeout(500);
-    return await this.continueInstallationOptions.isEnabled()
+    return await this.continueInstallationOptions.isDisabled()
   }
 
   async clickSaveValidate(){

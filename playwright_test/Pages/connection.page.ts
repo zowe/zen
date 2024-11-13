@@ -64,14 +64,15 @@ class ConnectionPage{
 
   async SubmitValidateCredential(){
     console.log("Submitting credentials...");
-    await this.page.waitForTimeout(1000);
     await this.validateCredential.click();
+    await this.page.waitForTimeout(5000);
     console.log("Credentials submitted.");
   }
 
   async clickContinueButton() {
     await this.page.waitForTimeout(1000);
-    return await this.continueButton.click();
+    await this.continueButton.click();
+
   }
 
   async click_saveAndClose(){
@@ -80,6 +81,7 @@ class ConnectionPage{
   async isContinueButtonVisible() {
     return await this.continueButton.isDisabled();
   }
+
   async isGreenCheckIconVisible() {
     return await this.greenCheckIconSelector.isHidden();
   }

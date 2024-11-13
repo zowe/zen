@@ -21,12 +21,13 @@ class InstallationTypePage{
 
   constructor(page: Page) {
     this.page = page;
+    this.installationPageTitle = page.locator("//div[text()='Installation']")
     this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.downloadPax = page.locator("//span[text()='Download Zowe convenience build PAX from internet']/preceding-sibling::span/input")
     this.uploadPax = page.locator("//span[text()='Upload Zowe PAX for offline install']/preceding-sibling::span/input")
     this.smpe = page.locator("//span[text()='SMP/E']/preceding-sibling::span/input")
     this.licenseAgreement = page.locator("//button[text()='License Agreement']")
-	this.saveAndClose = page.locator("//button[contains(text(),'Save & close')]")
+	  this.saveAndClose = page.locator("//button[contains(text(),'Save & close')]")
     this.previousStep = page.locator("//button[contains(text(),'Previous step')]")
     this.continueToComponentInstallation = page.locator("//button[text()='Continue to Components Installation']")
     this.zoweLink = page.locator("//a[@href='zowe.org']")
@@ -36,10 +37,13 @@ class InstallationTypePage{
     this.validateLocation = page.locator("//button[text()= 'Validate location']")
     this.validateLocationGreenCheck = page.locator("//button[text()='Validate location']//following-sibling::*[@data-testid='CheckCircleIcon']")
     this.licenseAgreementGreenCheck = page.locator("//button[text()='License Agreement']//following-sibling::*[@data-testid='CheckCircleIcon']")
-	this.continueUpnax = page.locator("//button[contains(text(),'Continue to Unpax')]")
-	this.retrieveExampleZoweYaml = page.locator("//button[contains(text(),'Retrieve example-zowe.yaml')]")
-	this.continueCompInstallation = page.locator("//button[contains(text(),'Continue to Components Installation')]")
-	this.skipUnpaxButton = page.locator("//button[text()='Skip ']")
+	  this.retrieveExampleZoweYaml = page.locator("//button[contains(text(),'Retrieve example-zowe.yaml')]")
+	  this.continueCompInstallation = page.locator("//button[contains(text(),'Continue to Components Installation')]")
+	  this.skipUnpaxButton = page.locator("//button[text()='Skip ']")
+	  this.continueToUnpax = page.locator("//button[contains(text(),'Continue to Unpax')]")
+    this.SkipUnpax = page.locator('//button[contains(text(),"Skip")]')
+    this.retrieveExampleZoweYaml= page.locator('//button[contains(text(),"Retrieve example-zowe.yaml")]')
+    this.click_InitializationStage = page.locator('//span[text()="Initialization"]')
   }
 
   async getInstallationTypePageTitle(){
@@ -57,15 +61,15 @@ class InstallationTypePage{
   async selectSmpe(){
     await this.smpe.click({timeout: 5000});
   }
-  
+
   async continueToUnpax(){
-    await this.continueUpnax.click({timeout: 5000});
+    await this.continueToUnpax.click({ timeout: 2000 })
   }
-  
+
   async retrieveExampleYaml(){
     await this.retrieveExampleZoweYaml.click({timeout: 5000});
   }
-  
+
   async continueComponentInstallation(){
     const timeout = 5000;
 	const interval = 500;
@@ -77,6 +81,20 @@ class InstallationTypePage{
       await this.page.waitForTimeout(interval);
     }
 	await this.continueCompInstallation.click({timeout: timeout});
+  }
+
+  private async waitForInstallationPageVisible(): Promise<void> {
+    const timeout = 1000000; 
+    const interval = 500; 
+    const endTime = Date.now() + timeout;
+    while (Date.now() < endTime) {
+      if (await this.installationPageTitle.isVisible()) {
+        return; 
+      }
+      await this.page.waitForTimeout(interval);
+    }
+
+    throw new Error('Timed out waiting for the Installation Page to become visible.');
   }
 
   async clickZoweLink(){
@@ -106,9 +124,9 @@ class InstallationTypePage{
   async isContinueToComponentInstallationEnabled(){
     return await this.continueToComponentInstallation.isEnabled()
   }
-  
+
   async isContinueUnpaxEnabled(){
-    return await this.continueUpnax.isEnabled()
+    return await this.continueToUnpax.isEnabled()
   }
 
   async clickAgreeLicense(){
@@ -116,15 +134,18 @@ class InstallationTypePage{
   }
 
   async isLicenseAgreementGreenCheckVisible(){
-    return await this.licenseAgreementGreenCheck.isVisible();
+    await this.page.waitForTimeout(5000);
+    return await this.licenseAgreementGreenCheck.isVisible({timeout: 5000});
   }
 
   async clickUploadPaxButton(){
     await this.uploadPaxButton.click({timeout: 5000});
   }
-  
+
   async skipUnpax(){
     await this.skipUnpaxButton.click({timeout: 5000});
+    await this.waitForInstallationPageVisible();
+
   }
 
   async enterRuntimeDir(runtimeDir: any){
@@ -141,20 +162,35 @@ class InstallationTypePage{
   }
 
   async downloadZowePaxAndNavigateToInstallationPage(){
-    this.selectDownloadZowePax()
-    this.clickLicenseAgreement()
-    this.clickAgreeLicense()
-  } 
+    await this.selectDownloadZowePax()
+    await this.clickLicenseAgreement()
+    await this.clickAgreeLicense()
+  }
 
   async uploadZowePaxAndNavigateToInstallationPage(uploadPaxPath: any){
     this.selectUploadZowePax()
     await this.uploadPaxButton.setInputFiles(uploadPaxPath)
-  } 
+  }
 
   async smpeZowePaxAndNavigateToInstallationPage(runtimeDir: any){
     this.selectSmpe()
     this.enterRuntimeDir(runtimeDir)
     this.clickValidateLocation()
-  }  
+  }
+  async clickOnContinueToUnpax(){
+    this.continueToUnpax.click({ timeout: 2000 })
+  }
+
+  async clickSkipUnpaxButton(){
+    this.SkipUnpax.click({ timeout: 2000 })
+  }
+
+  async clickRetrieveExZoweYaml(){
+    this.retrieveExampleZoweYaml.click({ timeout: 15000 })
+  }
+
+  async MoveToInitializationStage(){
+    this.click_InitializationStage.click({ timeout: 15000 })
+  }
 }
   export default InstallationTypePage;

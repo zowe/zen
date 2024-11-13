@@ -31,7 +31,10 @@ interface Config {
   SECURITY_AUX: string | undefined;
   SECURITY_STC_ZOWE: string | undefined;
   SECURITY_STC_ZIS: string | undefined;
-  
+  VOLUME: string | undefined;
+  STORAGECLASS: string | undefined;
+  VSAM_DATASET_NAME: string | undefined;
+
 }
 
 const config: Config = {
@@ -50,7 +53,7 @@ const config: Config = {
   ZOSMF_HOST: process.env.ZOSMF_HOST,
   ZOSMF_PORT: process.env.ZOSMF_PORT,
   ZOSMF_APP_ID: process.env.ZOSMF_APP_ID,
-  DATASET_PREFIX: process.env.DATASET_PREFIX,  
+  DATASET_PREFIX: process.env.DATASET_PREFIX,
   AUTH_LOAD_LIB: process.env.AUTH_LOAD_LIB,
   AUTH_PLUGIN_LIB: process.env.AUTH_PLUGIN_LIB,
   PROC_LIB: process.env.PROC_LIB,
@@ -66,7 +69,11 @@ const config: Config = {
   SECURITY_AUX: process.env.SECURITY_AUX,
   SECURITY_STC_ZOWE: process.env.SECURITY_STC_ZOWE,
   SECURITY_STC_ZIS: process.env.SECURITY_STC_ZIS,
-  DOMAIN_NAME: process.env.DOMAIN_NAME
+  DOMAIN_NAME: process.env.DOMAIN_NAME,
+  VOLUME:process.env.VOLUME,
+  STORAGECLASS:process.env.STORAGECLASS,
+  VSAM_DATASET_NAME:process.env.VSAM_DATASET_NAME
+
 };
 
 export default config;
