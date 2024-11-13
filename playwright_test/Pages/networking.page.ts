@@ -96,13 +96,30 @@ class NetworkingPage{
     this.save_and_close =  page.locator('//button[contains(text(),"Save & close")]');
     this.previous_step = page.locator('//button[contains(text(),"Previous step")]');
     this.skip_button = page.locator('//button[contains(text(),"Skip ")]');
-	//*[@id="zen-root-container"]/div[2]/div/div[5]/button[2]
     this.close_button = page.locator("//button[text()='Close']");
     this.APFAUTH_TITLE = page.locator('//div[text()="APF Authorize Load Libraries"]');
     this.continue_ReviewSelector = page.locator('//button[contains(text(), "Continue to APF Auth Setup")]');
     this.installationTitle = page.locator('//div[text()="Installation"]');
+    
   }
 
+  async isCheckBoxChecked(component: string,label:string): Promise<boolean> {
+   const checkboxLocator = this.page.locator(`//span[./strong[text()="${component}"]]/following-sibling::div//label[span[text()="${label}"]]//input[@type="checkbox"]`);
+
+   try {
+     if (await checkboxLocator.isChecked()) {
+       console.log("Checkbox is already checked.");
+       return true; 
+     } else {
+       await checkboxLocator.check(); 
+       console.log("Checkbox has been checked.");
+       return true; 
+     }
+   } catch (error) {
+     console.error("Failed to toggle the checkbox:", error);
+     return false; 
+   }
+  }
   async movetoNetworkingPage(){
    await this.licenseAgreement.click({timeout: 9000})
    await this.acceptLicense.click({timeout: 9000})
@@ -212,13 +229,13 @@ class NetworkingPage{
     await this.view_yaml.click({ timeout: 5000 })
   }
   async closeButton(){
-   this.close_button.click({ timeout: 2000 })
+   await this.close_button.click({ timeout: 2000 })
   }
   async click_viewAndSubmitJob(){
-   this.viewAndSubmitJob.click({ timeout: 2000 })
+   await this.viewAndSubmitJob.click({ timeout: 2000 })
   }
   async click_previewJob(){
-   this.view_job_output.click({ timeout: 2000 })
+   await this.view_job_output.click({ timeout: 2000 })
   }
   async is_skipNetworkingButtonEnable(){
    return await this.skip_button.isEnabled({ timeout: 5000 });
@@ -244,7 +261,7 @@ class NetworkingPage{
   }
 
   async open_monacoEditor(){
-   this.view_yaml.click({ timeout: 5000 })
+   await this.view_yaml.click({ timeout: 5000 })
    const editor_title = await this.editor_title_element.textContent();
    return editor_title;
   }
@@ -253,7 +270,7 @@ class NetworkingPage{
    return await this.continue_ReviewSelector.isDisabled({ timeout: 5000 });
   }
   async click_saveAndClose(){
-   this.save_and_close.click({ timeout: 2000 })
+  await this.save_and_close.click({ timeout: 2000 })
   }
   async read_yaml() {
     let previousScrollHeight = 0;

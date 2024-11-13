@@ -15,8 +15,8 @@ test.describe('Home', () => {
   
     test('Open HomePage and verify title', async ({ page }) => {
       // verify title
-     // page = await electronApp.firstWindow()
-      await expect(page).toHaveTitle('Zowe Enterprise Necessity');
+      page = await electronApp.firstWindow()
+      await expect(page).toHaveTitle('Zowe Server Install Wizard');
     })
 
     test('Verify install buttons', async ({ page }) => {

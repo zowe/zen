@@ -44,8 +44,8 @@ class SecurityPage{
     this.licenseAgreement = page.locator('//button[contains(text(), "License Agreement")]')
     this.acceptLicense = page.locator('//html/body/div[2]/div[3]/div/div[2]/button[1]')
     this.continueToComponentInstallation = page.locator('//button[contains(text(), "Continue to Components Installation")]')
-    this.mainXpath = '//html/body/div/div[2]/div/div[4]/div/form/div/div[3]/div[1]/div[3]/div/div[2]/div/div/div'
-    this.stc_mainXpath = '//html/body/div[1]/div[2]/div/div[4]/div/form/div/div[3]/div[1]/div[4]/div/div[2]/div/div/div/'
+    this.mainXpath = '//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[1]/div[3]/div/div[2]/div/div/div'
+    this.stc_mainXpath = '//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[1]/div[4]/div/div[2]/div/div/div'
     this.product = page.locator('input[role="combobox"]')
     this.view_yaml =  page.locator('//button[contains(text(),"View/Edit Yaml")]')
     this.viewAndSubmitJob =  page.locator('//button[contains(text(), "View Job Output")]')
@@ -56,44 +56,48 @@ class SecurityPage{
     this.initSecurity = page.locator("//button[contains(text(), 'Initialize Security Config')]")
     this.close_button = page.locator('//button[contains(text(), "Close")]')
     this.certificateTab_title = page.locator('//div[text()="Certificates"]')
-	this.stc_title = page.locator('//div[text()="Stcs"]')
+	  this.stc_title = page.locator('//div[text()="Stcs"]')
     this.securityTab_title = page.locator('//div[text()="Security"]')
+    this.click_security = page.locator('//span[text()="Security"]')
     this.continue_CertificateSelector = page.locator('//button[contains(text(), "Continue to STC Setup")]')
 
-    this.admin = page.getByLabel('Admin');
-    this.stc =  page.getByLabel('Stc');
-    this.sys_prog =  page.getByLabel('Sys Prog');
-    this.user_zis =  page.locator(this.mainXpath +'/div/div/div[2]/div/div/input');
-    this.user_zowe =  page.locator(this.mainXpath +'/div/div/div[1]/div/div/input');
+    this.admin = page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[1]/div[2]/div/div[2]/div/div/div/div[1]/div/div[1]/div/div/input');
+    this.stc =  page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[1]/div[2]/div/div[2]/div/div/div/div[1]/div/div[2]/div/div/input');
+    this.sys_prog =  page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div[1]/div[2]/div/div[2]/div/div/div/div[2]/div/div/div/div/input');
+    this.user_zis =  page.locator(this.mainXpath +'/div/div/div[2]/div/label');
+    this.user_zowe =  page.locator(this.mainXpath +'/div/div/div[1]/div/label');
     this.aux =  page.getByLabel('Aux');
-    this.stc_zowe =  page.locator(this.stc_mainXpath + 'div[1]/div/div[1]/div/div/input');
-    this.stc_zis =  page.locator(this.stc_mainXpath + 'div[1]/div/div[2]/div/div/input');
+    this.stc_zowe =  page.locator(this.stc_mainXpath + '/div[1]/div/div[1]/div/label');
+    this.stc_zis =  page.locator(this.stc_mainXpath + '/div[1]/div/div[2]/div/label');
 
   }
 
   async movetoSecurityPage(){
-   await this.licenseAgreement.click({timeout: 9000})
-   await this.acceptLicense.click({timeout: 9000})
-   await this.continueToComponentInstallation.click({timeout: 5000})
-   await this.skip_button.click()
-   await this.skip_button.click()
+   await this.click_security.click({timeout: 5000})
   }
   async fillProduct(product:string){
    await this.product.fill(product,{ timeout: 10000 })
   }
-  async fillSecurityDetails(product:string, admin:string,stc:string,sys_prog:string,user_zis:string,user_zowe:string,aux: string, stc_zowe: string, stc_zis:string){
-   await this.product.fill(product,{ timeout: 10000 })
-   await this.page.waitForTimeout(8000);
-   await this.admin.fill(admin,{ timeout: 10000 })
-   await this.stc.fill(stc,{ timeout: 10000 })
-   await this.sys_prog.fill(sys_prog,{ timeout: 10000 })
-   await this.page.waitForTimeout(8000);
-   await this.user_zis.fill(user_zis,{ timeout: 10000 })
-   await this.user_zowe.fill(user_zowe,{ timeout: 10000 })
-   await this.page.waitForTimeout(8000);
-   await this.aux.fill(aux,{ timeout: 10000 })
-   await this.stc_zowe.fill(stc_zowe,{ timeout: 10000 })
-   await this.stc_zis.fill(stc_zis,{ timeout: 10000 })
+  async fillSecurityDetails(product:string, admin:string,stc:string,sys_prog:string,user_zis:string,user_zowe:string,aux: string, stc_zowe: string, stc_zis:string){await this.page.waitForTimeout(1000);
+   await this.product.fill(product)
+   await this.page.waitForTimeout(1000);
+   await this.admin.fill(admin)
+   await this.page.waitForTimeout(1000);
+   await this.stc.fill(stc);
+   await this.page.waitForTimeout(1000);
+   await this.sys_prog.fill(sys_prog)
+   await this.page.waitForTimeout(1000);
+   await this.user_zis.fill(user_zis)
+   await this.page.waitForTimeout(1000);
+   await this.user_zowe.fill(user_zowe)
+   await this.page.waitForTimeout(1000);
+   await this.aux.fill(aux)
+   await this.page.waitForTimeout(1000);
+   await this.stc_zowe.fill(stc_zowe)
+   await this.page.waitForTimeout(1000);
+   await this.stc_zis.fill(stc_zis)
+   await this.page.waitForTimeout(1000);
+
   }
 
   async fillAdmin(admin:string){
@@ -102,7 +106,27 @@ class SecurityPage{
 
   async initializeSecurity(){
    await this.initSecurity.click()
+   await this.waitForContinueButtonToBeEnabled();
   }
+
+  async isContinueButtonEnabled(){
+   return await this.continue_CertificateSelector.isEnabled();
+  }
+
+  private async waitForContinueButtonToBeEnabled(): Promise<void> {
+    const timeout = 100000;
+    const interval = 500;
+    const endTime = Date.now() + timeout;
+    while (Date.now() < endTime) {
+      if (await this.isContinueButtonEnabled()) {
+        return;
+      }
+      await this.page.waitForTimeout(interval);
+    }
+
+    throw new Error('Continue button was not enabled within the timeout period');
+  }
+
   async isWriteConfigGreenCheckVisible(){
    return await this.writeConfig_greenCheckXpath.isVisible({ timeout: 50000 });
   }
@@ -127,13 +151,13 @@ class SecurityPage{
     await this.view_yaml.click({ timeout: 2000 })
   }
   async closeButton(){
-   this.close_button.click({ timeout: 2000 })
+   await this.close_button.click({ timeout: 2000 })
   }
   async click_viewAndSubmitJob(){
-   this.viewAndSubmitJob.click({ timeout: 2000 })
+   await this.viewAndSubmitJob.click({ timeout: 2000 })
   }
   async click_previewJob(){
-   this.view_job_output.click({ timeout: 2000 })
+   await this.view_job_output.click({ timeout: 2000 })
   }
   async is_skipSecurityButtonEnable(){
    return await this.skip_button.isEnabled({ timeout: 5000 });
@@ -144,7 +168,7 @@ class SecurityPage{
   }
 
   async open_monacoEditor(){
-   this.view_yaml.click({ timeout: 2000 })
+   await this.view_yaml.click({ timeout: 2000 })
    const editor_title = await this.editor_title_element.textContent();
    return editor_title;
   }
@@ -153,39 +177,41 @@ class SecurityPage{
    return await this.continue_CertificateSelector.isDisabled({ timeout: 5000 });
   }
   async click_saveAndClose(){
-   this.save_and_close.click({ timeout: 2000 })
+   await this.save_and_close.click({ timeout: 2000 })
   }
   async get_admin_value(){
-   const admin_value = await this.admin.textContent();
+   const admin_value = await this.admin.inputValue();
    return admin_value;
   }
   async get_stc_value(){
-   const stc_value = await this.stc.textContent();
-   return stc_value;
+   await this.page.waitForTimeout(5000);
+   return await this.stc.inputValue({timeout:2000});
   }
   async get_user_zowe_value(){
-   const userZowe_value = await this.user_zowe.textContent();
+   const userZowe_value = await this.user_zowe.inputValue();
    return userZowe_value;
   }
   async get_user_zis_value(){
-   const userZis_value = await this.user_zis.textContent();
+   const userZis_value = await this.user_zis.inputValue();
    return userZis_value;
   }
   async get_aux_value(){
-   const aux_value = await this.aux.textContent();
-   return aux_value;
+   return await this.aux.inputValue();
   }
   async get_stc_zis_value(){
-   const stcZis_value = await this.stc_zis.textContent();
-   return stcZis_value;
+   return await this.stc_zis.inputValue();
+//    const stcZis_value = await this.stc_zis.textContent();
+//    return stcZis_value;
   }
   async get_stc_zowe_value(){
-   const stcZowe_value = await this.stc_zowe.textContent();
-   return stcZowe_value;
+   return await this.stc_zowe.inputValue();
+//    const stcZowe_value = await this.stc_zowe.textContent();
+//    return stcZowe_value;
   }
 
   async get_sysProg_value(){
-   const sysProg_value = await this.sys_prog.textContent();
+   const sysProg_value = await this.sys_prog.inputValue();
+   console.log(sysProg_value);
    return sysProg_value;
   }
   async returnTitleOfSecurityPage(){
@@ -197,7 +223,7 @@ class SecurityPage{
     const certPage_title = await this.certificateTab_title.textContent();
     return certPage_title;
   }
-  
+
   async returnTitleOfstcPage(){
    const stcPage_title = await this.stc_title.textContent();
    return stcPage_title;

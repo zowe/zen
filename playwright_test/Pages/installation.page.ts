@@ -21,6 +21,7 @@ class InstallationPage{
   continueToNetworkSetup: Locator;
   editorTitleElement: Locator;
   closeEditorButton: Locator;
+  ErrorMsg: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -37,12 +38,13 @@ class InstallationPage{
     this.viewEditYaml = page.locator("//button[text()='View/Edit Yaml']")    
     this.viewSubmitJob = page.locator("//button[text()='View/Submit Job']")    
     this.viewJobOutput = page.locator("//button[text()='View Job Output']")    
-	this.saveAndClose = page.locator("//button[text()='Save & close']")
+	  this.saveAndClose = page.locator("//button[text()='Save & close']")
     this.previousStep = page.locator("//button[text()='Previous step']")
     this.skipInstallation = page.locator("//button[contains(text(),'Skip')]")    
     this.continueToNetworkSetup = page.locator("//button[text()='Continue to Network Setup']")
     this.editorTitleElement = page.locator("//h2[text()='Editor']")
     this.closeEditorButton = page.locator("//button[text()='Close']")
+    this.ErrorMsg = page.locator('//*[@id="zen-root-container"]/div[1]/header/div/div[2]')
   }
 
   async getInstallationPageTitle(){
@@ -50,8 +52,13 @@ class InstallationPage{
     return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
+  async getErrorMsg(){
+    await this.page.waitForTimeout(2000)
+    return await this.ErrorMsg.textContent({ timeout: 2000 });
+  }
+
   async enterPrefix(prefix: string): Promise<void>{
-    await this.page.waitForTimeout(500)
+    await this.page.waitForTimeout(1000)
     await this.prefix.fill(prefix);
   }
 
@@ -188,6 +195,7 @@ class InstallationPage{
   
   async clickInstallMvsDatasetsInvalid(){
 	await this.installMVSDatasets.click();
+  await this.page.waitForTimeout(500)
   }
   
   async fillAllFields(datasetPrefix: string, parmLib: string, procLib: string, jclLib: string, loadLib: string, authLoadLib: string, authPluginLib: string){
@@ -196,10 +204,6 @@ class InstallationPage{
 	await this.enterProcLib(procLib);
 	await this.enterJclLib(jclLib);
 	await this.enterLoadLib(loadLib);
-	await this.enterAuthLoadLib(authLoadLib);
-	await this.enterAuthPluginLib(authPluginLib);
-	await this.enterAuthLoadLib(authLoadLib);
-	await this.enterAuthPluginLib(authPluginLib);
 	await this.enterAuthLoadLib(authLoadLib);
 	await this.enterAuthPluginLib(authPluginLib);
   }

@@ -9,7 +9,7 @@ class TitlePage {
   constructor(page: Page) {
     this.page = page;
     this.zoweInstallButton = page.locator('#card-install')
-    this.zoweDryrunButton = page.locator('#card-configure')
+    this.zoweDryrunButton = page.locator('//*[@id="card-dry run"]')
     this.resumeProgressButton = page.locator("//button[text()='Resume Progress']")
   }
 
