@@ -45,24 +45,26 @@ class ApfAuthPage{
     this.page = page;
     this.continueButtonSelector = page.locator('.MuiButton-containedPrimary.MuiButton-sizeMedium')
     this.userNameInputSelector = page.locator('label:has-text("User Name") + div input#standard-required')
-    this.writeConfig_greenCheckXpath = page.locator('#card-download-progress-card svg.MuiSvgIcon-colorSuccess')
-    this.uploadYaml_greenCheckXpath = page.locator('#card-download-progress-card svg.MuiSvgIcon-colorSuccess')
-    this.init_apfauth_greenCheckXpath = page.locator("#card-upload-progress-card svg.MuiSvgIcon-colorSuccess")
+    this.writeConfig_greenCheckXpath = page.locator('//*[@id="box-download-progress-card"][1]')
+    this.uploadYaml_greenCheckXpath = page.locator('//*[@id="box-download-progress-card"][2]')
+    this.init_apfauth_greenCheckXpath = page.locator('//*[@id="card-upload-progress-card"]')
     this.previous_step_button = page.locator('//button[contains(text(),"Previous step")]')
     this.skip_installation_button = page.locator('//button[contains(text(),"Skip")]')
     this.skip_apf_auth_button = page.locator('//button[contains(text(),"Skip")]')
     this.continue_apfauth_setup = page.locator('//button[contains(text(),"Continue to APF Auth Setup")]')
     this.continue_security_setup = page.locator('//button[contains(text(),"Continue to Security Setup")]')
     this.editor_title_element = page.locator('//h2[text()="Editor"]')
-    this.APFAUTH_TITLE = page.locator('APF Authorize Load Libraries')
+    this.APFAUTH_TITLE = page.locator('//*[@id="container-box-id"]/form/div/div[1]/div')
     this.installationTitle = page.locator('//div[text()="Installation"]')
+    this.NETWORKING_TITLE = page.locator(' //div[text()="Networking"]');
     this.licenseAgreement = page.locator('//button[contains(text(), "License Agreement")]')
     this.acceptLicense = page.locator('//html/body/div[2]/div[3]/div/div[2]/button[1]')
     this.continueToComponentInstallation = page.locator('//button[contains(text(), "Continue to Components Installation")]')
-    this.datasetPrefix = page.getByLabel('Prefix')
-    this.authLoadLib = page.getByLabel('Auth Loadlib')
-    this.authpluginLib = page.getByLabel('Auth Plugin Lib')
-    this.click_ApfAuth = page.locator('//span[text()="Apf Auth"]');
+    this.datasetPrefix = page.locator("//label[text()='Prefix']//following-sibling::div/input")
+    this.authLoadLib = page.locator("//label[text()='Auth Loadlib']//following-sibling::div/input")
+    this.authpluginLib = page.locator("//label[text()='Auth Plugin Lib']//following-sibling::div/input")
+    this.click_ApfAuth = page.locator('//span[text()="APF Auth"]');
+    this.click_Installation = page.locator('//span[text()="Installation"]')
     this.skipInstallation = page.locator('//button[contains(text(),"Skip")]')
     this.run_zwe_init_apfauth =  page.locator('//button[contains(text(),"zwe init apfauth")]')
     this.view_yaml =  page.locator('//button[contains(text(),"View/Edit Yaml")]')
@@ -71,7 +73,7 @@ class ApfAuthPage{
     this.save_and_close =  page.locator('//button[contains(text(),"Save & close")]')
     this.previous_step = page.locator('//button[contains(text(),"Previous step")]')
     this.skip_apf_auth = page.locator('//button[contains(text(),"Skip")]')
-    this.initApfauth = page.locator('//button[contains(text(),"zwe init apfauth")]')
+    this.initApfauth = page.locator('//button[contains(text(),"Initialize APF Authorizations")]')
     this.close_button = page.locator('//button[contains(text(), "Close")]')
     this.securityTab_title = page.locator('//div[text()="Security"]')
     this.dataset_prefix_value = page.getByLabel('Dataset Prefix')
@@ -88,6 +90,7 @@ class ApfAuthPage{
   }
 
   async movetoApfAuthPage(){
+   await this.page.waitForTimeout(500)
    await this.click_ApfAuth.click({timeout: 9000})
   }
 
@@ -97,19 +100,33 @@ class ApfAuthPage{
    await this.select_SMPE.click({timeout: 9000})
   }
 
-  async movetoInstallationPage(){
-   await this.licenseAgreement.click({timeout: 9000})
-   await this.acceptLicense.click({timeout: 9000})
-   await this.continueToComponentInstallation.click({timeout: 5000})
-  }
 
   async fillApfDetails(datasetPrefix:string, authLoadLib:string,authpluginLib:string){
-   await this.datasetPrefix.fill(datasetPrefix,{ timeout: 10000 })
-   await this.authLoadLib.fill(authLoadLib,{ timeout: 10000 })
-   await this.authpluginLib.fill(authpluginLib,{ timeout: 10000 })
+    await this.page.waitForTimeout(500)
+    await this.datasetPrefix.fill(datasetPrefix);
+    await this.page.waitForTimeout(500)
+    await this.authLoadLib.fill(authLoadLib);
+    await this.authpluginLib.fill(authpluginLib);
+	  await this.page.waitForTimeout(5000)
+
   }
   async initializeApfauth(){
    await this.initApfauth.click()
+   await this.waitForContinueButtonToBeEnabled();
+  }
+
+  private async waitForContinueButtonToBeEnabled(): Promise<void> {
+    const timeout = 1000000;
+    const interval = 500;
+    const endTime = Date.now() + timeout;
+    while (Date.now() < endTime) {
+      if (await this.isContinueButtonEnabled()) {
+        return;
+      }
+      await this.page.waitForTimeout(interval);
+    }
+
+    throw new Error('Continue button was not enabled within the timeout period');
   }
   async isWriteConfigGreenCheckVisible(){
    return await this.writeConfig_greenCheckXpath.isVisible({ timeout: 50000 });
@@ -126,8 +143,8 @@ class ApfAuthPage{
 
   async returnTitleOfPrevPage(){
    await this.previous_step_button.click({ timeout: 2000 });
-   const installation_title = await this.installationTitle.textContent();
-   return installation_title;
+   const networking_title = await this.NETWORKING_TITLE.textContent();
+   return networking_title;
   }
   async viewYaml(){
    await this.view_yaml.click({ timeout: 2000 })

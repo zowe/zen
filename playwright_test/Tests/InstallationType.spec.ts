@@ -5,12 +5,23 @@ import PlanningPage from '../Pages/planning.page.ts';
 import InstallationTypePage from '../Pages/installationType.page.ts';
 import InstallationPage from '../Pages/installation.page.ts';
 import config from '../utils/config';
+import { prepareEnvironment } from '../prepare.js';
+
 
 let electronApp: ElectronApplication
 const PLANNING_TITLE = 'Before you start';
 const INSTALLATION_PAGE_TITLE = 'Installation';
 const DOWNLOAD_ZOWE_PAX = 'Download Zowe Pax';
 
+test.beforeAll(async () => {
+  test.setTimeout(600000);
+  try {
+    await prepareEnvironment({ install: true, remove: false });
+  } catch (error) {
+    console.error('Error during environment preparation:', error);
+    process.exit(1);
+  }
+});
 
 test.describe('InstallationTypeTab', () => {
   let connectionPage: ConnectionPage;
@@ -28,21 +39,18 @@ test.describe('InstallationTypeTab', () => {
     planningPage = new PlanningPage(page);
     installationTypePage = new InstallationTypePage(page);
     installationPage = new InstallationPage(page);
-    titlePage.navigateToConnectionTab()
+    await titlePage.navigateToConnectionTab()
     await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
-    await connectionPage.SubmitValidateCredential();
-    await connectionPage.clickContinueButton();
+	  await connectionPage.SubmitValidateCredential();
+	  await connectionPage.clickContinueButton();
     await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
-	    config.ZOWE_WORKSPACE_DIR, 
-		config.ZOWE_EXTENSION_DIR, 
-		config.ZOWE_LOG_DIR, 
-		'1', 
-		config.JOB_NAME, 
-		config.JOB_PREFIX, 
-		config.JAVA_HOME, 
-		config.NODE_HOME, 
-		config.ZOSMF_HOST, 
-		config.ZOSMF_PORT, 
+	    config.ZOWE_WORKSPACE_DIR,
+		config.ZOWE_EXTENSION_DIR,
+		config.ZOWE_LOG_DIR,
+		config.JAVA_HOME,
+		config.NODE_HOME,
+		config.ZOSMF_HOST,
+		config.ZOSMF_PORT,
 		config.ZOSMF_APP_ID
 	  );
     await planningPage.clickValidateLocations()
@@ -100,7 +108,7 @@ test.describe('InstallationTypeTab', () => {
     await installationTypePage.clickAgreeLicense()
     const Is_Continue_Button_Enable = await installationTypePage.isContinueUnpaxEnabled();
     expect(Is_Continue_Button_Enable).toBe(true);
-    await installationTypePage.continueToUnpax()
+    await installationTypePage.clickOnContinueToUnpax()
     const title = await installationPage.getInstallationPageTitle();
     expect(title).toBe(DOWNLOAD_ZOWE_PAX);
   })
@@ -113,7 +121,8 @@ test.describe('InstallationTypeTab', () => {
     expect(Is_Continue_Button_Enable).toBe(true);
     await installationTypePage.clickSaveAndClose();
     await titlePage.clickOnResumeProgress();
-	await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+	  await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
+    await connectionPage.SubmitValidateCredential()
     const is_GreenCheck_Visible = await installationTypePage.isLicenseAgreementGreenCheckVisible();
     expect(is_GreenCheck_Visible).toBe(true);
     const Is_Continue_Button_Enable_After_Save = await installationTypePage.isContinueUnpaxEnabled();
