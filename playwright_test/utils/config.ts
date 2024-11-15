@@ -19,6 +19,7 @@ interface Config {
   AUTH_PLUGIN_LIB: string | undefined;
   PROC_LIB: string | undefined;
   PARM_LIB: string | undefined;
+  ZIS: string | undefined;
   JCL_LIB: string | undefined;
   LOAD_LIB: string | undefined;
   DOMAIN_NAME: string | undefined;
@@ -58,6 +59,7 @@ const config: Config = {
   AUTH_PLUGIN_LIB: process.env.AUTH_PLUGIN_LIB,
   PROC_LIB: process.env.PROC_LIB,
   PARM_LIB: process.env.PARM_LIB,
+  ZIS: process.env.ZIS,
   JCL_LIB: process.env.JCL_LIB,
   LOAD_LIB: process.env.LOAD_LIB,
   EXTERNAL_PORT: process.env.EXTERNAL_PORT,

@@ -13,6 +13,7 @@ class ApfAuthPage{
   skip_apf_auth_button: Locator;
   continue_apfauth_setup: Locator;
   continue_security_setup: Locator;
+  continueButtonSelector: Locator;
   editor_title_element: Locator;
   installationTitle: Locator;
   APFAUTH_TITLE: Locator;
@@ -40,6 +41,11 @@ class ApfAuthPage{
   auth_plugin_lib_value:Locator;
   dataset_prefix_value:Locator;
   apf_auth_tab: Locator;
+
+
+
+
+
 
   constructor(page: Page) {
     this.page = page;
@@ -82,8 +88,13 @@ class ApfAuthPage{
 
 	//this.select_SMPE = page.getByLabel('//button[contains(text(),"SMP/E")]')
 	this.select_SMPE = page.locator('span:has-text("SMP/E")');
-
+  this.apf_auth_tab = page.locator("//span[text()='APF Auth']")
   }
+
+  async clickApfAuthTab(){
+    await this.apf_auth_tab.click({timeout: 9000})
+   }
+
   async returnTitleOfApfAuthPage(){
    const ApfAuthTitle = await this.APFAUTH_TITLE.textContent();
    return ApfAuthTitle;
@@ -94,6 +105,13 @@ class ApfAuthPage{
    await this.click_ApfAuth.click({timeout: 9000})
   }
 
+  async movetoInstallationPage(){
+   await this.page.waitForTimeout(5000)
+   await this.click_Installation.click({timeout: 9000})
+  }
+  async isContinueButtonEnabled(){
+   return await this.continue_security_setup.isEnabled();
+  }
   async selectInstallationType(){
    await this.select_SMPE.waitFor({ state: 'visible', timeout: 9000 }); // Adjust timeout if needed
    console.log('SMP/E span is visible.');
@@ -174,14 +192,9 @@ class ApfAuthPage{
    return editor_title;
   }
 
-  async isContinueButtonEnabled(){
-    return await this.continue_security_setup.isEnabled({ timeout: 5000 });
-   }
-
-   async isContinueButtonDisable(){
+  async isContinueButtonDisable(){
    return await this.continue_security_setup.isDisabled({ timeout: 5000 });
   }
-
   async click_saveAndClose(){
    this.save_and_close.click({ timeout: 2000 })
   }

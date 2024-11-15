@@ -18,7 +18,8 @@ class InstallationTypePage{
   validateLocationGreenCheck: Locator;
   licenseAgreementGreenCheck: Locator;
   disagreeLicense: Locator;
-
+  installation_Type_Tab: Locator;
+  continueToUnpaxButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -33,7 +34,7 @@ class InstallationTypePage{
     this.continueToComponentInstallation = page.locator("//button[text()='Continue to Components Installation']")
     this.zoweLink = page.locator("//a[@href='zowe.org']")
     this.agreeLicense = page.locator("//button[text()='Agree']")
-    this.disagreeLicense = page.locator("//button[text()='Agree']")
+    this.disagreeLicense = page.locator("//button[text()='Disagree']")
     this.uploadPaxButton = page.locator("//button[text()='Upload PAX']")
     this.runtimeDir = page.locator("//label[contains(text(),'Runtime Directory')]//following-sibling::div/input")
     this.validateLocation = page.locator("//button[text()= 'Validate location']")
@@ -42,11 +43,16 @@ class InstallationTypePage{
 	  this.retrieveExampleZoweYaml = page.locator("//button[contains(text(),'Retrieve example-zowe.yaml')]")
 	  this.continueCompInstallation = page.locator("//button[contains(text(),'Continue to Components Installation')]")
 	  this.skipUnpaxButton = page.locator("//button[text()='Skip ']")
-	  this.continueToUnpax = page.locator("//button[contains(text(),'Continue to Unpax')]")
+	  this.continueToUnpaxButton = page.locator("//button[contains(text(),'Continue to Unpax')]")
     this.SkipUnpax = page.locator('//button[contains(text(),"Skip")]')
     this.retrieveExampleZoweYaml= page.locator('//button[contains(text(),"Retrieve example-zowe.yaml")]')
     this.click_InitializationStage = page.locator('//span[text()="Initialization"]')
+    this.installation_Type_Tab = page.locator('//span[text()="Installation Type"]')
   }
+
+  async clickInstallationTypeTab(){
+    await this.installation_Type_Tab.click({timeout: 9000})
+   }
 
   async getInstallationTypePageTitle(){
     return await this.pageTitle.textContent({ timeout: 2000 });
@@ -200,7 +206,11 @@ class InstallationTypePage{
     this.clickValidateLocation()
   }
   async clickOnContinueToUnpax(){
-    this.continueToUnpax.click({ timeout: 2000 })
+    this.continueToUnpaxButton.click({ timeout: 2000 })
+  }
+
+  async isContinueToUnpaxEnabled(){
+    return await this.continueToUnpaxButton.isEnabled()
   }
 
   async clickSkipUnpaxButton(){

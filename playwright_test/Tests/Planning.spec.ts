@@ -90,7 +90,7 @@ test.describe('PlanningTab', () => {
     })
 
     test('Test Validate Locations with Valid Data', async () => {
-      await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
+      await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
 	    config.ZOWE_WORKSPACE_DIR,
 		config.ZOWE_EXTENSION_DIR,
 		config.ZOWE_LOG_DIR,
@@ -125,10 +125,10 @@ test.describe('PlanningTab', () => {
       const is_Continue_Button_enable = await planningPage.isContinueToInstallationDisabled();
       expect(is_Continue_Button_enable).toBe(true);
     })
-
+   
 
     test('Test Save and Close and Resume Progress', async () => {
-       await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR,
+       await planningPage.fillPlanningPageWithRequiredFields(config.ZOWE_ROOT_DIR, 
 	    config.ZOWE_WORKSPACE_DIR,
 		  config.ZOWE_EXTENSION_DIR,
 		  config.ZOWE_LOG_DIR,
@@ -139,7 +139,7 @@ test.describe('PlanningTab', () => {
 		  config.ZOSMF_APP_ID
 	    );
       await planningPage.clickValidateLocations()
-      await planningPage.click_saveAndClose()
+      await planningPage.click_saveAndClose() 
       await titlePage.clickOnResumeProgress();
 	    await connectionPage.fillConnectionDetails(config.SSH_HOST, config.SSH_PORT, config.SSH_USER, config.SSH_PASSWD);
 	    await connectionPage.SubmitValidateCredential();

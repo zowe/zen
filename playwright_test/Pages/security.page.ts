@@ -30,7 +30,8 @@ class SecurityPage{
   product: Locator;
   APFAUTH_TITLE: Locator;
   continueToComponentInstallation: Locator;
-  security_tab: Locator;
+
+
 
   constructor(page: Page) {
     this.page = page;
@@ -66,9 +67,6 @@ class SecurityPage{
     this.user_zis =  page.locator(this.mainXpath +'/div/div/div[2]/div/label');
     this.user_zowe =  page.locator(this.mainXpath +'/div/div/div[1]/div/label');
     this.aux =  page.getByLabel('Aux');
-    this.stc_zowe =  page.locator(this.stc_mainXpath + 'div[1]/div/div[1]/div/div/input');
-    this.stc_zis =  page.locator(this.stc_mainXpath + 'div[1]/div/div[2]/div/div/input');
-    this.security_tab = page.locator("//span[text()='Security']")
     this.stc_zowe =  page.locator(this.stc_mainXpath + '/div[1]/div/div[1]/div/label');
     this.stc_zis =  page.locator(this.stc_mainXpath + '/div[1]/div/div[2]/div/label');
 
@@ -100,10 +98,6 @@ class SecurityPage{
    await this.stc_zis.fill(stc_zis)
    await this.page.waitForTimeout(1000);
 
-  }
-
-  async clickSecurityTab(){
-    await this.security_tab.click({ timeout: 2000 })
   }
 
   async fillAdmin(admin:string){
@@ -178,10 +172,6 @@ class SecurityPage{
    const editor_title = await this.editor_title_element.textContent();
    return editor_title;
   }
-
-  async isContinueButtonEnabled(){
-    return await this.continue_CertificateSelector.isEnabled({ timeout: 5000 });
-   }
 
   async isContinueButtonDisable(){
    return await this.continue_CertificateSelector.isDisabled({ timeout: 5000 });
