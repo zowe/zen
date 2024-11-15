@@ -100,7 +100,7 @@ class NetworkingPage{
     this.APFAUTH_TITLE = page.locator('//div[text()="APF Authorize Load Libraries"]');
     this.continue_ReviewSelector = page.locator('//button[contains(text(), "Continue to APF Auth Setup")]');
     this.installationTitle = page.locator('//div[text()="Installation"]');
-    this.contiuneToApfAuth = page.locator('//button[text()="Continue to APF Auth Setup"]');
+    
   }
 
   async isCheckBoxChecked(component: string,label:string): Promise<boolean> {
@@ -109,15 +109,15 @@ class NetworkingPage{
    try {
      if (await checkboxLocator.isChecked()) {
        console.log("Checkbox is already checked.");
-       return true;
+       return true; 
      } else {
-       await checkboxLocator.check();
+       await checkboxLocator.check(); 
        console.log("Checkbox has been checked.");
-       return true;
+       return true; 
      }
    } catch (error) {
      console.error("Failed to toggle the checkbox:", error);
-     return false;
+     return false; 
    }
   }
   async movetoNetworkingPage(){
@@ -176,7 +176,7 @@ class NetworkingPage{
         return false;
      }
   }
-
+	
 
 
   async isCheckboxCheckedAndBlue(xpath: string): Promise<boolean>{
@@ -191,18 +191,18 @@ class NetworkingPage{
 	 } catch (error){
 	   console.log('Checkbox not found');
        return false;
-
+	 
 	 }
   }
-
+  
   async isMetricsServiceDebugChecked(): Promise<boolean> {
     return await this.isCheckboxCheckedAndBlue(this.metricService_debug_checkbox);
   }
-
+  
   async clickMetricsServiceDebug(): Promise<void> {
     await this.click_checkBox(this.metricService_debug_checkbox);
   }
-
+  
   async isExplorerUssDebugChecked(): Promise<boolean> {
     return await this.isCheckboxCheckedAndBlue(this.explorerUSS_debug_checkbox);
   }
@@ -210,11 +210,11 @@ class NetworkingPage{
   async isAppServerDebugChecked(): Promise<boolean> {
     return await this.isCheckboxCheckedAndBlue(this.app_server_debug);
   }
-
+  
   async clickExplorerUssDebug(): Promise<void> {
     await this.click_checkBox(this.explorerUSS_debug_checkbox);
   }
-
+  
   async clickAppServerDebug(): Promise<void> {
     await this.click_checkBox(this.app_server_debug);
   }
@@ -222,7 +222,6 @@ class NetworkingPage{
   async delete_DomainNameField(){
    await this.deleteDomainName.click();
    }
-
   async add_DomainNameField(){
     await this.addDomainField.click()
   }
@@ -241,9 +240,6 @@ class NetworkingPage{
   async is_skipNetworkingButtonEnable(){
    return await this.skip_button.isEnabled({ timeout: 5000 });
   }
-  async clickContinueToApfAuth(){
-    this.contiuneToApfAuth.click({ timeout: 2000 })
-   }
 
   async click_skipNetworking(){
    const isEnabled = await this.is_skipNetworkingButtonEnable();
@@ -292,9 +288,9 @@ class NetworkingPage{
         allText += newText;
         await this.page.evaluate(() => {
             const editor = document.querySelector('.monaco-scrollable-element.editor-scrollable.vs');
-            editor.scrollTop += 100;
+            editor.scrollTop += 100; 
         });
-        await this.page.waitForTimeout(1000);
+        await this.page.waitForTimeout(1000); 
         const currentScrollHeight = await this.page.evaluate(() => {
             const editor = document.querySelector('.monaco-scrollable-element.editor-scrollable.vs');
             return editor.scrollHeight;

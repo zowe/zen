@@ -40,7 +40,7 @@ class ApfAuthPage{
   auth_load_lib_value:Locator;
   auth_plugin_lib_value:Locator;
   dataset_prefix_value:Locator;
-  apf_auth_tab: Locator;
+
 
 
 
@@ -85,16 +85,11 @@ class ApfAuthPage{
     this.dataset_prefix_value = page.getByLabel('Dataset Prefix')
     this.auth_load_lib_value = page.getByLabel('APF Authorized Load Library')
     this.auth_plugin_lib_value = page.getByLabel('Zowe ZIS Plugins Load Library')
-
+	
 	//this.select_SMPE = page.getByLabel('//button[contains(text(),"SMP/E")]')
 	this.select_SMPE = page.locator('span:has-text("SMP/E")');
-  this.apf_auth_tab = page.locator("//span[text()='APF Auth']")
+
   }
-
-  async clickApfAuthTab(){
-    await this.apf_auth_tab.click({timeout: 9000})
-   }
-
   async returnTitleOfApfAuthPage(){
    const ApfAuthTitle = await this.APFAUTH_TITLE.textContent();
    return ApfAuthTitle;
@@ -117,7 +112,7 @@ class ApfAuthPage{
    console.log('SMP/E span is visible.');
    await this.select_SMPE.click({timeout: 9000})
   }
-
+  
 
   async fillApfDetails(datasetPrefix:string, authLoadLib:string,authpluginLib:string){
     await this.page.waitForTimeout(500)
@@ -126,7 +121,7 @@ class ApfAuthPage{
     await this.authLoadLib.fill(authLoadLib);
     await this.authpluginLib.fill(authpluginLib);
 	  await this.page.waitForTimeout(5000)
-
+    
   }
   async initializeApfauth(){
    await this.initApfauth.click()
