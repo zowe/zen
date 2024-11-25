@@ -222,24 +222,20 @@ class PlanningPage{
     await this.page.waitForTimeout(500);
     await this.previousStep.click();
   }
-  private async waitForContinueButtonToBeEnabled(): Promise<boolean> {
-    const timeout = 100000; // Adjust the timeout as needed
-    const interval = 500;
-    const endTime = Date.now() + timeout;
 
-    while (Date.now() < endTime) {
-      if (await this.isContinueToInstallationEnabled()) {
-        console.log("Continue button is enabled.");
-        return true; // Button became enabled
+  async clickContinueToInstallation(){
+    const timeout = 30000;
+    const interval = 100;
+    const startTime = Date.now();
+	const isButtonEnabled = async (): Promise<boolean> => {
+      return await this.isContinueToInstallationEnabled();
+    };
+	while (!(await isButtonEnabled())) {
+      if (Date.now() - startTime > timeout) {
+        throw new Error('Timed out waiting for the button to be enabled.');
       }
-      await this.page.waitForTimeout(interval);
+      await new Promise(resolve => setTimeout(resolve, interval));
     }
-
-    console.log("Continue button did not enabled ");
-    return false; // Button did not become enabled
-  }
-
- async clickContinueToInstallation(): Promise<void> {
     await this.continueInstallationOptions.click();
 }
 
@@ -247,7 +243,7 @@ class PlanningPage{
     await this.page.waitForTimeout(500);
     return await this.continueInstallationOptions.isDisabled()
   }
-  
+
   async isContinueToInstallationEnabled(){
     await this.page.waitForTimeout(500);
     return await this.continueInstallationOptions.isEnabled()
@@ -267,8 +263,8 @@ class PlanningPage{
     await this.saveAndValidate.click();
 	await this.page.waitForTimeout(500);
   }
-  
-  
+
+
   async fillPlanningPageWithRequiredFields(runtimeDir: any, workspaceDir: any, extensionDir: any, logDir: any, javaLocation:any,nodejsLocation:any,zOSMFHost:any,zOSMFPort:any,zOSMFAppID:any){
     await this.clickSaveValidate();
     await this.enterRuntimeDir(runtimeDir);
@@ -277,8 +273,8 @@ class PlanningPage{
     await this.enterExtensionsDir(extensionDir);
     await this.enterJavaLocation(javaLocation);
     await this.enterNodeJsLocation(nodejsLocation);
-    //await this.enterZosmfHost(zOSMFHost);
-    //await this.enterZosmfPort(zOSMFPort);
+    await this.enterZosmfHost(zOSMFHost);
+    await this.enterZosmfPort(zOSMFPort);
     await this.enterZosmfApplicationId(zOSMFAppID);
     await this.page.waitForTimeout(2000);
   }

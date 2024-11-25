@@ -8,7 +8,7 @@ class VsamPage{
   previous_step_button = Locator;
   skip_button = Locator;
   editor_title_element = Locator;
-  VSAM_TITLE = Locator;
+  VSAM_TITLE : Locator;
   continueToComponentInstallation = Locator;
   view_yaml =  Locator;
   viewAndSubmitJob =  Locator;
