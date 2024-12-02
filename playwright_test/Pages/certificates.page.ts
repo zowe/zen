@@ -4,6 +4,7 @@ import yaml from 'js-yaml';
 
 class CertificatesPage{
   page: Page;
+  pageTitle: Locator;
   click_CertificatePage: Locator;
   CERTIFICATE_TITLE: Locator;
   option1: Locator;
@@ -118,10 +119,16 @@ class CertificatesPage{
     this.previous_step = page.locator('//button[contains(text(),"Previous step")]')
     this.close_button = page.locator('//button[contains(text(), "Close")]')
     this.continue_CachingService = page.locator('//button[text()="Continue to Caching Service Setup"]')
+    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
   }
 
   async movetoCertificatePage(){
    await this.click_CertificatePage.click({timeout: 5000})
+  }
+
+  async getCertificatesPageTitle() {
+    await this.page.waitForTimeout(500);
+    return await this.pageTitle.textContent({ timeout: 2000 });
   }
 
   async returnTitleOfCertiPage(){
