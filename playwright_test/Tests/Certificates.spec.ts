@@ -92,7 +92,7 @@ test.describe('CertificateTab', () => {
 	config.AUTH_LOAD_LIB,
 	config.AUTH_PLUGIN_LIB
  )
-  await installationPage.clickInstallMvsDatasets();
+ await installationPage.clickInstallMvsDatasets();
  await installationPage.clickContinueToNetworkSetup();
  await certificatePage.movetoCertificatePage();
 
@@ -102,9 +102,24 @@ test.describe('CertificateTab', () => {
      await electronApp.close()
    })
 
- test('test title of page & required fields', async ({ page }) => {
+test('test title of page & required fields', async ({ page }) => {
    const title = await certificatePage.returnTitleOfCertiPage();
    expect(title).toBe(CERTIFICATE_TITLE);
+   await certificatePage.clickOption2()
+   await expect(certificatePage.keyringHeading).toBeTruthy()
+   await expect(certificatePage.KeyringOwner).toBeTruthy()
+   await expect(certificatePage.keyringLabel).toBeTruthy()
+   await expect(certificatePage.keyringCaLabel).toBeTruthy()
+   await expect(certificatePage.keyringConnect).toBeTruthy()
+   await expect(certificatePage.keyringImport).toBeTruthy()
+   await expect(certificatePage.keyringConnectUser).toBeTruthy()
+   await expect(certificatePage.keyringDsName).toBeTruthy()
+   await expect(certificatePage.keyringConnectLabel).toBeTruthy()
+   await expect(certificatePage.keyringConnectPassword).toBeTruthy()
+   await expect(certificatePage.KeyringZOSMF).toBeTruthy()
+   await expect(certificatePage.keyringZOSMFUser).toBeTruthy()
+   await expect(certificatePage.keyringZosmfCa).toBeTruthy()
+   await certificatePage.clickOption1()
    await expect(certificatePage.option1).toBeTruthy()
    await expect(certificatePage.option2).toBeTruthy()
    await expect(certificatePage.keystore_directory).toBeTruthy()
@@ -128,9 +143,45 @@ test.describe('CertificateTab', () => {
    await expect(certificatePage.import_certificate_authorities).toBeTruthy()
    await expect(certificatePage.verify_certificates).toBeTruthy()
    const verifyList = await certificatePage.verifyCertificatesList();
-   expect(verifyList).toEqual(VERIFY_CERTIFICATE_LIST);
+   await expect(verifyList).toEqual(VERIFY_CERTIFICATE_LIST);
  })
- 
+
+test('Test init JCERACFKS certificates with NONSTRICT Mode', async ({ page }) => {
+  await script.runCommand(`chmod -R 777 ${process.env.ZOWE_ROOT_DIR}/keystore &&
+  rm -r ${process.env.ZOWE_ROOT_DIR}/keystore`);
+  await certificatePage.viewYaml();
+  await expect(certificatePage.editor_title_element).toBeTruthy(); 
+  const updates = [
+    { keyPath: 'pem:\\s*\\n\\s*key:\\s[^\\n]*\\n\\s*certificate:\\s[^\\n]*\\n\\s*certificateAuthorities:\\s[^\\n]*', newValue: ''},
+    { keyPath: '(?<=alias:\\s).*$', newValue: 'ZWEMVDJS' },
+    { keyPath: '(?<=truststore:\\s+(?:.*\\n)*?\\s+type:\\s*)\\S.*', newValue: 'JCERACFKS' },
+    { keyPath: '(?<=keystore:\\s+(?:.*\\n)*?\\s+type:\\s*)\\S.*', newValue: 'JCERACFKS' },
+    { keyPath: '(?<=password:\\s).*$', newValue: 'password' },
+    { keyPath: '(?<=file:\\s).*$', newValue: 'safkeyring://ZWESMVD/ZoweKeyring' }
+];
+  await certificatePage.updateEditorYaml(updates);
+  await certificatePage.closeButton();
+  await certificatePage.viewYaml();
+  const valueExists = await certificatePage.read_yaml();
+  for (const { newValue } of updates) {
+  if (newValue !== '') {
+    await expect(valueExists).toContain(newValue);
+  }
+  }
+  await certificatePage.closeButton();
+  await certificatePage.fillKeystoreDir(`${config.ZOWE_ROOT_DIR}/keystore`);
+  await certificatePage.select_VerifyCert('DISABLED');
+  await certificatePage.initializeCert();
+  const isWriteConfigCheckVisible = await certificatePage.isWriteConfigGreenCheckVisible();
+  await expect(isWriteConfigCheckVisible).toBe(true);
+  const isUploadConfigCheckVisible = await certificatePage.isUploadConfigGreenCheckVisible();
+  await expect(isUploadConfigCheckVisible).toBe(true);
+  const isInitCertCheckVisible = await certificatePage.isInitCertGreenCheckVisible();
+  await expect(isInitCertCheckVisible).toBe(true);
+  const is_ContinueButtonDisable = await certificatePage.isContinueButtonDisable();
+  await expect(is_ContinueButtonDisable).toBe(false);
+});
+
 test('Test Skip certificate button is enable', async ({ page }) => {
   const isLaunchConfigEnable = await certificatePage.is_skipCertificateButtonEnable();
   expect(isLaunchConfigEnable).toBe(true);
@@ -186,7 +237,7 @@ test('Test init certificates with NONSTRICT Mode & verify keystore dir created s
   rm -r ${process.env.ZOWE_ROOT_DIR}/keystore`);
   await certificatePage.viewYaml();
   await expect(certificatePage.editor_title_element).toBeTruthy();
-  await certificatePage.updateEditorYaml('/global/zowe', config.ZOWE_ROOT_DIR);
+  await certificatePage.updateEditorYaml([{ keyPath: '/global/zowe', newValue: config.ZOWE_ROOT_DIR }]);
   await certificatePage.closeButton();
   await certificatePage.viewYaml();
   const valueExists = await certificatePage.read_yaml();
@@ -217,7 +268,7 @@ test('Test init certificates with Disabled Mode and verify certificates configur
   rm -r ${process.env.ZOWE_ROOT_DIR}/keystore`);
   await certificatePage.viewYaml();
   await expect(certificatePage.editor_title_element).toBeTruthy();
-  await certificatePage.updateEditorYaml('/global/zowe', config.ZOWE_ROOT_DIR);
+  await certificatePage.updateEditorYaml([{ keyPath: '/global/zowe', newValue: config.ZOWE_ROOT_DIR }]);
   await certificatePage.closeButton();
   await certificatePage.viewYaml();
   const valueExists = await certificatePage.read_yaml();
@@ -249,7 +300,7 @@ test('Test init certificates with Lock keystore dir', async ({ page }) => {
   rm -r ${process.env.ZOWE_ROOT_DIR}/keystore`);
   await certificatePage.viewYaml();
   await expect(certificatePage.editor_title_element).toBeTruthy();
-  await certificatePage.updateEditorYaml('/global/zowe', config.ZOWE_ROOT_DIR);
+  await certificatePage.updateEditorYaml([{ keyPath: '/global/zowe', newValue: config.ZOWE_ROOT_DIR }]);
   await certificatePage.closeButton();
   await certificatePage.fillKeystoreDir(`${config.ZOWE_ROOT_DIR}/keystore`);
   const isChecked = await certificatePage.Lock_checkbox_Ischecked();
@@ -263,4 +314,3 @@ test('Test init certificates with Lock keystore dir', async ({ page }) => {
 });
 
 });
-

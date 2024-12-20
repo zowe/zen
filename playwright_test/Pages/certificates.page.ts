@@ -53,6 +53,22 @@ class CertificatesPage{
   pem_cert_key: locator;
   pem_key: locator;
   sanInput: locator;
+  keyringHeading: locator;
+  certificate_type: locator;
+  KeyringOwner: locator;
+  KeyringName: locator;
+  keyringLabel: locator;
+  keyringCaLabel: locator;
+  keyringConnect: locator;
+  keyringImport: locator;
+  keyringConnectUser: locator;
+  keyringDsName: locator;
+  keyringConnectLabel: locator;
+  keyringConnectPassword: locator;
+  KeyringZOSMF: locator;
+  keyringZOSMFUser: locator;
+  keyringZosmfCa: locator;
+  fillCerttificateType: locator;
 
 
 
@@ -64,7 +80,23 @@ class CertificatesPage{
     this.click_CertificatePage = page.locator('//span[text()="Certificates"]')
     this.option1 = page.locator('//span[text()="Option 1"]')
     this.option2 = page.locator('//span[text()="Option 2"]')
+    this.keyringHeading = page.getByText('keyring').nth(2);
     this.certificate_type = page.locator('//label[text()="Type"]')
+    this.KeyringOwner = page.locator('//label[text()="Owner"]')
+    this.KeyringName = page.locator('//label[text()="Name"]')
+    this.keyringLabel = page.locator('//label[text()="Label"]').nth(1)
+    this.keyringCaLabel = page.locator('//label[text()="Ca Label"]')
+    this.keyringConnect = page.locator('//span[text() = "Connect"]')
+    this.keyringImport = page.locator('//span[text() = "Import"]')
+    this.keyringConnectUser  = page.locator('//span[text() = "User"]').nth(1)
+    this.keyringDsName  = page.locator('//span[text() = "Ds Name"]')
+    this.keyringConnectLabel  = page.locator('//span[text() = "Label"]').nth(2)
+    this.keyringConnectPassword  = page.locator('//span[text() = "Password"]')
+    this.KeyringZOSMF = page.locator('//label[text()="Z OSMF"]')
+    this.keyringZOSMFUser= page.locator('//span[text() = "User"]').nth(2)
+    this.keyringZosmfCa= page.locator('//span[text() = "ca"]')
+    this.fillCerttificateType = page.getByLabel('Type')
+
     this.click_dropdown = page.locator('//button[@title="Open"]')
     this.keystore_directory = page.locator('//label[text()="Directory"]')
     this.keystore_value = page.locator("//html/body/div[1]/div[2]/div/div[4]/div/form/div/div[2]/div[2]/div[2]/div/div[2]/div/div/div/div[1]/div/div[1]/div/div/input");
@@ -129,6 +161,23 @@ class CertificatesPage{
   async getCertificatesPageTitle() {
     await this.page.waitForTimeout(500);
     return await this.pageTitle.textContent({ timeout: 2000 });
+  }
+
+  async clickOption2() {
+    await this.option2.scrollIntoViewIfNeeded({ timeout: 2000 });
+    await this.option2.click({ timeout: 2000 });
+  }
+
+  async clickOption1() {
+    await this.option1.scrollIntoViewIfNeeded({ timeout: 2000 });
+    await this.option1.click({ timeout: 2000 });
+  }
+
+  async fillCertificateType(certificateType: string){
+   await this.page.waitForTimeout(500)
+   await this.fillCerttificateType.fill(certificateType);
+   await this.page.keyboard.press('Enter');
+   await this.page.waitForTimeout(5000)
   }
 
   async returnTitleOfCertiPage(){
@@ -287,9 +336,14 @@ class CertificatesPage{
 
   async Lock_checkbox_Ischecked(){
     await this.click_lockCheckbox.click({ timeout: 5000 });
-
    return await this.click_lockCheckbox.isChecked();
+  }
 
+ 
+
+ async isKeyringHeadingVisible() {
+  const element =  this.page.getByText('keyring').nth(2);
+  const isPresent = await element.isVisible();
   }
 
 
@@ -347,23 +401,29 @@ class CertificatesPage{
         }
   }
 
- async updateEditorYaml(keyPath: string, newValue: string): Promise<void> {
-    const editorLocator = this.page.locator('//*[@id="monaco-editor-container"]/div'); 
+
+async updateEditorYaml(updates: { keyPath: string; newValue: string }[]): Promise<void> {
+    const editorLocator = this.page.locator('//*[@id="monaco-editor-container"]/div');
     await editorLocator.click();
-    await this.page.keyboard.press('Control+F'); 
-    await this.page.waitForTimeout(500); 
+    await this.page.keyboard.press('Control+F');
+    await this.page.waitForTimeout(500);
+    await this.page.keyboard.press('Alt+R');
+    for (const { keyPath, newValue } of updates) {
+        await this.page.keyboard.press('Control+F');
+        await this.page.keyboard.type(keyPath);
+        await this.page.waitForTimeout(500);
 
-    await this.page.keyboard.type(keyPath);
-    await this.page.waitForTimeout(500); 
+        await this.page.keyboard.press('Control+H');
+        await this.page.waitForTimeout(500);
+        await this.page.keyboard.type(newValue);
 
-    await this.page.keyboard.press('Control+H'); 
-    await this.page.waitForTimeout(500); 
-    await this.page.keyboard.type(newValue);
+        await this.page.keyboard.press('Control+Alt+Enter');
+        await this.page.waitForTimeout(500);
+        await this.page.keyboard.press('Escape');
 
-    await this.page.keyboard.press('Control+Alt+Enter');
-    await this.page.waitForTimeout(5000);
+        console.log(`Replaced all appearances of "${keyPath}" with "${newValue}"`);
+    }
+}
 
-    console.log(`Replaced all appearances of "${keyPath}" with "${newValue}"`);
- }
 }
 export default CertificatesPage;
