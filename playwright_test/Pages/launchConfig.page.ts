@@ -3,6 +3,7 @@ let electronApp: ElectronApplication
 
 class LaunchConfigPage{
   page: Page;
+  pageTitle: Locator;
   fillValidation: Locator;
   logLevel: Locator;
   fillLogLevel: Locator;
@@ -26,6 +27,7 @@ class LaunchConfigPage{
 
   constructor(page: Page) {
     this.page = page;
+    this.pageTitle = page.locator("//div[@class='MuiBox-root css-la96ob']/div")
     this.click_launchConfig = page.locator('//span[text()="Launch Config"]')
     this.reviewPage_title = page.locator('//span[text()="Review Installation"]')
     this.validation = page.getByLabel('Validation');
@@ -57,9 +59,8 @@ class LaunchConfigPage{
   async movetoLaunchConfigPage(){
    await this.click_launchConfig.click({timeout: 5000})
   }
-  async returnTitleOfConfPage(){
-   const apfAuth_title = await this.CONFPAGE_TITLE.textContent();
-   return apfAuth_title;
+  async getLaunchConfigurationPageTitle() {
+    return await this.pageTitle.textContent({ timeout: 2000 });
   }
   async fillvalues(validation:string){
     const inputLocator = this.page.locator('//html/body/div/div[2]/div/div[4]/div/form/div/div[2]/div/div[1]/div/div[2]/div/div/div/div/div/div/div/div/div/input');

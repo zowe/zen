@@ -58,7 +58,7 @@ class ConnectionPage{
   }
 
   async fillPassword(password: string){
-    await this.page.waitForTimeout(2000);
+    await this.page.waitForTimeout(1000);
     await this.password.fill(password);
    }
 

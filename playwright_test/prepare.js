@@ -1,6 +1,6 @@
 import { connectArgs, Script }  from './setup';
 
-async function prepareEnvironment(options = {}) {
+export async function prepareEnvironment(options = {}) {
   const { install = false, cleanup= false, remove = false } = options;
 
   const SSH_HOST = process.env.SSH_HOST;
@@ -69,7 +69,7 @@ async function prepareEnvironment(options = {}) {
   }
   if (!DATASET_PREFIX) {
     throw new Error('DATASET_PREFIX is not defined');
-  }  
+  }
   if (!AUTH_LOAD_LIB) {
     throw new Error('AUTH_LOAD_LIB is not defined');
   }
@@ -127,7 +127,7 @@ async function prepareEnvironment(options = {}) {
   if (!EXTERNAL_PORT) {
     throw new Error('EXTERNAL_PORT is not defined');
   }
-  
+
   const scriptRunner = new Script({
     host: SSH_HOST,
     port: SSH_PORT,
@@ -146,11 +146,11 @@ async function prepareEnvironment(options = {}) {
    console.log("Removed all created datasets")
   }
 
-  if (remove) { 
+  if (remove) {
     await scriptRunner.remove(ZOWE_ROOT_DIR);
     console.log('Removal complete.');
   }
-  
+
   console.log('Preparation complete.');
 }
 

@@ -14,7 +14,7 @@ class StcsPage{
   previous_step_button = Locator;
   skip_button = Locator;
   editor_title_element = Locator;
-  STCS_TITLE = Locator;
+  STCS_TITLE : Locator;
   continueToComponentInstallation = Locator;
   view_yaml =  Locator;
   viewAndSubmitJob =  Locator;
