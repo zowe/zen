@@ -30,16 +30,35 @@ export class FileTransfer {
   }
 
   public async downloadPax(file: any, fullPath: string): Promise<IResponse> {
-    return new Promise(resolve => {
-      const saveFile: NodeJS.WritableStream = fs.createWriteStream(fullPath);
-      https.get(file, function (response: IncomingMessage) {
-        response.pipe(saveFile);
-        response.on('end', function () {
-          resolve({status: true, details: ''}); 
-        })
-      })
-    })
-  }
+  return new Promise((resolve, reject) => {
+    const saveFile: NodeJS.WritableStream = fs.createWriteStream(fullPath);
+    let currentUrl = file;
+    const makeRequest = () => {
+      https.get(currentUrl, (response: IncomingMessage) => {
+        if (response.statusCode === 301 || response.statusCode === 302) {
+          const redirectUrl = response.headers.location;
+          if (redirectUrl) {
+            currentUrl = redirectUrl;
+            makeRequest();
+          } else {
+            reject(new Error("Redirect URL is missing in the Location header"));
+          }
+        } else if (response.statusCode === 200) {
+          response.pipe(saveFile);
+          response.on('end', function () {
+            resolve({ status: true, details: '' });
+          });
+        } else {
+          reject(new Error(`Failed with status code: ${response.statusCode}`));
+        }
+      }).on('error', (err) => {
+        reject(err);
+      });
+    };
+    makeRequest();
+  });
+}
+
 
   public async upload(config: IIpcConnectionArgs, file: string, fullPath: string, data: DataType = DataType.ASCII) {
     let result;
