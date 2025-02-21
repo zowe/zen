@@ -33,12 +33,19 @@ export class FileTransfer {
   return new Promise((resolve, reject) => {
     const saveFile: NodeJS.WritableStream = fs.createWriteStream(fullPath);
     let currentUrl = file;
+    const maxRedirects = 10;
+    let redirectCount = 0;
     const makeRequest = () => {
       https.get(currentUrl, (response: IncomingMessage) => {
         if (response.statusCode === 301 || response.statusCode === 302) {
+          if (redirectCount >= maxRedirects) {
+            reject(new Error(`Max redirect limit reached`));
+            return;
+          }
           const redirectUrl = response.headers.location;
           if (redirectUrl) {
             currentUrl = redirectUrl;
+            redirectCount++;
             makeRequest();
           } else {
             reject(new Error("Redirect URL is missing in the Location header"));
@@ -55,9 +62,11 @@ export class FileTransfer {
         reject(err);
       });
     };
+    
     makeRequest();
   });
 }
+
 
 
   public async upload(config: IIpcConnectionArgs, file: string, fullPath: string, data: DataType = DataType.ASCII) {

@@ -53,7 +53,7 @@ export class PlanningActions {
   
   public static getExampleZowe(): Promise<IResponse> {
     return new Promise((resolve, reject) => {
-      https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/example-zowe.yaml', (res) => {
+      https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v3.x/master/example-zowe.yaml', (res) => {
         let data = '';
 
         res.on('data', (chunk) => {
@@ -77,7 +77,7 @@ export class PlanningActions {
 
   public static getZoweSchema(): Promise<IResponse> {
     return new Promise((resolve, reject) => {
-      https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/schemas/zowe-yaml-schema.json', (res) => {
+      https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v3.x/master/schemas/zowe-yaml-schema.json', (res) => {
         let data = '';
 
         res.on('data', (chunk) => {
@@ -110,7 +110,7 @@ export class PlanningActions {
 
   public static async getZoweVersion(): Promise<IResponse> {
     return new Promise<IResponse>((resolve, reject) => {
-      https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v2.x/master/manifest.json.template', (res) => {
+      https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v3.x/master/manifest.json.template', (res) => {
         let data = '';
   
         res.on('data', (chunk) => {
