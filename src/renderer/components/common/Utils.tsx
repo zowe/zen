@@ -35,7 +35,7 @@ export const LAUNCH_CONFIG_STAGE_LABEL = "Launch Config";
 export const REVIEW_INSTALL_STAGE_LABEL = "Review Installation";
 export const FINISH_INSTALL_STAGE_LABEL = "Finish Installation";
 
-import Ajv2019 from "ajv/dist/2019"
+import Ajv3019 from "ajv/dist/2019"
 
 export function deepMerge(base: any, extension:any) {
   if (typeof base === "object" && typeof extension === "object") {
@@ -59,7 +59,7 @@ export function isValidUSSPath(path: string): boolean {
 
 export const SERVER_COMMON = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
-  "$id": "https://zowe.org/schemas/v2/server-common",
+  "$id": "https://zowe.org/schemas/v3/server-common",
   "title": "Common types",
   "description": "Configuration types that are common in Zowe and may be referenced by multiple components",
   "$defs": {
@@ -155,7 +155,7 @@ export const SERVER_COMMON = {
 
 export const BASE_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
-  "$id": "https://zowe.org/schemas/v2/server-base",
+  "$id": "https://zowe.org/schemas/v3/server-base",
   "title": "Zowe configuration file",
   "description": "Configuration file for Zowe (zowe.org) version 2.",
   "type": "object",
@@ -193,7 +193,7 @@ export const BASE_SCHEMA = {
                   "description": "Holds Zowe PARMLIB members for plugins",
                   "properties": {
                     "zis": {
-                      "$ref": "/schemas/v2/server-common#zoweDatasetMember",
+                      "$ref": "/schemas/v3/server-common#zoweDatasetMember",
                       "description": "PARMLIB member used by ZIS"
                     }
                   }
@@ -345,7 +345,7 @@ export const BASE_SCHEMA = {
                   "description": "PKCS#12 keystore settings",
                   "properties": {
                     "directory": {
-                      "$ref": "/schemas/v2/server-common#zowePath",
+                      "$ref": "/schemas/v3/server-common#zowePath",
                       "description": "Keystore directory"
                     },
                     "name": {
@@ -543,19 +543,19 @@ export const BASE_SCHEMA = {
           }
         },
         "runtimeDirectory": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "/schemas/v3/server-common#zowePath",
           "description": "Path to where you installed Zowe."
         },
         "logDirectory": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "/schemas/v3/server-common#zowePath",
           "description": "Path to where you want to store Zowe log files."
         },
         "workspaceDirectory": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "/schemas/v3/server-common#zowePath",
           "description": "Path to where you want to store Zowe workspace files. Zowe workspace are used by Zowe component runtime to store temporary files."
         },
         "extensionDirectory": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "/schemas/v3/server-common#zowePath",
           "description": "Path to where you want to store Zowe extensions. \"zwe components install\" will install new extensions into this directory."
         },
         "job": {
@@ -707,7 +707,7 @@ export const BASE_SCHEMA = {
       "type": "object",
       "properties": {
         "home": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "/schemas/v3/server-common#zowePath",
           "description": "Path to Java home directory."
         }
       }
@@ -716,7 +716,7 @@ export const BASE_SCHEMA = {
       "type": "object",
       "properties": {
         "home": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "/schemas/v3/server-common#zowePath",
           "description": "Path to node.js home directory."
         }
       }
@@ -817,7 +817,7 @@ export const BASE_SCHEMA = {
               "const": "PKCS12"
             },
             "file": {
-              "$ref": "/schemas/v2/server-common#zowePath",
+              "$ref": "/schemas/v3/server-common#zowePath",
               "description": "Path to your PKCS#12 keystore."
             },
             "password": {
@@ -842,7 +842,7 @@ export const BASE_SCHEMA = {
               "const": "PKCS12"
             },
             "file": {
-              "$ref": "/schemas/v2/server-common#zowePath",
+              "$ref": "/schemas/v3/server-common#zowePath",
               "description": "Path to your PKCS#12 keystore."
             },
             "password": {
@@ -858,24 +858,24 @@ export const BASE_SCHEMA = {
           "required": ["key", "certificate"],
           "properties": {
             "key": {
-              "$ref": "/schemas/v2/server-common#zowePath",
+              "$ref": "/schemas/v3/server-common#zowePath",
               "description": "Path to the certificate private key stored in PEM format."
             },
             "certificate": {
-              "$ref": "/schemas/v2/server-common#zowePath",
+              "$ref": "/schemas/v3/server-common#zowePath",
               "description": "Path to the certificate stored in PEM format."
             },
             "certificateAuthorities": {
               "description": "List of paths to the certificate authorities stored in PEM format.",
               "oneOf": [{
-                  "$ref": "/schemas/v2/server-common#zowePath",
+                  "$ref": "/schemas/v3/server-common#zowePath",
                   "description": "Paths to the certificate authorities stored in PEM format. You can separate multiple certificate authorities by comma."
                 },
                 {
                   "type": "array",
                   "description": "Path to the certificate authority stored in PEM format.",
                   "items": {
-                    "$ref": "/schemas/v2/server-common#zowePath"
+                    "$ref": "/schemas/v3/server-common#zowePath"
                   }
                 }
               ]
@@ -1085,7 +1085,7 @@ export const BASE_SCHEMA = {
               "type": "array",
               "description": "The IP addresses which all of the Zowe servers will be binding on and listening to. Some servers may only support listening on the first element.",
               "items": {
-                "$ref": "/schemas/v2/server-common#zoweIpv4"
+                "$ref": "/schemas/v3/server-common#zoweIpv4"
               }
             },
             "vipaIp": {
@@ -1121,7 +1121,7 @@ export const BASE_SCHEMA = {
           "description": "The location of the default registry for this handler. It could be a URL, path, dataset, whatever this handler supports"
         },
         "path": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "/schemas/v3/server-common#zowePath",
           "description": "Unix file path to the configmgr-compatible JS file which implements the handler API"
         }
       }
@@ -1133,7 +1133,7 @@ export const BASE_SCHEMA = {
 //this schema fixes ajv not resolving references properly
 export const FALLBACK_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
-  "$id": "https://zowe.org/schemas/v2/server-base",
+  "$id": "https://zowe.org/schemas/v3/server-base",
   "title": "Zowe configuration file",
   "description": "Configuration file for Zowe (zowe.org) version 2.",
   "type": "object",
@@ -2124,7 +2124,7 @@ export const FALLBACK_SCHEMA = {
 
 //these two consts allow the whole schema to be validated
 export const ajv2019 = new Ajv2019({schemas: [BASE_SCHEMA, SERVER_COMMON]}).addKeyword("$anchor")
-export const schemaValidate = ajv2019.getSchema("https://zowe.org/schemas/v2/server-base")
+export const schemaValidate = ajv2019.getSchema("https://zowe.org/schemas/v3/server-base")
 
 
 export const ajv = new Ajv2019().addKeyword("$anchor").addSchema(SERVER_COMMON);
@@ -2188,16 +2188,16 @@ export const FALLBACK_YAML = {
     "verifyCertificates": "STRICT", 
     "setup": {
       "dataset": {
-        "authLoadlib": "IBMUSER.ZWEV2.SZWEAUTH", 
+        "authLoadlib": "IBMUSER.ZWEV3.SZWEAUTH", 
         "proclib": "USER.PROCLIB", 
-        "authPluginLib": "IBMUSER.ZWEV2.CUST.ZWESAPL", 
-        "prefix": "IBMUSER.ZWEV2", 
-        "parmlib": "IBMUSER.ZWEV2.CUST.PARMLIB", 
-        "loadlib": "IBMUSER.ZWEV2.SZWELOAD", 
+        "authPluginLib": "IBMUSER.ZWEV3.CUST.ZWESAPL", 
+        "prefix": "IBMUSER.ZWEV3", 
+        "parmlib": "IBMUSER.ZWEV3.CUST.PARMLIB", 
+        "loadlib": "IBMUSER.ZWEV3.SZWELOAD", 
         "parmlibMembers": {
           "zis": "ZWESIP00"
         }, 
-        "jcllib": "IBMUSER.ZWEV2.CUST.JCLLIB"
+        "jcllib": "IBMUSER.ZWEV3.CUST.JCLLIB"
       }, 
       "certificate": {
         "type": "PKCS12", 
