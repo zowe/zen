@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - v3.x/staging
-      - v3.x/main
   
   pull_request:
     types: [opened, reopened, synchronize]
@@ -41,7 +40,7 @@ jobs:
         run: |
           npm run make  
       - name: '[prep 6] Publish'
-        uses: zowe-actions/zlux-builds/zen/publish@v3.x/main
+        uses: zowe-actions/zlux-builds/zen/publish@v3.x/staging
         with: 
           os: ubuntu
           perform-release: ${{ github.event.inputs.PERFORM_RELEASE }}
@@ -97,7 +96,7 @@ jobs:
         run: |
           npm run make  
       - name: '[prep 7] Publish'
-        uses: zowe-actions/zlux-builds/zen/publish@v3.x/main
+        uses: zowe-actions/zlux-builds/zen/publish@v3.x/staging
         with: 
           os: macos
           perform-release: ${{ github.event.inputs.PERFORM_RELEASE }}
@@ -132,6 +131,6 @@ jobs:
 
       - name: '[Release 2] Bump Zen Version (if necessary)' 
         if: ${{ success() && github.event.inputs.PERFORM_RELEASE == 'true' }}
-        uses: zowe-actions/zlux-builds/zen/bump-version@v3.x/main
+        uses: zowe-actions/zlux-builds/zen/bump-version@v3.x/staging
         env: 
          GITHUB_TOKEN: ${{ secrets.ZOWE_ROBOT_TOKEN }}

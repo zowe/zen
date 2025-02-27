@@ -19,7 +19,7 @@ Please delete options that are not relevant.
 ## PR Checklist
 Please delete options that are not relevant.
 - [ ] If the changes in this PR are meant for the next release / mainline, this PR targets a "staging" branch.
-- [ ] My code follows the style guidelines of this project (see: [Contributing guideline](https://github.com/zowe/zen/blob/v2.x/staging/CONTRIBUTING.md))
+- [ ] My code follows the style guidelines of this project (see: [Contributing guideline](https://github.com/zowe/zen/blob/v3.x/staging/CONTRIBUTING.md))
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation
 - [ ] New and existing unit tests pass locally with my changes
