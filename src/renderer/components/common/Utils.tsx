@@ -35,7 +35,7 @@ export const LAUNCH_CONFIG_STAGE_LABEL = "Launch Config";
 export const REVIEW_INSTALL_STAGE_LABEL = "Review Installation";
 export const FINISH_INSTALL_STAGE_LABEL = "Finish Installation";
 
-import Ajv3019 from "ajv/dist/2019"
+import Ajv2019 from "ajv/dist/2019"
 
 export function deepMerge(base: any, extension:any) {
   if (typeof base === "object" && typeof extension === "object") {
