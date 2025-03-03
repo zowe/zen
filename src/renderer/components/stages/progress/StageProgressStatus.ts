@@ -13,7 +13,7 @@ import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetIns
 import { stages } from '../../configuration-wizard/Wizard';
 
 const installationTypeStatus: InstallationType = {
-  installationType: 'download',
+  installationType: 'downloadV3',
   licenseAgreement: false,
   userUploadedPaxPath: '',
 }
@@ -123,7 +123,7 @@ const installationArgsStatus: InstallationArgs = {
     workspaceDir: '',
     logDir:'',
     extensionDir:'',
-    installationType: 'download',
+    installationType: 'downloadV3',
     userUploadedPaxPath: '',
     downloadDir: '',
     javaHome: '',

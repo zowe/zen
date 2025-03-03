@@ -37,7 +37,7 @@ const Unpax = () => {
 
   const dispatch = useAppDispatch();
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const [installValue, setInstallValue] = useState(getInstallationTypeStatus()?.installationType || 'download');
+  const [installValue, setInstallValue] = useState(getInstallationTypeStatus()?.installationType || 'downloadV3');
   const [paxPath, setPaxPath] = useState(getInstallationTypeStatus()?.userUploadedPaxPath || '');
   const [showProgress, setShowProgress] = useState(getProgress('downloadUnpaxStatus'));
   const [downloadUnpaxProgress, setDownloadUnpaxProgress] = useState(getDownloadUnpaxState());
@@ -273,9 +273,11 @@ const Unpax = () => {
             </React.Fragment>
           }
       </ContainerCard>}
-      {installValue === "download" && <ContainerCard title="Download Zowe Pax" description=""> 
+      {(installValue === "downloadV2" || installValue === "downloadV3") && <ContainerCard title="Download Zowe Pax" description=""> 
           <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-            {`Wizard will download the latest Zowe convenience build in PAX archive format from `}
+          Wizard will download the latest Zowe 
+        {installValue === "downloadV2" ? " V2 " : installValue === "downloadV3" ? " V3 " : ""} 
+        convenience build in PAX archive form from&nbsp;
             <Link href="https://www.zowe.org/download" target="_blank" rel="noopener noreferrer">
               {'https://www.zowe.org/download'}
             </Link>

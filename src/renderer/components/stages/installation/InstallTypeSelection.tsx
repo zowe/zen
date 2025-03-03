@@ -33,7 +33,7 @@ const InstallationType = () => {
 
   const dispatch = useAppDispatch();
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const [installValue, setInstallValue] = useState(getInstallationTypeStatus()?.installationType || 'download');
+  const [installValue, setInstallValue] = useState(getInstallationTypeStatus()?.installationType || 'downloadV3');
   const [paxPath, setPaxPath] = useState(getInstallationTypeStatus()?.userUploadedPaxPath || '');
   const [showLicense, setShowLicense] = useState(false);
   const [agreeLicense, setAgreeLicense] = useState(getInstallationTypeStatus()?.licenseAgreement || false);
@@ -47,7 +47,7 @@ const InstallationType = () => {
   }, []);
 
   useEffect(() => {
-    if((installValue === "download" && agreeLicense == false) || (installValue === "upload" && paxPath == "")){
+    if(((installValue === "downloadV2" || installValue === "downloadV3") && agreeLicense == false) || (installValue === "upload" && paxPath == "")){
       updateProgress(false);
     } else {
       updateProgress(true);
@@ -76,7 +76,7 @@ const InstallationType = () => {
 
   const installTypeChangeHandler = (type: string) => {
     dispatch(setInstallationType(type));
-    if(type != 'download') {
+    if(type != 'downloadV3' && type != 'downloadV2') {
       dispatch(setLicenseAgreement(false));
     }
     setInstallValue(type);
@@ -109,7 +109,8 @@ const InstallationType = () => {
                 installTypeChangeHandler(e.target.value)
             }}
         >
-            <FormControlLabel value="download" control={<Radio />} label="Download Zowe convenience build PAX from internet" />
+            <FormControlLabel value="downloadV3" control={<Radio />} label="Download Zowe V3 convenience build PAX from internet" />
+            <FormControlLabel value="downloadV2" control={<Radio />} label="Download Zowe V2 convenience build PAX from internet" />
             <FormControlLabel value="upload" control={<Radio />} label="Upload Zowe PAX for offline install" />
             <FormControlLabel value="smpe" control={<Radio />} label="SMP/E" />
         </RadioGroup>
@@ -117,10 +118,12 @@ const InstallationType = () => {
     {installValue === "smpe" && <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">       
         {`SMP/E installation must be done outside of ZEN. Return to ZEN after completing the SMP/E installation process.`}
     </Typography>}
-    {installValue === "download" &&
+    {(installValue === "downloadV3" || installValue === "downloadV2") &&
       <div>
         <Typography id="position-2" sx={{ mb: 1, whiteSpace: 'pre-wrap' }} color="text.secondary">
-          Wizard will download the latest Zowe convenience build in PAX archive format from&nbsp;
+        Wizard will download the latest Zowe 
+        {installValue === "downloadV2" ? " V2 " : installValue === "downloadV3" ? " V3 " : ""} 
+        convenience build in PAX archive form from&nbsp;
           { !agreeLicense && <><br />Please accept the license agreement to continue.<br/></>}
           <Link href="https://www.zowe.org/download" target="_blank" rel="noopener noreferrer">
             {'https://www.zowe.org/download'}

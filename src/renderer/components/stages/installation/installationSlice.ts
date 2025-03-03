@@ -25,7 +25,7 @@ const initialState: InstallationState = {
     workspaceDir: '',
     logDir:'',
     extensionDir:'',
-    installationType: getInstallationTypeStatus()?.installationType || 'download',
+    installationType: getInstallationTypeStatus()?.installationType || 'downloadV3',
     userUploadedPaxPath: getInstallationTypeStatus()?.userUploadedPaxPath || '',
     downloadDir: '',
     javaHome: '',

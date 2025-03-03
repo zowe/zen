@@ -8,6 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+// TODO: Needs to be updated often
+export const ZOWE_V2_LATEST = "2.18.0";
 
 // Note: This doesn't gaurantee command did what it was supposed to do, but rather z/OS Unix (and zwe) didn't throw an error
 export const JCL_UNIX_SCRIPT_OK = "Script finished.";
@@ -56,6 +58,18 @@ export function isValidUSSPath(path: string): boolean {
   const validUSSRegex = /^\/[\w\/-]+$/;
   return validUSSRegex.test(path);
 }
+
+export function doesUSSPathContain(parentLocation: string, compareLocation: string): boolean {
+  if (!parentLocation || !compareLocation) return false;
+
+  // Remove trailing slashes
+  const normalParent = parentLocation.replace(/\/+$/, '');
+  const normalCompare = compareLocation.replace(/\/+$/, '');
+
+  // Ensure compareLocation is truly (not false positive) a subdirectory of parentLocation via "/"
+  return normalCompare.startsWith(`${normalParent}/`);
+};
+
 
 export const SERVER_COMMON = {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
