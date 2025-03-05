@@ -222,17 +222,13 @@ class Installation {
       let download, upload, unpax;
       if(installationArgs.installationType === "downloadV2" || installationArgs.installationType === "downloadV3"){
         if (installationArgs.installationType === "downloadV2") {
-          PlanningActions.getZoweVersion(2).then(async (res: IResponse) => {
+          await PlanningActions.getZoweVersion(2).then(async (res: IResponse) => {
             version = res.details;
-            console.log("Starting " + installationArgs.installationType.toString() + "...", version);
-            download = await this.downloadPax(version);
-            ProgressStore.set('downloadUnpax.download', download.status);
           });
-        } else {
-          console.log("Starting " + installationArgs.installationType.toString() + "...", version);
-          download = await this.downloadPax(version);
-          ProgressStore.set('downloadUnpax.download', download.status);
-        }
+        } // else: default is 3
+        console.log("Starting " + installationArgs.installationType.toString() + "...", version);
+        download = await this.downloadPax(version);
+        ProgressStore.set('downloadUnpax.download', download.status);
       } else {
         //if the user has selected an SMPE or opted to upload their own pax, we simply set this status to true as no download is required
         download = {status: true, details: ''}
