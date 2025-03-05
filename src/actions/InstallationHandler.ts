@@ -18,8 +18,9 @@ import { ProgressStore } from "../storage/ProgressStore";
 import * as fs from 'fs';
 import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { InstallationArgs } from '../types/stateInterfaces';
-import { FALLBACK_SCHEMA, ZOWE_V2_LATEST, deepMerge } from '../renderer/components/common/Utils';
+import { FALLBACK_SCHEMA, deepMerge } from '../renderer/components/common/Utils';
 import { updateSchemaReferences } from '../services/ResolveRef';
+import { PlanningActions } from './PlanningActions';
 
 class Installation {
 
@@ -221,11 +222,17 @@ class Installation {
       let download, upload, unpax;
       if(installationArgs.installationType === "downloadV2" || installationArgs.installationType === "downloadV3"){
         if (installationArgs.installationType === "downloadV2") {
-          version = ZOWE_V2_LATEST;
+          PlanningActions.getZoweVersion(2).then(async (res: IResponse) => {
+            version = res.details;
+            console.log("Starting " + installationArgs.installationType.toString() + "...", version);
+            download = await this.downloadPax(version);
+            ProgressStore.set('downloadUnpax.download', download.status);
+          });
+        } else {
+          console.log("Starting " + installationArgs.installationType.toString() + "...", version);
+          download = await this.downloadPax(version);
+          ProgressStore.set('downloadUnpax.download', download.status);
         }
-        console.log("Starting " + installationArgs.installationType.toString() + "...", version);
-        download = await this.downloadPax(version);
-        ProgressStore.set('downloadUnpax.download', download.status);
       } else {
         //if the user has selected an SMPE or opted to upload their own pax, we simply set this status to true as no download is required
         download = {status: true, details: ''}

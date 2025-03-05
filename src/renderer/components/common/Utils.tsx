@@ -8,8 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-// TODO: Needs to be updated often
-export const ZOWE_V2_LATEST = "2.18.0";
 
 // Note: This doesn't gaurantee command did what it was supposed to do, but rather z/OS Unix (and zwe) didn't throw an error
 export const JCL_UNIX_SCRIPT_OK = "Script finished.";
@@ -20,6 +18,7 @@ export const TYPE_OUTPUT = "output";
 
 export const DEF_NO_OUTPUT = "No output to display."
 export const DEF_JOB_STATEMENT = `//ZWEJOB01 JOB IZUACCT,'SYSPROG',CLASS=A,\n//         MSGLEVEL=(1,1),MSGCLASS=A`;
+export const DEF_ZOWE_MAJOR_VERS = "3";
 
 export const CONNECTION_STAGE_LABEL = "Connection";
 export const PLANNING_STAGE_LABEL = "Planning";
