@@ -121,7 +121,6 @@ export class PlanningActions {
         res.on('end', () => {
           try {
             const parsedData = JSON.parse(data);
-            console.log("\n\n\nPARSED VERSION\n\n\n" + parsedData.version)
             resolve({ status: true, details: parsedData.version });
           } catch (error) {
             reject({ status: false, details: { error } });
