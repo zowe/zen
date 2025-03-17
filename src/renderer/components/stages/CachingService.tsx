@@ -379,6 +379,7 @@ const CachingService = () => {
             </FormControl>
           }
 
+          {/* TODO: Add support for ZOWE V3 'INFINISPAN' */}
           { storageMode.toUpperCase() !== 'VSAM' ?
             <></> :  (
             <>
