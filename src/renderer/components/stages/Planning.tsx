@@ -56,14 +56,16 @@ const Planning = () => {
 
   useEffect(() => {
     if (!installationArgs.dryRunMode) { // REVIEW: Does dry run even makes sense in this step? What do we want to get as a result?
-      // FIXME: getZoweVersion should be moved to InstallTypeSelection, makes no sense here anymore
-      window.electron.ipcRenderer.getZoweVersion().then((res: IResponse) => dispatch(setZoweVersion(res.status ? res.details : '' )));
+      // FIXME: getZoweFullVersion should be moved to InstallTypeSelection, makes no sense here anymore
+      window.electron.ipcRenderer.getZoweFullVersion().then((res: IResponse) => 
+        dispatch(setZoweVersion(res.status ? res.details : '' )));
       // REVIEW: Installation args are split into multiple storage locations, we can remove parts that are in yaml now and then it can be merged with connection data, to have single session/instance/instalaltion storage.  
       dispatch(setInstallationArgs({...installationArgs, installationType: getInstallationTypeStatus()?.installationType, userUploadedPaxPath: getInstallationTypeStatus()?.userUploadedPaxPath}));
       dispatch(setJobStatementValid(getPlanningStageStatus()?.isJobStatementValid));
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           let yaml = res.details;
+          // TODO: Why do we have an edgecase here for 1 attribute? This seems like it should belong in "a place" for these types of edgecases
           // Pre-fill z/OSMF host with the host name we are connected to
           if (!yaml?.zOSMF?.host || yaml?.zOSMF?.host === FALLBACK_YAML.zOSMF.host) {
             yaml = updateAndReturnYaml('zOSMF.host', connectionArgs.host, yaml);

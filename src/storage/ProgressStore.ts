@@ -11,7 +11,7 @@
 import Store from 'electron-store';
 import { DefaultStore } from './DefaultStore';
 
-// TODO: Store overall progress and restore up to last successful step
+// TODO: Store overall progress/UI state and restore up to last successful step
 
 const STORE_DEFAULT = {
   "downloadUnpax": {
@@ -48,6 +48,7 @@ const STORE_DEFAULT = {
     "zweInitCertificate": false,
   }
 };
+const VERSION_KEY = 'version'
 const STORE_NAME = 'zen-progress-store';
 const store = new Store({cwd: STORE_NAME});
 store.set(STORE_DEFAULT);
@@ -56,6 +57,14 @@ export class ProgressStore extends DefaultStore {
 
   protected static getStore(): Store {
     return new Store({cwd: STORE_NAME});
+  }
+  
+  public static getZoweMajorVersion(): number {
+    return this.get(VERSION_KEY);
+  }
+
+  public static setZoweMajorVersion(majorVersion: number): boolean {
+    return this.set(VERSION_KEY, majorVersion);
   }
 
   public static deleteAll(): void {

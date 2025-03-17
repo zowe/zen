@@ -159,8 +159,18 @@ const createWindow = (): void => {
     return res;
   });
 
-  ipcMain.handle('get-zowe-version', async () => {
-    const res = await PlanningActions.getZoweVersion();
+  ipcMain.handle('get-zowe-full-version', async (event, value?: number) => {
+    const res = await PlanningActions.getZoweFullVersion(value);
+    return res;
+  });
+
+  ipcMain.handle('get-zowe-major-version', async () => {
+    const res = await PlanningActions.getZoweMajorVersion();
+    return res;
+  });
+
+  ipcMain.handle('set-zowe-major-version', async (event, value: number) => {
+    const res = await PlanningActions.setZoweMajorVersion(value);
     return res;
   });
 

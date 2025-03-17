@@ -222,10 +222,11 @@ class Installation {
       let download, upload, unpax;
       if(installationArgs.installationType === "downloadV2" || installationArgs.installationType === "downloadV3"){
         if (installationArgs.installationType === "downloadV2") {
-          await PlanningActions.getZoweVersion(2).then(async (res: IResponse) => {
+          await PlanningActions.getZoweFullVersion(2).then(async (res: IResponse) => { // Retrieve full Zowe version from user selection
             version = res.details;
           });
-        } // else: default is 3
+          await PlanningActions.setZoweMajorVersion(2); // Update as Wizard's UI will begin relying on this
+        } // else: Zowe Version 3, which was set as default already
         console.log("Starting " + installationArgs.installationType.toString() + "...", version);
         download = await this.downloadPax(version);
         ProgressStore.set('downloadUnpax.download', download.status);

@@ -24,7 +24,7 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete, getCachedZoweVersion } from "./progress/StageProgressStatus";
+import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete, getZoweMajorVersion } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
 import { INIT_STAGE_LABEL, ajv } from "../common/Utils";
@@ -63,7 +63,6 @@ const CachingService = () => {
   const [showVsameDatsetName, setShowVsamDatasetName] = useState(false);
   const [storageMode, setStorageMode] = useState(yaml?.components[`caching-service`]?.storage?.mode);
   const storageModeOptions = ['VSAM', 'INFINISPAN'];
-  const zoweVersion: number = getCachedZoweVersion();
   const [showStorageModeOptions, setShowStorageModeOptions] = useState(false);
 
   let timer: any;
@@ -78,6 +77,7 @@ const CachingService = () => {
 
   useEffect(() => {
 
+    let zoweVersion: number = getZoweMajorVersion();
     (zoweVersion < 3) ? setStorageMode('VSAM') : setShowStorageModeOptions(true);
 
     if(storageMode.toUpperCase() !== 'VSAM' && zoweVersion >= 3) {
@@ -347,7 +347,7 @@ const CachingService = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
 
-      <ContainerCard title="CachingService" description="Configure Zowe CachingService.">
+      <ContainerCard title="Caching Service" description="Configure the Zowe Caching Service.">
 
         { editorVisible &&
           <EditorDialog

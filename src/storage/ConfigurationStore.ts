@@ -16,6 +16,7 @@ const KEY_SCHEMA = 'schema'
 const KEY_CONFIG = 'config'
 const STORE_DEFAULT = {config: {}, schema: {}};
 
+// This store is used to store the retrieved schema & master config
 export class ConfigurationStore extends DefaultStore {
 
   protected static getStore(): Store {

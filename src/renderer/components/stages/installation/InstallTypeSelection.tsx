@@ -13,7 +13,7 @@ import { Box, Button, FormControl, FormControlLabel, Link, Radio, RadioGroup, Ty
 import ContainerCard from '../../common/ContainerCard';
 import { useAppSelector, useAppDispatch } from '../../../hooks';
 import { setNextStepEnabled } from '../../configuration-wizard/wizardSlice';
-import { selectInstallationArgs, setInstallationArgs, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath } from './installationSlice';
+import { selectInstallationArgs, setInstallationArgs, setZoweVersion, setInstallationType, setLicenseAgreement, setUserUploadedPaxPath } from './installationSlice';
 import { setDownloadUnpaxStatus, setInstallationTypeStatus } from "../progress/progressSlice";
 import { selectConnectionArgs } from '../connection/connectionSlice';
 import CheckCircle from '@mui/icons-material/CheckCircle';
@@ -22,6 +22,7 @@ import { setActiveStep } from "../progress/activeStepSlice";
 import { getStageDetails } from "../../../../services/StageDetails";
 import { getInstallationTypeStatus, downloadUnpaxStatus, setDownloadUnpaxState } from "../progress/StageProgressStatus";
 import { INSTALLATION_TYPE_STAGE_LABEL } from "../../common/Utils";
+import { IResponse } from "../../../../../src/types/interfaces";
 const InstallationType = () => {
 
   // TODO: Display granular details of installation - downloading - unpacking - running zwe command
@@ -107,6 +108,16 @@ const InstallationType = () => {
                 window.electron.ipcRenderer.setConfigByKeyNoValidate("installationArgs", {...installationArgs, installationType: e.target.value});
                 dispatch(setInstallationType(e.target.value))
                 installTypeChangeHandler(e.target.value)
+                
+                console.log("button value", e.target.value);
+                if (e.target.value === "downloadV3" || e.target.value === "downloadV2") {
+                  console.log("this should be just a number", e.target.value.charAt(e.target.value.length-1))
+                  window.electron.ipcRenderer.getZoweFullVersion(e.target.value.charAt(e.target.value.length-1)).then((res: IResponse) => 
+                  {
+                    dispatch(setZoweVersion(res.status ? res.details : '' ));
+                    console.log("this should be a version", res.status ? res.details : '' );
+                  });
+                }
             }}
         >
             <FormControlLabel value="downloadV3" control={<Radio />} label="Download Zowe V3 convenience build PAX from internet" />
