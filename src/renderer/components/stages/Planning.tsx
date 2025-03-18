@@ -65,8 +65,7 @@ const Planning = () => {
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           let yaml = res.details;
-          // TODO: Why do we have an edgecase here for 1 attribute? This seems like it should belong in "a place" for these types of edgecases
-          // Pre-fill z/OSMF host with the host name we are connected to
+          // Pre-fill z/OSMF host in the UI with the host name we are connected to
           if (!yaml?.zOSMF?.host || yaml?.zOSMF?.host === FALLBACK_YAML.zOSMF.host) {
             yaml = updateAndReturnYaml('zOSMF.host', connectionArgs.host, yaml);
             window.electron.ipcRenderer.setConfigByKeyNoValidate('zOSMF.host', connectionArgs.host);
