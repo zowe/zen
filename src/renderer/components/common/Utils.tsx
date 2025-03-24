@@ -2200,17 +2200,17 @@ export const FALLBACK_YAML = {
     "cookieIdentifier": "1", 
     "verifyCertificates": "STRICT", 
     "setup": {
-      "dataset": { // TODO: Dynamically switch `ZWEVX` with ZWEV2/ZWEV3 and re-run fallback<-->Wizard yaml obj init code during Downloading step
-        "authLoadlib": "IBMUSER.ZWEVX.SZWEAUTH", 
+      "dataset": { // TODO: Dynamically switch `ZWE` with ZWEV2/ZWEV3 and re-run fallback<-->Wizard yaml obj init code during Downloading & .pax upload step
+        "authLoadlib": "IBMUSER.ZWE.SZWEAUTH", 
         "proclib": "USER.PROCLIB", 
-        "authPluginLib": "IBMUSER.ZWEVX.CUST.ZWESAPL", 
-        "prefix": "IBMUSER.ZWEVX", 
-        "parmlib": "IBMUSER.ZWEVX.CUST.PARMLIB", 
-        "loadlib": "IBMUSER.ZWEVX.SZWELOAD", 
+        "authPluginLib": "IBMUSER.ZWE.CUST.ZWESAPL", 
+        "prefix": "IBMUSER.ZWE", 
+        "parmlib": "IBMUSER.ZWE.CUST.PARMLIB", 
+        "loadlib": "IBMUSER.ZWE.SZWELOAD", 
         "parmlibMembers": {
           "zis": "ZWESIP00"
         }, 
-        "jcllib": "IBMUSER.ZWEVX.CUST.JCLLIB"
+        "jcllib": "IBMUSER.ZWE.CUST.JCLLIB"
       }, 
       "certificate": {
         "type": "PKCS12", 
