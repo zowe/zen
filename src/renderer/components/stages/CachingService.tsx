@@ -27,7 +27,7 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete, getZoweMajorVersion } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
-import { INIT_STAGE_LABEL, ajv } from "../common/Utils";
+import { DEF_ZOWE_MAJOR_VERS, INIT_STAGE_LABEL, ajv } from "../common/Utils";
 
 const CachingService = () => {
 
@@ -66,6 +66,7 @@ const CachingService = () => {
   const [showStorageModeOptions, setShowStorageModeOptions] = useState(false);
 
   let timer: any;
+  let zoweVersion: number = Number(DEF_ZOWE_MAJOR_VERS);
 
   const [defaultErrorMessage] = useState("Please ensure that the volume, storage class & dataset values are accurate.");
 
@@ -77,7 +78,7 @@ const CachingService = () => {
 
   useEffect(() => {
 
-    let zoweVersion: number = getZoweMajorVersion();
+    zoweVersion = getZoweMajorVersion();
     (zoweVersion < 3) ? setStorageMode('VSAM') : setShowStorageModeOptions(true);
 
     // If the version is >= 3 and the VSAM initialization is skipped, the review stage will not block the user from proceeding to the final stage.
@@ -383,7 +384,7 @@ const CachingService = () => {
           { storageMode.toUpperCase() === 'INFINISPAN' && (
             <>
               <Typography sx={{ mt: 2, mb: 2 }} variant="body2" color="textSecondary">
-                Non-VSAM configurations for Caching Service must be edited manually within the YAML editor.
+                Infinispan (default) does not require configuration during this step as it is built into Zowe. After installation, you may wish to change its default ports of 7600 and 7601 in the Zowe configuration YAML.
               </Typography>
               <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
             </>
@@ -392,6 +393,14 @@ const CachingService = () => {
           { storageMode.toUpperCase() !== 'VSAM' ?
             <></> :  (
             <>
+            { zoweVersion >= 3 && (
+              <Typography sx={{ mt: 2, mb: 2 }} variant="body2" color="textSecondary">
+                Vsam as a Caching Service storage method is deprecated in V3. Consider using Infinispan for a simpler and high performance alternative.
+              </Typography>
+            )}
+            <Typography sx={{ mt: 2, mb: 2 }} variant="body2" color="textSecondary">
+                Zowe version is this {zoweVersion}
+            </Typography>
               <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
 
               { showVsameDatsetName &&
