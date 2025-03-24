@@ -53,6 +53,7 @@ export class PlanningActions {
     }
   }
   
+  // majorVers optional or def to DEF_ZOWE_MAJOR_VERS
   public static getExampleZowe(majorVersion?: number): Promise<IResponse> {
     return new Promise((resolve, reject) => {
       https.get(`https://raw.githubusercontent.com/zowe/zowe-install-packaging/v${majorVersion || DEF_ZOWE_MAJOR_VERS}.x/master/example-zowe.yaml`, (res) => {
@@ -77,6 +78,7 @@ export class PlanningActions {
     });
   }
 
+  // majorVers optional or def to DEF_ZOWE_MAJOR_VERS
   public static getZoweSchema(majorVersion?: number): Promise<IResponse> {
     return new Promise((resolve, reject) => {
       https.get(`https://raw.githubusercontent.com/zowe/zowe-install-packaging/v${majorVersion || DEF_ZOWE_MAJOR_VERS}.x/master/schemas/zowe-yaml-schema.json`, (res) => {

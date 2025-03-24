@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { Box, Button, FormControl, InputLabel, Select, TextField, MenuItem } from '@mui/material';
+import { Box, Button, FormControl, InputLabel, Select, TextField, MenuItem, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import { setInitializationStatus, setCachingServiceStatus } from './progress/progressSlice';
@@ -80,6 +80,7 @@ const CachingService = () => {
     let zoweVersion: number = getZoweMajorVersion();
     (zoweVersion < 3) ? setStorageMode('VSAM') : setShowStorageModeOptions(true);
 
+    // If the version is >= 3 and the VSAM initialization is skipped, the review stage will not block the user from proceeding to the final stage.
     if(storageMode.toUpperCase() !== 'VSAM' && zoweVersion >= 3) {
       dispatchActions(true);
       setShowProgress(false);
@@ -379,7 +380,15 @@ const CachingService = () => {
             </FormControl>
           }
 
-          {/* TODO: Add support for ZOWE V3 'INFINISPAN' */}
+          { storageMode.toUpperCase() === 'INFINISPAN' && (
+            <>
+              <Typography sx={{ mt: 2, mb: 2 }} variant="body2" color="textSecondary">
+                Non-VSAM configurations for Caching Service must be edited manually within the YAML editor.
+              </Typography>
+              <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
+            </>
+          )}
+
           { storageMode.toUpperCase() !== 'VSAM' ?
             <></> :  (
             <>
@@ -425,7 +434,8 @@ const CachingService = () => {
                 }
               </Box>
 
-            </>)}
+            </>)
+          }
 
         </Box>
         <Box sx={{ height: showProgress ? '35vh' : 'auto', minHeight: showProgress ? '35vh' : '10vh' }} id="vsam-progress"></Box>

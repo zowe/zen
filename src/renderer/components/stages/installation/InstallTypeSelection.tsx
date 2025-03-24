@@ -109,13 +109,12 @@ const InstallationType = () => {
                 dispatch(setInstallationType(e.target.value))
                 installTypeChangeHandler(e.target.value)
                 
-                console.log("button value", e.target.value);
                 if (e.target.value === "downloadV3" || e.target.value === "downloadV2") {
-                  console.log("this should be just a number", e.target.value.charAt(e.target.value.length-1))
+                  // console.log("this should be just a number", e.target.value.charAt(e.target.value.length-1))
                   window.electron.ipcRenderer.getZoweFullVersion(e.target.value.charAt(e.target.value.length-1)).then((res: IResponse) => 
                   {
                     dispatch(setZoweVersion(res.status ? res.details : '' ));
-                    console.log("this should be a version", res.status ? res.details : '' );
+                    // console.log("this should be a version", res.status ? res.details : '' );
                   });
                 }
             }}
