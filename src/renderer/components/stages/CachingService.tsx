@@ -81,6 +81,9 @@ const CachingService = () => {
     zoweVersion = getZoweMajorVersion();
     (zoweVersion < 3) ? setStorageMode('VSAM') : setShowStorageModeOptions(true);
 
+    // If version is >= 3, displays a dropdown for users to select the storage mode, pre-filled with the value from the YAML file if available.
+    // If the user selects VSAM, the VSAM initialization form is displayed.
+    // If Infinispan is chosen, the VSAM initialization form is hidden.
     // If the version is >= 3 and the VSAM initialization is skipped, the review stage will not block the user from proceeding to the final stage.
     if(storageMode.toUpperCase() !== 'VSAM' && zoweVersion >= 3) {
       dispatchActions(true);
