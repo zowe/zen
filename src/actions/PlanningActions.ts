@@ -114,9 +114,7 @@ export class PlanningActions {
 
   // majorVers optional or def to DEF_ZOWE_MAJOR_VERS
   public static async getZoweFullVersion(majorVersion?: number): Promise<IResponse> {
-    console.log("zowe version in getZoweFullVersion method received before the promise ", majorVersion);
     return new Promise<IResponse>((resolve, reject) => {
-      console.log("zowe version in getZoweFullVersion method received as ", majorVersion);
       https.get(`https://raw.githubusercontent.com/zowe/zowe-install-packaging/v${majorVersion || DEF_ZOWE_MAJOR_VERS}.x/master/manifest.json.template`, (res) => {
         let data = '';
   
