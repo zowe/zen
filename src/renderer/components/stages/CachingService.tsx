@@ -384,14 +384,16 @@ const CachingService = () => {
             </FormControl>
           }
 
-          { storageMode.toUpperCase() === 'INFINISPAN' && (
-            <>
+          { storageMode.toUpperCase() !== 'INFINISPAN' ?
+            <></> :  (
+              <>
               <Typography sx={{ mt: 2, mb: 2 }} variant="body2" color="textSecondary">
                 Infinispan (default) does not require configuration during this step as it is built into Zowe. After installation, you may wish to change its default ports of 7600 and 7601 in the Zowe configuration YAML.
               </Typography>
-              <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
-            </>
-          )}
+              {/* Uncomment once schema is added for infinispan customizeation */}
+              {/* <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/> */}
+            </>)
+          }
 
           { storageMode.toUpperCase() !== 'VSAM' ?
             <></> :  (
@@ -401,9 +403,6 @@ const CachingService = () => {
                 Vsam as a Caching Service storage method is deprecated in V3. Consider using Infinispan for a simpler and high performance alternative.
               </Typography>
             )}
-            <Typography sx={{ mt: 2, mb: 2 }} variant="body2" color="textSecondary">
-                Zowe version is this {zoweVersion}
-            </Typography>
               <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
 
               { showVsameDatsetName &&
