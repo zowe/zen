@@ -17,6 +17,8 @@ import { ConfigurationStore } from "../storage/ConfigurationStore";
 import { parse } from 'yaml';
 import * as https from 'https';
 import { checkDirExists, makeDir } from '../services/ServiceUtils'
+import { DEF_ZOWE_MAJOR_VERS } from "../renderer/components/common/Utils";
+import { ProgressStore } from "../storage/ProgressStore";
 
 export class PlanningActions {
 
@@ -51,9 +53,10 @@ export class PlanningActions {
     }
   }
   
-  public static getExampleZowe(): Promise<IResponse> {
+  // majorVers optional or def to DEF_ZOWE_MAJOR_VERS
+  public static getExampleZowe(majorVersion?: number): Promise<IResponse> {
     return new Promise((resolve, reject) => {
-      https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v3.x/master/example-zowe.yaml', (res) => {
+      https.get(`https://raw.githubusercontent.com/zowe/zowe-install-packaging/v${majorVersion || DEF_ZOWE_MAJOR_VERS}.x/master/example-zowe.yaml`, (res) => {
         let data = '';
 
         res.on('data', (chunk) => {
@@ -75,9 +78,10 @@ export class PlanningActions {
     });
   }
 
-  public static getZoweSchema(): Promise<IResponse> {
+  // majorVers optional or def to DEF_ZOWE_MAJOR_VERS
+  public static getZoweSchema(majorVersion?: number): Promise<IResponse> {
     return new Promise((resolve, reject) => {
-      https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v3.x/master/schemas/zowe-yaml-schema.json', (res) => {
+      https.get(`https://raw.githubusercontent.com/zowe/zowe-install-packaging/v${majorVersion || DEF_ZOWE_MAJOR_VERS}.x/master/schemas/zowe-yaml-schema.json`, (res) => {
         let data = '';
 
         res.on('data', (chunk) => {
@@ -108,9 +112,10 @@ export class PlanningActions {
     }
   }
 
-  public static async getZoweVersion(): Promise<IResponse> {
+  // majorVers optional or def to DEF_ZOWE_MAJOR_VERS
+  public static async getZoweFullVersion(majorVersion?: number): Promise<IResponse> {
     return new Promise<IResponse>((resolve, reject) => {
-      https.get('https://raw.githubusercontent.com/zowe/zowe-install-packaging/v3.x/master/manifest.json.template', (res) => {
+      https.get(`https://raw.githubusercontent.com/zowe/zowe-install-packaging/v${majorVersion || DEF_ZOWE_MAJOR_VERS}.x/master/manifest.json.template`, (res) => {
         let data = '';
   
         res.on('data', (chunk) => {
@@ -130,6 +135,15 @@ export class PlanningActions {
         reject({ status: false, details: { error } });
       });
     });
+  }
+
+  public static setZoweMajorVersion = (majorVersion: number): void => {
+    ProgressStore.setZoweMajorVersion(majorVersion);
+  }
+  
+  public static getZoweMajorVersion = () : number => {
+    const version = ProgressStore.getZoweMajorVersion();
+    return version ? Number(version) : NaN;
   }
 
   public static async setConfigByKeyAndValidate(key: string, value: string | Array<string>): Promise<IResponse> {

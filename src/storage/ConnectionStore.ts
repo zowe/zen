@@ -93,6 +93,7 @@ export const STORE_DEFAULT = {
 const store = new Store({cwd: STORE_NAME, schema: STORE_SCHEMA});
 store.set({...STORE_DEFAULT, ...store.store});
 
+// This store is for storing connection & ftp details
 export class ConnectionStore extends DefaultStore {
 
   protected static getStore(): Store {

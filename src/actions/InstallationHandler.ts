@@ -20,6 +20,7 @@ import { ConfigurationStore } from '../storage/ConfigurationStore';
 import { InstallationArgs } from '../types/stateInterfaces';
 import { FALLBACK_SCHEMA, deepMerge } from '../renderer/components/common/Utils';
 import { updateSchemaReferences } from '../services/ResolveRef';
+import { PlanningActions } from './PlanningActions';
 
 class Installation {
 
@@ -219,8 +220,14 @@ class Installation {
       }
 
       let download, upload, unpax;
-      if(installationArgs.installationType === "download"){
-        console.log("downloading...", version);
+      if(installationArgs.installationType === "downloadV2" || installationArgs.installationType === "downloadV3"){
+        if (installationArgs.installationType === "downloadV2") {
+          await PlanningActions.getZoweFullVersion(2).then(async (res: IResponse) => { // Retrieve full Zowe version from user selection
+            version = res.details;
+          });
+          await PlanningActions.setZoweMajorVersion(2); // Update as Wizard's UI will begin relying on this
+        } // else: Zowe Version 3, which was set as default already
+        console.log("Starting " + installationArgs.installationType.toString() + "...", version);
         download = await this.downloadPax(version);
         ProgressStore.set('downloadUnpax.download', download.status);
       } else {
@@ -238,8 +245,8 @@ class Installation {
         //upload the PAX the user selected in the "Install Type" stage to the installation dir (from the planning stage)
         console.log('Uploading user selected pax from ', installationArgs.userUploadedPaxPath)
         upload = await new FileTransfer().upload(connectionArgs, installationArgs.userUploadedPaxPath, path.join(installationArgs.installationDir, "zowe.pax"), DataType.BINARY)
-      } else if (installationArgs.installationType === "download"){
-        console.log('Uploading pax downloaded from jfrog')
+      } else if (installationArgs.installationType === "downloadV2" || installationArgs.installationType === "downloadV3"){
+        console.log('Uploading pax downloaded from jfrog');
         upload = await this.uploadPax(connectionArgs, installationArgs.installationDir);
       }
       ProgressStore.set('downloadUnpax.upload', upload.status);

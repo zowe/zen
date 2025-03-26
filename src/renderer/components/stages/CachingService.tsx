@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { Box, Button, FormControl, InputLabel, Select, TextField, MenuItem } from '@mui/material';
+import { Box, Button, FormControl, InputLabel, Select, TextField, MenuItem, Typography } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { selectYaml, selectSchema, setNextStepEnabled, setYaml } from '../configuration-wizard/wizardSlice';
 import { setInitializationStatus, setCachingServiceStatus } from './progress/progressSlice';
@@ -24,10 +24,10 @@ import { createTheme } from '@mui/material/styles';
 import { stages } from "../configuration-wizard/Wizard";
 import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
-import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete, getCachedZoweVersion } from "./progress/StageProgressStatus";
+import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete, getZoweMajorVersion } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
-import { INIT_STAGE_LABEL, ajv } from "../common/Utils";
+import { DEF_ZOWE_MAJOR_VERS, INIT_STAGE_LABEL, ajv } from "../common/Utils";
 
 const CachingService = () => {
 
@@ -63,14 +63,14 @@ const CachingService = () => {
   const [showVsameDatsetName, setShowVsamDatasetName] = useState(false);
   const [storageMode, setStorageMode] = useState(yaml?.components[`caching-service`]?.storage?.mode);
   const storageModeOptions = ['VSAM', 'INFINISPAN'];
-  const zoweVersion: number = getCachedZoweVersion();
   const [showStorageModeOptions, setShowStorageModeOptions] = useState(false);
 
   let timer: any;
+  let zoweVersion: number = Number(DEF_ZOWE_MAJOR_VERS);
 
   const [defaultErrorMessage] = useState("Please ensure that the volume, storage class & dataset values are accurate.");
 
-  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema))
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v3/server-base") || ajv.compile(setupSchema))
 
   useEffect(() => {
     stageStatusRef.current = stageStatus;
@@ -78,8 +78,13 @@ const CachingService = () => {
 
   useEffect(() => {
 
+    zoweVersion = getZoweMajorVersion();
     (zoweVersion < 3) ? setStorageMode('VSAM') : setShowStorageModeOptions(true);
 
+    // If version is >= 3, displays a dropdown for users to select the storage mode, pre-filled with the value from the YAML file if available.
+    // If the user selects VSAM, the VSAM initialization form is displayed.
+    // If Infinispan is chosen, the VSAM initialization form is hidden.
+    // If the version is >= 3 and the VSAM initialization is skipped, the review stage will not block the user from proceeding to the final stage.
     if(storageMode.toUpperCase() !== 'VSAM' && zoweVersion >= 3) {
       dispatchActions(true);
       setShowProgress(false);
@@ -347,7 +352,7 @@ const CachingService = () => {
         <Button variant="outlined" sx={{ textTransform: 'none', mr: 1 }} onClick={() => toggleEditorVisibility("output")}>View Job Output</Button>
       </Box>
 
-      <ContainerCard title="CachingService" description="Configure Zowe CachingService.">
+      <ContainerCard title="Caching Service" description="Configure the Zowe Caching Service.">
 
         { editorVisible &&
           <EditorDialog
@@ -379,9 +384,25 @@ const CachingService = () => {
             </FormControl>
           }
 
+          { storageMode.toUpperCase() !== 'INFINISPAN' ?
+            <></> :  (
+              <>
+              <Typography sx={{ mt: 2, mb: 2 }} variant="body2" color="textSecondary">
+                Infinispan (default) does not require configuration during this step as it is built into Zowe. After installation, you may wish to change its default ports of 7600 and 7601 in the Zowe configuration YAML.
+              </Typography>
+              {/* Uncomment once schema is added for infinispan customizeation */}
+              {/* <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/> */}
+            </>)
+          }
+
           { storageMode.toUpperCase() !== 'VSAM' ?
             <></> :  (
             <>
+            { zoweVersion >= 3 && (
+              <Typography sx={{ mt: 2, mb: 2 }} variant="body2" color="textSecondary">
+                Vsam as a Caching Service storage method is deprecated in V3. Consider using Infinispan for a simpler and high performance alternative.
+              </Typography>
+            )}
               <JsonForm schema={setupSchema} onChange={(data: any) => handleFormChange(data)} formData={setupYaml}/>
 
               { showVsameDatsetName &&
@@ -424,7 +445,8 @@ const CachingService = () => {
                 }
               </Box>
 
-            </>)}
+            </>)
+          }
 
         </Box>
         <Box sx={{ height: showProgress ? '35vh' : 'auto', minHeight: showProgress ? '35vh' : '10vh' }} id="vsam-progress"></Box>

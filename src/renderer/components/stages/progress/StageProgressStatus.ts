@@ -11,9 +11,10 @@
 import { flatten, unflatten } from 'flat';
 import { ProgressState, PlanningState, InstallationType, ActiveState, DatasetInstallationState, InitSubStepsState, CertInitSubStepsState, PlanningValidationDetails, subStepState, stepSkipState, InstallationArgs, DownloadUnpaxState} from '../../../../types/stateInterfaces';
 import { stages } from '../../configuration-wizard/Wizard';
+import { IResponse } from '../../../../types/interfaces';
 
 const installationTypeStatus: InstallationType = {
-  installationType: 'download',
+  installationType: 'downloadV3',
   licenseAgreement: false,
   userUploadedPaxPath: '',
 }
@@ -123,7 +124,7 @@ const installationArgsStatus: InstallationArgs = {
     workspaceDir: '',
     logDir:'',
     extensionDir:'',
-    installationType: 'download',
+    installationType: 'downloadV3',
     userUploadedPaxPath: '',
     downloadDir: '',
     javaHome: '',
@@ -591,13 +592,16 @@ export const getPreviousInstallation = () : ActiveState => {
   }
 }
 
-export const setAndStoreZoweVersion = (version: number): void => {
-  localStorage.setItem(paxVersionKey, version.toString());
+export const setZoweMajorVersion = (version: number): void => {
+  window.electron.ipcRenderer.setZoweMajorVersion(version).then((res: IResponse) => {
+  });
+  
 }
 
-export const getCachedZoweVersion = () : number => {
-  const version = localStorage.getItem(paxVersionKey);
-  return version ? Number(version) : NaN;
+export const getZoweMajorVersion = () : number => {
+  return window.electron.ipcRenderer.getZoweMajorVersion().then((res: IResponse) => {
+    return res ? Number(res) : NaN;
+  });
 }
 
 

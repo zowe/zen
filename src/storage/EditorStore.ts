@@ -19,6 +19,7 @@ const STORE_DEFAULT = {
 };
 const STORE_NAME = 'zen-editor-store';
 
+// This store is used for the UI Editor component for yaml
 export class EditorStore extends DefaultStore {
 
   protected static getStore(): Store {

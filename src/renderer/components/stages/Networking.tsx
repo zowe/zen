@@ -27,7 +27,7 @@ import { alertEmitter } from "../Header";
 
 //   const schema = useAppSelector(selectSchema);
 const schema: any = {
-  "$id": "https://zowe.org/schemas/v2/server-base",
+  "$id": "https://zowe.org/schemas/v3/server-base",
   "title": "Zowe configuration file",
   "description": "Configuration file for Zowe (zowe.org) version 2.",
   "type": "object",
@@ -509,7 +509,7 @@ const schema: any = {
           "description": "The location of the default registry for this handler. It could be a URL, path, dataset, whatever this handler supports"
         },
         "path": {
-          "$ref": "/schemas/v2/server-common#zowePath",
+          "$ref": "/schemas/v3/server-common#zowePath",
           "description": "Unix file path to the configmgr-compatible JS file which implements the handler API"
         }
       }
@@ -552,7 +552,7 @@ const Networking = () => {
   const [contentType, setContentType] = useState('');
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   const connectionArgs = useAppSelector(selectConnectionArgs);
-  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema));
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v3/server-base") || ajv.compile(schema));
   const [LOOP_LIMIT] = useState(1024);
 
   const [stateUpdated, setStateUpdated] = useState(false);

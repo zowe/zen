@@ -77,8 +77,15 @@ contextBridge.exposeInMainWorld('electron', {
     findPreviousInstallations() {
       return ipcRenderer.invoke("get-installation-history");
     },
-    getZoweVersion() {
-      return ipcRenderer.invoke("get-zowe-version");
+    //majorVers optional, or defaults to DEF_ZOWE_MAJOR_VERS
+    getZoweFullVersion(majorVersion?: number) {
+      return ipcRenderer.invoke("get-zowe-full-version", majorVersion);
+    },
+    getZoweMajorVersion() {
+      return ipcRenderer.invoke("get-zowe-major-version");
+    },
+    setZoweMajorVersion(value: number) {
+      return ipcRenderer.invoke("set-zowe-major-version", value);
     },
     getENVVars(connectionArgs: IIpcConnectionArgs) {
       return ipcRenderer.invoke("get-env-vars", connectionArgs);

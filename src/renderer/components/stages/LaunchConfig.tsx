@@ -37,7 +37,7 @@ const LaunchConfig = () => {
 //   const schema = useAppSelector(selectSchema);
   const schema = {
     "$schema": "https://json-schema.org/draft/2019-09/schema",
-    "$id": "https://zowe.org/schemas/v2/server-base",
+    "$id": "https://zowe.org/schemas/v3/server-base",
     "title": "Zowe configuration file",
     "description": "Configuration file for Zowe (zowe.org) version 2.",
     "type": "object",
@@ -116,7 +116,7 @@ const LaunchConfig = () => {
                 "const": "PKCS12"
               },
               "file": {
-                "$ref": "/schemas/v2/server-common#zowePath",
+                "$ref": "/schemas/v3/server-common#zowePath",
                 "description": "Path to your PKCS#12 keystore."
               },
               "password": {
@@ -141,7 +141,7 @@ const LaunchConfig = () => {
                 "const": "PKCS12"
               },
               "file": {
-                "$ref": "/schemas/v2/server-common#zowePath",
+                "$ref": "/schemas/v3/server-common#zowePath",
                 "description": "Path to your PKCS#12 keystore."
               },
               "password": {
@@ -157,24 +157,24 @@ const LaunchConfig = () => {
             "required": ["key", "certificate"],
             "properties": {
               "key": {
-                "$ref": "/schemas/v2/server-common#zowePath",
+                "$ref": "/schemas/v3/server-common#zowePath",
                 "description": "Path to the certificate private key stored in PEM format."
               },
               "certificate": {
-                "$ref": "/schemas/v2/server-common#zowePath",
+                "$ref": "/schemas/v3/server-common#zowePath",
                 "description": "Path to the certificate stored in PEM format."
               },
               "certificateAuthorities": {
                 "description": "List of paths to the certificate authorities stored in PEM format.",
                 "oneOf": [{
-                    "$ref": "/schemas/v2/server-common#zowePath",
+                    "$ref": "/schemas/v3/server-common#zowePath",
                     "description": "Paths to the certificate authorities stored in PEM format. You can separate multiple certificate authorities by comma."
                   },
                   {
                     "type": "array",
                     "description": "Path to the certificate authority stored in PEM format.",
                     "items": {
-                      "$ref": "/schemas/v2/server-common#zowePath"
+                      "$ref": "/schemas/v3/server-common#zowePath"
                     }
                   }
                 ]
@@ -384,7 +384,7 @@ const LaunchConfig = () => {
                 "type": "array",
                 "description": "The IP addresses which all of the Zowe servers will be binding on and listening to. Some servers may only support listening on the first element.",
                 "items": {
-                  "$ref": "/schemas/v2/server-common#zoweIpv4"
+                  "$ref": "/schemas/v3/server-common#zoweIpv4"
                 }
               },
               "vipaIp": {
@@ -420,7 +420,7 @@ const LaunchConfig = () => {
             "description": "The location of the default registry for this handler. It could be a URL, path, dataset, whatever this handler supports"
           },
           "path": {
-            "$ref": "/schemas/v2/server-common#zowePath",
+            "$ref": "/schemas/v3/server-common#zowePath",
             "description": "Unix file path to the configmgr-compatible JS file which implements the handler API"
           }
         }
@@ -438,7 +438,7 @@ const LaunchConfig = () => {
   const [installationArgs, setInstArgs] = useState(getInstallationArguments());
   const [connectionArgs] = useState(useAppSelector(selectConnectionArgs));
 
-  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(schema));
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v3/server-base") || ajv.compile(schema));
 
   const [isInitializationSkipped] = useState(!useAppSelector(selectInitializationStatus));
 

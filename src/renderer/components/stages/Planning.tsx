@@ -23,7 +23,7 @@ import { alertEmitter } from "../Header";
 import { setActiveStep } from './progress/activeStepSlice'; // REVIEW: This part can be handled in wizardSlice, while connectionSlice/installationSlice/PlanningSlice could be unified in one storage entity
 import { getStageDetails } from "../../../services/StageDetails";
 import { getPlanningStageStatus, setPlanningValidationDetailsState, getPlanningValidationDetailsState, getInstallationTypeStatus } from "./progress/StageProgressStatus";
-import { FALLBACK_YAML, isValidUSSPath } from "../common/Utils";
+import { doesUSSPathContain, FALLBACK_YAML, isValidUSSPath } from "../common/Utils";
 
 // TODO: Our current theoretical cap is 72 (possibly minus a couple for "\n", 70?) But we force more chars in InstallationHandler.tsx
 // This is all I want to manually test for now. Future work can min/max this harder
@@ -56,15 +56,16 @@ const Planning = () => {
 
   useEffect(() => {
     if (!installationArgs.dryRunMode) { // REVIEW: Does dry run even makes sense in this step? What do we want to get as a result?
-      // FIXME: getZoweVersion should be moved to InstallTypeSelection, makes no sense here anymore
-      window.electron.ipcRenderer.getZoweVersion().then((res: IResponse) => dispatch(setZoweVersion(res.status ? res.details : '' )));
+      // FIXME: getZoweFullVersion should be moved to InstallTypeSelection, makes no sense here anymore
+      window.electron.ipcRenderer.getZoweFullVersion().then((res: IResponse) => 
+        dispatch(setZoweVersion(res.status ? res.details : '' )));
       // REVIEW: Installation args are split into multiple storage locations, we can remove parts that are in yaml now and then it can be merged with connection data, to have single session/instance/instalaltion storage.  
       dispatch(setInstallationArgs({...installationArgs, installationType: getInstallationTypeStatus()?.installationType, userUploadedPaxPath: getInstallationTypeStatus()?.userUploadedPaxPath}));
       dispatch(setJobStatementValid(getPlanningStageStatus()?.isJobStatementValid));
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         if (res.status) {
           let yaml = res.details;
-          // Pre-fill z/OSMF host with the host name we are connected to
+          // Pre-fill z/OSMF host in the UI with the host name we are connected to
           if (!yaml?.zOSMF?.host || yaml?.zOSMF?.host === FALLBACK_YAML.zOSMF.host) {
             yaml = updateAndReturnYaml('zOSMF.host', connectionArgs.host, yaml);
             window.electron.ipcRenderer.setConfigByKeyNoValidate('zOSMF.host', connectionArgs.host);
@@ -244,11 +245,11 @@ const Planning = () => {
           alertEmitter.emit('showAlert', details.error, 'error');
         }
       }).finally(() => {
-        // TODO: Make it more smart, add these checks to the planning validation details and verify the input fields one by one with a status icon.
-        if (localYaml?.zowe?.logDirectory.startsWith(localYaml?.zowe?.runtimeDirectory) ||
-            localYaml?.zowe?.workspaceDirectory.startsWith(localYaml?.zowe?.runtimeDirectory) ||
-            localYaml?.zowe?.extensionDirectory.startsWith(localYaml?.zowe?.runtimeDirectory)) {
-            alertEmitter.emit('showAlert', `Some instance locations (workspace, logs or extensions) are defined inside the runtime directory ${localYaml?.zowe?.runtimeDirectory}. It is not recommended as the runtime directory ment to be read-only.`, 'warning', 20000);
+        // TODO: Add these checks to the planning validation details and verify the input fields one by one with a status icon.
+        if (doesUSSPathContain(localYaml?.zowe?.runtimeDirectory, localYaml?.zowe?.logDirectory) ||
+        doesUSSPathContain(localYaml?.zowe?.runtimeDirectory, localYaml?.zowe?.workspaceDirectory) ||
+        doesUSSPathContain(localYaml?.zowe?.runtimeDirectory, localYaml?.zowe?.extensionDirectory)) {
+            alertEmitter.emit('showAlert', `Some instance locations (workspace, logs or extensions) are defined inside the runtime directory ${localYaml?.zowe?.runtimeDirectory}. It is not recommended as the runtime directory is meant to be read-only.`, 'warning', 20000);
         }
       })
     }

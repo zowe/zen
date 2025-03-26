@@ -66,7 +66,7 @@ const Installation = () => {
   let timer: any;
   const [installationType] = useState(getInstallationTypeStatus().installationType);
 
-  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v2/server-base") || ajv.compile(setupSchema));
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v3/server-base") || ajv.compile(setupSchema));
 
   useEffect(() => {
     stageStatusRef.current = stageStatus;
