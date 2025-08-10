@@ -154,7 +154,7 @@ const InstallationType = () => {
       </Typography>
       <Button style={{ color: 'white', backgroundColor: '#1976d2', fontSize: 'small', marginTop: '16px'}} type="submit" onClick={e => {
         e.preventDefault();
-        if(!installationArgs.dryRunMode){
+        if(!installationArgs.previewMode){
           window.electron.ipcRenderer.uploadPax().then((res: any) => {
             if(res.filePaths && res.filePaths[0] != undefined){
               setPaxPath(res.filePaths[0]);

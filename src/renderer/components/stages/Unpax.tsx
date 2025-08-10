@@ -165,7 +165,7 @@ const Unpax = () => {
     updateProgress(false);
     setShowProgress(true);
 
-    if(!installationArgs.dryRunMode){
+    if(!installationArgs.previewMode){
       window.electron.ipcRenderer.downloadButtonOnClick(connectionArgs, {...installationArgs, userUploadedPaxPath: paxPath}, version).then((res: IResponse) => {
         if(!res.status){ //errors during runInstallation()
           alertEmitter.emit('showAlert', res.details, 'error');
@@ -214,7 +214,7 @@ const Unpax = () => {
     setShowProgress(true);
     updateProgress(false);
 
-    if(!installationArgs.dryRunMode){
+    if(!installationArgs.previewMode){
     window.electron.ipcRenderer.fetchExampleYamlBtnOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
       setDownloadUnpaxProgress({
         ...downloadUnpaxProgress,

@@ -176,7 +176,7 @@ const Certificates = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    if(!installationArgs.dryRunMode){
+    if(!installationArgs.previewMode){
       window.electron.ipcRenderer.initCertsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
         clearInterval(timer);
         updateProgress(res.status);

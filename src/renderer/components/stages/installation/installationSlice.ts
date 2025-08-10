@@ -38,7 +38,7 @@ const initialState: InstallationState = {
     zosmfHost: '',
     zosmfPort: '443',
     zosmfApplId: 'IZUDFLT',
-    dryRunMode: false
+    previewMode: false
   },
   zoweVersion: '',
   licenseAgreement: getInstallationTypeStatus()?.licenseAgreement || false,

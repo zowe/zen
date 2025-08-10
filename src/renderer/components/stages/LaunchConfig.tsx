@@ -529,7 +529,7 @@ const LaunchConfig = () => {
     updateProgress(false);
     dispatch(setLaunchConfigStatus(false));
     alertEmitter.emit('showAlert', 'Uploading yaml...', 'info');
-    if(!installationArgs.dryRunMode){
+    if(!installationArgs.previewMode){
       window.electron.ipcRenderer.uploadLatestYaml(connectionArgs, installationArgs).then((res: IResponse) => {
         if(res && res.status) {
           updateProgress(true);

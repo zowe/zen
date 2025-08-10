@@ -174,7 +174,7 @@ const Security = () => {
     setInitClicked(true);
     updateProgress(false);
     event.preventDefault();
-    if(!installationArgs.dryRunMode){
+    if(!installationArgs.previewMode){
       window.electron.ipcRenderer.initSecurityButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
         // Some parts of Wizard pass the response as a string directly into the object
         if (res.status == false && typeof res.details == "string") {

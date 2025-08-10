@@ -117,7 +117,7 @@ export interface InstallationArgs {
   zosmfHost: string,
   zosmfPort: string,
   zosmfApplId: string,
-  dryRunMode: boolean,
+  previewMode: boolean,
 }
 
 

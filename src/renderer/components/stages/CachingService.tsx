@@ -217,7 +217,7 @@ const CachingService = () => {
     updateProgress(false);
     event.preventDefault();
 
-    if(!installationArgs.dryRunMode){
+    if(!installationArgs.previewMode){
       window.electron.ipcRenderer.initVsamButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
         updateProgress(res.status);
         if(res.error) {
