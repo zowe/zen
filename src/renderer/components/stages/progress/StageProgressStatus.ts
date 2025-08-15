@@ -137,7 +137,7 @@ const installationArgsStatus: InstallationArgs = {
     zosmfHost: '',
     zosmfPort: '443',
     zosmfApplId: 'IZUDFLT',
-    dryRunMode:false
+    previewMode:false
 }
 
 let progressStateKey = 'stage_progress';

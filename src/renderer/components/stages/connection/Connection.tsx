@@ -145,7 +145,7 @@ const FTPConnectionForm = () => {
     alertEmitter.emit('hideAlert');
     dispatch(setLoading(true));
     
-    if(!installationArgs.dryRunMode){
+    if(!installationArgs.previewMode){
       window.electron.ipcRenderer
       .connectionButtonOnClick(connectionArgs)
       .then((res: IResponse) => {

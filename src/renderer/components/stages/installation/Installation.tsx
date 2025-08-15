@@ -85,7 +85,7 @@ const Installation = () => {
       if(nextPosition) nextPosition.scrollIntoView({behavior: 'smooth'});
     }
 
-    if(installationArgs != undefined && !installationArgs.dryRunMode){
+    if(installationArgs != undefined && !installationArgs.previewMode){
       window.electron.ipcRenderer.getConfig().then((res: IResponse) => {
         function mergeInstallationArgsAndYaml(yaml: any){
           let yamlObj = JSON.parse(JSON.stringify(yaml));
@@ -271,7 +271,7 @@ const Installation = () => {
     event.preventDefault();
     dispatch(setLoading(true));
     // FIXME: runtime dir is hardcoded, fix there and in InstallActions.ts - Unpax and Install functions
-    if(!installationArgs.dryRunMode){
+    if(!installationArgs.previewMode){
     Promise.all([
       window.electron.ipcRenderer.setConfigByKeyAndValidate('zowe.setup.dataset', setupYaml),
     ]).then(async () => {

@@ -51,7 +51,7 @@ const cards: Array<ICard> = [
   }, 
   {
     id: "dry run", 
-    name: "Zowe Installation Dry Run", 
+    name: "Zowe Installation Preview", 
     description: "It will guide you through the installation steps without running the installation.", 
     link: "/wizard",
     media: installationDryImg,
@@ -92,9 +92,9 @@ const Home = () => {
     const handleClick = () => {
       let newInstallationArgs = installationSlice.getInitialState().installationArgs;
       if (id === "install") {
-        newInstallationArgs = {...newInstallationArgs, dryRunMode: false};
+        newInstallationArgs = {...newInstallationArgs, previewMode: false};
       } else if (id === "dry run") {
-        newInstallationArgs = {...newInstallationArgs, dryRunMode: true};
+        newInstallationArgs = {...newInstallationArgs, previewMode: true};
       }
       dispatch(setYaml(FALLBACK_YAML));
       dispatch(setInstallationArgs(newInstallationArgs));

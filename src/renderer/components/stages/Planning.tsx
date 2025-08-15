@@ -55,7 +55,7 @@ const Planning = () => {
   const requiredSpace = 1300; //in megabytes
 
   useEffect(() => {
-    if (!installationArgs.dryRunMode) { // REVIEW: Does dry run even makes sense in this step? What do we want to get as a result?
+    if (!installationArgs.previewMode) {
       // FIXME: getZoweFullVersion should be moved to InstallTypeSelection, makes no sense here anymore
       window.electron.ipcRenderer.getZoweFullVersion().then((res: IResponse) => 
         dispatch(setZoweVersion(res.status ? res.details : '' )));
@@ -130,7 +130,7 @@ const Planning = () => {
     alertEmitter.emit('hideAlert');
     dispatch(setLoading(true));
 
-    if (!installationArgs.dryRunMode) {
+    if (!installationArgs.previewMode) {
       window.electron.ipcRenderer.saveJobHeader(jobStatementValue)
       .then(() => getENVVars())
       .then((res: IResponse) => {
@@ -193,7 +193,7 @@ const Planning = () => {
 
     // TODO: Possible feature for future: add to checkDir to see if existing Zowe install exists.
     // Then give the user ability to use existing zowe.yaml to auto-fill in fields from Wizard
-    if (!installationArgs.dryRunMode) {
+    if (!installationArgs.previewMode) {
 
       Promise.all([
         window.electron.ipcRenderer.checkJava(connectionArgs, localYaml?.java?.home),

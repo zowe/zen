@@ -194,7 +194,7 @@ const Stcs = () => {
     updateProgress(false);
     event.preventDefault();
     
-    if(!installationArgs.dryRunMode){
+    if(!installationArgs.previewMode){
       window.electron.ipcRenderer.initStcsButtonOnClick(connectionArgs, installationArgs).then((res: IResponse) => {
         updateProgress(res.status);
         if(res.error) {
