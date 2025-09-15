@@ -24,7 +24,7 @@ import { alertEmitter } from "../../Header";
 import { createTheme } from '@mui/material/styles';
 import {stages} from "../../configuration-wizard/Wizard";
 import { setActiveStep } from "../progress/activeStepSlice";
-import { TYPE_YAML, TYPE_OUTPUT, JCL_UNIX_SCRIPT_OK, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, INSTALL_STAGE_LABEL} from '../../common/Utils';
+import { sanitizeOldStyleAnchors, TYPE_YAML, TYPE_OUTPUT, JCL_UNIX_SCRIPT_OK, FALLBACK_YAML, ajv, INIT_STAGE_LABEL, INSTALL_STAGE_LABEL} from '../../common/Utils';
 import { getStageDetails, getSubStageDetails } from "../../../../services/StageDetails"; 
 import { getProgress, setDatasetInstallationState, getDatasetInstallationState, getInstallationTypeStatus, updateSubStepSkipStatus, getInstallationArguments, datasetInstallationStatus, isInitializationStageComplete } from "../progress/StageProgressStatus";
 import { DatasetInstallationState } from "../../../../types/stateInterfaces";
@@ -66,7 +66,7 @@ const Installation = () => {
   let timer: any;
   const [installationType] = useState(getInstallationTypeStatus().installationType);
 
-  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v3/server-base") || ajv.compile(setupSchema));
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v3/server-base") || ajv.compile(sanitizeOldStyleAnchors(setupSchema)));
 
   useEffect(() => {
     stageStatusRef.current = stageStatus;

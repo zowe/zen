@@ -26,7 +26,7 @@ import { setActiveStep } from "./progress/activeStepSlice";
 import { getStageDetails, getSubStageDetails } from "../../../services/StageDetails";
 import { getProgress, setCertificateInitState, getCertificateInitState, updateSubStepSkipStatus, getInstallationArguments, isInitializationStageComplete } from "./progress/StageProgressStatus";
 import { CertInitSubStepsState } from "../../../types/stateInterfaces";
-import { TYPE_YAML, TYPE_OUTPUT, INIT_STAGE_LABEL, CERTIFICATES_STAGE_LABEL, ajv, deepMerge } from "../common/Utils";
+import { sanitizeOldStyleAnchors, TYPE_YAML, TYPE_OUTPUT, INIT_STAGE_LABEL, CERTIFICATES_STAGE_LABEL, ajv, deepMerge } from "../common/Utils";
 
 const Certificates = () => {
 
@@ -59,7 +59,7 @@ const Certificates = () => {
 
   let timer: any;
 
-  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v3/server-base") || ajv.compile(setupSchema))
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v3/server-base") || ajv.compile(sanitizeOldStyleAnchors(setupSchema)));
 
   useEffect(() => {
     stageStatusRef.current = stageStatus;

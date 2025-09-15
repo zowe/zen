@@ -27,7 +27,7 @@ import { getStageDetails, getSubStageDetails } from "../../../services/StageDeta
 import { getProgress, setVsamInitState, updateSubStepSkipStatus, getInstallationArguments, getVsamInitState, isInitializationStageComplete, getZoweMajorVersion } from "./progress/StageProgressStatus";
 import { InitSubStepsState } from "../../../types/stateInterfaces";
 import { alertEmitter } from "../Header";
-import { DEF_ZOWE_MAJOR_VERS, INIT_STAGE_LABEL, ajv } from "../common/Utils";
+import { sanitizeOldStyleAnchors, DEF_ZOWE_MAJOR_VERS, INIT_STAGE_LABEL, ajv } from "../common/Utils";
 
 const CachingService = () => {
 
@@ -70,7 +70,7 @@ const CachingService = () => {
 
   const [defaultErrorMessage] = useState("Please ensure that the volume, storage class & dataset values are accurate.");
 
-  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v3/server-base") || ajv.compile(setupSchema))
+  const [validate] = useState(() => ajv.getSchema("https://zowe.org/schemas/v3/server-base") || ajv.compile(sanitizeOldStyleAnchors(setupSchema)));
 
   useEffect(() => {
     stageStatusRef.current = stageStatus;
