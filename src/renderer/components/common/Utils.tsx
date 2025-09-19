@@ -2354,22 +2354,27 @@ and removes duplicate $anchors under the same base $id. It only touches anchors 
 So Ajv won’t throw the “reference resolves to more than one schema” error when trying to merge old-style & new style Zowe schema */
 export function sanitizeOldStyleAnchors(schema: any) {
   const root = JSON.parse(JSON.stringify(schema));
-  const seen: Set<string> = new Set(); // track anchors by absolute "baseId#anchor"
+  const traversedAnchors: Set<string> = new Set(); // track anchors by absolute "baseId#anchor"
   const traverse = (node: any, baseId: string) => {
-    if (!node || typeof node !== 'object') return;
+    if (!node || typeof node !== 'object')  { return; }
 
     // normalize old-style `"$id":"#name"` -> `$anchor`
     if (typeof node.$id === 'string' && node.$id.startsWith('#')) {
       const frag = node.$id.slice(1);
-      if (frag && !node.$anchor) node.$anchor = frag;
+      if (frag && !node.$anchor) { 
+        node.$anchor = frag; 
+      }
       delete node.$id;
     }
-    if (typeof node.$id === 'string' && node.$id && !node.$id.startsWith('#')) baseId = node.$id;
-
+    if (typeof node.$id === 'string' && node.$id && !node.$id.startsWith('#')) {
+      baseId = node.$id;
+    }
     if (typeof node.$anchor === 'string' && node.$anchor) {
       const key = `${baseId}#${node.$anchor}`;
-      if (seen.has(key)) delete node.$anchor;
-      else seen.add(key);
+      if (traversedAnchors.has(key)) {
+        delete node.$anchor;
+      }
+      else traversedAnchors.add(key);
     }
 
     const keys = [

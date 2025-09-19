@@ -347,6 +347,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
               </Button>
             }
             {stages[activeStep] && stages[activeStep].isSkippable &&
+            !skipButtonDisabled(stages, activeStep, activeSubStep) && (
               <Button 
                 disabled={skipButtonDisabled(stages, activeStep, activeSubStep)}
                 variant="contained" 
@@ -355,7 +356,7 @@ export default function HorizontalLinearStepper({stages, initialization}:{stages
               >
                 Skip {stages[activeStep] && stages[activeStep].subStages ? stages[activeStep].subStages[activeSubStep].label : stages[activeStep]? stages[activeStep].label: ''}
               </Button>
-            }
+            )}
             {stages[activeStep] && stages[activeStep].nextButton &&
               <Button 
               disabled={!isNextStepEnabled}
