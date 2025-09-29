@@ -17,6 +17,7 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
+import { sanitizeOldStyleAnchors } from './Utils';
 
 // Creates a basic input element in the UI schema
 const createControl = (scope: string, label?: string) => ({
@@ -118,6 +119,7 @@ const findMatchingSchemaIndex = (formData: any, oneOfSchemas: any) => {
 };
 
 const makeUISchema = (schema: any, base: string, formData: any): any => {
+  
   if (!schema || !formData) {
     return "";
   }
@@ -185,6 +187,59 @@ const makeUISchema = (schema: any, base: string, formData: any): any => {
   return createVerticalLayout(elements); // Return whole structure
 }
 
+/* resolveCombinators takes a schema plus the current form data and collapses any oneOf/anyOf it finds. 
+For each combinator, it chooses the option that best matches the data (or index 0 as a fallback), 
+then replaces the whole combinator node with that chosen subschema and continues recursively 
+through properties/items/$defs, etc. 
+
+The result is schema without combinators, so JsonForms won’t render tabs as a result of multiple sources */
+const resolveCombinators = (schema: any, data: any): any => {
+  const resolvedSchema = JSON.parse(JSON.stringify(schema));
+
+  const choose = (schemasArray: any[], formData: any) => {
+    // Find the matching schema for the given form data or default to 0
+    return schemasArray[findMatchingSchemaIndex(formData ?? {}, schemasArray)] || schemasArray[0];
+  };
+
+  const traverse = (node: any, formData: any) => {
+    if (!node || typeof node !== 'object') return;
+
+    if (Array.isArray(node.oneOf)) {
+      const chosen = choose(node.oneOf, formData);
+      Object.keys(node).forEach(k => delete node[k]);
+      Object.assign(node, chosen);
+    }
+    if (Array.isArray(node.anyOf)) {
+      const chosen = choose(node.anyOf, formData);
+      Object.keys(node).forEach(k => delete node[k]);
+      Object.assign(node, chosen);
+    }
+
+    // descend down usual containerized tree
+    if (node.properties && typeof node.properties === 'object') {
+      for (const [k, v] of Object.entries(node.properties)) {
+        traverse(v, formData?.[k]);
+      }
+    }
+    for (const key of ['items','contains','if','then','else','not']) {
+      if (node[key]) {
+        traverse(node[key], formData);
+      }
+    }
+    for (const key of ['allOf','anyOf','oneOf','prefixItems']) {
+      if (Array.isArray(node[key])) {
+        node[key].forEach((x: any) => traverse(x, formData));
+      }
+    }
+    if (node.$defs) {
+      Object.values(node.$defs).forEach((x: any) => traverse(x, undefined));
+    }
+  };
+
+  traverse(resolvedSchema, data);
+  return resolvedSchema;
+}
+
 export default function JsonForm(props: any) {
   let {schema, onChange, formData} = props;
 
@@ -208,6 +263,8 @@ export default function JsonForm(props: any) {
     formData = filterFormData(formData, schema.oneOf[schemaIndex]);
     onChange(formData, schemaIndex);
   }
+
+  const sanitizedSchema = resolveCombinators(sanitizeOldStyleAnchors(requiredSchema), formData);
 
   return (
     <ThemeProvider theme={jsonFormTheme}>
@@ -234,8 +291,8 @@ export default function JsonForm(props: any) {
 
       }
       <JsonForms
-        schema={requiredSchema}
-        uischema={makeUISchema(requiredSchema, '/', formData)}
+        schema={sanitizedSchema}
+        uischema={makeUISchema(sanitizedSchema, '/', formData)}
         data={formData}
         renderers={materialRenderers}
         cells={materialCells}
