@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 18
       - name: '[Prep 2] Setup jFrog CLI'
-        uses: jfrog/setup-jfrog-cli@v2
+        uses: jfrog/setup-jfrog-cli@v5
         env:
           JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_TOKEN }}
       - name: '[Prep 3] Checkout'
@@ -55,7 +55,7 @@ jobs:
         with:
           node-version: 18
       - name: '[Prep 2] Setup jFrog CLI'
-        uses: jfrog/setup-jfrog-cli@v2
+        uses: jfrog/setup-jfrog-cli@v5
         env:
           JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_TOKEN }}
       - name: '[Prep 3] Checkout'
